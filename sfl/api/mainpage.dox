@@ -1,0 +1,30 @@
+/** \mainpage
+
+<h2>High-Level Abstractions</h2>
+
+These classes define the Sunflower architecture:
+
+<ul>
+  <li> (Laser) scanner: sfl::Scanner, sfl::Multiscanner </li>
+  <li> Deduced reckoning: sfl::Odometry </li>
+  <li> Main actuators: sfl::MotionController </li>
+  <li> Motion planning / execution interface: sfl::MotionPlanner </li>
+  <li> Geometric, kinematc, and dynamic model: sfl::RobotModel </li>
+  <li> Kinematics abstraction (preliminary):
+       sfl::Drive, sfl::DiffDrive, sfl::HoloDrive </li>
+</ul>
+
+
+
+<h2>Data Objects</h2>
+
+These classes define encapsulations of various "chunks" of data:
+
+<ul>
+  <li> sfl::Goal </li>
+  <li> Time representation and utilities: sfl::Timestamp </li>
+  <li> Coordinate frames, position: sfl::Frame, sfl::Pose </li>
+  <li> Scanner data: sfl::Scan, sfl::GlobalScan </li>
+</ul>
+
+*/

@@ -1,0 +1,23 @@
+Aim: Have just the api/ and util/ functionality in a portable setup.
+
+DONE 1. Prune source tree
+
+DONE 2. Move Frame from api/ to util/
+
+     3. Choose a portable build system:
+        a) GNU Build System (autoconf / automake / libtool)
+        b) bjam (think it's from boost.org)
+        c) scons from tigris.org (recommended by Ansgar)
+
+DONE 4. Get nepumuk to work with it
+
+
+Aim: Simplify to the max!
+
+DONE 1. Remove exceptions where they're not absolutely better than
+        return values
+
+
+Aim: Make self-testing
+
+     1. Resurrect cppunit code in api/test

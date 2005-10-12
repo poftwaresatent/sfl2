@@ -1,0 +1,12 @@
+Import('env')
+lib = env.StaticLibrary('sfloaexpo',
+                        ['MotionPlannerFields.cpp',
+                         'MotionPlanner.cpp',
+                         'MotionController.cpp',
+                         'MotionPlannerState.cpp'])
+env.StageLibrary(lib)
+env.StageHeader('sfl/oa/expo',
+                ['MotionPlannerFields.hpp',
+                 'MotionPlanner.hpp',
+                 'MotionController.hpp',
+                 'MotionPlannerState.hpp'])

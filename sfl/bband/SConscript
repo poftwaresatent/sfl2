@@ -1,0 +1,14 @@
+Import('env')
+lib = env.StaticLibrary('sfloabband',
+                        ['ReplanHandler.cpp',
+                         'BubbleFactory.cpp',
+                         'BubbleBand.cpp',
+                         'BubbleList.cpp',
+                         'Bubble.cpp'])
+env.StageLibrary(lib)
+env.StageHeader('sfl/oa/bband',
+                ['ReplanHandler.hpp',
+                 'BubbleFactory.hpp',
+                 'BubbleBand.hpp',
+                 'BubbleList.hpp',
+                 'Bubble.hpp'])

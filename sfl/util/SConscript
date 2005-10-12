@@ -1,0 +1,19 @@
+Import('env')
+lib = env.StaticLibrary('sflutil',
+                        ['Ray.cpp',
+                         'numeric.cpp',
+                         'Frame.cpp',
+                         'Line.cpp',
+                         'Point.cpp',
+                         'Polygon.cpp',
+                         'Hull.cpp'])
+env.StageLibrary(lib)
+env.StageHeader('sfl/util',
+                ['Ray.hpp',
+                 'numeric.hpp',
+                 'Frame.hpp',
+                 'Line.hpp',
+                 'Point.hpp',
+                 'Polygon.hpp',
+                 'Hull.hpp',
+                 'functors.hpp'])

@@ -1,0 +1,106 @@
+README for sunflower
+
+------------------------------------------------------------
+Copyright (C) 2004, Autonomous Systems Lab,
+                    Ecole Polytechnique Federale de Lausanne
+		    (Swiss Federal Institute of Technology).
+		    All rights reserved.
+
+Maintainer: Roland Philippsen <roland.philippsen@gmx.net>
+Authors:    Viet Nguyen <viet.nguyen@epfl.ch>
+            Frederic Pont <frederic.pont@epfl.ch>
+            Agostino Martinelli <agostino.martinelli@epfl.ch>
+
+This software is released under the GNU General Public License. See
+the COPYRIGHT and LICENSE.GPL files for more information.
+------------------------------------------------------------
+
+
+INTRODUCTION
+
+Sunflower is a project that contains mobile robotic programming
+abstractions developed at the Autonomous Systems Lab. It is written in
+C++ and provides a framework of classes and utilities for common tasks
+and patterns in mobile robotics. As a concrete application of those
+abstractions, sunflower contains obstacle avoidance code developed
+during a PhD thesis at the Autonomous Systems Lab. It is described in
+chapter 3 of [1].
+
+
+COMPILING
+
+This software has been compiled under Linux and Mac OS X, but as it is
+relatively pure C++ it should not be hard to port to other POSIX
+platforms. Sunflower requires a C++ compiler (tested with GCC-3), the
+Scons build system [2] (which in turn requires Python), and the Boost
+smart_ptr library [3]. Once you have all this, compiling should be as
+simple as typing "scons" in the top-level directory.
+
+
+INSTALLING
+
+This release uses a staged build, after compilation there will be two
+new subdirectories called "inc" and "lib", which contain the sunflower
+headers and the compiled libraries. Copy those files to the
+appropriate location on your system if you want to install sunflower.
+
+
+DOCUMENTATION
+
+Sunflower uses Doxygen [4] to provide documentation through comments
+inside the sourcecode. You can either rely on the fact that the vast
+majority of these comments is in the class declarations (ie header
+files), or use the provided Doxyfile to create the HTML version under
+doc/html (Doxygen also supports other formats, just modify the
+Doxyfile accordingly).
+
+
+PROJECT LAYOUT
+
+util/
+ Basic classes and other utilities.
+
+api/
+ Mobile robotic abstractions, some with default implementations,
+ others in form of interfaces.
+
+dwa/
+ An implementation of the Dynamic Window Approach to obstacle
+ avoidance, modified for differential drive robots and with
+ pre-calculated lookup-tables for very fast execution.
+
+bband/
+ An implementation of a radically simplified Elastic Band approach to
+ on-line path modification, aimed at keeping computations very
+ lightweight but sacrifycing accuracy.
+
+gplan/
+ An early attempt at generalized grid-based path planners, only useful
+ for it's implementation of the NF1 planner. (The E-Star project
+ provides a more powerful approach but has not been released yet.)
+
+expo/
+ The integrated path planning and obstacle avoidance system used
+ during the Swiss National Exhibition expo.02. For 6 months it
+ controlled 10 Robox tour guide robots at the Robotics pavillion.
+
+
+REFERENCES
+
+[1] Roland Philippsen. Motion planning and obstacle avoidance for
+    mobile robots in highly cluttered dynamic environments. PhD
+    dissertation thesis EPFL, no 3146 (2004).
+    <http://library.epfl.ch/theses/?nr=3146>
+
+[2] SCons software construction tool, implemented as a Python script
+    and set of modules.
+    <http://www.scons.org>
+
+[3] Boost provides free peer-reviewed portable C++ source libraries,
+    smart_ptr is a C++ template library.
+    <http://www.boost.org/libs/smart_ptr/smart_ptr.htm>
+
+[4] Doxygen documentation system for C++, C, Java, Objective-C,
+    Python, IDL (Corba and Microsoft flavors) and to some extent PHP,
+    C#, and D.
+    <http://www.doxygen.org>
