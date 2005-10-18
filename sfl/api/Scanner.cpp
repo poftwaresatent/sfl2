@@ -35,12 +35,16 @@ namespace sfl {
   
   
   Scanner::
-  Scanner(const string & name,
+  Scanner(HAL * hal,
+	  int hal_channel,
+	  const string & name,
 	  const Frame & mount,
 	  unsigned int nscans,
 	  double rhomax,
 	  double phi0,
 	  double phirange):
+    m_hal(hal),
+    m_hal_channel(hal_channel),
     m_name(name),
     m_mount(mount),
     m_nscans(nscans),
@@ -63,22 +67,24 @@ namespace sfl {
   
   
   int Scanner::
-  Update(ostream * dbgos)
+  Update()
   {
-    const int res(RetrieveData(dbgos));
-    if(0 != res){
-      m_data_ok = false;
+    m_data_ok = false;
+    double rho[m_nscans];
+    struct ::timespec t0, t1;
+    const int res(m_hal->scan_get(m_hal_channel, rho, m_nscans, &t0, &t1));
+    if(0 != res)
       return res;
-    }
     m_data_ok = true;
     
-    // cache local coordinates
+    m_scan.m_tlower = t0;
+    m_scan.m_tupper = t1;
     for(size_t i(0); i < m_nscans; ++i){
-      m_scan.m_data[i].locx = m_scan.m_data[i].rho * m_cosphi[i];
-      m_scan.m_data[i].locy = m_scan.m_data[i].rho * m_sinphi[i];
+      m_scan.m_data[i].rho = rho[i];
+      m_scan.m_data[i].locx = rho[i] * m_cosphi[i];
+      m_scan.m_data[i].locy = rho[i] * m_sinphi[i];
       m_mount.To(m_scan.m_data[i].locx, m_scan.m_data[i].locy);
     }
-    
     return 0;
   }
   

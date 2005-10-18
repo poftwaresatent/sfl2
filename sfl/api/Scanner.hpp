@@ -28,6 +28,7 @@
 
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Scan.hpp>
+#include <sfl/api/HAL.hpp>
 #include <sfl/api/types.hpp>
 #include <sfl/api/Timestamp.hpp>
 #include <boost/shared_ptr.hpp>
@@ -105,7 +106,7 @@ namespace sfl {
       INDEX_ERROR,
       /** The value is out of range (Scanner::Rhomax()). */
       OUT_OF_RANGE,
-      /** An error occurred (see RetrieveData() documentation). */
+      /** An error occurred. */
       ACQUISITION_ERROR
     }
     status_t;
@@ -122,7 +123,11 @@ namespace sfl {
        for distinguishing between scanners. It would be really cool to
        define the names in the HAL and be able to use them "up" here.
     */
-    Scanner(/** name of the scanner */
+    Scanner(/** proxy object used to retrieve actual data */
+	    HAL * hal,
+	    /** HAL channel number */
+	    int hal_channel,
+	    /** name of the scanner */
 	    const std::string & name,
 	    /** sensor origin wrt robot frame, copied over */
 	    const Frame & mount,
@@ -134,9 +139,6 @@ namespace sfl {
 	    double phi0,
 	    /** angular range swept by measurement [rad] */
 	    double phirange);
-    
-    /** Empty dtor, needed for pure virtual RetrieveData(). */
-    virtual ~Scanner() { }
     
     
     /** \return The scanner's name. */
@@ -154,22 +156,14 @@ namespace sfl {
        dedicated update-thread to avoid problems when multiple clients
        access the Scanner.
        
-       This is a <em>template method</em> which calls RetrieveData()
-       to get the actual data. Subclasses "simply" need to implement
-       that hook in order to get the data from the sensor.
+       \note This method calls HAL::scan_get() to get the actual
+       data. If that doesn't return 0, then GetLocal() and Rho() will
+       return ACQUISITION_ERROR, and GetScanCopy() will return a zero
+       pointer.
        
-       \note If RetrieveData() doesn't return 0, then GetLocal() and
-       Rho() will return ACQUISITION_ERROR, and GetScanCopy() will
-       return a zero pointer.
-       
-       \todo Replace the virtual RetrieveData() mechanism by HAL calls
-       to be consistent with other hardware-dependend classes such as
-       Odometry and DiffDrive.
-
-       \return The result of the call to RetrieveData(), ie 0 on success.
+       \return The result of the call to HAL::scan_get(), ie 0 on success.
     */
-    int Update(/** passed to RetrieveData() */
-	       std::ostream * dbgos = 0);
+    int Update();
     
     /**
        Get a data point in local coordinates (robot frame).
@@ -238,10 +232,11 @@ namespace sfl {
     const Timestamp & GetTimestamp() const { return m_scan.m_tupper; }
     
     
-  protected:
+  private:
     typedef std::vector<double> vector_t;
     
-    
+    HAL * m_hal;
+    const int m_hal_channel;
     const std::string m_name;
     const Frame m_mount;
     const size_t m_nscans;
@@ -254,21 +249,6 @@ namespace sfl {
     
     vector_t m_cosphi;
     vector_t m_sinphi;
-    
-    
-    /**
-       Retrieve the data from the real scanner device.  Called from
-       Scanner::Update(), subclasses implement this method in order to
-       get the data from the hardware interface. Implementations need
-       to fill Scanner::m_rho with the distance data [m] and SET THE
-       TIMESTAMP Scanner::m_stamp, everything else is handled by the
-       base class.
-       
-       \return 0 on success, user-defined error codes on failure. If 
-    */
-    virtual int RetrieveData(/** if non-zero, debug messages should be
-				 written to dbgos */
-			     std::ostream * dbgos) = 0;
   };
   
 }

@@ -58,7 +58,7 @@ namespace sfl {
     }
     
     struct ::timespec timestamp;
-    res = m_hal->time_get(timestamp);
+    res = m_hal->time_get(&timestamp);
     if(res != 0){
       if(dbgos != 0){
 	(*dbgos) << "ERROR in Odometry::Init():\n"
@@ -79,10 +79,10 @@ namespace sfl {
   {
     struct ::timespec timestamp;
     double x, y, t, sxx, syy, stt, sxy, sxt, syt;
-    int res(m_hal->odometry_get(timestamp,
-					  x, y, t,
-					  sxx, syy, stt,
-					  sxy, sxt, syt));
+    int res(m_hal->odometry_get(&timestamp,
+				&x, &y, &t,
+				&sxx, &syy, &stt,
+				&sxy, &sxt, &syt));
     if(res != 0){
       if(dbgos != 0){
 	(*dbgos) << "ERROR in Odometry::Update():\n"
@@ -133,14 +133,14 @@ namespace sfl {
   {
     // don't set timestamp here, use HAL's time function afterwards
     int res(m_hal->odometry_set(pose.X(), pose.Y(), pose.Theta(),
-					  pose.Sxx(), pose.Syy(), pose.Stt(),
-					  pose.Sxy(), pose.Sxt(), pose.Syt()));
+				pose.Sxx(), pose.Syy(), pose.Stt(),
+				pose.Sxy(), pose.Sxt(), pose.Syt()));
     if(res != 0)
       return res;
       // error("sfl::Odometry::Set(): odometry_set()", res);
     
     struct ::timespec timestamp;
-    res = m_hal->time_get(timestamp);
+    res = m_hal->time_get(&timestamp);
     if(res != 0)
       return res;
       // error("sfl::Odometry::Set(): time_get()", res);

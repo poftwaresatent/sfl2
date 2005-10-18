@@ -36,10 +36,9 @@ namespace sfl {
   
   
   int Timestamp::
-  Now(HAL * hal,
-      struct ::timespec * spec)
+  Now(HAL * hal, struct ::timespec * spec)
   {
-    return hal->time_get( * spec);
+    return hal->time_get(spec);
   }
   
   

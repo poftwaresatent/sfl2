@@ -78,7 +78,7 @@ namespace sfl {
     const Timestamp & GetTUpper() const { return m_tupper; }
     
     /** \pre index < GetNScans() */
-    const data_t & GetData(size_t index) { return m_data[index]; }
+    const data_t & GetData(size_t index) const { return m_data[index]; }
     
     
   protected:
