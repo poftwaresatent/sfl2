@@ -53,7 +53,7 @@ namespace sfl {
        Converts a HAL timestamp into a Timestamp instance. If you need
        a Timestamp of "unspecified" time, use Last() or First().
     */
-    Timestamp(const struct timespec & stamp)
+    Timestamp(const struct ::timespec & stamp)
       : m_stamp(stamp) { }
     
     /**
@@ -62,7 +62,7 @@ namespace sfl {
        \return 0 on success.
     */
     static int Now(HALProxy & halProxy,
-		   struct timespec * spec);
+		   struct ::timespec * spec);
     
     /**
        \return A (static) Timestamp of the last representable
@@ -89,7 +89,7 @@ namespace sfl {
        of a struct timespec, ie Timestamp behaves like a pointer to a
        <code>struct timespec</code> in certain circumstances.
     */
-    struct timespec operator * () const { return m_stamp; }
+    struct ::timespec operator * () const { return m_stamp; }
     
     /**
        Ouput operator for human-readable messages, prints the
@@ -184,7 +184,7 @@ namespace sfl {
     };
     
   private:
-    struct timespec m_stamp;
+    struct ::timespec m_stamp;
   };
   
 }
