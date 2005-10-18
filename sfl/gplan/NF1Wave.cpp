@@ -22,9 +22,9 @@
  */
 
 
-#include <sfl/oa/gplan/NF1Wave.hpp>
-#include <sfl/oa/gplan/GridLayer.hpp>
-#include <sfl/oa/gplan/GridPlanner.hpp>
+#include "NF1Wave.hpp"
+#include "GridLayer.hpp"
+#include "GridPlanner.hpp"
 
 
 

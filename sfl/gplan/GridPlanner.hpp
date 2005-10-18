@@ -28,7 +28,7 @@
 
 
 #include <sfl/api/GlobalScan.hpp>
-#include <sfl/oa/gplan/GridFrame.hpp>
+#include <sfl/gplan/GridFrame.hpp>
 
 
 

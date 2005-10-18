@@ -22,7 +22,7 @@
  */
 
 
-#include <sfl/oa/gplan/GridLayer.hpp>
+#include "GridLayer.hpp"
 using namespace std;
 
 

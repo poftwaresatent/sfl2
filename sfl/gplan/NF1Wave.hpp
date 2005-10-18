@@ -27,7 +27,7 @@
 
 
 
-#include <sfl/oa/gplan/Wave.hpp>
+#include <sfl/gplan/Wave.hpp>
 
 
 

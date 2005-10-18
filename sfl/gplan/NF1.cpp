@@ -22,7 +22,7 @@
  */
 
 
-#include <sfl/oa/gplan/NF1.hpp>
+#include "NF1.hpp"
 
 
 

@@ -27,7 +27,7 @@
 
 
 
-#include <sfl/oa/gplan/GridLayer.hpp>
+#include <sfl/gplan/GridLayer.hpp>
 #include <sfl/util/Frame.hpp>
 #include <utility>
 

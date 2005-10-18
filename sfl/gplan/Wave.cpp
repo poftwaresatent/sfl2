@@ -22,7 +22,7 @@
  */
 
 
-#include <sfl/oa/gplan/Wave.hpp>
+#include "Wave.hpp"
 #include <cmath>
 
 

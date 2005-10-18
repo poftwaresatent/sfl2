@@ -26,9 +26,9 @@
 #define SUNFLOWER_NF1_H
 
 
-#include <sfl/oa/gplan/GridPlanner.hpp>
-#include <sfl/oa/gplan/GridLayer.hpp>
-#include <sfl/oa/gplan/NF1Wave.hpp>
+#include <sfl/gplan/GridPlanner.hpp>
+#include <sfl/gplan/GridLayer.hpp>
+#include <sfl/gplan/NF1Wave.hpp>
 #include <sfl/api/GlobalScan.hpp>
 
 

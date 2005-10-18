@@ -22,7 +22,7 @@
  */
 
 
-#include <sfl/oa/gplan/GridPlanner.hpp>
+#include "GridPlanner.hpp"
 #include <cmath>
 
 

@@ -22,7 +22,7 @@
  */
 
 
-#include <sfl/oa/gplan/GridFrame.hpp>
+#include "GridFrame.hpp"
 #include <cmath>
 using namespace std;
 
