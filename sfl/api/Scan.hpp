@@ -81,6 +81,8 @@ namespace sfl {
 	 const Timestamp & tlower = Timestamp::First(),
 	 /** upper bound on the acquisition timestamp */
 	 const Timestamp & tupper = Timestamp::Last());
+    
+    Scan(const Scan & original);
   };
   
 }

@@ -38,4 +38,13 @@ namespace sfl {
   {
   }
   
+  
+  Scan::
+  Scan(const Scan & original):
+    tlower(original.tlower),
+    tupper(original.tupper),
+    data(original.data)
+  {
+  }
+  
 }

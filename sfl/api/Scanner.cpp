@@ -154,4 +154,12 @@ namespace sfl {
     return SUCCESS;
   }
   
+
+  shared_ptr<Scan> Scanner::
+  GetScanCopy()
+    const
+  {
+    return shared_ptr<Scan>(new Scan(m_scan));
+  }
+  
 }
