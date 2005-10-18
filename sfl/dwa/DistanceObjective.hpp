@@ -104,10 +104,13 @@ namespace sfl {
     /** \note Returns signed int to facilitate domain detection. */
     int FindYindex(double d) const;
 
-    const Hull & GetHull() const { return * _hull; }
-    const Hull & GetPaddedHull() const { return * _paddedHull; }
-    const Polygon & GetEvaluationHull() const { return * _evaluationHull; }
-
+    boost::shared_ptr<const Hull> GetHull() const
+    { return _hull; }
+    boost::shared_ptr<const Hull> GetPaddedHull() const
+    { return _paddedHull; }
+    boost::shared_ptr<const Polygon> GetEvaluationHull() const
+    { return _evaluationHull; }
+    
     void DumpGrid(std::ostream & os, const char * prefix) const;
 
 

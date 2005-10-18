@@ -57,7 +57,7 @@ namespace sfl {
   
   RobotModel::
   RobotModel(double timestep,
-	     const Parameters & parameters,
+	     Parameters parameters,
 	     shared_ptr<const Hull> hull):
     m_timestep(timestep),
     m_params(parameters),

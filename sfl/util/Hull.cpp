@@ -124,13 +124,13 @@ namespace sfl {
   }
   
   
-  const Polygon * Hull::
+  shared_ptr<const Polygon> Hull::
   GetPolygon(int index)
     const
   {
     if((index < 0) || (index >= (int) m_subhulls.size()))
-      return 0;
-    return m_subhulls[index].get();
+      return shared_ptr<const Polygon>();
+    return m_subhulls[index];
   }
   
 }

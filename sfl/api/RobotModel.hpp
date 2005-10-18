@@ -75,8 +75,9 @@ namespace sfl {
     };
     
     
+    /** \todo Good to pass parameters as instance? */
     RobotModel(double timestep,
-	       const Parameters & parameters,
+	       Parameters parameters,
 	       boost::shared_ptr<const Hull> hull);
     
     
@@ -180,7 +181,7 @@ namespace sfl {
     
   protected:
     const double m_timestep;
-    const Parameters & m_params;
+    const Parameters m_params;
     boost::shared_ptr<const Hull> m_hull;
   };
 

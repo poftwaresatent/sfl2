@@ -83,7 +83,7 @@ namespace sfl {
     
     // allocate timeLookup[][]
     _timeLookup.reset(new scoped_array<scoped_ptr<Lookup> >[_dimx]);
-    for(int i = 0; i < _dimx; ++i){
+    for(int i(0); i < _dimx; ++i){
       // NOTE: scoped_array constructs to zero, which we rely on!
       _timeLookup[i].reset(new scoped_ptr<Lookup>[_dimy]);
     }
@@ -136,17 +136,17 @@ namespace sfl {
 	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
 	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
 	      if(_dynamic_window.Forbidden(iqdl, iqdr))
-		_timeLookup[igx][igy]->LoadBuffer(iqdl, iqdr, - 1);
+		Lookup::LoadBuffer(iqdl, iqdr, - 1);
 	      else{
 		double t(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
 					  x, y));
 
 		if((t > 0) && (t <= _maxTime)){
 		  ++nValidCollisions;
-		  _timeLookup[igx][igy]->LoadBuffer(iqdl, iqdr, t);
+		  Lookup::LoadBuffer(iqdl, iqdr, t);
 		}
 		else
-		  _timeLookup[igx][igy]->LoadBuffer(iqdl, iqdr, - 1);
+		  Lookup::LoadBuffer(iqdl, iqdr, - 1);
 	      }
 	
 	  if(nValidCollisions > 0){
@@ -177,7 +177,7 @@ namespace sfl {
 	
 	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
 	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
-	      _timeLookup[igx][igy]->LoadBuffer(iqdl, iqdr, 1e-6);
+	      Lookup::LoadBuffer(iqdl, iqdr, epsilon);
 	  _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
 	  _timeLookup[igx][igy]->SaveBuffer();
 	
@@ -303,7 +303,7 @@ namespace sfl {
     double sd, thetad;
     _robot_model.Actuator2Global(qdl, qdr, sd, thetad);
 
-    if(absval(1e-9 * sd) < absval(thetad / epsilon)){
+    if(absval(epsilon * sd) < absval(thetad / epsilon)){
       // circular equation
       double thetadInv(absval(1 / thetad));
 

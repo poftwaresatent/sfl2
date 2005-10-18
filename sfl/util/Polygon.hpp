@@ -101,7 +101,7 @@ namespace sfl {
     friend std::ostream & operator << (std::ostream & os, const Polygon & p);
 
     
-  protected:
+  private:
     typedef std::vector<boost::shared_ptr<Point> > pointlist_t;
     
     pointlist_t m_point;

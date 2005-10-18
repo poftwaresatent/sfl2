@@ -49,7 +49,9 @@ namespace sfl {
     m_phirange(phirange),
     m_dphi(phirange / nscans),
     m_scan(nscans),
-    m_data_ok(false)
+    m_data_ok(false),
+    m_cosphi(nscans, 0.0),
+    m_sinphi(nscans, 0.0)
   {
     for(size_t i(0); i < m_nscans; ++i){
       m_scan.data[i].phi = m_phi0 + m_dphi * i;

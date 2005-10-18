@@ -64,7 +64,7 @@ namespace sfl {
     
     /** \return A pointer to a subhull iff 0<=index<GetNPolygons(), 0
 	otherwise. */
-    const Polygon * GetPolygon(int index) const;
+    boost::shared_ptr<const Polygon> GetPolygon(int index) const;
     
     /** \return The total number of points in the sub-hulls. */
     int GetNPoints() const { return m_npoints; }
