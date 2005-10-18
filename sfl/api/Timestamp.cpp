@@ -23,7 +23,7 @@
 
 
 #include "Timestamp.hpp"
-#include "HALProxy.hpp"
+#include "HAL.hpp"
 #include <sstream>
 #include <limits>
 #include <iomanip>
@@ -36,10 +36,10 @@ namespace sfl {
   
   
   int Timestamp::
-  Now(HALProxy * hal_proxy,
+  Now(HAL * hal,
       struct timespec * spec)
   {
-    return hal_proxy->hal_time_get( * spec);
+    return hal->time_get( * spec);
   }
   
   

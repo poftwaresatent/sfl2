@@ -23,7 +23,7 @@
 
 
 #include "DiffDrive.hpp"
-#include "HALProxy.hpp"
+#include "HAL.hpp"
 #include <sfl/util/numeric.hpp>
 #include <cmath>
 
@@ -35,10 +35,10 @@ namespace sfl {
   
   
   DiffDrive::
-  DiffDrive(HALProxy * hal_proxy,
+  DiffDrive(HAL * hal,
 	    double wheelbase,
 	    double wheelradius):
-    m_hal_proxy(hal_proxy),
+    m_hal(hal),
     m_wheelbase(wheelbase),
     m_wheelradius(wheelradius)
   {
@@ -50,7 +50,7 @@ namespace sfl {
   SetSpeed(double left,
 	   double right)
   {
-    const int res(m_hal_proxy->hal_speed_set(left, right));
+    const int res(m_hal->speed_set(left, right));
     if(0 != res)
       return res;
     

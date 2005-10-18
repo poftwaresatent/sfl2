@@ -23,7 +23,7 @@
 
 
 #include "Odometry.hpp"
-#include "HALProxy.hpp"
+#include "HAL.hpp"
 #include <iostream>
 
 
@@ -35,8 +35,8 @@ namespace sfl {
   
   
   Odometry::
-  Odometry(HALProxy * hal_proxy):
-    m_hal_proxy(hal_proxy)
+  Odometry(HAL * hal):
+    m_hal(hal)
   {
   }
   
@@ -46,23 +46,23 @@ namespace sfl {
        ostream * dbgos)
   {
     // don't set timestamp here, will be read from HAL afterwards
-    int res(m_hal_proxy->hal_odometry_set(pose.X(), pose.Y(), pose.Theta(),
+    int res(m_hal->odometry_set(pose.X(), pose.Y(), pose.Theta(),
 					  pose.Sxx(), pose.Syy(), pose.Stt(),
 					  pose.Sxy(), pose.Sxt(), pose.Syt()));
     if(res != 0){
       if(dbgos != 0){
 	(*dbgos) << "ERROR in Odometry::Init():\n"
-		 << "  hal_odometry_set() returned " << res << "\n";
+		 << "  odometry_set() returned " << res << "\n";
       }
       return res;
     }
     
     struct timespec timestamp;
-    res = m_hal_proxy->hal_time_get(timestamp);
+    res = m_hal->time_get(timestamp);
     if(res != 0){
       if(dbgos != 0){
 	(*dbgos) << "ERROR in Odometry::Init():\n"
-		 << "  hal_time_get() returned " << res << "\n";
+		 << "  time_get() returned " << res << "\n";
       }
       return res;
     }
@@ -79,14 +79,14 @@ namespace sfl {
   {
     struct timespec timestamp;
     double x, y, t, sxx, syy, stt, sxy, sxt, syt;
-    int res(m_hal_proxy->hal_odometry_get(timestamp,
+    int res(m_hal->odometry_get(timestamp,
 					  x, y, t,
 					  sxx, syy, stt,
 					  sxy, sxt, syt));
     if(res != 0){
       if(dbgos != 0){
 	(*dbgos) << "ERROR in Odometry::Update():\n"
-		 << "  hal_odometry_get() returned " << res << "\n";
+		 << "  odometry_get() returned " << res << "\n";
       }
       return res;
     }
@@ -132,18 +132,18 @@ namespace sfl {
   Set(const Pose & pose)
   {
     // don't set timestamp here, use HAL's time function afterwards
-    int res(m_hal_proxy->hal_odometry_set(pose.X(), pose.Y(), pose.Theta(),
+    int res(m_hal->odometry_set(pose.X(), pose.Y(), pose.Theta(),
 					  pose.Sxx(), pose.Syy(), pose.Stt(),
 					  pose.Sxy(), pose.Sxt(), pose.Syt()));
     if(res != 0)
       return res;
-      // hal_error("sfl::Odometry::Set(): hal_odometry_set()", res);
+      // error("sfl::Odometry::Set(): odometry_set()", res);
     
     struct timespec timestamp;
-    res = m_hal_proxy->hal_time_get(timestamp);
+    res = m_hal->time_get(timestamp);
     if(res != 0)
       return res;
-      // hal_error("sfl::Odometry::Set(): hal_time_get()", res);
+      // error("sfl::Odometry::Set(): time_get()", res);
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
     
     return 0;

@@ -32,7 +32,7 @@
 namespace sfl {
 
 
-  class HALProxy;
+  class HAL;
 
 
   /**
@@ -61,7 +61,7 @@ namespace sfl {
        
        \return 0 on success.
     */
-    static int Now(HALProxy * hal_proxy,
+    static int Now(HAL * hal,
 		   struct ::timespec * spec);
     
     /**

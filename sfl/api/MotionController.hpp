@@ -41,7 +41,7 @@ namespace sfl {
      Encapsulates the motion controller. Used to control the robot's
      movement.
      
-     \todo Use hal_speed_get() instead of relying on cached speed
+     \todo Use speed_get() instead of relying on cached speed
      values.
   */
   class MotionController
@@ -58,7 +58,7 @@ namespace sfl {
        calls DiffDrive::SetSpeed() with the resulting velocities.
        
        \note DiffDrive::SetSpeed() will pass the speed commands to the
-       HALProxy.
+       HAL.
        
        \return The return value of the call to DiffDrive::SetSpeed(),
        ie 0 for success.

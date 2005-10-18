@@ -22,8 +22,8 @@
  */
 
 
-#ifndef SUNFLOWER_HAL_PROXY_HPP
-#define SUNFLOWER_HAL_PROXY_HPP
+#ifndef SUNFLOWER_HAL_HPP
+#define SUNFLOWER_HAL_HPP
 
 
 namespace sfl {
@@ -46,29 +46,29 @@ namespace sfl {
      abstraction layers.
   */
   
-  class HALProxy
+  class HAL
   {
   public:
-    virtual ~HALProxy() { }
+    virtual ~HAL() { }
     
     /** \return 0 on success. */
-    virtual int hal_time_get(struct timespec & stamp) = 0;
+    virtual int time_get(struct timespec & stamp) = 0;
     
     /** \return 0 on success. */
-    virtual int hal_odometry_set(double x, double y, double theta,
+    virtual int odometry_set(double x, double y, double theta,
 				 double sxx, double syy, double stt,
 				 double sxy, double sxt, double syt) = 0;
     
     /** \return 0 on success. */
-    virtual int hal_odometry_get(struct timespec & stamp,
+    virtual int odometry_get(struct timespec & stamp,
 				 double & x, double & y, double & theta,
 				 double & sxx, double & syy, double & stt,
 				 double & sxy, double & sxt, double & syt) = 0;
     
     /** \return 0 on success. */
-    virtual int hal_speed_set(double qdl, double qdr) = 0;
+    virtual int speed_set(double qdl, double qdr) = 0;
   };
   
 }
 
-#endif // SUNFLOWER_HAL_PROXY_HPP
+#endif // SUNFLOWER_HAL_HPP
