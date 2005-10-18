@@ -26,6 +26,9 @@
 #define SUNFLOWER_HAL_HPP
 
 
+struct timespec;
+
+
 namespace sfl {
 
   
@@ -52,18 +55,18 @@ namespace sfl {
     virtual ~HAL() { }
     
     /** \return 0 on success. */
-    virtual int time_get(struct timespec & stamp) = 0;
+    virtual int time_get(struct ::timespec & stamp) = 0;
     
     /** \return 0 on success. */
     virtual int odometry_set(double x, double y, double theta,
-				 double sxx, double syy, double stt,
-				 double sxy, double sxt, double syt) = 0;
+			     double sxx, double syy, double stt,
+			     double sxy, double sxt, double syt) = 0;
     
     /** \return 0 on success. */
-    virtual int odometry_get(struct timespec & stamp,
-				 double & x, double & y, double & theta,
-				 double & sxx, double & syy, double & stt,
-				 double & sxy, double & sxt, double & syt) = 0;
+    virtual int odometry_get(struct ::timespec & stamp,
+			     double & x, double & y, double & theta,
+			     double & sxx, double & syy, double & stt,
+			     double & sxy, double & sxt, double & syt) = 0;
     
     /** \return 0 on success. */
     virtual int speed_set(double qdl, double qdr) = 0;

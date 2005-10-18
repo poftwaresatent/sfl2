@@ -37,7 +37,7 @@ namespace sfl {
   
   int Timestamp::
   Now(HAL * hal,
-      struct timespec * spec)
+      struct ::timespec * spec)
   {
     return hal->time_get( * spec);
   }
@@ -46,7 +46,7 @@ namespace sfl {
   const Timestamp & Timestamp::
   Last()
   {
-    static const struct timespec spec = {
+    static const struct ::timespec spec = {
       tv_sec:  numeric_limits<long>::max(),
       tv_nsec: numeric_limits<long>::max() };
     static const Timestamp last(spec);
@@ -58,7 +58,7 @@ namespace sfl {
   const Timestamp & Timestamp::
   First()
   {
-    static const struct timespec spec = {
+    static const struct ::timespec spec = {
       tv_sec:  numeric_limits<long>::min(),
       tv_nsec: numeric_limits<long>::min() };
     static const Timestamp first(spec);

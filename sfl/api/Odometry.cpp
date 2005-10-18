@@ -57,7 +57,7 @@ namespace sfl {
       return res;
     }
     
-    struct timespec timestamp;
+    struct ::timespec timestamp;
     res = m_hal->time_get(timestamp);
     if(res != 0){
       if(dbgos != 0){
@@ -77,7 +77,7 @@ namespace sfl {
   int Odometry::
   Update(ostream * dbgos)
   {
-    struct timespec timestamp;
+    struct ::timespec timestamp;
     double x, y, t, sxx, syy, stt, sxy, sxt, syt;
     int res(m_hal->odometry_get(timestamp,
 					  x, y, t,
@@ -139,7 +139,7 @@ namespace sfl {
       return res;
       // error("sfl::Odometry::Set(): odometry_set()", res);
     
-    struct timespec timestamp;
+    struct ::timespec timestamp;
     res = m_hal->time_get(timestamp);
     if(res != 0)
       return res;
