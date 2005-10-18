@@ -28,8 +28,8 @@
 
 
 #include <sfl/api/RobotModel.hpp>
-#include <sfl/oa/dwa/Objective.hpp>
-#include <sfl/oa/dwa/Lookup.hpp>
+#include <sfl/dwa/Objective.hpp>
+#include <sfl/dwa/Lookup.hpp>
 
 
 

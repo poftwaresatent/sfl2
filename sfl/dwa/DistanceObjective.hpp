@@ -29,8 +29,8 @@
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Scan.hpp>
 #include <sfl/util/Hull.hpp>
-#include <sfl/oa/dwa/Objective.hpp>
-#include <sfl/oa/dwa/Lookup.hpp>
+#include <sfl/dwa/Objective.hpp>
+#include <sfl/dwa/Lookup.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>

@@ -30,9 +30,9 @@
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/MotionController.hpp>
 #include <sfl/api/Scan.hpp>
-#include <sfl/oa/dwa/DistanceObjective.hpp>
-#include <sfl/oa/dwa/HeadingObjective.hpp>
-#include <sfl/oa/dwa/SpeedObjective.hpp>
+#include <sfl/dwa/DistanceObjective.hpp>
+#include <sfl/dwa/HeadingObjective.hpp>
+#include <sfl/dwa/SpeedObjective.hpp>
 
 
 namespace sfl {

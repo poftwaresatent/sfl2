@@ -28,7 +28,7 @@
 
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/util/Frame.hpp>
-#include <sfl/oa/dwa/Objective.hpp>
+#include <sfl/dwa/Objective.hpp>
 
 
 namespace sfl {
