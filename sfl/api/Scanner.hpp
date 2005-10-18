@@ -232,7 +232,7 @@ namespace sfl {
     const Timestamp & GetTimestamp() const { return m_scan.m_tupper; }
     
     
-  private:
+  protected:
     typedef std::vector<double> vector_t;
     
     HAL * m_hal;
@@ -249,6 +249,9 @@ namespace sfl {
     
     vector_t m_cosphi;
     vector_t m_sinphi;
+    
+    
+    void SetRho(size_t i, double r) { m_scan.m_data[i].rho = r; }
   };
   
 }
