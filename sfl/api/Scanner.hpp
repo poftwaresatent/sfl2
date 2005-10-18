@@ -162,6 +162,10 @@ namespace sfl {
        Rho() will return ACQUISITION_ERROR, and GetScanCopy() will
        return a zero pointer.
        
+       \todo Replace the virtual RetrieveData() mechanism by HAL calls
+       to be consistent with other hardware-dependend classes such as
+       Odometry and DiffDrive.
+
        \return The result of the call to RetrieveData(), ie 0 on success.
     */
     int Update(/** passed to RetrieveData() */
