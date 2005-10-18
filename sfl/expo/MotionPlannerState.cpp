@@ -156,9 +156,9 @@ namespace expo {
 //     cerr << "INFO from MotionPlannerState::AskDynamicWindow()\n"
 // 	 << "  direction  : (" << direction.first
 // 	 << ", " << direction.second << ")\n"
-// 	 << "  nscans     : " << global_scan.Nscans() << endl
-// 	 << "  scan tlower: " << global_scan.GetTlower() << endl
-// 	 << "  scan tupper: " << global_scan.GetTupper() << endl;
+// 	 << "  nscans     : " << global_scan.Nscans() << "\n"
+// 	 << "  scan tlower: " << global_scan.GetTlower() << "\n"
+// 	 << "  scan tupper: " << global_scan.GetTupper() << "\n";
     
     _fields->dynamicWindow.Update(direction.first,
 				  direction.second,

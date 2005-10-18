@@ -34,6 +34,7 @@ using boost::scoped_array;
 using boost::scoped_ptr;
 using std::ostream;
 using std::vector;
+using std::cerr;		// dbg
 
 
 namespace sfl {
@@ -192,7 +193,96 @@ namespace sfl {
       (*progress_stream) << "   finished.\n";
   }
   
+  
+  bool DistanceObjective::
+  CheckLookup(ostream & os)
+    const
+  {
+    os <<
+      "INFO from DistanceObjective::CheckLookup():\n"
+      "  checking _qdLookup: ";
+    for(unsigned int i = 0; i < _dimension; ++i)
+      if(_qdLookup[i] != _dynamic_window.Qd(i)){
+	os << "\n    ERROR _qdLookup[" << i << "] is wrong\n";
+	return false;
+      }
+      else
+	os << ".";
 
+    os << "\n  checking _maxTimeLookup:\n";
+    for(unsigned int i = 0; i < _dimension; ++i){
+      os << "    ";
+      for(unsigned int j = 0; j < _dimension; ++j)
+	if(_maxTimeLookup[i][j]
+	   !=
+	   maxval(absval(_qdLookup[i]),
+		  absval(_qdLookup[j])) /
+	   _robot_model.QddMax()){
+	  os << "\n    ERROR _maxTimeLookup["<<i<<"]["<<j<<"] is wrong\n";
+	  return false;
+	}
+	else
+	  os << ".";
+      os << "\n";
+    }
+    
+    os << "  checking _timeLookup:\n";
+    for(int igy = _dimy - 1; igy >= 0; --igy){
+      os << "    ";
+      double y(FindYlength(igy));
+      for(int igx = 0; igx < _dimx; ++igx){
+	double x(FindXlength(igx));
+	for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl){
+	  for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr){
+	    double wanted(-1);
+	    if(_evaluationHull->Contains(x, y))
+	      if(_paddedHull->Contains(x, y))
+		wanted = epsilon; // due to epsilon hack above...
+	      else{
+		if( ! _dynamic_window.Forbidden(iqdl, iqdr)){
+		  const double t(PredictCollision(_qdLookup[iqdl],
+						  _qdLookup[iqdr],
+						  x, y));
+		  if((t > 0) && (t <= _maxTime))
+		    wanted = t;
+		}
+	      }
+	    double compressed(-1);
+	    if(_timeLookup[igx][igy])
+	      compressed = _timeLookup[igx][igy]->Get(iqdl, iqdr);
+	    
+	    if(wanted != compressed){
+	      if(0 > wanted){
+		if(_timeLookup[igx][igy]){
+		  os << "\n  ERROR _timeLookup[" << igx << "][" << igy
+		     << "] should be -1 but is " << compressed << "\n"
+		     << "  cell [" << igx << "][" << igy << "] at (" << x
+		     << ", " << y << ")\n";
+		  return false;
+		}
+		os << "\nBUG in check procedure?\n";
+		return false;
+	      }
+	      if(0 > compressed){
+		os << "\n  ERROR _timeLookup[" << igx << "][" << igy
+		   << "] should be " << wanted << " but is "
+		   << compressed << " (which should be -1)\n"
+		   << "  cell [" << igx << "][" << igy << "] at (" << x
+		   << ", " << y << ")\n";
+		return false;
+	      }
+	    }
+	    // update stats here?
+	  }
+	}
+	os << ".";
+      }
+      os << "\n";
+    }
+    return true;
+  }
+  
+  
   void DistanceObjective::
   Calculate(unsigned int qdlMin,
 	    unsigned int qdlMax,
@@ -234,9 +324,23 @@ namespace sfl {
 	 (ldata[is].locy >= _y0) &&
 	 (ldata[is].locy <= _y1))
 	_grid[FindXindex(ldata[is].locx)][FindYindex(ldata[is].locy)] = true;
+    
+    static const bool dump_grid(true);
+    if(dump_grid){
+      cerr << "DEBUG DistanceObjective::UpdateGrid():\n";
+      for(int igy = _dimy - 1; igy >= 0; --igy){
+	cerr << "  ";
+	for(int igx = 0; igx < _dimx; ++igx)
+	  if(_grid[igx][igy])
+	    cerr << "*";
+	  else
+	    cerr << ".";
+	cerr << "\n";
+      }
+    }
   }
-
-
+  
+  
   double DistanceObjective::
   MinTime(unsigned int iqdl,
 	  unsigned int iqdr)

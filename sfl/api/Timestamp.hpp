@@ -123,7 +123,7 @@ namespace sfl {
        for(distance_history_t::reverse_iterator id(disthist.rbegin());
            id != disthist.rend();
 	   ++id)
-	 cerr << id->first << ": " << id->second << endl;
+	 cerr << id->first << ": " << id->second << "\n";
        \endcode
     */
     friend bool operator < (const Timestamp & left, const Timestamp & right)
@@ -169,7 +169,7 @@ namespace sfl {
          chrono.insert(RandomTimestamp());
        // print the random timestamps in ascending order:
        for(chronology_t::iterator ic(chrono.begin(); ic != chrono.end(); ++ic)
-         cerr << * ic << endl;
+         cerr << * ic << "\n";
        \endcode
     */
     class less {

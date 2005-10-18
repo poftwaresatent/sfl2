@@ -88,6 +88,12 @@ namespace sfl {
     InitForbidden();
 
     _distance_objective.Initialize(& cerr);
+    static const bool check_distance_objective(true);
+    if(check_distance_objective){
+      if( ! _distance_objective.CheckLookup(cerr))
+	abort();
+    }
+    
     _heading_objective.Initialize(0);
     _speed_objective.Initialize(0);
   }
@@ -366,7 +372,7 @@ namespace sfl {
 	  os << "#";
 	else
 	  os << "*";
-      os << endl;
+      os << "\n";
     }
 
     for(int iqdr(_qdrMax); iqdr >= _qdrMin; --iqdr){
@@ -397,7 +403,7 @@ namespace sfl {
 	else
 	  os << "*";
 
-      os << endl;
+      os << "\n";
     }
     
     for(int iqdr(_qdrMin - 1); iqdr >= 0; --iqdr){
@@ -407,7 +413,7 @@ namespace sfl {
 	  os << "#";
 	else
 	  os << "*";
-      os << endl;
+      os << "\n";
     }
   }
   

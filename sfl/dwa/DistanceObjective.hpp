@@ -78,6 +78,7 @@ namespace sfl {
     
     
     void Initialize(std::ostream * progress_stream);
+    bool CheckLookup(std::ostream & os) const;
     void Calculate(unsigned int qdlMin,
 		   unsigned int qdlMax,
 		   unsigned int qdrMin,
