@@ -22,7 +22,9 @@
  */
 
 
-#include <sfl/oa/bband/BubbleFactory.hpp>
+#include "BubbleFactory.hpp"
+
+
 using namespace std;
 
 

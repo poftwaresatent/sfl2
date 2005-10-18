@@ -26,7 +26,7 @@
 #define SUNFLOWER_BUBBLELIST_HPP
 
 
-#include <sfl/oa/bband/Bubble.hpp>
+#include <sfl/bband/Bubble.hpp>
 
 
 namespace sfl {

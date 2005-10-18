@@ -22,7 +22,7 @@
  */
 
 
-#include <sfl/oa/bband/Bubble.hpp>
+#include "Bubble.hpp"
 #include <sfl/util/numeric.hpp>
 #include <cmath>
 

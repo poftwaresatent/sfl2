@@ -31,9 +31,9 @@
 #include <sfl/api/GlobalScan.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/RobotModel.hpp>
-#include <sfl/oa/bband/BubbleList.hpp>
-#include <sfl/oa/bband/BubbleFactory.hpp>
-#include <sfl/oa/bband/ReplanHandler.hpp>
+#include <sfl/bband/BubbleList.hpp>
+#include <sfl/bband/BubbleFactory.hpp>
+#include <sfl/bband/ReplanHandler.hpp>
 
 
 namespace sfl {

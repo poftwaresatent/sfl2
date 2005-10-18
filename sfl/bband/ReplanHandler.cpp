@@ -22,10 +22,10 @@
  */
 
 
-#include <sfl/oa/bband/ReplanHandler.hpp>
-#include <sfl/oa/bband/BubbleList.hpp>
-#include <sfl/oa/bband/BubbleBand.hpp>
-#include <sfl/oa/bband/BubbleFactory.hpp>
+#include "ReplanHandler.hpp"
+#include "BubbleList.hpp"
+#include "BubbleBand.hpp"
+#include "BubbleFactory.hpp"
 
 
 using std::pair;

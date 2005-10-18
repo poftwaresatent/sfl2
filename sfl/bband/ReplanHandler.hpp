@@ -27,8 +27,8 @@
 
 
 #include <sfl/api/Odometry.hpp>
-#include <sfl/oa/gplan/NF1.hpp>
-#include <sfl/oa/bband/BubbleFactory.hpp>
+#include <sfl/gplan/NF1.hpp>
+#include <sfl/bband/BubbleFactory.hpp>
 
 
 namespace sfl {
