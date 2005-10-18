@@ -34,6 +34,7 @@ namespace sfl {
   
   
   class RobotModel;
+  class DiffDrive;
   
   
   /**
@@ -46,27 +47,21 @@ namespace sfl {
   class MotionController
   {
   public:
-    MotionController(const RobotModel & robotModel);
-    
-    virtual ~MotionController() { }
+    MotionController(const RobotModel & robotModel,
+		     DiffDrive & drive);
     
     
     /**
        Template method for determining the next motion command. The
        speeds are set through ProposeSpeed() or
        ProposeActuators(). Applies kinodynamic limits first, then
-       calls the virtual SendMotorCommand() with the resulting
-       velocities.
+       calls DiffDrive::SetSpeed() with the resulting velocities.
        
-       \note Using a separate SendMotorCommand() method allows
-       subclasses to override the way how this information is
-       used. This is useful for simulation or debugging.
+       \note DiffDrive::SetSpeed() will pass the speed commands to the
+       HALProxy.
        
-       \todo ...SendMotorCommand() is kind of redundant with the
-       HALProxy mechanism...
-       
-       \return The return value of the call to SendMotorCommand(),
-       which must be 0 for success.
+       \return The return value of the call to DiffDrive::SetSpeed(),
+       ie 0 for success.
     */
     int Update(/** if non-zero, debug messages are written to dbgos */
 	       std::ostream * dbgos = 0);
@@ -104,20 +99,10 @@ namespace sfl {
     const double _qdStoppable;
     
     const RobotModel & _robotModel;
+    DiffDrive & m_drive;
     
     double _proposedQdl, _proposedQdr;
     double _actualQdl, _actualQdr;
-    
-    /**
-       Called from within Update() template method, passing the freshly
-       calculated _actualQdl, _actualQdr as parameters.
-       
-       \note This method must be overridden by subclasses to implement
-       actual motor control.
-       
-       \return 0 on success.
-    */
-    virtual int SendMotorCommand(double qdl, double qdr) = 0;
   };
 
 }

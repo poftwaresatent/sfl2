@@ -32,16 +32,20 @@ namespace sfl {
   /**
      This class serves as proxy for the hardware abstraction
      layer. This additional indirection makes it possible to keep the
-     object-oriented parts of sunflower highly independent from the
+     object-oriented parts of sunflower sort of independent from the
      HAL implementation. For example, it makes it easy to switch
      between Fred's HAL of Robox and Smartease, using GenoM, or
      working with the nepumuk simulator - all with one and the same
      sunflower code.
 
      \note This class is work in progress depending on the need for
-     sunflower-light and nepumuk-sfl-light development.
+     sunflower and nepumuk development.
+     
+     \todo Turn this into a pure C struct of function pointers in
+     order to ease integration with other existing hardware
+     abstraction layers.
   */
-
+  
   class HALProxy
   {
   public:
@@ -64,7 +68,7 @@ namespace sfl {
     /** \return 0 on success. */
     virtual int hal_speed_set(double qdl, double qdr) = 0;
   };
-
+  
 }
 
 #endif // SUNFLOWER_HAL_PROXY_HPP

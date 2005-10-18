@@ -26,7 +26,7 @@
 #define EXPO_MOTIONPLANNERSTATE_HPP
 
 
-#include <sfl/oa/expo/MotionPlannerFields.hpp>
+#include <sfl/expo/MotionPlannerFields.hpp>
 #include <sfl/api/GlobalScan.hpp>
 #include <cmath>
 #include <string>

@@ -23,7 +23,7 @@
 
 
 #include "MotionPlannerState.hpp"
-#include <sfl/oa/bband/BubbleBand.hpp>
+#include <sfl/bband/BubbleBand.hpp>
 
 
 using sfl::GlobalScan;

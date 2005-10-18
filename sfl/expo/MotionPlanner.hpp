@@ -28,8 +28,8 @@
 
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/MotionPlanner.hpp>
-#include <sfl/oa/expo/MotionPlannerFields.hpp>
-#include <sfl/oa/expo/MotionPlannerState.hpp>
+#include <sfl/expo/MotionPlannerFields.hpp>
+#include <sfl/expo/MotionPlannerState.hpp>
 
 
 namespace expo {

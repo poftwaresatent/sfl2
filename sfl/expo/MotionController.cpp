@@ -23,16 +23,12 @@
 
 
 #include "MotionController.hpp"
-#include <sfl/api/HALProxy.hpp>
 
 
 using sfl::maxval;
 using sfl::minval;
 using sfl::absval;
 using sfl::epsilon;
-using sfl::RobotModel;
-using sfl::DiffDrive;
-using sfl::HALProxy;
 
 
 namespace expo {
@@ -40,19 +36,10 @@ namespace expo {
 
   MotionController::
   MotionController(const std::string & name,
-		   const RobotModel & robotModel,
-		   DiffDrive & drive):
-    sfl::MotionController(robotModel),
-    m_drive(drive)
+		   const sfl::RobotModel & robotModel,
+		   sfl::DiffDrive & drive):
+    sfl::MotionController(robotModel, drive)
   {
-  }
-  
-  
-  int MotionController::
-  SendMotorCommand(double qdl,
-		   double qdr)
-  {
-    return m_drive.SetSpeed(qdl, qdr);
   }
   
   

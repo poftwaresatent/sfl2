@@ -27,7 +27,6 @@
 
 
 #include <sfl/api/MotionController.hpp>
-#include <sfl/api/DiffDrive.hpp>
 
 
 namespace expo {
@@ -45,11 +44,6 @@ namespace expo {
     bool AlmostStraight() const;
     bool Stoppable() const;
     bool Moving() const;
-    
-  protected:
-    sfl::DiffDrive & m_drive;
-    
-    virtual int SendMotorCommand(double qdl, double qdr);
   };
 
 }

@@ -25,6 +25,7 @@
 #include "MotionController.hpp"
 #include "Timestamp.hpp"
 #include "RobotModel.hpp"
+#include "DiffDrive.hpp"
 #include <iostream>
 
 
@@ -32,13 +33,15 @@ namespace sfl {
 
 
   MotionController::
-  MotionController(const RobotModel & robotModel):
+  MotionController(const RobotModel & robotModel,
+		   DiffDrive & drive):
     _qdMax(robotModel.QdMax()),
     _sdMax(robotModel.SdMax()),
     _thetadMax(robotModel.ThetadMax()),
     _deltaQdMax(robotModel.Timestep() * robotModel.QddMax()),
     _qdStoppable(robotModel.Timestep() * robotModel.QddMax()),
     _robotModel(robotModel),
+    m_drive(drive),
     _proposedQdl(0),
     _proposedQdr(0),
     _actualQdl(0),
@@ -94,18 +97,18 @@ namespace sfl {
     if(dbgos != 0)
       (*dbgos) << "  sending : (" << _actualQdl << ", " << _actualQdr << ")\n";
     
-    return SendMotorCommand(_actualQdl, _actualQdr);
+    return m_drive.SetSpeed(_actualQdl, _actualQdr);
   }
   
-
+  
   void MotionController::
   ProposeSpeed(double sd,
 	       double thetad)
   {
     _robotModel.Global2Actuator(sd, thetad, _proposedQdl, _proposedQdr);
   }
-
-
+  
+  
   void MotionController::
   GetSpeed(double & sd,
 	   double & thetad)
@@ -113,8 +116,8 @@ namespace sfl {
   {
     _robotModel.Actuator2Global(_actualQdl, _actualQdr, sd, thetad);
   }
-
-
+  
+  
   void MotionController::
   GetActuators(double & qdLeft,
 	       double & qdRight)
@@ -123,8 +126,8 @@ namespace sfl {
     qdLeft = _actualQdl;
     qdRight = _actualQdr;
   }
-
-
+  
+  
   void MotionController::
   ProposeActuators(double qdLeft,
 		   double qdRight)

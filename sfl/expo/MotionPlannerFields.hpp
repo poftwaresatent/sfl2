@@ -29,9 +29,9 @@
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/RobotModel.hpp>
-#include <sfl/oa/expo/MotionController.hpp>
-#include <sfl/oa/dwa/DynamicWindow.hpp>
-#include <sfl/oa/bband/BubbleBand.hpp>
+#include <sfl/expo/MotionController.hpp>
+#include <sfl/dwa/DynamicWindow.hpp>
+#include <sfl/bband/BubbleBand.hpp>
 
 
 namespace expo {

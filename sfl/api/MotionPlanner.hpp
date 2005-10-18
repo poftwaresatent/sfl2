@@ -37,9 +37,9 @@ namespace sfl {
      avoidance. It is the place where clients set the goal and can
      find out if the robot has reached it.
 
-     \note This is a <em>pure abstract</em> class. The actual
-     implementation of the sunflower obstacle avoidance is in the
-     <code>oa/</code> subdirectory.
+     \note This is a <em>pure abstract</em> class. An actual
+     implementation can be found in the <code>expo/</code>
+     subdirectory.
   */
 
   class MotionPlanner
