@@ -36,10 +36,10 @@ namespace sfl {
   
   
   int Timestamp::
-  Now(HALProxy & halProxy,
+  Now(HALProxy * hal_proxy,
       struct timespec * spec)
   {
-    return halProxy.hal_time_get( * spec);
+    return hal_proxy->hal_time_get( * spec);
   }
   
   

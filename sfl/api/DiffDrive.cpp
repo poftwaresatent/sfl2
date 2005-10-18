@@ -35,10 +35,10 @@ namespace sfl {
   
   
   DiffDrive::
-  DiffDrive(HALProxy & halProxy,
+  DiffDrive(HALProxy * hal_proxy,
 	    double wheelbase,
 	    double wheelradius):
-    m_halProxy(halProxy),
+    m_hal_proxy(hal_proxy),
     m_wheelbase(wheelbase),
     m_wheelradius(wheelradius)
   {
@@ -50,7 +50,7 @@ namespace sfl {
   SetSpeed(double left,
 	   double right)
   {
-    const int res(m_halProxy.hal_speed_set(left, right));
+    const int res(m_hal_proxy->hal_speed_set(left, right));
     if(0 != res)
       return res;
     

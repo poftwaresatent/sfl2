@@ -43,7 +43,7 @@ namespace sfl {
     public Drive
   {
   public:
-    DiffDrive(HALProxy & halProxy,
+    DiffDrive(HALProxy * hal_proxy,
 	      double wheelbase,
 	      double wheelradius);
     
@@ -68,7 +68,7 @@ namespace sfl {
     
     
   protected:
-    HALProxy & m_halProxy;
+    HALProxy * m_hal_proxy;
     
     /** distance between wheel contact points [m] */
     const double m_wheelbase;

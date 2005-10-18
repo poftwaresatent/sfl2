@@ -57,7 +57,7 @@ namespace sfl {
   class Odometry
   {
   public:
-    Odometry(HALProxy & halProxy);
+    Odometry(HALProxy * hal_proxy);
     
     /**
        Initialize history with a pose in world frame. This clears any
@@ -111,7 +111,7 @@ namespace sfl {
     typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
     history_t m_history;
     
-    HALProxy & m_halProxy;
+    HALProxy * m_hal_proxy;
   };
   
 }
