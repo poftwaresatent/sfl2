@@ -198,37 +198,27 @@ namespace sfl {
   CheckLookup(ostream & os)
     const
   {
-    os <<
-      "INFO from DistanceObjective::CheckLookup():\n"
-      "  checking _qdLookup: ";
+    os << "INFO from DistanceObjective::CheckLookup():\n";
     for(unsigned int i = 0; i < _dimension; ++i)
       if(_qdLookup[i] != _dynamic_window.Qd(i)){
-	os << "\n    ERROR _qdLookup[" << i << "] is wrong\n";
+	os << "  ERROR _qdLookup[" << i << "] is wrong\n";
 	return false;
       }
-      else
-	os << ".";
-
-    os << "\n  checking _maxTimeLookup:\n";
+    
     for(unsigned int i = 0; i < _dimension; ++i){
-      os << "    ";
       for(unsigned int j = 0; j < _dimension; ++j)
 	if(_maxTimeLookup[i][j]
 	   !=
 	   maxval(absval(_qdLookup[i]),
 		  absval(_qdLookup[j])) /
 	   _robot_model.QddMax()){
-	  os << "\n    ERROR _maxTimeLookup["<<i<<"]["<<j<<"] is wrong\n";
+	  os << "  ERROR _maxTimeLookup["<<i<<"]["<<j<<"] is wrong\n";
 	  return false;
 	}
-	else
-	  os << ".";
-      os << "\n";
     }
     
-    os << "  checking _timeLookup:\n";
     for(int igy = _dimy - 1; igy >= 0; --igy){
-      os << "    ";
+      os << "  ";
       double y(FindYlength(igy));
       for(int igx = 0; igx < _dimx; ++igx){
 	double x(FindXlength(igx));
@@ -328,15 +318,7 @@ namespace sfl {
     static const bool dump_grid(true);
     if(dump_grid){
       cerr << "DEBUG DistanceObjective::UpdateGrid():\n";
-      for(int igy = _dimy - 1; igy >= 0; --igy){
-	cerr << "  ";
-	for(int igx = 0; igx < _dimx; ++igx)
-	  if(_grid[igx][igy])
-	    cerr << "*";
-	  else
-	    cerr << ".";
-	cerr << "\n";
-      }
+      DumpGrid(cerr, "  ");
     }
   }
   

@@ -111,10 +111,11 @@ namespace sfl {
     { return _paddedHull; }
     boost::shared_ptr<const Polygon> GetEvaluationHull() const
     { return _evaluationHull; }
+    double GetDeltaX() const { return _dx; }
+    double GetDeltaY() const { return _dy; }
     
     void DumpGrid(std::ostream & os, const char * prefix) const;
-
-
+    
   protected:
     const double _securityDistance;
     const double _maxTime;
