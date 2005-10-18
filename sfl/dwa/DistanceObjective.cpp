@@ -306,14 +306,15 @@ namespace sfl {
   void DistanceObjective::
   UpdateGrid(boost::shared_ptr<const Scan> local_scan)
   {
-    const Scan::array_t & ldata(local_scan->data);
-    const size_t nscans(ldata.size());
-    for(size_t is(0); is < nscans; ++is)
-      if((ldata[is].locx >= _x0) &&
-	 (ldata[is].locx <= _x1) && 
-	 (ldata[is].locy >= _y0) &&
-	 (ldata[is].locy <= _y1))
-	_grid[FindXindex(ldata[is].locx)][FindYindex(ldata[is].locy)] = true;
+    const size_t nscans(local_scan->GetNScans());
+    for(size_t is(0); is < nscans; ++is){
+      const Scan::data_t & ldata(local_scan->GetData(is));
+      if((ldata.locx >= _x0) &&
+	 (ldata.locx <= _x1) && 
+	 (ldata.locy >= _y0) &&
+	 (ldata.locy <= _y1))
+	_grid[FindXindex(ldata.locx)][FindYindex(ldata.locy)] = true;
+    }
     
     static const bool dump_grid(true);
     if(dump_grid){

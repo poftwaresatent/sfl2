@@ -43,16 +43,15 @@ namespace sfl {
   {
     _grid.Configure(_grid_dimension, FREE);
   
-    const GlobalScan::array_t & gdata(scan->data);
-    const Scan::array_t & ldata(scan->local_scan->data);
-    const size_t nscans(ldata.size());
-
+    const size_t nscans(scan->GetNScans());
     for(size_t is(0); is < nscans; ++is)
-      if(ldata[is].rho >= robot_radius)
+      if(scan->GetData(is).rho >= robot_radius){
+	const GlobalScan::global_data_t gdata(scan->GetGlobalData(is));
 	_frame.SetGlobalDisk(_grid,
-			     position_t(gdata[is].globx, gdata[is].globy),
+			     position_t(gdata.globx, gdata.globy),
 			     robot_radius,
 			     OBSTACLE);
+      }
     
     _frame.SetGlobalDisk(_grid,
 			 _global_goal,

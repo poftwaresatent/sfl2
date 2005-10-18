@@ -162,7 +162,7 @@ namespace expo {
     
     _fields->dynamicWindow.Update(direction.first,
 				  direction.second,
-				  global_scan->local_scan);
+				  global_scan);
     
     double qdl, qdr;
     if( ! _fields->dynamicWindow.OptimalActuators(qdl, qdr)){

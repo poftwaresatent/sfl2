@@ -114,19 +114,17 @@ namespace sfl {
 
     int count(0);
 
-    const GlobalScan::array_t & gdata(scan->data);
-    const Scan::array_t & ldata(scan->local_scan->data);
-    const size_t nscans(ldata.size());
-    
+    const size_t nscans(scan->GetNScans());
     for(size_t is(0); is < nscans; ++is)
-      if(ldata[is].rho >= ignore_radius){
-	double dx(gdata[is].globx - _position.first);
-	double dy(gdata[is].globy - _position.second);
+      if(scan->GetData(is).rho >= ignore_radius){
+	const GlobalScan::global_data_t & gdata(scan->GetGlobalData(is));
+	double dx(gdata.globx - _position.first);
+	double dy(gdata.globy - _position.second);
 	double r2(dx * dx + dy * dy);
 	if( (r2 < _radius2) || (_radius2 < 0) ){
 	  count++;
-	  _closest.first = gdata[is].globx;
-	  _closest.second = gdata[is].globy;
+	  _closest.first = gdata.globx;
+	  _closest.second = gdata.globy;
 	  _radius2 = r2;
 	}
       }
