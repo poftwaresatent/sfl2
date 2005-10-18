@@ -235,7 +235,7 @@ namespace sfl {
     
     /** \return The Timestamp of the current scan.
 	\note Not meaningfull during ACQUISITION_ERROR! */
-    const Timestamp & GetTimestamp() const { return m_scan.tupper; }
+    const Timestamp & GetTimestamp() const { return m_scan.m_tupper; }
     
     
   protected:

@@ -56,18 +56,6 @@ namespace sfl {
       double locy;
     };
     
-    typedef std::vector<data_t> array_t;
-    
-    
-    /** lower bound of the estimated acquisition time */
-    Timestamp tlower;
-    
-    /** upper bound of the estimated acquisition time */
-    Timestamp tupper;
-    
-    /** array of scan data */
-    array_t data;
-    
     
     /**
        Constructor for empty (zeroed arrays) data sets. By default,
@@ -83,6 +71,30 @@ namespace sfl {
 	 const Timestamp & tupper = Timestamp::Last());
     
     Scan(const Scan & original);
+    
+    
+    size_t GetNScans() const { return m_data.size(); }
+    const Timestamp & GetTLower() const { return m_tlower; }
+    const Timestamp & GetTUpper() const { return m_tupper; }
+    
+    /** \pre index < GetNScans() */
+    const data_t & GetData(size_t index) { return m_data[index]; }
+    
+    
+  protected:
+    friend class Scanner;
+    friend class Multiscanner;
+    
+    typedef std::vector<data_t> array_t;
+    
+    /** lower bound of the estimated acquisition time */
+    Timestamp m_tlower;
+    
+    /** upper bound of the estimated acquisition time */
+    Timestamp m_tupper;
+    
+    /** array of scan data */
+    array_t m_data;
   };
   
 }

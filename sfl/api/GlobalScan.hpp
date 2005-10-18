@@ -38,23 +38,17 @@ namespace sfl {
      Just like Scan, but also contains the scan points in the global
      frame of reference.
   */
-  class GlobalScan
+  class GlobalScan:
+    public Scan
   {
   public:
-    class data_t {
+    class global_data_t {
     public:
       /** x-coordinates [m] in the global frame */      
       double globx;
       /** y-coordinates [m] in the global frame */      
       double globy;
     };
-    
-    typedef std::vector<data_t> array_t;
-    
-    
-    array_t data;
-    const boost::shared_ptr<const Scan> local_scan;
-    const Frame robot_position;
     
     
     /**
@@ -70,6 +64,20 @@ namespace sfl {
 	       boost::shared_ptr<const Scan> local_scan,
 	       /** robot position, for calculating global points */
 	       const Frame & position);
+    
+    
+    const Frame & GetRobotPosition() const { return m_robot_position; }
+    
+    /** \pre index < GetNScans() */
+    const global_data_t & GetGlobalData(size_t index) const
+    { return m_global_data[index]; }
+    
+    
+  protected:
+    typedef std::vector<global_data_t> global_array_t;
+    
+    global_array_t m_global_data;
+    const Frame m_robot_position;
   };
   
 }

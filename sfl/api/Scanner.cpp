@@ -54,10 +54,10 @@ namespace sfl {
     m_sinphi(nscans, 0.0)
   {
     for(size_t i(0); i < m_nscans; ++i){
-      m_scan.data[i].phi = m_phi0 + m_dphi * i;
-      m_cosphi[i] = cos(m_scan.data[i].phi);
-      m_sinphi[i] = sin(m_scan.data[i].phi);
-      m_scan.data[i].rho = m_rhomax;
+      m_scan.m_data[i].phi = m_phi0 + m_dphi * i;
+      m_cosphi[i] = cos(m_scan.m_data[i].phi);
+      m_sinphi[i] = sin(m_scan.m_data[i].phi);
+      m_scan.m_data[i].rho = m_rhomax;
     }
   }
   
@@ -74,9 +74,9 @@ namespace sfl {
     
     // cache local coordinates
     for(size_t i(0); i < m_nscans; ++i){
-      m_scan.data[i].locx = m_scan.data[i].rho * m_cosphi[i];
-      m_scan.data[i].locy = m_scan.data[i].rho * m_sinphi[i];
-      m_mount.To(m_scan.data[i].locx, m_scan.data[i].locy);
+      m_scan.m_data[i].locx = m_scan.m_data[i].rho * m_cosphi[i];
+      m_scan.m_data[i].locy = m_scan.m_data[i].rho * m_sinphi[i];
+      m_mount.To(m_scan.m_data[i].locx, m_scan.m_data[i].locy);
     }
     
     return 0;
@@ -94,10 +94,10 @@ namespace sfl {
     if(index >= m_nscans)
       return INDEX_ERROR;
     
-    x = m_scan.data[index].locx;
-    y = m_scan.data[index].locy;
+    x = m_scan.m_data[index].locx;
+    y = m_scan.m_data[index].locy;
     
-    if(m_scan.data[index].rho >= m_rhomax)
+    if(m_scan.m_data[index].rho >= m_rhomax)
       return OUT_OF_RANGE;
     return SUCCESS;
   }
@@ -113,9 +113,9 @@ namespace sfl {
     if(index >= m_nscans)
       return INDEX_ERROR;
     
-    rho = m_scan.data[index].rho;
+    rho = m_scan.m_data[index].rho;
     
-    if(m_scan.data[index].rho >= m_rhomax)
+    if(m_scan.m_data[index].rho >= m_rhomax)
       return OUT_OF_RANGE;    
     return SUCCESS;
   }
@@ -128,7 +128,7 @@ namespace sfl {
   {
     if(index >= m_nscans)
       return INDEX_ERROR;
-    phi = m_scan.data[index].phi;
+    phi = m_scan.m_data[index].phi;
     return SUCCESS;
   }
   

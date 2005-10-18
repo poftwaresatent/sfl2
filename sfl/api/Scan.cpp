@@ -30,20 +30,20 @@ namespace sfl {
   
   Scan::
   Scan(size_t nscans,
-       const Timestamp & _tlower,
-       const Timestamp & _tupper):
-    tlower(_tlower),
-    tupper(_tupper),
-    data(nscans)
+       const Timestamp & tlower,
+       const Timestamp & tupper):
+    m_tlower(tlower),
+    m_tupper(tupper),
+    m_data(nscans)
   {
   }
   
   
   Scan::
   Scan(const Scan & original):
-    tlower(original.tlower),
-    tupper(original.tupper),
-    data(original.data)
+    m_tlower(original.m_tlower),
+    m_tupper(original.m_tupper),
+    m_data(original.m_data)
   {
   }
   

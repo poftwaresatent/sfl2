@@ -70,18 +70,18 @@ namespace sfl {
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
       shared_ptr<Scanner> scanner(m_scanner[iScanner]);
       
-      if(scanner->GetTimestamp() < result->tlower)
-	result->tlower = scanner->GetTimestamp();
-      if(scanner->GetTimestamp() > result->tupper)
-	result->tupper = scanner->GetTimestamp();
+      if(scanner->GetTimestamp() < result->m_tlower)
+	result->m_tlower = scanner->GetTimestamp();
+      if(scanner->GetTimestamp() > result->m_tupper)
+	result->m_tupper = scanner->GetTimestamp();
       
       for(size_t iRay(0); iRay < scanner->Nscans(); ++iRay, ++iOverall){
 	double x, y;
 	if(scanner->GetLocal(iRay, x, y) == Scanner::SUCCESS){
-	  result->data[iOverall].locx = x;
-	  result->data[iOverall].locy = y;
-	  result->data[iOverall].phi = atan2(y, x);
-	  result->data[iOverall].rho = sqrt(x*x + y*y);
+	  result->m_data[iOverall].locx = x;
+	  result->m_data[iOverall].locy = y;
+	  result->m_data[iOverall].phi = atan2(y, x);
+	  result->m_data[iOverall].rho = sqrt(x*x + y*y);
 	}
       }
     }

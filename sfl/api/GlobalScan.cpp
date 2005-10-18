@@ -32,16 +32,16 @@ namespace sfl {
   
   
   GlobalScan::
-  GlobalScan(shared_ptr<const Scan> _local_scan,
+  GlobalScan(shared_ptr<const Scan> local_scan,
 	     const Frame & position):
-    data(_local_scan->data.size()),
-    local_scan(_local_scan),
-    robot_position(position)
+    Scan(*local_scan),
+    m_global_data(local_scan->GetNScans()),
+    m_robot_position(position)
   {
-    for(size_t i(0); i < data.size(); ++i){
-      data[i].globx = _local_scan->data[i].locx;
-      data[i].globy = _local_scan->data[i].locy;
-      robot_position.To(data[i].globx, data[i].globy);
+    for(size_t i(0); i < m_global_data.size(); ++i){
+      m_global_data[i].globx = m_data[i].locx;
+      m_global_data[i].globy = m_data[i].locy;
+      m_robot_position.To(m_global_data[i].globx, m_global_data[i].globy);
     }
   }
   
