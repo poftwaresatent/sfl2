@@ -257,7 +257,8 @@ namespace sfl {
     Scan::data_t & Data(size_t index) { return m_scan.m_data[index]; }
     
     /** For privileged const access in subclasses and their friends. */
-    const Scan::data_t & Data(size_t index) const { return Data(index); }
+    const Scan::data_t & Data(size_t index) const
+    { return m_scan.m_data[index]; }
     
     void SetTLower(const Timestamp & t) { m_scan.m_tlower = t; }
     void SetTUpper(const Timestamp & t) { m_scan.m_tupper = t; }
