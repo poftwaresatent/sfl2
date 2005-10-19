@@ -253,7 +253,12 @@ namespace sfl {
     vector_t m_sinphi;
     
     
-    void SetRho(size_t i, double r) { m_scan.m_data[i].rho = r; }
+    /** Privileged access to subclasses, ie Lidar in nepumuk simulator. */
+    Scan::data_t & Data(size_t index) { return m_scan.m_data[index]; }
+    
+    /** For privileged const access in subclasses and their friends. */
+    const Scan::data_t & Data(size_t index) const { return Data(index); }
+    
     void SetTLower(const Timestamp & t) { m_scan.m_tlower = t; }
     void SetTUpper(const Timestamp & t) { m_scan.m_tupper = t; }
   };
