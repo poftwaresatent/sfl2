@@ -104,4 +104,22 @@ namespace sfl {
     return shared_ptr<GlobalScan>(new GlobalScan(CollectScans(), position));
   }
   
+  
+  size_t Multiscanner::
+  ComputeOffset(boost::shared_ptr<const Scanner> scanner)
+    const
+  {
+    size_t off(0);
+    for(vector_t::const_iterator is(m_scanner.begin());
+	is != m_scanner.end();
+	++is){
+      if(scanner == *is)
+	return off;
+      off += (*is)->Nscans();
+    }
+    cerr << "WARNING in Multiscanner::ComputeOffset():\n"
+	 << "  scanner not registered, returning 0\n";
+    return 0;
+  }
+  
 }

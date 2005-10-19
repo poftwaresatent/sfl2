@@ -87,6 +87,12 @@ namespace sfl {
     boost::shared_ptr<GlobalScan>
     CollectGlobalScans(const Frame & position) const;
     
+    /** Mainly for debugging, returns the offset of a scanner's data
+	in the collected scan object. This is usually not needed and
+	determined implicitly inside CollectScans() and
+	CollectGlobalScans().*/
+    size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
+    
     
   protected:
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
