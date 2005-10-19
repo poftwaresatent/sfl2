@@ -227,9 +227,11 @@ namespace sfl {
     /** \return The angular range [rad] swept by a scan. */
     double PhiRange() const { return m_phirange; }
     
-    /** \return The Timestamp of the current scan.
-	\note Not meaningfull during ACQUISITION_ERROR! */
-    const Timestamp & GetTimestamp() const { return m_scan.m_tupper; }
+    /** \note Not meaningfull during ACQUISITION_ERROR! */
+    const Timestamp & Tupper() const { return m_scan.m_tupper; }
+    
+    /** \note Not meaningfull during ACQUISITION_ERROR! */
+    const Timestamp & Tlower() const { return m_scan.m_tlower; }
     
     
   protected:
@@ -252,6 +254,8 @@ namespace sfl {
     
     
     void SetRho(size_t i, double r) { m_scan.m_data[i].rho = r; }
+    void SetTLower(const Timestamp & t) { m_scan.m_tlower = t; }
+    void SetTUpper(const Timestamp & t) { m_scan.m_tupper = t; }
   };
   
 }

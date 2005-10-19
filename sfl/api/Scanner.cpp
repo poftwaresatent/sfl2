@@ -69,13 +69,17 @@ namespace sfl {
   int Scanner::
   Update()
   {
-    m_data_ok = false;
+    // NOTE: It's important to set m_data_ok to true before calling
+    // m_hal->scan_get() because in nepumuk's HAL implementation, that
+    // ends up querying this Scanner instance about rho!
+    m_data_ok = true;
     double rho[m_nscans];
     struct ::timespec t0, t1;
     const int res(m_hal->scan_get(m_hal_channel, rho, m_nscans, &t0, &t1));
-    if(0 != res)
+    if(0 != res){
+      m_data_ok = false;
       return res;
-    m_data_ok = true;
+    }
     
     m_scan.m_tlower = t0;
     m_scan.m_tupper = t1;

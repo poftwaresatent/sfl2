@@ -70,10 +70,10 @@ namespace sfl {
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
       shared_ptr<Scanner> scanner(m_scanner[iScanner]);
       
-      if(scanner->GetTimestamp() < result->m_tlower)
-	result->m_tlower = scanner->GetTimestamp();
-      if(scanner->GetTimestamp() > result->m_tupper)
-	result->m_tupper = scanner->GetTimestamp();
+      if(scanner->Tlower() < result->m_tlower)
+	result->m_tlower = scanner->Tlower();
+      if(scanner->Tupper() > result->m_tupper)
+	result->m_tupper = scanner->Tupper();
       
       for(size_t iRay(0); iRay < scanner->Nscans(); ++iRay, ++iOverall){
 	double x, y;

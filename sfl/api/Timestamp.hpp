@@ -61,8 +61,7 @@ namespace sfl {
        
        \return 0 on success.
     */
-    static int Now(HAL * hal,
-		   struct ::timespec * spec);
+    static int Now(HAL * hal, struct ::timespec * spec);
     
     /**
        \return A (static) Timestamp of the last representable
