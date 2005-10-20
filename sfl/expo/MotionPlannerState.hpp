@@ -45,6 +45,13 @@ namespace expo {
   public:
     virtual ~MotionPlannerState();
   
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     virtual void Act(boost::shared_ptr<const sfl::GlobalScan> global_scan) = 0;
     virtual MotionPlannerState * NextState();
 
@@ -61,20 +68,55 @@ namespace expo {
     MotionPlannerFields * _fields;
     std::string _name;
 
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     virtual direction_t
     GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan) = 0;
     
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void
     TurnToward(direction_t local_direction,
 	       boost::shared_ptr<const sfl::GlobalScan> global_scan) const;
     
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void
     GoAlong(direction_t local_direction,
 	    boost::shared_ptr<const sfl::GlobalScan> global_scan) const;
     
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     direction_t
     AskBubbleBand(boost::shared_ptr<const sfl::GlobalScan> global_scan) const;
     
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void
     AskDynamicWindow(direction_t local_direction,
 		     boost::shared_ptr<const sfl::GlobalScan> global_scan)

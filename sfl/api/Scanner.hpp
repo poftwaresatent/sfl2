@@ -148,6 +148,14 @@ namespace sfl {
        \return The current scan as an encapsulated data set unless an
        error occurred during the previous call to Update(), in which
        case a "zero" pointer is returned.
+       
+       \note The returned Scan object uses (phi, rho) relative to the
+       sensor origin and can still contain readings that are out of
+       range. Some consumers of Scan objects expect (phi, rho)
+       relative to the robot origin and / or do not handle
+       out-of-range readings very well. Consider using
+       Multiscanner::CollectScans() or
+       Multiscanner::CollectGlobalScans() in such cases.
     */
     boost::shared_ptr<Scan> GetScanCopy() const;
     

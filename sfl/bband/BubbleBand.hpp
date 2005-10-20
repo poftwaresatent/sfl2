@@ -57,9 +57,25 @@ namespace sfl {
     
     void SetGoal(const Goal & global_goal);
     void SetNF1GoalRadius(double r);
+    
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     bool AppendGoal(const Goal & global_goal,
 		    boost::shared_ptr<const GlobalScan> scan);
     bool AppendTarget(const Goal & global_goal);
+    
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     int Update(boost::shared_ptr<const GlobalScan> scan);
     
     std::pair<double, double> GetSubGoal() const;

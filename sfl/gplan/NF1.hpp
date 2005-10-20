@@ -40,7 +40,14 @@ namespace sfl {
   {
   public:
     NF1();
-
+    
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void Initialize(boost::shared_ptr<const GlobalScan> scan,
 		    double robot_radius,
 		    double goal_radius);

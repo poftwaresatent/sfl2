@@ -57,6 +57,13 @@ namespace sfl {
     ~BubbleList();
     
     
+    /** \note The GlobalScan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     bool Update(boost::shared_ptr<const GlobalScan> scan);
     
     /** Appends to the list of bubbles (or initailizes if empty list). */
@@ -105,6 +112,13 @@ namespace sfl {
 	and external parameters, apply forces, re-compute external
 	parameters.
 	
+	\note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho value).
+
 	\todo Remove the re-computating of external parameters! */
     void UpdateBubbles(boost::shared_ptr<const GlobalScan> scan);
     
@@ -132,9 +146,24 @@ namespace sfl {
 	
 	\return true if a new bubble has been inserted.
 	
-	\note Even if this method returns true, that is not a garantee
-	that the overlap is now sufficient. This should be checked in
-	a loop "above" this method. */
+	\note
+	<ul>
+	 <li>
+	  Even if this method returns true, that is not a garantee
+	  that the overlap is now sufficient. This should be checked
+	  in a loop "above" this method.
+	 </li>
+	 <li>
+	  The GlobalScan object should be filtered, ie contain only
+	  valid readings. This can be obtained from
+	  Multiscanner::CollectScans() and
+	  Multiscanner::CollectGlobalScans(), whereas
+	  Scanner::GetScanCopy() can still contain readings that are
+	  out of range (represented as readings at the maximum rho
+	  value).
+	 </li>
+	</ul>
+    */
     bool CheckAdd(Bubble * bubble, boost::shared_ptr<const GlobalScan> scan);
     
     /** Initializes the list of bubbles. */

@@ -65,9 +65,18 @@ namespace sfl {
     void Configure(double cutoff_distance,
 		   std::pair<double, double> position);
     void CopyConstruct(const Bubble & original);
+    
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void
     UpdateExternalParameters(boost::shared_ptr<const GlobalScan> scan,
 			     double ignore_radius);
+    
     void ResetInternalParameters();
     void UpdateInternalParameters();
     void ApplyForces();

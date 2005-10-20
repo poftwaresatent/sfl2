@@ -24,6 +24,11 @@
 
 #include "GlobalScan.hpp"
 
+#define DEBUG_GLOBAL_SCAN
+#ifdef DEBUG_GLOBAL_SCAN
+# include <cstdio>
+#endif // DEBUG_GLOBAL_SCAN
+
 
 using boost::shared_ptr;
 
@@ -38,10 +43,22 @@ namespace sfl {
     m_global_data(local_scan->GetNScans()),
     m_robot_position(position)
   {
+#ifdef DEBUG_GLOBAL_SCAN
+    printf("DEBUG sfl::GlobalScan ctor:\n"
+	   "  [idx] (phi, rho) ( lx,  ly) ( gx,  gy)\n");
+#endif // DEBUG_GLOBAL_SCAN
+    
     for(size_t i(0); i < m_global_data.size(); ++i){
       m_global_data[i].globx = m_data[i].locx;
       m_global_data[i].globy = m_data[i].locy;
       m_robot_position.To(m_global_data[i].globx, m_global_data[i].globy);
+      
+#ifdef DEBUG_GLOBAL_SCAN
+      printf("  [%03d] (%3.1f, %3.1f) (%3.1f, %3.1f) (%3.1f, %3.1f)\n",
+	     i, m_data[i].phi, m_data[i].rho,
+	     m_data[i].locx, m_data[i].locy,
+	     m_global_data[i].globx, m_global_data[i].globy);
+#endif // DEBUG_GLOBAL_SCAN
     }
   }
   

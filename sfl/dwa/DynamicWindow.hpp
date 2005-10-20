@@ -86,8 +86,18 @@ namespace sfl {
     bool Reachable(int qdlIndex, int qdrIndex) const;
     double Qd(int index) const;
 
-    /** \note (dx, dy) is the (sub-) goal point in local coordinates. */
-    void Update(double dx, double dy, boost::shared_ptr<const Scan> local_scan,
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
+    void Update(/** local goal x component */
+		double dx,
+		/** local goal y component */
+		double dy,
+		boost::shared_ptr<const Scan> local_scan,
 		std::ostream * dbgos = 0);
 
     void GetSubGoal(double & local_x, double & local_y) const;

@@ -79,6 +79,14 @@ namespace sfl {
     
     void Initialize(std::ostream * progress_stream);
     bool CheckLookup(std::ostream & os) const;
+
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void Calculate(unsigned int qdlMin,
 		   unsigned int qdlMax,
 		   unsigned int qdrMin,
@@ -138,6 +146,14 @@ namespace sfl {
       _timeLookup;
 
     void ResetGrid();
+    
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void UpdateGrid(boost::shared_ptr<const Scan> local_scan);
     double MinTime(unsigned int iqdl, unsigned int iqdr);
 

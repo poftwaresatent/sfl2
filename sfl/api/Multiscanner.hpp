@@ -64,7 +64,7 @@ namespace sfl {
        returned Scan instance, so Scan::Nscans() might return a number
        smaller than what you would expect from the sum of
        Scanner::Nscans().
-
+       
        Timestamps of the returned Scan correspond to the minimum and
        maximum Timestamp of all registered Scanners. Even if a Scanner
        provides no data (e.g. all values are out of range), its
@@ -80,9 +80,6 @@ namespace sfl {
     /**
        Like CollectScans() but also transforms the scan to global
        coordinates and returns a global scan object.
-       
-       \todo IMPORTANT: Check if this implementation does performs an
-       extra temporary copy of the whole arrays.
     */
     boost::shared_ptr<GlobalScan>
     CollectGlobalScans(const Frame & position) const;

@@ -38,6 +38,7 @@ namespace sfl {
   class BubbleList;		// circular dep.
 
 
+  /** \todo <b>IMPORTANT AND URGENT</b>: Remove the hacked thread emulation! */
   class ReplanHandler
   {
   public:
@@ -55,7 +56,15 @@ namespace sfl {
 		  BubbleFactory & bubble_factory);
     ~ReplanHandler();
 
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
     void UpdateEmulation(boost::shared_ptr<const GlobalScan> scan);
+    
     void StartNewThread();
     void Abort();
 
