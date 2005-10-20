@@ -28,7 +28,6 @@
 
 
 using boost::shared_ptr;
-using namespace std;
 
 
 namespace sfl {
@@ -64,9 +63,9 @@ namespace sfl {
   CollectScans()
     const
   {
-    shared_ptr<Scan> result(new Scan(m_total_nscans));
+    // initialize to zero size, just add VALID data
+    shared_ptr<Scan> result(new Scan(0));
     
-    size_t iOverall(0);		// incremented in nested loop
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
       shared_ptr<Scanner> scanner(m_scanner[iScanner]);
       
@@ -75,22 +74,18 @@ namespace sfl {
       if(scanner->Tupper() > result->m_tupper)
 	result->m_tupper = scanner->Tupper();
       
-      for(size_t iRay(0); iRay < scanner->Nscans(); ++iRay, ++iOverall){
+      for(size_t iRay(0); iRay < scanner->Nscans(); ++iRay){
 	double x, y;
+	// note: only add valid data, not even OUT_OF_RANGE!
 	if(scanner->GetLocal(iRay, x, y) == Scanner::SUCCESS){
-	  result->m_data[iOverall].locx = x;
-	  result->m_data[iOverall].locy = y;
-	  result->m_data[iOverall].phi = atan2(y, x);
-	  result->m_data[iOverall].rho = sqrt(x*x + y*y);
+	  Scan::data_t data;
+	  data.phi = atan2(y, x);
+	  data.rho = sqrt(x*x + y*y);
+	  data.locx = x;
+	  data.locy = y;
+	  result->m_data.push_back(data);
 	}
       }
-    }
-    if(iOverall != m_total_nscans){
-      cerr << "BUG in Multiscanner::CollectScans():\n"
-	   << "  iOverall != m_total_nscans\n"
-	   << "  iOverall == " << iOverall << "\n"
-	   << "  m_total_nscans == " << m_total_nscans << "\n";
-      abort();
     }
     
     return result;
@@ -117,8 +112,8 @@ namespace sfl {
 	return off;
       off += (*is)->Nscans();
     }
-    cerr << "WARNING in Multiscanner::ComputeOffset():\n"
-	 << "  scanner not registered, returning 0\n";
+    std::cerr << "WARNING in Multiscanner::ComputeOffset():\n"
+	      << "  scanner not registered, returning 0\n";
     return 0;
   }
   
