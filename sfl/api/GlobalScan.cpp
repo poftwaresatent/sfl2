@@ -24,7 +24,7 @@
 
 #include "GlobalScan.hpp"
 
-#define DEBUG_GLOBAL_SCAN
+#undef DEBUG_GLOBAL_SCAN
 #ifdef DEBUG_GLOBAL_SCAN
 # include <cstdio>
 #endif // DEBUG_GLOBAL_SCAN

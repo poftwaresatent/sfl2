@@ -316,7 +316,7 @@ namespace sfl {
 	_grid[FindXindex(ldata.locx)][FindYindex(ldata.locy)] = true;
     }
     
-    static const bool dump_grid(true);
+    static const bool dump_grid(false);
     if(dump_grid){
       cerr << "DEBUG DistanceObjective::UpdateGrid():\n";
       DumpGrid(cerr, "  ");
