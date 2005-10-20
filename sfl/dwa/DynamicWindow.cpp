@@ -88,7 +88,7 @@ namespace sfl {
     InitForbidden();
 
     _distance_objective.Initialize(& cerr);
-    static const bool check_distance_objective(true);
+    static const bool check_distance_objective(false);
     if(check_distance_objective){
       if( ! _distance_objective.CheckLookup(cerr))
 	abort();
