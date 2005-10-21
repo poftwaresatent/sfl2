@@ -1,2 +1,2 @@
 Import('env')
-SConscript(dirs = ['bband', 'dwa', 'expo', 'gplan', 'util', 'api'])
+SConscript(dirs = ['bband', 'dwa', 'expo', 'gplan', 'util', 'api', 'cwrap'])
