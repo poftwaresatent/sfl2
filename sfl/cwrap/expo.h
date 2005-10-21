@@ -24,6 +24,7 @@
 extern "C" {
 #endif // __cplusplus
   
+#include <sfl/cwrap/hal.h>
 #include <stdio.h>
   
 
@@ -38,7 +39,9 @@ extern "C" {
      \note Use expo_destroy() to release the handle after you've
      finished using the Expo.02 obstacle avoidance system.
   */
-  int expo_create(/** for error messages */
+  int expo_create(/** hardware abstraction layer for the expo system */
+		  struct cwrap_hal_s * cwrap_hal,
+		  /** for error messages */
 		  FILE * msg);
   
   

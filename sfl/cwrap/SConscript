@@ -1,5 +1,5 @@
 Import('env')
 sources = 'expo.cpp'
-headers = 'expo.h'
+headers = ['expo.h', 'hal.h']
 env.StageLibrary(env.StaticLibrary('sflcwrap', sources))
 env.StageHeader('sfl/cwrap', headers)

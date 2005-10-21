@@ -52,8 +52,43 @@ using std::map;
 using std::make_pair;
 
 
+class CWrapHAL: public HAL {
+public:
+  CWrapHAL(struct cwrap_hal_s * hal) : m_hal(hal) { }
+  
+  virtual int time_get(struct ::timespec * stamp)
+  { return m_hal->time_get(stamp); }
+  
+  virtual int odometry_set(double x, double y, double theta,
+			   double sxx, double syy, double stt,
+			   double sxy, double sxt, double syt)
+  { return m_hal->odometry_set(x, y, theta,
+			       sxx, syy, stt,
+			       sxy, sxt, syt); }
+  
+  virtual int odometry_get(struct ::timespec * stamp,
+			   double * x, double * y, double * theta,
+			   double * sxx, double * syy, double * stt,
+			   double * sxy, double * sxt, double * syt)
+  { return m_hal->odometry_get(stamp, x, y, theta,
+			       sxx, syy, stt,
+			       sxy, sxt, syt); }
+  
+  virtual int speed_set(double qdl, double qdr)
+  { return m_hal->speed_set(qdl, qdr); }
+  
+  virtual int scan_get(int channel, double * rho, int rho_len,
+		       struct ::timespec * t0, struct ::timespec * t1)
+  { return m_hal->scan_get(channel, rho, rho_len, t0, t1); }
+  
+private:
+  struct cwrap_hal_s * m_hal;
+};
+
+
 class Handle {
 public:
+  scoped_ptr<CWrapHAL>         hal;
   shared_ptr<Scanner>          front_sick;
   shared_ptr<Scanner>          rear_sick;
   scoped_ptr<DiffDrive>        drive;
@@ -70,11 +105,13 @@ public:
 static map<int, shared_ptr<Handle> > handle_map;
 
 
-int expo_create(FILE * msg)
+int expo_create(struct cwrap_hal_s * cwrap_hal,
+		FILE * msg)
 {
   shared_ptr<Handle> handle(new Handle());
   
-  HAL * hal(0);
+  handle->hal.reset(new CWrapHAL(cwrap_hal));
+  
   int front_sick_channel(0);
   double front_sick_x(0.15);
   double front_sick_y(0);
@@ -83,7 +120,7 @@ int expo_create(FILE * msg)
   double sick_rhomax(8);
   double sick_phi0(-M_PI/2);
   double sick_phirange(M_PI);
-  handle->front_sick.reset(new Scanner(hal, front_sick_channel,
+  handle->front_sick.reset(new Scanner(handle->hal.get(), front_sick_channel,
 				       "front_sick",
 				       Frame(front_sick_x,
 					     front_sick_y,
@@ -97,7 +134,7 @@ int expo_create(FILE * msg)
   double rear_sick_x(-0.3);
   double rear_sick_y(0);
   double rear_sick_theta(-M_PI/2);
-  handle->rear_sick.reset(new Scanner(hal, rear_sick_channel,
+  handle->rear_sick.reset(new Scanner(handle->hal.get(), rear_sick_channel,
 				      "rear_sick",
 				      Frame(rear_sick_x,
 					    rear_sick_y,
@@ -109,7 +146,8 @@ int expo_create(FILE * msg)
   
   double wheelbase(0.6);
   double wheelradius(0.09);
-  handle->drive.reset(new DiffDrive(hal, wheelbase, wheelradius));
+  handle->drive.reset(new DiffDrive(handle->hal.get(),
+				    wheelbase, wheelradius));
   
   double timestep(0.1);
   double security_distance(0.05);
@@ -162,7 +200,7 @@ int expo_create(FILE * msg)
 						 dwa_alpha_heading,
 						 dwa_alpha_speed));
   
-  handle->odometry.reset(new Odometry(hal));
+  handle->odometry.reset(new Odometry(handle->hal.get()));
   
   double bb_shortpath(4);
   double bb_longpath(8);
