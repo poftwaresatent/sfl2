@@ -23,56 +23,45 @@
 
 
 #include "NF1Wave.hpp"
-#include "GridLayer.hpp"
 #include "GridPlanner.hpp"
-
+#include <limits>
 
 
 namespace sfl {
-
-
-
-  NF1Wave::indexlist_t NF1Wave::__propagation_neighbor;
-  NF1Wave::indexlist_t NF1Wave::__gradient_neighbor;
-
-
-
+  
+  
+  NF1Wave::indexlist_t NF1Wave::propagation_neighbor;
+  NF1Wave::indexlist_t NF1Wave::gradient_neighbor;
+  
+  
   NF1Wave::
   NF1Wave()
   {
-    if(__propagation_neighbor.size() == 0){
-      __propagation_neighbor.push_back(index_t( 1,  0));
-      __propagation_neighbor.push_back(index_t( 0,  1));
-      __propagation_neighbor.push_back(index_t(-1,  0));
-      __propagation_neighbor.push_back(index_t( 0, -1));
-
-      __gradient_neighbor.push_back(index_t( 1,  0));
-      __gradient_neighbor.push_back(index_t( 1,  1));
-      __gradient_neighbor.push_back(index_t( 0,  1));
-      __gradient_neighbor.push_back(index_t(-1,  1));
-      __gradient_neighbor.push_back(index_t(-1,  0));
-      __gradient_neighbor.push_back(index_t(-1, -1));
-      __gradient_neighbor.push_back(index_t( 0, -1));
-      __gradient_neighbor.push_back(index_t( 1, -1));
+    if(propagation_neighbor.size() == 0){
+      propagation_neighbor.push_back(index_t( 1,  0));
+      propagation_neighbor.push_back(index_t( 0,  1));
+      propagation_neighbor.push_back(index_t(-1,  0));
+      propagation_neighbor.push_back(index_t( 0, -1));
+      
+      gradient_neighbor.push_back(index_t( 1,  0));
+      gradient_neighbor.push_back(index_t( 1,  1));
+      gradient_neighbor.push_back(index_t( 0,  1));
+      gradient_neighbor.push_back(index_t(-1,  1));
+      gradient_neighbor.push_back(index_t(-1,  0));
+      gradient_neighbor.push_back(index_t(-1, -1));
+      gradient_neighbor.push_back(index_t( 0, -1));
+      gradient_neighbor.push_back(index_t( 1, -1));
     }
   }
-
-
-
-  NF1Wave::
-  ~NF1Wave()
-  {
-  }
-
-
-
+  
+  
   void NF1Wave::
   Propagate(GridLayer & grid)
     const
   {
     indexlist_t current;
-    indexlist_t next = _seed;
-  
+    indexlist_t next = m_seed;
+    
     while(next.size() != 0){
       next.swap(current);
       next.clear();
@@ -82,8 +71,8 @@ namespace sfl {
 	  ++i_cell){
 	double nextval(grid.Get(*i_cell) + 1);
 	
-	for(indexlist_t::const_iterator i_nbor(__propagation_neighbor.begin());
-	    i_nbor != __propagation_neighbor.end();
+	for(indexlist_t::const_iterator i_nbor(propagation_neighbor.begin());
+	    i_nbor != propagation_neighbor.end();
 	    ++i_nbor){
 	  index_t nbor(*i_nbor);
 	  nbor.first  += i_cell->first;
@@ -101,20 +90,18 @@ namespace sfl {
       }
     }
   }
-
-
-
+  
+  
   NF1Wave::index_t NF1Wave::
   SmallestNeighbor(GridLayer & grid,
 		   index_t index)
     const
   {
-    static const double MAGIC = -123; // hax
-    double minval(MAGIC);
+    double minval(std::numeric_limits<double>::max());
     index_t result(-1, -1);
-
-    for(indexlist_t::const_iterator i_nbor(__gradient_neighbor.begin());
-	i_nbor != __gradient_neighbor.end();
+    
+    for(indexlist_t::const_iterator i_nbor(gradient_neighbor.begin());
+	i_nbor != gradient_neighbor.end();
 	++i_nbor){
       index_t nbor(*i_nbor);
       nbor.first  += index.first;
@@ -125,8 +112,8 @@ namespace sfl {
       
       double gridval = grid.Get(nbor);
       
-      if((gridval >= 0) &&
-	 ((gridval < minval) || (minval == MAGIC))){
+      if((gridval >= 0)
+	 && (gridval < minval)){
 	result = nbor;
 	minval = gridval;
       }
@@ -136,5 +123,17 @@ namespace sfl {
   }
   
   
-  
+  void NF1Wave::
+  Reset()
+  {
+    m_seed.clear();//erase(m_seed.begin(), m_seed.end());
+  }
+
+
+
+  void NF1Wave::
+  AddSeed(index_t index)
+  {
+    m_seed.push_back(index);
+  }
 }

@@ -26,34 +26,33 @@
 #define SUNFLOWER_NF1WAVE_H
 
 
-
-#include <sfl/gplan/Wave.hpp>
-
+#include <sfl/gplan/GridLayer.hpp>
 
 
 namespace sfl {
-
-
-
-class NF1Wave:
-  public Wave
-{
-public:
-  NF1Wave();
-  ~NF1Wave();
-
-  void Propagate(GridLayer & grid) const;
-
-  index_t SmallestNeighbor(GridLayer & grid,
-			   index_t index) const;
-
-
-private:
-  static indexlist_t __propagation_neighbor;
-  static indexlist_t __gradient_neighbor;
-};
-
-
+  
+  
+  class NF1Wave
+  {
+  public:
+    typedef GridLayer::index_t index_t;
+    
+    NF1Wave();
+    ~NF1Wave();
+    
+    void Reset();
+    void AddSeed(index_t index);
+    void Propagate(GridLayer & grid) const;
+    index_t SmallestNeighbor(GridLayer & grid, index_t index) const;
+    
+  private:
+    typedef std::vector<index_t> indexlist_t;
+    
+    static indexlist_t propagation_neighbor;
+    static indexlist_t gradient_neighbor;
+    indexlist_t m_seed;
+  };
+  
 }
 
 #endif // SUNFLOWER_NF1WAVE_H
