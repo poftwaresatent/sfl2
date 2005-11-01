@@ -137,8 +137,9 @@ namespace expo {
     const
   {
     direction_t ret;
-  
-    if(_fields->bubbleBand.Update(global_scan) == sfl::BubbleBand::NOBAND)
+    
+    _fields->bubbleBand.Update(global_scan);
+    if(_fields->bubbleBand.GetState() == sfl::BubbleBand::NOBAND)
       ret = make_pair(_fields->goal.X(), _fields->goal.Y());
     else
       ret = _fields->bubbleBand.GetSubGoal();
