@@ -26,58 +26,49 @@
 #define SUNFLOWER_GRIDFRAME_HPP
 
 
-
 #include <sfl/gplan/GridLayer.hpp>
 #include <sfl/util/Frame.hpp>
 #include <utility>
 
 
-
 namespace sfl {
-
-
-
+  
+  
   class GridFrame
   {
   public:
     typedef GridLayer::index_t index_t;
     typedef std::pair<double, double> position_t;
-
-
+    
     GridFrame();
-
+    
     void Configure(double position_x,
 		   double position_y,
 		   double position_theta,
 		   double delta);
-
+    
     index_t GlobalIndex(position_t point) const;
     index_t LocalIndex(position_t point) const;
-
+    
     position_t GlobalPoint(index_t index) const;
     position_t LocalPoint(index_t index) const;
-
+    
     void SetLocalDisk(GridLayer & grid,
 		      position_t center,
 		      double radius,
 		      double value);
-
+    
     void SetGlobalDisk(GridLayer & grid,
 		       position_t center,
 		       double radius,
 		       double value);
-
-
-
+    
   private:
-    double _delta;
-    double _delta_inv;
-
-    Frame _frame;
+    double m_delta;
+    double m_delta_inv;
+    Frame m_frame;
   };
-
-
-
+  
 }
 
 #endif // SUNFLOWER_GRIDFRAME_HPP
