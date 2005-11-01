@@ -23,7 +23,7 @@
 
 
 #include "NF1Wave.hpp"
-#include "GridPlanner.hpp"
+#include "NF1.hpp"
 #include <limits>
 
 
@@ -81,7 +81,7 @@ namespace sfl {
 	  if( ! grid.Inside(nbor))
 	    continue;
 	  
-	  if(grid.Get(nbor) != GridPlanner::FREE)
+	  if(grid.Get(nbor) != NF1::FREE)
 	    continue;
 	  
 	  grid.Set(nbor, nextval);

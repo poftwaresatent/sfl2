@@ -23,89 +23,100 @@
 
 
 #include "NF1.hpp"
-
+#include <cmath>
 
 
 namespace sfl {
-
-
-
-  NF1::NF1()
-  {
-  }
-
-
-
+  
+  
   void NF1::
   Initialize(boost::shared_ptr<const GlobalScan> scan,
 	     double robot_radius,
 	     double goal_radius)
   {
-    _grid.Configure(_grid_dimension, FREE);
-  
+    m_grid.Configure(m_grid_dimension, FREE);
+    
     const size_t nscans(scan->GetNScans());
     for(size_t is(0); is < nscans; ++is)
       if(scan->GetData(is).rho >= robot_radius){
 	const GlobalScan::global_data_t gdata(scan->GetGlobalData(is));
-	_frame.SetGlobalDisk(_grid,
-			     position_t(gdata.globx, gdata.globy),
-			     robot_radius,
-			     OBSTACLE);
+	m_frame.SetGlobalDisk(m_grid,
+			      position_t(gdata.globx, gdata.globy),
+			      robot_radius,
+			      OBSTACLE);
       }
     
-    _frame.SetGlobalDisk(_grid,
-			 _global_goal,
-			 goal_radius,
-			 FREE);
-    
-    _grid.Set(_goal_index, GOAL);
-    
-    _frame.SetGlobalDisk(_grid,
-			 _global_home,
-			 robot_radius,
-			 FREE);
+    m_frame.SetGlobalDisk(m_grid, m_global_goal, goal_radius, FREE);
+    m_grid.Set(m_goal_index, GOAL);
+    m_frame.SetGlobalDisk(m_grid, m_global_home, robot_radius, FREE);
   }
   
   
-
   void NF1::
   Calculate()
   {
-    _wave.Reset();
-    _wave.AddSeed(_frame.GlobalIndex(_global_goal));
-    _wave.Propagate(_grid);
+    m_wave.Reset();
+    m_wave.AddSeed(m_frame.GlobalIndex(m_global_goal));
+    m_wave.Propagate(m_grid);
   }
-
-
-
+  
+  
   bool NF1::
   ResetTrace()
   {
-    _trace = _home_index;
-
-    if(_grid.Get(_trace) == FREE){
+    m_trace = m_home_index;
+    if(m_grid.Get(m_trace) == FREE)
       return false;
-    }
-    
     return true;
   }
-
-
-
+  
+  
   bool NF1::
   GlobalTrace(position_t & point)
   {
-    point = _frame.GlobalPoint(_trace);
-
-    if(_grid.Get(_trace) == GOAL){
+    point = m_frame.GlobalPoint(m_trace);
+    if(m_grid.Get(m_trace) == GOAL)
       return false;
-    }
-
-    _trace = _wave.SmallestNeighbor(_grid, _trace);
-
+    m_trace = m_wave.SmallestNeighbor(m_grid, m_trace);
     return true;
   }
-
-
-
+  
+  
+  void NF1::
+  Configure(position_t robot_position,
+	    position_t global_goal,
+	    double grid_width,
+	    int grid_width_dimension)
+  {
+    m_global_goal = global_goal;
+    m_global_home = robot_position;
+    
+    if(grid_width_dimension % 2 == 0)
+      ++grid_width_dimension;
+    
+    double dx(global_goal.first  - robot_position.first);
+    double dy(global_goal.second - robot_position.second);
+    Frame frame(robot_position.first,
+		robot_position.second,
+		atan2(dy, dx));
+    
+    double width_offset
+      = 0.5 * grid_width * (grid_width_dimension - 1)
+      / grid_width_dimension;
+    double delta = grid_width / grid_width_dimension;
+    double xm_frame = - width_offset;
+    double ym_frame = - width_offset;
+    frame.To(xm_frame, ym_frame);
+    
+    m_frame.Configure(xm_frame, ym_frame, frame.Theta(), delta);
+    
+    m_goal_index = m_frame.GlobalIndex(global_goal);
+    m_home_index = m_frame.GlobalIndex(m_global_home);
+    
+    m_grid_dimension.first =
+      (int) ceil((sqrt(dx*dx+dy*dy) + grid_width) / delta);
+    
+    m_grid_dimension.second = grid_width_dimension;
+  }
+  
 }

@@ -1,14 +1,12 @@
 Import('env')
 lib = env.StaticLibrary('sfloagplan',
                         ['NF1Wave.cpp',
-                         'GridPlanner.cpp',
                          'NF1.cpp',
                          'GridLayer.cpp',
                          'GridFrame.cpp'])
 env.StageLibrary(lib)
 env.StageHeader('sfl/gplan',
                 ['NF1Wave.hpp',
-                 'GridPlanner.hpp',
                  'NF1.hpp',
                  'GridLayer.hpp',
                  'GridFrame.hpp'])

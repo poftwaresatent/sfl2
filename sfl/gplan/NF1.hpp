@@ -26,8 +26,8 @@
 #define SUNFLOWER_NF1_H
 
 
-#include <sfl/gplan/GridPlanner.hpp>
 #include <sfl/gplan/GridLayer.hpp>
+#include <sfl/gplan/GridFrame.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
 #include <sfl/api/GlobalScan.hpp>
 
@@ -35,11 +35,24 @@
 namespace sfl {
 
 
-  class NF1:
-    public GridPlanner
+  class NF1
   {
   public:
+    typedef GridFrame::index_t index_t;
+    typedef GridFrame::position_t position_t;
+    
+    static const double FREE     = -2;
+    static const double OBSTACLE = -1;
+    static const double GOAL     =  0;
+    
+    
     NF1();
+    
+    
+    void Configure(position_t robot_position,
+		   position_t global_goal,
+		   double grid_width,
+		   int grid_width_dimension);
     
     /** \note The GlobalScan object should be filtered, ie contain
 	only valid readings. This can be obtained from
@@ -55,25 +68,26 @@ namespace sfl {
     void Calculate();
     bool ResetTrace();
     bool GlobalTrace(position_t & point);
-
-    /** \todo Only needed for plotting, should be hidden. */
-    inline const GridLayer & GetGridLayer() const;
-
-
+    
+    /** \note Only needed for plotting. */
+    const GridLayer & GetGridLayer() const { return m_grid; }
+    
+    /** \note Only needed for plotting. */
+    const GridFrame & GetGridFrame() const { return m_frame; }
+    
+    
   private:
-    GridLayer _grid;
-    NF1Wave _wave;
-    index_t _trace;
+    GridFrame m_frame;
+    index_t m_grid_dimension;
+    position_t m_global_goal;
+    index_t m_goal_index;
+    position_t m_global_home;
+    index_t m_home_index;
+    GridLayer m_grid;
+    NF1Wave m_wave;
+    index_t m_trace;
   };
-
-
-  const GridLayer & NF1::
-  GetGridLayer()
-    const
-  {
-    return _grid;
-  }
-
+  
 }
 
 #endif // SUNFLOWER_NF1_H
