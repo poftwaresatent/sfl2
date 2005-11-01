@@ -51,6 +51,7 @@ namespace sfl {
     
     
     BubbleList(BubbleBand & bubble_band,
+	       BubbleFactory & bubble_factory,
 	       const Parameters & params);
     BubbleList(BubbleList & original);
     

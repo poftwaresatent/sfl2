@@ -33,13 +33,14 @@ namespace sfl {
   
   BubbleList::
   BubbleList(BubbleBand & bubble_band,
+	     BubbleFactory & bubble_factory,
 	     const Parameters & params):
     m_shortpath(params.shortpath),
     m_longpath(params.longpath),
     m_deltapath(params.longpath - params.shortpath),
     m_maxignoredistance(params.maxignoredistance),
     m_bubble_band(bubble_band),
-    m_bubble_factory(bubble_band._bubble_factory),
+    m_bubble_factory(bubble_factory),
     m_head(0),
     m_tail(0)
   {
@@ -96,10 +97,10 @@ namespace sfl {
       if(CheckAdd(bubble, scan)){
 	if( ! (Bubble::CheckOverlap(*bubble,
 				    *bubble->_next,
-				    m_bubble_band._robot_diameter) &&
+				    m_bubble_band.robot_diameter) &&
 	       Bubble::CheckOverlap(*bubble->_next,
 				    *bubble->_next->_next,
-				    m_bubble_band._robot_diameter)))
+				    m_bubble_band.robot_diameter)))
 	  {
 	    return false;
 	  }
@@ -215,7 +216,7 @@ namespace sfl {
     Bubble *bubble(m_head);
     while(bubble != 0){
       bubble->UpdateInternalParameters();
-      bubble->UpdateExternalParameters(scan, m_bubble_band._ignore_radius);
+      bubble->UpdateExternalParameters(scan, m_bubble_band.ignore_radius);
       bubble = bubble->_next;
     }
     
@@ -231,7 +232,7 @@ namespace sfl {
     bubble = m_head;
     while(bubble != 0){
       //    bubble->UpdateInternalParameters();
-      bubble->UpdateExternalParameters(scan, m_bubble_band._ignore_radius);
+      bubble->UpdateExternalParameters(scan, m_bubble_band.ignore_radius);
       bubble = bubble->_next;
     }
   }
@@ -280,7 +281,7 @@ namespace sfl {
       return false;
     
     if(Bubble::CheckOverlap(*bubble, *b2->_next,
-			    m_bubble_band._deletion_diameter)){
+			    m_bubble_band.deletion_diameter)){
       Remove(b2);
       bubble->_dnext = Bubble::Distance(*bubble, *bubble->_next);
       bubble->_next->_dprevious = bubble->_dnext;
@@ -302,7 +303,7 @@ namespace sfl {
     int overlapType;
     
     if(Bubble::InformativeCheckOverlap(*bubble, *bubble->_next,
-				       m_bubble_band._addition_diameter,
+				       m_bubble_band.addition_diameter,
 				       dx, dy, distance, radial, normal,
 				       overlapType))
       return false;
@@ -318,7 +319,7 @@ namespace sfl {
     if(newBubble == 0)
       return false;
     
-    newBubble->UpdateExternalParameters(scan, m_bubble_band._ignore_radius);
+    newBubble->UpdateExternalParameters(scan, m_bubble_band.ignore_radius);
     
     InsertAfter(bubble, newBubble);
     

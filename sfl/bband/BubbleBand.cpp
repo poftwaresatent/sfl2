@@ -23,7 +23,18 @@
 
 
 #include "BubbleBand.hpp"
+#include "BubbleFactory.hpp"
+#include "ReplanHandler.hpp"
+#include <sfl/api/GlobalScan.hpp>
+#include <sfl/api/Odometry.hpp>
+#include <sfl/api/RobotModel.hpp>
 #include <iostream>
+
+
+#define DEBUG_SFL_BUBBLE_BAND
+#ifdef DEBUG_SFL_BUBBLE_BAND
+using std::cout;
+#endif // DEBUG_SFL_BUBBLE_BAND
 
 
 using boost::shared_ptr;
@@ -32,27 +43,26 @@ using std::make_pair;
 
 
 namespace sfl {
-
-
+  
+  
   BubbleBand::
   BubbleBand(const RobotModel & robot_model,
 	     const Odometry & odometry,
 	     BubbleList::Parameters _parameters):
     parameters(_parameters),
-    _robot_model(robot_model),
-    _odometry(odometry),
-    _bubble_factory( * new BubbleFactory()),
-    _replan_handler( * new ReplanHandler( * this, odometry, _bubble_factory)),
-    _active_blist(new BubbleList(*this, _parameters)),
-    _robot_radius(robot_model.GetHull()->CalculateRadius()),
-    _robot_diameter(2 * _robot_radius),
-    _deletion_diameter(1.8 * _robot_diameter),
-    _addition_diameter(1.2 * _robot_diameter),
-    _reaction_radius(2.0 * _robot_radius),
-    _ignore_radius(0.9 * _robot_radius),
-    _ignore_radius2(_ignore_radius * _ignore_radius),
-    _replan_request(false),
-    _state(NOBAND)
+    robot_radius(robot_model.GetHull()->CalculateRadius()),
+    robot_diameter(2 * robot_radius),
+    ignore_radius(0.9 * robot_radius),
+    deletion_diameter(1.8 * robot_diameter),
+    addition_diameter(1.2 * robot_diameter),
+    m_odometry(odometry),
+    m_bubble_factory(new BubbleFactory()),
+    m_replan_handler(new ReplanHandler(*this, odometry, *m_bubble_factory)),
+    m_active_blist(new BubbleList(*this, *m_bubble_factory, _parameters)),
+    m_reaction_radius(2.0 * robot_radius),
+    //    m_ignore_radius2(ignore_radius * ignore_radius),
+    m_replan_request(false),
+    m_state(NOBAND)
   {
   }
 
@@ -60,8 +70,7 @@ namespace sfl {
   BubbleBand::
   ~BubbleBand()
   {
-    delete _active_blist;
-    delete & _replan_handler;
+    delete m_active_blist;
   }
   
 
@@ -70,22 +79,22 @@ namespace sfl {
   {
     SetMinIgnoreDistance(0);
     SetNF1GoalRadius(global_goal.Dr());
-    _replan_request = true;
-    _global_goal = global_goal;
+    m_replan_request = true;
+    m_global_goal = global_goal;
   }
 
 
   void BubbleBand::
   SetNF1GoalRadius(double r)
   {
-    _nf1_goal_radius = r;
+    m_nf1_goal_radius = r;
   }
 
 
   void BubbleBand::
   SetMinIgnoreDistance(double d)
   {
-    _min_ignore_distance = d;
+    m_min_ignore_distance = d;
   }
 
 
@@ -96,32 +105,32 @@ namespace sfl {
     SetMinIgnoreDistance(0);
     SetNF1GoalRadius(global_goal.Dr());
 
-    _global_goal = global_goal;
+    m_global_goal = global_goal;
 
-    if(_active_blist->m_head == 0){
-      _replan_request = true;
+    if(m_active_blist->m_head == 0){
+      m_replan_request = true;
       return false;
     }
 
-    Bubble *bubble = _bubble_factory.New(_reaction_radius,
-					 _global_goal.X(),
-					 _global_goal.Y());
+    Bubble *bubble = m_bubble_factory->New(m_reaction_radius,
+					   m_global_goal.X(),
+					   m_global_goal.Y());
 
     if(bubble == 0){
-      _active_blist->RemoveAll();
-      _replan_request = true;
+      m_active_blist->RemoveAll();
+      m_replan_request = true;
       return false;
     }
   
-    Bubble *tail(_active_blist->m_tail);
-    bubble->UpdateExternalParameters(scan, _ignore_radius);
+    Bubble *tail(m_active_blist->m_tail);
+    bubble->UpdateExternalParameters(scan, ignore_radius);
 
     bubble->_ignore_distance = tail->_ignore_distance;
 
     bubble->_dprevious = Bubble::Distance(*bubble, *tail);
     bubble->_dnext = -1;
   
-    if(Bubble::CheckOverlap(*tail, *bubble, _robot_radius)){
+    if(Bubble::CheckOverlap(*tail, *bubble, robot_radius)){
       tail->_alpha_int = Bubble::DEFAULTALPHAINT;
       tail->_alpha_ext = Bubble::DEFAULTALPHAEXT;
 
@@ -136,14 +145,14 @@ namespace sfl {
 	= (bubble->_position.second - tail->_position.second)
 	/ tail->_dnext;
     
-      _active_blist->Append(bubble);
+      m_active_blist->Append(bubble);
       return true;
     }
   
-    _bubble_factory.Delete(bubble);
+    m_bubble_factory->Delete(bubble);
   
-    _active_blist->RemoveAll();
-    _replan_request = true;
+    m_active_blist->RemoveAll();
+    m_replan_request = true;
     return false;
   }
 
@@ -151,82 +160,103 @@ namespace sfl {
   bool BubbleBand::
   AppendTarget(const Goal & global_goal)
   {
-    SetMinIgnoreDistance(global_goal.Dr() + _robot_radius);
-    SetNF1GoalRadius(_min_ignore_distance);
+    SetMinIgnoreDistance(global_goal.Dr() + robot_radius);
+    SetNF1GoalRadius(m_min_ignore_distance);
   
-    _global_goal = global_goal;
+    m_global_goal = global_goal;
 
-    if(_active_blist->m_head == 0){
-      _replan_request = true;
+    if(m_active_blist->m_head == 0){
+      m_replan_request = true;
       return false;
     }
 
-    Bubble *bubble = _bubble_factory.Clone(_active_blist->m_tail);
+    Bubble *bubble = m_bubble_factory->Clone(m_active_blist->m_tail);
     if(bubble != 0){
       bubble->SetMinIgnoreDistance(0);
       bubble->_alpha_int = Bubble::DEFAULTALPHAINT;
       bubble->_alpha_ext = Bubble::DEFAULTALPHAEXT;
-      _active_blist->InsertAfter(_active_blist->m_tail->_previous, bubble);
+      m_active_blist->InsertAfter(m_active_blist->m_tail->_previous, bubble);
     }
 
-    _active_blist->m_tail->_position = make_pair(_global_goal.X(),
-						 _global_goal.Y());
+    m_active_blist->m_tail->_position = make_pair(m_global_goal.X(),
+						  m_global_goal.Y());
 
     return true;
   }
 
 
-  int BubbleBand::
+  void BubbleBand::
   Update(shared_ptr<const GlobalScan> scan)
   {
-    // thread emulation
-    _bubble_factory.EmulatedThread();
-    _replan_handler.UpdateEmulation(scan);
-
-    // the real mccoy
+    m_bubble_factory->EmulatedThread();
+    
+#ifdef DEBUG_SFL_BUBBLE_BAND
+    cout << "DEBUG BubbleBand::Update():\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+    
+    if(m_replan_request){
+#ifdef DEBUG_SFL_BUBBLE_BAND
+      cout << "  replan request!\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+      m_replan_request = false;
+      m_replan_handler->Abort();
+      m_active_blist->RemoveAll();
+      m_replan_handler->StartPlanning();
+      m_state = NOBAND;
+      return;
+    }
+    
+    m_replan_handler->Update(scan);
+    // Beware of latch-"feature" inside GetState(), which can change
+    // the state of the replan handler. BAD DESIGN!
+    const ReplanHandler::state_t rh_state(m_replan_handler->GetState());
     UpdateRobotPose();
-
-    if(_replan_request){
-      _replan_handler.Abort();
-      _replan_request = false;
-      _active_blist->RemoveAll();
-      _replan_handler.StartNewThread();
-      _state = NOBAND;
+    
+    bool newBand(false);
+    if(rh_state == ReplanHandler::EXITSUCCESS){
+#ifdef DEBUG_SFL_BUBBLE_BAND
+      cout << "  replan success: use new band\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+      m_active_blist = m_replan_handler->SwapBubbleList(m_active_blist);
+      newBand = true;
+    }
+    else if(rh_state == ReplanHandler::EXITFAILURE){
+#ifdef DEBUG_SFL_BUBBLE_BAND
+      cout << "  replan FAILURE: request new plan, keep old band\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+      m_replan_handler->StartPlanning();
+    }
+#ifdef DEBUG_SFL_BUBBLE_BAND
+    else
+      cout << "  replan state is \""
+	   << ReplanHandler::GetStateName(rh_state)
+	   << "\": keep old band\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+    
+    if(m_active_blist->Empty()){
+#ifdef DEBUG_SFL_BUBBLE_BAND
+      cout << "  active band is EMPTY\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+      m_state = NOBAND;
     }
     else{
-      bool newBand(false);
-
-      if(_replan_handler._state == ReplanHandler::EXITSUCCESS){
-	_replan_handler._state = ReplanHandler::NOTRUNNING;
-	SwapBubbleLists();
-	newBand = true;
-      }
-      else if(_replan_handler._state == ReplanHandler::EXITFAILURE){
-	_replan_handler.StartNewThread();
-      }
-
-      if(_active_blist->Empty()){
-	_state = NOBAND;
+      if(m_active_blist->Update(scan)){
+#ifdef DEBUG_SFL_BUBBLE_BAND
+	cout << "  active band updated with success\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+	if(newBand)
+	  m_state = NEWBAND;
+	else
+	  m_state = VALIDBAND;
       }
       else{
-	if(_active_blist->Update(scan)){
-	  if(newBand){
-	    _state = NEWBAND;
-	  }
-	  else{
-	    _state = VALIDBAND;
-	  }
-	}
-	else{
-	  _state = UNSUREBAND;
-	  if(_replan_handler._state != ReplanHandler::RUNNING){
-	    _replan_handler.StartNewThread();
-	  }
-	}
+#ifdef DEBUG_SFL_BUBBLE_BAND
+	cout << "  active band update FAILED: request replan\n";
+#endif // DEBUG_SFL_BUBBLE_BAND
+	m_state = UNSUREBAND;
+	m_replan_handler->StartPlanning();
       }
     }
-  
-    return _state;
   }
   
 
@@ -234,48 +264,38 @@ namespace sfl {
   GetSubGoal()
     const
   {
-    if(_active_blist->m_head == 0)
-      return make_pair(_global_goal.X(), _global_goal.Y());
+    if(m_active_blist->m_head == 0)
+      return make_pair(m_global_goal.X(), m_global_goal.Y());
 
-    if(_active_blist->m_head == _active_blist->m_tail)
-      return make_pair(_global_goal.X(), _global_goal.Y());
+    if(m_active_blist->m_head == m_active_blist->m_tail)
+      return make_pair(m_global_goal.X(), m_global_goal.Y());
 
     // paranoid: don't return current pose
 
-    for(Bubble *b(_active_blist->m_head->_next);
+    for(Bubble *b(m_active_blist->m_head->_next);
 	b != 0;
 	b = b->_next){
-      double dx(b->_position.first - _frame.X());
-      double dy(b->_position.second - _frame.Y());
+      double dx(b->_position.first - m_frame.X());
+      double dy(b->_position.second - m_frame.Y());
       //    if(dx * dx + dy * dy > 1){	// hax: OH MY GAWD!!!
       if(dx * dx + dy * dy > 0.5){	// hax: OH MY GAWD!!!
 	return b->_position;
       }
     }
 
-    return make_pair(_global_goal.X(), _global_goal.Y());
+    return make_pair(m_global_goal.X(), m_global_goal.Y());
   }
 
 
   void BubbleBand::
   UpdateRobotPose()
   {
-    _frame.Set(_odometry.Get());
+    m_frame.Set(m_odometry.Get());
   
-    if(_active_blist->m_head != 0){
-      _active_blist->m_head->_position.first = _frame.X();
-      _active_blist->m_head->_position.second = _frame.Y();
+    if(m_active_blist->m_head != 0){
+      m_active_blist->m_head->_position.first = m_frame.X();
+      m_active_blist->m_head->_position.second = m_frame.Y();
     }
   }
-
-
-  void BubbleBand::
-  SwapBubbleLists()
-  {
-    BubbleList * tmp(_active_blist);
-    _active_blist = _replan_handler._buffer_blist;
-    _replan_handler._buffer_blist = tmp;
-    tmp->RemoveAll();
-  }
-
+  
 }

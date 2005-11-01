@@ -34,7 +34,7 @@
 namespace sfl {
 
 
-
+  /** \todo Good candidate for becoming a singleton. */
 class BubbleFactory{
 public:
   static const int DEFAULTRED    = 50;//20;

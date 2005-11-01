@@ -28,23 +28,37 @@
 
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Goal.hpp>
-#include <sfl/api/GlobalScan.hpp>
-#include <sfl/api/Odometry.hpp>
-#include <sfl/api/RobotModel.hpp>
 #include <sfl/bband/BubbleList.hpp>
-#include <sfl/bband/BubbleFactory.hpp>
-#include <sfl/bband/ReplanHandler.hpp>
+#include <boost/scoped_ptr.hpp>
 
 
 namespace sfl {
 
-
+  class GlobalScan;
+  class Odometry;
+  class RobotModel;
+  class BubbleFactory;
+  class ReplanHandler;
+  
+  
+  /** \todo Some of the constant fields should be moved to BubbleList
+      or the Parameters object. */
   class BubbleBand
   {
   public:
-    typedef enum { NOBAND, NEWBAND, VALIDBAND, UNSUREBAND } state_t;
+    typedef enum {
+      NOBAND,
+      NEWBAND,
+      VALIDBAND,
+      UNSUREBAND
+    } state_t;
     
     const BubbleList::Parameters parameters;
+    const double robot_radius;
+    const double robot_diameter; // for BubbleList
+    const double ignore_radius; // for BubbleList
+    const double deletion_diameter; // for BubbleList
+    const double addition_diameter; // for BubbleList
     
     
     BubbleBand(const RobotModel & robot_model,
@@ -76,58 +90,47 @@ namespace sfl {
 	Scanner::GetScanCopy() can still contain readings that are out
 	of range (represented as readings at the maximum rho
 	value). */
-    int Update(boost::shared_ptr<const GlobalScan> scan);
+    void Update(boost::shared_ptr<const GlobalScan> scan);
     
+    /** \todo there's a hardcoded cutoff distance in here! */
     std::pair<double, double> GetSubGoal() const;
-
-    /** \todo Used for plotting. */
-    state_t State() const { return _state; }
-
-    const Frame & RobotPose() const { return _frame; }
-    const Goal & GlobalGoal() const { return _global_goal; }
-    const BubbleList * ActiveBlist() const { return _active_blist; }
-
-    /** \todo Used for plotting. */
-    const ReplanHandler * GetReplanHandler() const {
-      return & _replan_handler;
-    }
-
-    double RobotRadius() const { return _robot_radius; }
-    double NF1GoalRadius() const { return _nf1_goal_radius; }
-    double ReactionRadius() const { return _reaction_radius; }
-    double MinIgnoreDistance() const { return _min_ignore_distance; }
-
-
+    
+    /** \note Used for plotting. */
+    state_t GetState() const { return m_state; }
+    
+    const Frame & RobotPose() const { return m_frame; }
+    const Goal & GlobalGoal() const { return m_global_goal; }
+    const BubbleList * ActiveBlist() const { return m_active_blist; }
+    
+    /** \note Used for plotting. */
+    const ReplanHandler * GetReplanHandler() const
+    { return m_replan_handler.get(); }
+    
+    double NF1GoalRadius() const { return m_nf1_goal_radius; }
+    double ReactionRadius() const { return m_reaction_radius; }
+    double MinIgnoreDistance() const { return m_min_ignore_distance; }
+    
+    
   private:
-    friend class BubbleList;
-    //    friend class ReplanHandler;
-    friend class MotionPlanner;
-
-    const RobotModel & _robot_model;
-    const Odometry & _odometry;
-
-    BubbleFactory _bubble_factory;
-    ReplanHandler _replan_handler;
-    Frame _frame;
-    BubbleList * _active_blist;
-
-    double _robot_radius;
-    double _robot_diameter;
-    double _deletion_diameter;
-    double _addition_diameter;
-    double _reaction_radius;
-    double _ignore_radius;
-    double _ignore_radius2;
-
-    Goal _global_goal;
-    double _nf1_goal_radius;
-    double _min_ignore_distance;
-
-    bool _replan_request;
-    state_t _state;
-
+    const Odometry & m_odometry;
+    
+    boost::scoped_ptr<BubbleFactory> m_bubble_factory;
+    boost::scoped_ptr<ReplanHandler> m_replan_handler;
+    Frame m_frame;
+    BubbleList * m_active_blist;
+    
+    const double m_reaction_radius;
+    //    const double m_ignore_radius2;
+    
+    Goal m_global_goal;
+    double m_nf1_goal_radius;	// not initialized? used?
+    double m_min_ignore_distance; // not initialized? used?
+    
+    bool m_replan_request;
+    state_t m_state;
+    
+    
     void UpdateRobotPose();
-    void SwapBubbleLists();
     void SetMinIgnoreDistance(double d);
   };
 
