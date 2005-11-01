@@ -26,74 +26,48 @@
 #define SUNFLOWER_GRIDLAYER_HPP
 
 
-
 #include <vector>
 #include <utility>
-
 
 
 namespace sfl {
 
 
 
-  /**
-     \todo OVERKILL
-  */
   class GridLayer
   {
   public:
     typedef std::pair<int, int> index_t;
-
-
-    GridLayer();
-    virtual ~GridLayer();
-
-    virtual void Configure(index_t dimension,
-			   double init_value = 0);
-
-    virtual void Set(int i, int j, double value);
-    virtual void Set(index_t index, double value);
-
-    virtual void Fill(double value);
-
-    virtual double Get(int i, int j) const;
-    virtual double Get(index_t index) const;
-
-    index_t Dimension() const;
-    void Dimension(int & width, int & height) const;
-
-    virtual bool Inside(int i, int j) const;
-    virtual bool Inside(index_t index) const;
-
-
-
+    
+    GridLayer() { Configure(index_t(1, 1)); }
+    
+    void Configure(index_t dimension, double init_value = 0);
+    void Fill(double value);
+    
+    void Set(int i, int j, double value) { m_grid[i][j] = value; }
+    void Set(index_t index, double value)
+    { m_grid[index.first][index.second] = value; }
+    
+    double Get(int i, int j) const { return m_grid[i][j]; }
+    double Get(index_t index) const
+    { return m_grid[index.first][index.second]; }
+    
+    index_t Dimension() const { return m_dimension; }
+    void Dimension(int & width, int & height) const
+    { width  = m_dimension.first;
+      height = m_dimension.second; }
+    
+    bool Inside(int i, int j) const;
+    bool Inside(index_t index) const;
+    
   protected:
     typedef std::vector<double> line_t;
     typedef std::vector<line_t> grid_t;
-
-    index_t _dimension;
-    grid_t _grid;
+    
+    index_t m_dimension;
+    grid_t m_grid;
   };
-
-
-
-  class NullGridLayer:
-    public GridLayer
-  {
-  public:
-    NullGridLayer(): GridLayer() {};
-    void Configure(index_t, double) {};
-    void Set(int i, int j, double value) {};
-    void Set(index_t index, double value) {};
-    void Fill(double value) {};
-    double Get(int i, int j) const { return 0; };
-    double Get(index_t index) const { return 0; };
-    bool Inside(int i, int j) const { return true; };
-    bool Inside(index_t index) const { return true; };
-  };
-
-
-
+  
 }
 
 #endif // SUNFLOWER_GRIDLAYER_HPP
