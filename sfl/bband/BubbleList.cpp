@@ -67,7 +67,7 @@ namespace sfl {
       {
 	Bubble * nb(m_bubble_factory.Clone(bubble));
 	while( ! nb){
-	  m_bubble_factory.Produce();
+	  m_bubble_factory.Produce(1);
 	  nb = m_bubble_factory.Clone(bubble);
 	}
 	Append(nb);

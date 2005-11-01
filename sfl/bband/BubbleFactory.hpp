@@ -26,58 +26,55 @@
 #define SUNFLOWER_BUBBLEFACTORY_HPP
 
 
-
 #include <sfl/bband/Bubble.hpp>
 
 
-
 namespace sfl {
-
-
+  
+  
   /** \todo Good candidate for becoming a singleton. */
-class BubbleFactory{
-public:
-  static const int DEFAULTRED    = 50;//20;
-  static const int DEFAULTYELLOW = 100;//35;
-  static const int DEFAULTGREEN  = 200;//70;
+  class BubbleFactory
+  {
+  public:
+    static const int DEFAULTRED    = 50;
+    static const int DEFAULTYELLOW = 100;
+    static const int DEFAULTGREEN  = 200;
+    
+    BubbleFactory(int red    = DEFAULTRED,
+		  int yellow = DEFAULTYELLOW,
+		  int green  = DEFAULTGREEN);
+    virtual ~BubbleFactory();
+    
+    void EmulatedThread();
+    
+    void SetRed(int i);
+    void SetYellow(int i);
+    void SetGreen(int i);
+    
+    Bubble * New(double cutoffDistance, double xpos, double ypos);
+    Bubble * Clone(Bubble * bubble);
+    void Delete(Bubble * bubble);
+    
+    void Produce(int batch);
+    
+    
+  private:
+    static const int REDSKIP     =  0;
+    static const int YELLOWSKIP  =  1;
+    static const int GREENSKIP   = 10;
+    static const int REDBATCH    = 25;
+    static const int YELLOWBATCH =  1;
+    static const int GREENBATCH  =  1;
+    
+    Bubble * m_top;
+    
+    int m_red, m_yellow, m_green;
+    int m_level, m_total;
+    
+    void Push(Bubble * bubble);
+    Bubble * Pop();
+  };
   
-  BubbleFactory(int red    = DEFAULTRED,
-		int yellow = DEFAULTYELLOW,
-		int green  = DEFAULTGREEN);
-  virtual ~BubbleFactory();
-  
-  void EmulatedThread();
-
-  void SetRed(int i);
-  void SetYellow(int i);
-  void SetGreen(int i);
-
-  Bubble * New(double cutoffDistance, double xpos, double ypos);
-  Bubble * Clone(Bubble * bubble);
-  void Delete(Bubble * bubble);
-
-
-
-private:
-  friend class BubbleList;	// hax for BubbleList copy constructor
-
-  static const int REDSKIP    = 1;
-  static const int YELLOWSKIP = 3;
-  static const int GREENSKIP  = 7;
-
-  Bubble * _top;
-
-  int _red, _yellow, _green;
-  int _level, _total;
-
-  void Produce();
-
-  void Push(Bubble * bubble);
-  Bubble * Pop();
-};
-
-
 }
-
 
 #endif // SUNFLOWER_BUBBLEFACTORY_HPP

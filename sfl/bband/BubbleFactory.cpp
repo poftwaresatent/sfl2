@@ -25,173 +25,149 @@
 #include "BubbleFactory.hpp"
 
 
-using namespace std;
-
+using std::make_pair;
 
 
 namespace sfl {
-
-
-
-BubbleFactory::
-BubbleFactory(int red,
-	      int yellow,
-	      int green):
-  _top(0),
-  _red(red),
-  _yellow(yellow),
-  _green(green),
-  _level(0),
-  _total(0)
-{
-  // create until green level
-  while(_level < _yellow){
-    Produce();
-  }
-}
-
-
-
-BubbleFactory::
-~BubbleFactory()
-{
-  while(_top != 0){
-    Bubble *tmp = _top;
-    Pop();
-    delete tmp;
-  }
-}
-
-
-
-void BubbleFactory::
-SetRed(int i)
-{
-  _red = i;
-}
-
-
-
-void BubbleFactory::
-SetYellow(int i)
-{
-  _yellow = i;
-}
-
-
-
-void BubbleFactory::
-SetGreen(int i)
-{
-  _green = i;
-}
-
-
-
-Bubble * BubbleFactory::
-New(double cutoffDistance,
-    double xpos,
-    double ypos)
-{
-  Bubble *tmp = Pop();
-
-  if(tmp)
-    tmp->Configure(cutoffDistance, pair<double, double>(xpos, ypos));
   
-  return tmp;
-}
-
-
-
-Bubble* BubbleFactory::
-Clone(Bubble * bubble)
-{
-  Bubble * tmp = Pop();
-
-  if(tmp)
-    tmp->CopyConstruct(*bubble);
   
-  return tmp;
-}
-
-
-
-void BubbleFactory::
-Delete(Bubble * bubble)
-{
-  Push(bubble);
-}
-
-
-
-void BubbleFactory::
-Produce()
-{
-  Push(new Bubble());
-  _total++;
-}
-
-
-
-void BubbleFactory::
-EmulatedThread()
-{
-  static int entries(0);
-
-  int skip;
-  if(_level <= _red){
-    skip = REDSKIP;
+  BubbleFactory::
+  BubbleFactory(int red,
+		int yellow,
+		int green):
+    m_top(0),
+    m_red(red),
+    m_yellow(yellow),
+    m_green(green),
+    m_level(0),
+    m_total(0)
+  {
+    Produce(m_yellow);
   }
-  else if(_level <= _yellow){
-    skip = YELLOWSKIP;
-  }
-  else if(_level <= _green){
-    skip = GREENSKIP;
-  }
-  else{
-    return;
-  }
-
-  if(entries < skip){
-    entries++;
-    return;
-  }
-
-  entries = 0;
-  Produce();
-}
-
-
-
-void BubbleFactory::
-Push(Bubble * bubble)
-{
-  // just a little paranoid...
-  if(bubble == 0)
-    return;
-
-  bubble->_previous = _top;
-  _top = bubble;    
   
-  _level++;
-}
-
-
-
-Bubble* BubbleFactory::
-Pop()
-{
-  if(_top == 0)
-    return 0;
   
-  Bubble * tmp = _top;
-
-  _top = _top->_previous;
-  _level--;
+  BubbleFactory::
+  ~BubbleFactory()
+  {
+    while(m_top != 0){
+      Bubble *tmp = m_top;
+      Pop();
+      delete tmp;
+    }
+  }
   
-  return tmp;
-}
-
-
-
+  
+  void BubbleFactory::
+  SetRed(int i)
+  {
+    m_red = i;
+  }
+  
+  
+  void BubbleFactory::
+  SetYellow(int i)
+  {
+    m_yellow = i;
+  }
+  
+  
+  void BubbleFactory::
+  SetGreen(int i)
+  {
+    m_green = i;
+  }
+  
+  
+  Bubble * BubbleFactory::
+  New(double cutoffDistance,
+      double xpos,
+      double ypos)
+  {
+    Bubble *tmp = Pop();
+    if(tmp)
+      tmp->Configure(cutoffDistance, make_pair(xpos, ypos));
+    return tmp;
+  }
+  
+  
+  Bubble* BubbleFactory::
+  Clone(Bubble * bubble)
+  {
+    Bubble * tmp = Pop();
+    if(tmp)
+      tmp->CopyConstruct(*bubble);
+    return tmp;
+  }
+  
+  
+  void BubbleFactory::
+  Delete(Bubble * bubble)
+  {
+    Push(bubble);
+  }
+  
+  
+  void BubbleFactory::
+  Produce(int batch)
+  {
+    for(/**/; batch > 0; --batch){
+      Push(new Bubble());
+      m_total++;
+    }
+  }
+  
+  
+  void BubbleFactory::
+  EmulatedThread()
+  {
+    static int entries(0);
+    
+    int skip, batch;
+    if(m_level <= m_red){
+      skip = REDSKIP;
+      batch = REDBATCH;
+    }
+    else if(m_level <= m_yellow){
+      skip = YELLOWSKIP;
+      batch = YELLOWBATCH;
+    }
+    else if(m_level <= m_green){
+      skip = GREENSKIP;
+      batch = GREENBATCH;
+    }
+    else
+      return;
+    
+    if(entries < skip){
+      entries++;
+      return;
+    }
+    
+    entries = 0;
+    Produce(batch);
+  }
+  
+  
+  void BubbleFactory::
+  Push(Bubble * bubble)
+  {
+    if(bubble == 0)
+      return;
+    bubble->_previous = m_top;
+    m_top = bubble;    
+    m_level++;
+  }
+  
+  
+  Bubble* BubbleFactory::
+  Pop()
+  {
+    if(m_top == 0)
+      return 0;
+    Bubble * tmp = m_top;
+    m_top = m_top->_previous;
+    m_level--;
+    return tmp;
+  }
+  
 }
