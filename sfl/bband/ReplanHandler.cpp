@@ -26,6 +26,7 @@
 #include "BubbleList.hpp"
 #include "BubbleBand.hpp"
 #include "BubbleFactory.hpp"
+#include <sfl/gplan/NF1Wave.hpp>
 
 
 using std::pair;
