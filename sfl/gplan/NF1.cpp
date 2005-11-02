@@ -23,10 +23,19 @@
 
 
 #include "NF1.hpp"
+#include "NF1Wave.hpp"
+#include <sfl/api/GlobalScan.hpp>
 #include <cmath>
 
 
 namespace sfl {
+  
+  
+  NF1::
+  NF1()
+    : m_wave(new NF1Wave())
+  {
+  }
   
   
   void NF1::
@@ -34,7 +43,7 @@ namespace sfl {
 	     double robot_radius,
 	     double goal_radius)
   {
-    m_grid.Configure(m_grid_dimension, FREE);
+    m_grid.Configure(m_grid_dimension, NF1Wave::FREE);
     
     const size_t nscans(scan->GetNScans());
     for(size_t is(0); is < nscans; ++is)
@@ -43,21 +52,21 @@ namespace sfl {
 	m_frame.SetGlobalDisk(m_grid,
 			      position_t(gdata.globx, gdata.globy),
 			      robot_radius,
-			      OBSTACLE);
+			      NF1Wave::OBSTACLE);
       }
     
-    m_frame.SetGlobalDisk(m_grid, m_global_goal, goal_radius, FREE);
-    m_grid.Set(m_goal_index, GOAL);
-    m_frame.SetGlobalDisk(m_grid, m_global_home, robot_radius, FREE);
+    m_frame.SetGlobalDisk(m_grid, m_global_goal, goal_radius, NF1Wave::FREE);
+    m_grid.Set(m_goal_index, NF1Wave::GOAL);
+    m_frame.SetGlobalDisk(m_grid, m_global_home, robot_radius, NF1Wave::FREE);
   }
   
   
   void NF1::
   Calculate()
   {
-    m_wave.Reset();
-    m_wave.AddSeed(m_frame.GlobalIndex(m_global_goal));
-    m_wave.Propagate(m_grid);
+    m_wave->Reset();
+    m_wave->AddSeed(m_frame.GlobalIndex(m_global_goal));
+    m_wave->Propagate(m_grid);
   }
   
   
@@ -65,7 +74,7 @@ namespace sfl {
   ResetTrace()
   {
     m_trace = m_home_index;
-    if(m_grid.Get(m_trace) == FREE)
+    if(m_grid.Get(m_trace) == NF1Wave::FREE)
       return false;
     return true;
   }
@@ -75,9 +84,9 @@ namespace sfl {
   GlobalTrace(position_t & point)
   {
     point = m_frame.GlobalPoint(m_trace);
-    if(m_grid.Get(m_trace) == GOAL)
+    if(m_grid.Get(m_trace) == NF1Wave::GOAL)
       return false;
-    m_trace = m_wave.SmallestNeighbor(m_grid, m_trace);
+    m_trace = m_wave->SmallestNeighbor(m_grid, m_trace);
     return true;
   }
   

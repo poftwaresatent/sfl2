@@ -28,26 +28,24 @@
 
 #include <sfl/gplan/GridLayer.hpp>
 #include <sfl/gplan/GridFrame.hpp>
-#include <sfl/gplan/NF1Wave.hpp>
-#include <sfl/api/GlobalScan.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 
 namespace sfl {
-
-
+  
+  
+  class GlobalScan;
+  class NF1Wave;
+  
+  
   class NF1
   {
   public:
     typedef GridFrame::index_t index_t;
     typedef GridFrame::position_t position_t;
     
-    static const double FREE     = -2;
-    static const double OBSTACLE = -1;
-    static const double GOAL     =  0;
-    
-    
     NF1();
-    
     
     void Configure(position_t robot_position,
 		   position_t global_goal,
@@ -64,7 +62,7 @@ namespace sfl {
     void Initialize(boost::shared_ptr<const GlobalScan> scan,
 		    double robot_radius,
 		    double goal_radius);
-  
+    
     void Calculate();
     bool ResetTrace();
     bool GlobalTrace(position_t & point);
@@ -84,7 +82,7 @@ namespace sfl {
     position_t m_global_home;
     index_t m_home_index;
     GridLayer m_grid;
-    NF1Wave m_wave;
+    boost::scoped_ptr<NF1Wave> m_wave;
     index_t m_trace;
   };
   

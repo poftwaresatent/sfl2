@@ -81,7 +81,7 @@ namespace sfl {
 	  if( ! grid.Inside(nbor))
 	    continue;
 	  
-	  if(grid.Get(nbor) != NF1::FREE)
+	  if(grid.Get(nbor) != FREE)
 	    continue;
 	  
 	  grid.Set(nbor, nextval);
