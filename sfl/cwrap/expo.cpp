@@ -44,6 +44,7 @@ using sfl::RobotModel;
 using sfl::Odometry;
 using sfl::DynamicWindow;
 using sfl::BubbleBand;
+using sfl::Goal;
 using expo::MotionPlanner;
 using expo::MotionController;
 using boost::scoped_ptr;
@@ -102,7 +103,10 @@ public:
 };
 
 
-static map<int, shared_ptr<Handle> > handle_map;
+typedef map<int, shared_ptr<Handle> > handle_map_t;
+
+
+static handle_map_t handle_map;
 
 
 int expo_create(struct cwrap_hal_s * cwrap_hal,
@@ -240,29 +244,44 @@ int expo_set_goal(int handle,
 		  double dtheta,
 		  int viaGoal)
 {
-  return -2;
+  handle_map_t::iterator ih(handle_map.find(handle));
+  if(handle_map.end() == ih)
+    return -1;
+  ih->second->motion_planner->SetGoal(Goal(x, y, theta, dr, dtheta, viaGoal));
+  return 0;
 }
 
 
 int expo_goal_reached(int handle)
 {
-  return -2;
+  handle_map_t::iterator ih(handle_map.find(handle));
+  if(handle_map.end() == ih)
+    return -1;
+  return ih->second->motion_planner->GoalReached() ? 1 : 0;
 }
 
 
-int expo_update_dwa(int handle)
+int expo_update_all(int handle)
 {
-  return -2;
-}
-
-
-int expo_update_bband(int handle)
-{
-  return -2;
+  handle_map_t::iterator ih(handle_map.find(handle));
+  if(handle_map.end() == ih)
+    return -1;
+  if(0 != ih->second->odometry->Update())
+    return -2;
+  if(0 != ih->second->front_sick->Update())
+    return -3;
+  if(0 != ih->second->rear_sick->Update())
+    return -4;
+  ih->second->motion_planner->Update();
+  if(0 != ih->second->motion_controller->Update())
+    return -5;
+  return 0;
 }
 
 
 void expo_destroy(int handle)
 {
+  handle_map_t::iterator ih(handle_map.find(handle));
+  if(handle_map.end() != ih)
+    handle_map.erase(ih);
 }
-

@@ -78,27 +78,24 @@ extern "C" {
   
   
   /**
-     Perform one cycle of Dynamic Window updates, ie the reactive
-     obstacle avoidance. This should be done in a real-time loop that
-     runs at 10Hz or so.
+     Perform one cycle of overall algorithm updates, which includes
+     the bubble band (and NF1 if necessary) and the reactive obstacle
+     avoidance. At the end, new motion commands are sent to the motor
+     controllers.
      
-     \return 0 on success, -1 if the handle is invalid
+     \todo Separate the three different task levels: DWA (RT 10Hz),
+     Bubble Band (non-RT 5Hz), NF1 (non-RT on-demand).
+     
+     \return
+     <ul><li>  0 success </li>
+         <li> -1 invalid handle </li>
+         <li> -2 odometry update error </li>
+         <li> -3 front sick update error </li>
+         <li> -4 rear sick update error </li>
+         <li> -5 motion controller update error </li></ul>
   */
-  int expo_update_dwa(/** the handle obtained from expo_create() */
+  int expo_update_all(/** the handle obtained from expo_create() */
 		      int handle);
-
-  
-  /**
-     Perform one cycle of Bubble Band updates, ie the path
-     modification algorithm that adapts the trajectory to changes in
-     the environment. It does not have to be real-time, but should be
-     called periodically with a frequency comparable to that of
-     expo_update_dwa().
-     
-     \return 0 on success, -1 if the handle is invalid
-  */
-  int expo_update_bband(/** the handle obtained from expo_create() */
-			int handle);
   
   
   /**
