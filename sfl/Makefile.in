@@ -1,0 +1,183 @@
+# Copyright (c) 2005 CNRS/LAAS
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+prefix=		@prefix@
+exec_prefix=	@exec_prefix@
+top_builddir=	.
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+
+BINDIR=		@bindir@
+LIBDIR=		@libdir@
+INCLUDEDIR=	@includedir@/sfl
+
+CC=		@CC@
+CXX=		@CXX@
+MKDEP=		@MKDEP@
+LIBTOOL=	@LIBTOOL@
+INSTALL=	@INSTALL@
+INSTALL_DATA=   $(INSTALL) -m644
+MKINSTALLDIRS=	$(SHELL) $(srcdir)/mkinstalldirs
+
+LTCC=		$(LIBTOOL) --mode=compile $(CC)
+LTCXX=		$(LIBTOOL) --mode=compile $(CXX)
+LTLD=		$(LIBTOOL) --mode=link $(CC)
+
+CFLAGS=         @CFLAGS@ -I$(top_builddir)
+CXXFLAGS=       @CXXFLAGS@ -I$(top_builddir)
+CPPFLAGS=       $(filter -I%,$(CFLAGS)) $(filter -D%,$(CFLAGS))
+
+SHLIB_CURRENT=	0
+SHLIB_REVISION=	3
+SHLIB_AGE=	0
+LIB=            libsunflower.la
+
+SRCS=           util/Frame.cpp \
+                util/Hull.cpp \
+                util/Line.cpp \
+                util/numeric.cpp \
+                util/Point.cpp \
+                util/Polygon.cpp \
+                util/Ray.cpp \
+                api/DiffDrive.cpp \
+                api/GlobalScan.cpp \
+                api/Goal.cpp \
+                api/HoloDrive.cpp \
+                api/MotionController.cpp \
+                api/MotionPlanner.cpp \
+                api/Multiscanner.cpp \
+                api/Odometry.cpp \
+                api/Pose.cpp \
+                api/RobotModel.cpp \
+                api/Scan.cpp \
+                api/Scanner.cpp \
+                api/Timestamp.cpp \
+                bband/Bubble.cpp \
+                bband/BubbleBand.cpp \
+                bband/BubbleFactory.cpp \
+                bband/BubbleList.cpp \
+                bband/ReplanHandler.cpp \
+                dwa/DistanceObjective.cpp \
+                dwa/DynamicWindow.cpp \
+                dwa/HeadingObjective.cpp \
+                dwa/Lookup.cpp \
+                dwa/Objective.cpp \
+                dwa/SpeedObjective.cpp \
+                expo/MotionController.cpp \
+                expo/MotionPlanner.cpp \
+                expo/MotionPlannerFields.cpp \
+                expo/MotionPlannerState.cpp \
+                gplan/GridFrame.cpp \
+                gplan/GridLayer.cpp \
+                gplan/NF1.cpp \
+                gplan/NF1Wave.cpp \
+                cwrap/expo.cpp
+
+HEADERS=        util/Frame.hpp \
+                util/functors.hpp \
+                util/Hull.hpp \
+                util/Line.hpp \
+                util/numeric.hpp \
+                util/Point.hpp \
+                util/Polygon.hpp \
+                util/Ray.hpp \
+                api/DiffDrive.hpp \
+                api/Drive.hpp \
+                api/GlobalScan.hpp \
+                api/Goal.hpp \
+                api/HAL.hpp \
+                api/HoloDrive.hpp \
+                api/MotionController.hpp \
+                api/MotionPlanner.hpp \
+                api/Multiscanner.hpp \
+                api/Odometry.hpp \
+                api/Pose.hpp \
+                api/RobotModel.hpp \
+                api/Scan.hpp \
+                api/Scanner.hpp \
+                api/Timestamp.hpp \
+                api/types.hpp \
+                bband/Bubble.hpp \
+                bband/BubbleBand.hpp \
+                bband/BubbleFactory.hpp \
+                bband/BubbleList.hpp \
+                bband/ReplanHandler.hpp \
+                dwa/DistanceObjective.hpp \
+                dwa/DynamicWindow.hpp \
+                dwa/HeadingObjective.hpp \
+                dwa/Lookup.hpp \
+                dwa/Objective.hpp \
+                dwa/SpeedObjective.hpp \
+                expo/MotionController.hpp \
+                expo/MotionPlanner.hpp \
+                expo/MotionPlannerFields.hpp \
+                expo/MotionPlannerState.hpp \
+                gplan/GridFrame.hpp \
+                gplan/GridLayer.hpp \
+                gplan/NF1.hpp \
+                gplan/NF1Wave.hpp \
+                cwrap/expo.h \
+                cwrap/hal.h
+
+OBJS=           $(SRCS:%.cpp=%.lo)
+
+VPATH=		@srcdir@
+
+all: softlink subdirs $(LIB)
+
+$(LIB): $(OBJS)
+	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) $(OBJS)
+
+%.lo: %.c
+	$(LTCC) $(CFLAGS) -o $*.o -c $<
+
+%.lo: %.cpp
+	$(LTCXX) $(CXXFLAGS) -o $*.o -c $<
+
+softlink:
+	- ln -s $(top_srcdir) sfl
+
+subdirs:
+	- mkdir util api bband cwrap dwa expo gplan
+
+install:: $(LIB)
+	$(MKINSTALLDIRS) $(BINDIR) $(LIBDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
+
+install:: sunflower.pc
+	$(MKINSTALLDIRS) $(LIBDIR)/pkgconfig
+	$(INSTALL) sunflower.pc $(LIBDIR)/pkgconfig
+
+install::
+	for header in $(HEADERS); do \
+	  subdir=`dirname $$header`; \
+	  $(MKINSTALLDIRS) $(INCLUDEDIR)/$$subdir; \
+	  $(INSTALL_DATA) $(srcdir)/$$header $(INCLUDEDIR)/$$subdir; \
+	done
+
+distclean: clean
+	rm -f .depend Makefile config.log config.status sunflower.pc libtool
+
+clean: 
+	$(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB)
+
+
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+depend .depend:: $(SRCS) 
+	$(MKDEP) -c$(CC) -o.depend -t.lo $(CPPFLAGS) $?
+
+include .depend
+endif
+
+.PHONY: all clean distclean install depend
