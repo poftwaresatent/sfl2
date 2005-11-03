@@ -1,22 +1,28 @@
 README for sunflower
 
 ------------------------------------------------------------
+The core sunflower library and SCons description files are
 Copyright (C) 2004, Autonomous Systems Lab,
                     Ecole Polytechnique Federale de Lausanne
 		    (Swiss Federal Institute of Technology).
 		    All rights reserved.
+
+The C-wrapper code and autotools build files are
+Copyright (C) 2005, LAAS/CNRS. All rights reserved.
 
 Maintainer: Roland Philippsen <roland.philippsen@gmx.net>
 Authors:    Viet Nguyen <viet.nguyen@epfl.ch>
             Frederic Pont <frederic.pont@epfl.ch>
             Agostino Martinelli <agostino.martinelli@epfl.ch>
 
-This software is released under the GNU General Public License. See
-the COPYRIGHT and LICENSE.GPL files for more information.
+The sunflower library is released under the GNU General Public
+License. The C-wrapper and autotools files are released under the new
+BSD license. See the COPYRIGHT, LICENSE.GPL, and LICENSE.BSD files for
+more information.
 ------------------------------------------------------------
 
 
-INTRODUCTION
+1. INTRODUCTION
 
 Sunflower is a project that contains mobile robotic programming
 abstractions developed at the Autonomous Systems Lab. It is written in
@@ -27,22 +33,42 @@ during a PhD thesis at the Autonomous Systems Lab. It is described in
 chapter 3 of [1].
 
 
-COMPILING
+2. COMPILING
 
-This software has been compiled under Linux and Mac OS X, but as it is
-relatively pure C++ it should not be hard to port to other POSIX
-platforms. Sunflower requires a C++ compiler (tested with GCC-3), the
-Scons build system [2] (which in turn requires Python), and the Boost
-smart_ptr library [3]. Once you have all this, compiling should be as
-simple as typing "scons" in the top-level directory.
+There are two ways of building sunflower: With SCons [2] or the
+classical autotools approach using "configure && make && make
+install". This software has been compiled under Linux and Mac OS X,
+but as it is relatively pure C++ it should not be hard to port to
+other POSIX platforms. Sunflower requires C and C++ compilers (tested
+with GCC-3), the Boost smart_ptr library [3], and some additional
+components that depend on how you want to build it.
 
+2.1 Build with SCons
 
-INSTALLING
+You will need the the Scons build system [2] (which in turn requires
+Python). Then, compiling should be as simple as typing "scons" in the
+top-level directory.
 
-This release uses a staged build, after compilation there will be two
-new subdirectories called "inc" and "lib", which contain the sunflower
+Installing with SCons is a bit cumbersome at the moment.  This release
+uses a staged build, after compilation there will be two new
+subdirectories called "inc" and "lib", which contain the sunflower
 headers and the compiled libraries. Copy those files to the
 appropriate location on your system if you want to install sunflower.
+
+2.2 Build with autotools
+
+The sunflower library comes with a configure script that will do it's
+best to detect how the build will work on your system. The recommended
+way of building is in a separate directory:
+
+ $ mkdir build
+ $ cd build
+ $ ../configure --prefix=YOUR_PREFERRED_INSTALLATION_PATH
+ $ make
+ $ make install
+
+Note that the last command might require root privileges depending on
+the permissions of YOUR_PREFERRED_INSTALLATION_PATH.
 
 
 DOCUMENTATION
@@ -83,6 +109,11 @@ expo/
  The integrated path planning and obstacle avoidance system used
  during the Swiss National Exhibition expo.02. For 6 months it
  controlled 10 Robox tour guide robots at the Robotics pavillion.
+
+cwrap/
+ A C-wrapper for the sunflower library that allows to integrate it's
+ obstacle avoidance capavilities in non-C++ code.
+ THIS PART OF THE PROJECT IS EXPERIMENTAL!
 
 
 REFERENCES

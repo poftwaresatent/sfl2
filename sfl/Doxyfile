@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "Sunflower"
-PROJECT_NUMBER         = 0.3
+PROJECT_NUMBER         = 0.4
 OUTPUT_DIRECTORY       = doc
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
@@ -68,7 +68,7 @@ RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = YES
 EXCLUDE_PATTERNS       = .svn
-EXAMPLE_PATH           = 
+EXAMPLE_PATH           = .
 EXAMPLE_PATTERNS       = 
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 

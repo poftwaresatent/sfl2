@@ -14,8 +14,6 @@ These classes define the Sunflower architecture:
        sfl::Drive, sfl::DiffDrive, sfl::HoloDrive </li>
 </ul>
 
-
-
 <h2>Data Objects</h2>
 
 These classes define encapsulations of various "chunks" of data:
@@ -26,5 +24,9 @@ These classes define encapsulations of various "chunks" of data:
   <li> Coordinate frames, position: sfl::Frame, sfl::Pose </li>
   <li> Scanner data: sfl::Scan, sfl::GlobalScan </li>
 </ul>
+
+<h2>README</h2>
+
+\verbinclude README
 
 */
