@@ -36,7 +36,7 @@ LTLD=		$(LIBTOOL) --mode=link $(CC)
 
 CFLAGS=         @CFLAGS@ -I$(top_builddir)
 CXXFLAGS=       @CXXFLAGS@ -I$(top_builddir)
-CPPFLAGS=       $(filter -I%,$(CFLAGS)) $(filter -D%,$(CFLAGS))
+CPPFLAGS=       -I$(top_builddir)
 
 SHLIB_CURRENT=	0
 SHLIB_REVISION=	3
@@ -137,7 +137,8 @@ VPATH=		@srcdir@
 all: softlink subdirs $(LIB)
 
 $(LIB): $(OBJS)
-	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) $(OBJS)
+	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) \
+          -version-info $(SHLIB_CURRENT):$(SHLIB_REVISION):$(SHLIB_AGE) $(OBJS)
 
 %.lo: %.c
 	$(LTCC) $(CFLAGS) -o $*.o -c $<
@@ -175,8 +176,8 @@ clean:
 
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
 depend .depend:: $(SRCS) 
+	$(MAKE) softlink
 	$(MKDEP) -c$(CC) -o.depend -t.lo $(CPPFLAGS) $?
-
 include .depend
 endif
 
