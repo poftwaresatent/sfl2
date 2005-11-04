@@ -14,6 +14,8 @@ if test "x${GXX}" = "xyes"; then
   CXXFLAGS="${CXXFLAGS} -Wall"
 fi
 
+AC_PROG_MKDEP
+
 AC_PROG_LIBTOOL
 
 AC_PROG_INSTALL

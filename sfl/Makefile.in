@@ -134,7 +134,10 @@ OBJS=           $(SRCS:%.cpp=%.lo)
 
 VPATH=		@srcdir@
 
-all: softlink subdirs $(LIB)
+
+sinclude .depend
+
+all: softlink depend subdirs $(LIB)
 
 $(LIB): $(OBJS)
 	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) \
@@ -174,11 +177,8 @@ clean:
 	$(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB)
 
 
-ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-depend .depend:: $(SRCS) 
+depend: $(SRCS)
 	$(MAKE) softlink
 	$(MKDEP) -c$(CC) -o.depend -t.lo $(CPPFLAGS) $?
-include .depend
-endif
 
 .PHONY: all clean distclean install depend
