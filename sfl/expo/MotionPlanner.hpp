@@ -50,7 +50,10 @@ namespace expo {
     void SetGoal(const sfl::Goal & goal);
     const sfl::Goal & GetGoal() const;
     bool GoalReached() const;
-  
+    
+    /** \note Hack for Cogniron, does ugly things like const_casts! */
+    int UpdateAll();
+    
   private:
     MotionPlannerFields _fields;
     MotionPlannerState * _internal_state;

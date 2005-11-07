@@ -82,9 +82,21 @@ namespace expo {
   {
     return _internal_state->GoalReached();
   }
-
-
-
+  
+  
+  int MotionPlanner::
+  UpdateAll()
+  {
+    sfl::Odometry & odo(const_cast<sfl::Odometry &>(_fields.odometry));
+    if(0 > odo.Update())
+      return -1;
+    if(0 > _multiscanner.UpdateAll())
+      return -2;
+    Update();
+    return _fields.motionController.Update();
+  }
+  
+  
   //  void MotionPlanner::
   //  GoForward(){
   //    _internal_state->GoForward(true);
