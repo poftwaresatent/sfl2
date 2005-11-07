@@ -46,6 +46,9 @@ namespace sfl_cwrap {
       return m_map.rbegin()->first;
     }
     
+    int InsertRaw(Pointee * raw_pointer)
+    { return Insert(boost::shared_ptr<Pointee>(raw_pointer)); }
+    
     
     boost::shared_ptr<Pointee> Find(int handle)
       const
