@@ -18,6 +18,8 @@
 
 
 #include "expo.h"
+#include "sfl.h"
+#include "Handlemap.hpp"
 #include <sfl/api/HAL.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/DiffDrive.hpp>
@@ -28,9 +30,7 @@
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionPlanner.hpp>
 #include <sfl/expo/MotionController.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <map>
 
 
 using sfl::HAL;
@@ -47,74 +47,38 @@ using sfl::BubbleBand;
 using sfl::Goal;
 using expo::MotionPlanner;
 using expo::MotionController;
-using boost::scoped_ptr;
 using boost::shared_ptr;
-using std::map;
-using std::make_pair;
 
 
-class CWrapHAL: public HAL {
-public:
-  CWrapHAL(struct cwrap_hal_s * hal) : m_hal(hal) { }
-  
-  virtual int time_get(struct ::timespec * stamp)
-  { return m_hal->time_get(stamp); }
-  
-  virtual int odometry_set(double x, double y, double theta,
-			   double sxx, double syy, double stt,
-			   double sxy, double sxt, double syt)
-  { return m_hal->odometry_set(x, y, theta,
-			       sxx, syy, stt,
-			       sxy, sxt, syt); }
-  
-  virtual int odometry_get(struct ::timespec * stamp,
-			   double * x, double * y, double * theta,
-			   double * sxx, double * syy, double * stt,
-			   double * sxy, double * sxt, double * syt)
-  { return m_hal->odometry_get(stamp, x, y, theta,
-			       sxx, syy, stt,
-			       sxy, sxt, syt); }
-  
-  virtual int speed_set(double qdl, double qdr)
-  { return m_hal->speed_set(qdl, qdr); }
-  
-  virtual int scan_get(int channel, double * rho, int rho_len,
-		       struct ::timespec * t0, struct ::timespec * t1)
-  { return m_hal->scan_get(channel, rho, rho_len, t0, t1); }
-  
-private:
-  struct cwrap_hal_s * m_hal;
-};
+namespace sfl_cwrap {
 
 
 class Handle {
 public:
-  scoped_ptr<CWrapHAL>         hal;
+  shared_ptr<HAL>              hal;
   shared_ptr<Scanner>          front_sick;
   shared_ptr<Scanner>          rear_sick;
-  scoped_ptr<DiffDrive>        drive;
-  scoped_ptr<RobotModel>       robot_model;
-  scoped_ptr<MotionController> motion_controller;
-  scoped_ptr<DynamicWindow>    dynamic_window;
-  scoped_ptr<Odometry>         odometry;
-  scoped_ptr<BubbleBand>       bubble_band;
-  scoped_ptr<Multiscanner>     multiscanner;
-  scoped_ptr<MotionPlanner>    motion_planner;
+  shared_ptr<DiffDrive>        drive;
+  shared_ptr<RobotModel>       robot_model;
+  shared_ptr<MotionController> motion_controller;
+  shared_ptr<DynamicWindow>    dynamic_window;
+  shared_ptr<Odometry>         odometry;
+  shared_ptr<BubbleBand>       bubble_band;
+  shared_ptr<Multiscanner>     multiscanner;
+  shared_ptr<MotionPlanner>    motion_planner;
 };
 
 
-typedef map<int, shared_ptr<Handle> > handle_map_t;
+static Handlemap<Handle> handlemap;
 
 
-static handle_map_t handle_map;
-
-
-int expo_create(struct cwrap_hal_s * cwrap_hal,
-		FILE * msg)
+int expo_create(int hal_handle)
 {
   shared_ptr<Handle> handle(new Handle());
   
-  handle->hal.reset(new CWrapHAL(cwrap_hal));
+  handle->hal = get_HAL(hal_handle);
+  if( ! handle->hal)
+    return -1;
   
   int front_sick_channel(0);
   double front_sick_x(0.15);
@@ -227,12 +191,7 @@ int expo_create(struct cwrap_hal_s * cwrap_hal,
 						 *handle->bubble_band,
 						 *handle->odometry));
   
-  int result(0);
-  if( ! handle_map.empty())
-    result = handle_map.rbegin()->first + 1;
-  
-  handle_map.insert(make_pair(result, handle));
-  return result;
+  return handlemap.Insert(handle);
 }
 
 
@@ -244,36 +203,36 @@ int expo_set_goal(int handle,
 		  double dtheta,
 		  int viaGoal)
 {
-  handle_map_t::iterator ih(handle_map.find(handle));
-  if(handle_map.end() == ih)
+  shared_ptr<Handle> h(handlemap.Find(handle));
+  if( ! h)
     return -1;
-  ih->second->motion_planner->SetGoal(Goal(x, y, theta, dr, dtheta, viaGoal));
+  h->motion_planner->SetGoal(Goal(x, y, theta, dr, dtheta, viaGoal));
   return 0;
 }
 
 
 int expo_goal_reached(int handle)
 {
-  handle_map_t::iterator ih(handle_map.find(handle));
-  if(handle_map.end() == ih)
+  shared_ptr<Handle> h(handlemap.Find(handle));
+  if( ! h)
     return -1;
-  return ih->second->motion_planner->GoalReached() ? 1 : 0;
+  return h->motion_planner->GoalReached() ? 1 : 0;
 }
 
 
 int expo_update_all(int handle)
 {
-  handle_map_t::iterator ih(handle_map.find(handle));
-  if(handle_map.end() == ih)
+  shared_ptr<Handle> h(handlemap.Find(handle));
+  if( ! h)
     return -1;
-  if(0 != ih->second->odometry->Update())
+  if(0 != h->odometry->Update())
     return -2;
-  if(0 != ih->second->front_sick->Update())
+  if(0 != h->front_sick->Update())
     return -3;
-  if(0 != ih->second->rear_sick->Update())
+  if(0 != h->rear_sick->Update())
     return -4;
-  ih->second->motion_planner->Update();
-  if(0 != ih->second->motion_controller->Update())
+  h->motion_planner->Update();
+  if(0 != h->motion_controller->Update())
     return -5;
   return 0;
 }
@@ -281,7 +240,7 @@ int expo_update_all(int handle)
 
 void expo_destroy(int handle)
 {
-  handle_map_t::iterator ih(handle_map.find(handle));
-  if(handle_map.end() != ih)
-    handle_map.erase(ih);
+  handlemap.Erase(handle);
+}
+
 }
