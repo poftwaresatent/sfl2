@@ -21,26 +21,31 @@
 #define CWRAP_EXPO_H
 
 #ifdef __cplusplus
+# include <boost/shared_ptr.hpp>
+namespace expo {
+  class MotionController;
+  class MotionPlanner;
+}
+namespace sfl_cwrap {
+  boost::shared_ptr<expo::MotionController> get_MotionController(int handle);
+  boost::shared_ptr<expo::MotionPlanner>    get_MotionPlanner(int handle);
+}
 extern "C" {
 #endif // __cplusplus
   
 #include <sfl/cwrap/hal.h>
 #include <stdio.h>
   
-
-  /**
-     Create the objects necessary to use the Expo.02 obstacle avoidance
-     system using C language bindings.
-
-     \return >=0 on success: handle that refers to an internal
-     database. -1 on failure, with an error message written to the
-     provided FILE*.
-   
-     \note Use expo_destroy() to release the handle after you've
-     finished using the Expo.02 obstacle avoidance system.
-  */
-  int expo_create(/** a valid hal handle, ie from sfl_create_HAL() */
-		  int hal_handle);
+  
+  int expo_create_MotionController(int RobotModel_handle,
+				   int DiffDrive_handle);
+  
+  int expo_create_MotionPlanner(int MotionController_handle,
+				int DynamicWindow_handle,
+				int * Scanner_handle, int nscanners,
+				int RobotModel_handle,
+				int BubbleBand_handle,
+				int Odometry_handle);
   
   
   /**
@@ -48,8 +53,7 @@ extern "C" {
      
      \return 0 on success, -1 if invalid handle
   */
-  int expo_set_goal(/** the handle obtained from expo_create() */
-		    int handle,
+  int expo_set_goal(int MotionPlanner_handle,
 		    /** x-coordinate [m] */
 		    double x,
 		    /** y-coordinate [m] */
@@ -72,7 +76,7 @@ extern "C" {
      reached the goal, -1 if the handle is invalid
   */
   int expo_goal_reached(/** the handle obtained from expo_create() */
-			int handle);
+			int MotionPlanner_handle);
   
   
   /**
@@ -93,14 +97,14 @@ extern "C" {
          <li> -5 motion controller update error </li></ul>
   */
   int expo_update_all(/** the handle obtained from expo_create() */
-		      int handle);
+		      int MotionPlanner_handle);
   
   
-  /**
-     \note Invalid handles are silently ignored.
-  */
-  void expo_destroy(/** the handle obtained from expo_create() */
-		    int handle);
+  /** \note Invalid handles are silently ignored. */
+  void expo_destroy_MotionController(int handle);
+  
+  /** \note Invalid handles are silently ignored. */
+  void expo_destroy_MotionPlanner(int handle);
   
   
 #ifdef __cplusplus
