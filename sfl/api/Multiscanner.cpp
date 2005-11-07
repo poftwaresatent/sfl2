@@ -117,4 +117,16 @@ namespace sfl {
     return 0;
   }
   
+  
+  int Multiscanner::
+  UpdateAll()
+  {
+    for(vector_t::iterator is(m_scanner.begin());
+	is != m_scanner.end();
+	++is)
+      if(0 > (*is)->Update())
+	return -1;
+    return 0;
+  }
+  
 }

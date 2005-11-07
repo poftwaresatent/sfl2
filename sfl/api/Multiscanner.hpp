@@ -42,9 +42,6 @@ namespace sfl {
      on your robot. Then add them to a Multiscanner instance (in the
      order with which you'd like the data to appear in collected
      scans).
-
-     \note No update semantics are provided, you still need a
-     dedicated update thread for your scanners.
   */
   class Multiscanner
   {
@@ -89,6 +86,10 @@ namespace sfl {
 	determined implicitly inside CollectScans() and
 	CollectGlobalScans().*/
     size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
+    
+    /** \note A bit of a hack for Cogniron: Call Update() on all
+	registered Scanner instances. */
+    int UpdateAll();
     
     
   protected:
