@@ -18,95 +18,178 @@
 
 
 #include "sfl.h"
+#include "expo.h"
 #include "Handlemap.hpp"
 #include "cwrapHAL.hpp"
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/RobotModel.hpp>
+#include <sfl/api/Odometry.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/bband/BubbleBand.hpp>
+#include <sfl/expo/MotionController.hpp>
 
 
+using namespace sfl;
 using boost::shared_ptr;
 
 
 namespace sfl_cwrap {
   
-  static Handlemap<sfl::HAL>           HAL_map;
-  static Handlemap<sfl::Scanner>       Scanner_map;
-  static Handlemap<sfl::DiffDrive>     DiffDrive_map;
-  static Handlemap<sfl::RobotModel>    RobotModel_map;
-  static Handlemap<sfl::DynamicWindow> DynamicWindow_map;
-  static Handlemap<sfl::BubbleBand>    BubbleBand_map;
+
+  static Handlemap<HAL>           HAL_map;
+  static Handlemap<Scanner>       Scanner_map;
+  static Handlemap<DiffDrive>     DiffDrive_map;
+  static Handlemap<RobotModel>    RobotModel_map;
+  static Handlemap<DynamicWindow> DynamicWindow_map;
+  static Handlemap<BubbleBand>    BubbleBand_map;
+  static Handlemap<Odometry>      Odometry_map;
+
   
-  shared_ptr<sfl::HAL>           get_HAL(int handle)
+  shared_ptr<HAL> get_HAL(int handle)
   { return HAL_map.Find(handle); }
+
   
-  shared_ptr<sfl::Scanner>       get_Scanner(int handle)
+  shared_ptr<Scanner> get_Scanner(int handle)
   { return Scanner_map.Find(handle); }
+
   
-  shared_ptr<sfl::DiffDrive>     get_DiffDrive(int handle)
+  shared_ptr<DiffDrive> get_DiffDrive(int handle)
   { return DiffDrive_map.Find(handle); }
+
   
-  shared_ptr<sfl::RobotModel>    get_RobotModel(int handle)
+  shared_ptr<RobotModel> get_RobotModel(int handle)
   { return RobotModel_map.Find(handle); }
+
   
-  shared_ptr<sfl::DynamicWindow> get_DynamicWindow(int handle)
+  shared_ptr<DynamicWindow> get_DynamicWindow(int handle)
   { return DynamicWindow_map.Find(handle); }
+
   
-  shared_ptr<sfl::BubbleBand>    get_BubbleBand(int handle)
+  shared_ptr<BubbleBand> get_BubbleBand(int handle)
   { return BubbleBand_map.Find(handle); }
 
-
-int sfl_create_HAL(struct cwrap_hal_s * cwrap_hal)
-{
-  shared_ptr<sfl_cwrap::cwrapHAL> hal(new sfl_cwrap::cwrapHAL(cwrap_hal));
-  return HAL_map.Insert(hal);
-}
-
-
-void sfl_destroy_HAL(int handle)
-{
-  HAL_map.Erase(handle);
-}
-
   
-int sfl_create_Scanner(int hal_handle, int hal_channel,
-		       double mount_x, double mount_y, double mount_theta,
-		       int nscans, double rhomax, double phi0,
-		       double phirange);
-
-void sfl_destroy_Scanner(int handle);
-
-
-int sfl_create_DiffDrive(double wheelbase, double wheelradius);
-
-void sfl_destroy_DiffDrive(int handle);
-
-
-int sfl_create_RobotModel(double timestep, double security_distance,
-			  double qd_max, double qdd_max,
-			  double sd_max, double thetad_max,
-			  double sdd_max, double thetadd_max,
-			  double * hull_x, double * hull_y, int hull_len);
-
-void sfl_destroy_RobotModel(int handle);
-
-
-int sfl_create_DynamicWindow(int dimension,
-			     double grid_width,
-			     double grid_height,
-			     double grid_resolution,
-			     double alpha_distance,
-			     double alpha_heading,
-			     double alpha_speed);
-
-void sfl_destroy_DynamicWindow(int handle);
-
-
-int sfl_create_BubbleBand(double shortpath, double longpath,
-			  double max_ignore_distance);
-
-void sfl_destroy_BubbleBand(int handle);
+  shared_ptr<Odometry> get_Odometry(int handle)
+  { return Odometry_map.Find(handle); }
+  
+  
+  int sfl_create_HAL(struct cwrap_hal_s * cwrap_hal)
+  { return HAL_map.InsertRaw(new cwrapHAL(cwrap_hal)); }
+  
+  
+  int sfl_create_Scanner(int hal_handle, int hal_channel, const char * name,
+			 double mount_x, double mount_y, double mount_theta,
+			 int nscans, double rhomax, double phi0,
+			 double phirange)
+  {
+    shared_ptr<HAL> hal(get_HAL(hal_handle));
+    if( ! hal)
+      return -1;
+    return Scanner_map.InsertRaw(new Scanner(hal.get(), hal_channel, name,
+					     Frame(mount_x,
+						   mount_y,
+						   mount_theta),
+					     nscans, rhomax, phi0, phirange));
+  }
+  
+  
+  int sfl_create_BubbleBand(int RobotModel_handle,
+			    int Odometry_handle,
+			    double shortpath, double longpath,
+			    double max_ignore_distance)
+  {
+    shared_ptr<RobotModel> rm(get_RobotModel(RobotModel_handle));
+    if( ! rm)
+      return -1;
+    shared_ptr<Odometry> odom(get_Odometry(Odometry_handle));
+    if( ! odom)
+      return -2;
+    BubbleList::Parameters parms(shortpath, longpath, max_ignore_distance);
+    return BubbleBand_map.InsertRaw(new BubbleBand(*rm, *odom, parms));
+  }
+  
+  
+  int sfl_create_DiffDrive(int hal_handle,
+			   double wheelbase, double wheelradius)
+  {
+    shared_ptr<HAL> hal(get_HAL(hal_handle));
+    if( ! hal)
+      return -1;
+    return DiffDrive_map.InsertRaw(new DiffDrive(hal.get(),
+						 wheelbase, wheelradius));
+  }
+  
+  
+  int sfl_create_RobotModel(double timestep, double security_distance,
+			    double wheelbase, double wheelradius,
+			    double qd_max, double qdd_max,
+			    double sd_max, double thetad_max,
+			    double sdd_max, double thetadd_max,
+			    double * hull_x, double * hull_y, int hull_len)
+  {
+    RobotModel::Parameters parms(security_distance, wheelbase, wheelradius,
+				 qd_max, qdd_max, sd_max, thetad_max,
+				 sdd_max, thetadd_max);
+    Polygon poly;
+    for(int ip(0); ip < hull_len; ++ip)
+      poly.AddPoint(hull_x[ip], hull_y[ip]);
+    shared_ptr<Hull> hull(new Hull());
+    hull->AddPolygon(poly);
+    return RobotModel_map.InsertRaw(new RobotModel(timestep, parms, hull));
+  }
+  
+  
+  int sfl_create_DynamicWindow(int RobotModel_handle,
+			       int MotionController_handle,
+			       int dimension,
+			       double grid_width,
+			       double grid_height,
+			       double grid_resolution,
+			       double alpha_distance,
+			       double alpha_heading,
+			       double alpha_speed)
+  {
+    shared_ptr<RobotModel> rm(get_RobotModel(RobotModel_handle));
+    if( ! rm)
+      return -1;
+    shared_ptr<MotionController>
+      mc(get_MotionController(MotionController_handle));
+    if( ! mc)
+      return -2;
+    return DynamicWindow_map.InsertRaw(new DynamicWindow(dimension,
+							 grid_width,
+							 grid_height,
+							 grid_resolution,
+							 *rm,
+							 *mc,
+							 alpha_distance,
+							 alpha_heading,
+							 alpha_speed));
+  }
+  
+  
+  void sfl_destroy_HAL(int handle)
+  { HAL_map.Erase(handle); }
+  
+  
+  void sfl_destroy_Scanner(int handle)
+  { Scanner_map.Erase(handle); }
+  
+  
+  void sfl_destroy_DiffDrive(int handle)
+  { DiffDrive_map.Erase(handle); }
+  
+  
+  void sfl_destroy_RobotModel(int handle)
+  { RobotModel_map.Erase(handle); }
+  
+  
+  void sfl_destroy_DynamicWindow(int handle)
+  { DynamicWindow_map.Erase(handle); }
+  
+  
+  void sfl_destroy_BubbleBand(int handle)
+  { BubbleBand_map.Erase(handle); }
   
 }  

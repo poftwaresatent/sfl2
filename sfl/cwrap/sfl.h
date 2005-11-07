@@ -29,6 +29,7 @@ namespace sfl {
   class RobotModel;
   class DynamicWindow;
   class BubbleBand;
+  class Odometry;
 }
 namespace sfl_cwrap {
   boost::shared_ptr<sfl::HAL>           get_HAL(int handle);
@@ -37,6 +38,7 @@ namespace sfl_cwrap {
   boost::shared_ptr<sfl::RobotModel>    get_RobotModel(int handle);
   boost::shared_ptr<sfl::DynamicWindow> get_DynamicWindow(int handle);
   boost::shared_ptr<sfl::BubbleBand>    get_BubbleBand(int handle);
+  boost::shared_ptr<sfl::Odometry>      get_Odometry(int handle);
 }
 extern "C" {
 #endif // __cplusplus
@@ -46,32 +48,25 @@ extern "C" {
   
   int sfl_create_HAL(struct cwrap_hal_s * cwrap_hal);
   
-  void sfl_destroy_HAL(int handle);
-  
-  
-  int sfl_create_Scanner(int hal_handle, int hal_channel,
+  int sfl_create_Scanner(int hal_handle, int hal_channel, const char * name,
 			 double mount_x, double mount_y, double mount_theta,
 			 int nscans, double rhomax, double phi0,
 			 double phirange);
   
-  void sfl_destroy_Scanner(int handle);
-  
-  
-  int sfl_create_DiffDrive(double wheelbase, double wheelradius);
-  
-  void sfl_destroy_DiffDrive(int handle);
-  
+  int sfl_create_DiffDrive(int hal_handle,
+			   double wheelbase, double wheelradius);
   
   int sfl_create_RobotModel(double timestep, double security_distance,
+			    double wheelbase, double wheelradius,
 			    double qd_max, double qdd_max,
 			    double sd_max, double thetad_max,
 			    double sdd_max, double thetadd_max,
 			    double * hull_x, double * hull_y, int hull_len);
   
-  void sfl_destroy_RobotModel(int handle);
-  
-  
-  int sfl_create_DynamicWindow(int dimension,
+  int sfl_create_DynamicWindow(int RobotModel_handle,
+			       /** \note expo_create_MotionController() */
+			       int MotionController_handle,
+			       int dimension,
 			       double grid_width,
 			       double grid_height,
 			       double grid_resolution,
@@ -79,13 +74,20 @@ extern "C" {
 			       double alpha_heading,
 			       double alpha_speed);
   
-  void sfl_destroy_DynamicWindow(int handle);
-  
-  
-  int sfl_create_BubbleBand(double shortpath, double longpath,
+  int sfl_create_BubbleBand(int RobotModel_handle, int Odometry_handle,
+			    double shortpath, double longpath,
 			    double max_ignore_distance);
   
+  int sfl_create_Odometry(int HAL_handle);
+  
+  
+  void sfl_destroy_HAL(int handle);
+  void sfl_destroy_Scanner(int handle);
+  void sfl_destroy_DiffDrive(int handle);
+  void sfl_destroy_RobotModel(int handle);
+  void sfl_destroy_DynamicWindow(int handle);
   void sfl_destroy_BubbleBand(int handle);
+  void sfl_destroy_Odometry(int handle);
   
   
 #ifdef __cplusplus
