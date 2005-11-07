@@ -53,25 +53,6 @@ using boost::shared_ptr;
 namespace sfl_cwrap {
   
   
-  class Handle {
-  public:
-    shared_ptr<HAL>              hal;
-    shared_ptr<Scanner>          front_sick;
-    shared_ptr<Scanner>          rear_sick;
-    shared_ptr<DiffDrive>        drive;
-    shared_ptr<RobotModel>       robot_model;
-    shared_ptr<MotionController> motion_controller;
-    shared_ptr<DynamicWindow>    dynamic_window;
-    shared_ptr<Odometry>         odometry;
-    shared_ptr<BubbleBand>       bubble_band;
-    shared_ptr<Multiscanner>     multiscanner;
-    shared_ptr<MotionPlanner>    motion_planner;
-  };
-  
-  
-  static Handlemap<Handle> handlemap;
-  
-  
   static Handlemap<MotionController> MotionController_map;
   static Handlemap<MotionPlanner>    MotionPlanner_map;
   
@@ -80,130 +61,185 @@ namespace sfl_cwrap {
   { return MotionController_map.Find(handle); }
   
   
-  shared_ptr<MotionPlanner>    get_MotionPlanner(int handle)
+  shared_ptr<MotionPlanner> get_MotionPlanner(int handle)
   { return MotionPlanner_map.Find(handle); }
   
   
-  int expo_create(int hal_handle)
+  int expo_create_MotionController(int RobotModel_handle,
+				   int DiffDrive_handle)
   {
-    shared_ptr<Handle> handle(new Handle());
-  
-    handle->hal = get_HAL(hal_handle);
-    if( ! handle->hal)
+    shared_ptr<RobotModel> rm(get_RobotModel(RobotModel_handle));
+    if( ! rm)
       return -1;
+    shared_ptr<DiffDrive> dd(get_DiffDrive(DiffDrive_handle));
+    if( ! dd)
+      return -2;
+    return
+      MotionController_map.InsertRaw(new MotionController("cwrap", *rm, *dd));
+  }
   
-    int front_sick_channel(0);
-    double front_sick_x(0.15);
-    double front_sick_y(0);
-    double front_sick_theta(M_PI/2);
-    int sick_nscans(361);
-    double sick_rhomax(8);
-    double sick_phi0(-M_PI/2);
-    double sick_phirange(M_PI);
-    handle->front_sick.reset(new Scanner(handle->hal.get(), front_sick_channel,
+  
+  int expo_create_MotionPlanner(int MotionController_handle,
+				int DynamicWindow_handle,
+				int Multiscanner_handle,
+				int RobotModel_handle,
+				int BubbleBand_handle,
+				int Odometry_handle)
+  {
+    shared_ptr<MotionController>
+      mc(get_MotionController(MotionController_handle));
+    if( ! mc)
+      return -1;
+    shared_ptr<DynamicWindow>
+      dw(get_DynamicWindow(DynamicWindow_handle));
+    if( ! dw)
+      return -2;
+    shared_ptr<Multiscanner>
+      ms(get_Multiscanner(Multiscanner_handle));
+    if( ! ms)
+      return -3;
+    shared_ptr<RobotModel>
+      rm(get_RobotModel(RobotModel_handle));
+    if( ! rm)
+      return -4;
+    shared_ptr<BubbleBand>
+      bb(get_BubbleBand(BubbleBand_handle));
+    if( ! bb)
+      return -5;
+    shared_ptr<Odometry>
+      od(get_Odometry(Odometry_handle));
+    if( ! od)
+      return -6;
+    return MotionPlanner_map.InsertRaw(new MotionPlanner(*mc, *dw, *ms,
+							 *rm, *bb, *od));
+  }
+  
+  
+  int expo_factory(struct cwrap_hal_s * hal,
+		   int front_sick_channel,
+		   double front_sick_x,
+		   double front_sick_y,
+		   double front_sick_theta,
+		   int rear_sick_channel,
+		   double rear_sick_x,
+		   double rear_sick_y,
+		   double rear_sick_theta,		   
+		   double wheelbase,
+		   double wheelradius,
+		   double timestep,
+		   double security_distance,
+		   double qd_max,
+		   double qdd_max,
+		   double sd_max,
+		   double thetad_max,
+		   double * hull_x,
+		   double * hull_y,
+		   int hull_len,
+		   int dwa_dimension,
+		   double dwa_grid_width,
+		   double dwa_grid_height,
+		   double dwa_grid_resolution,
+		   double dwa_alpha_distance,
+		   double dwa_alpha_heading,
+		   double dwa_alpha_speed,
+		   double bb_shortpath,
+		   double bb_longpath,
+		   double bb_max_ignore_distance)
+  {
+    // TODO: avoid resource leak when returning errors
+    
+    int hal_handle(sfl_create_HAL(hal));
+    if(0 > hal_handle)
+      return -1;
+    
+    static const int sick_nscans(361);
+    static const double sick_rhomax(8);
+    static const double sick_phi0(-M_PI/2);
+    static const double sick_phirange(M_PI);
+    
+    int sick_handle[2];
+    sick_handle[0] = (sfl_create_Scanner(hal_handle, front_sick_channel,
 					 "front_sick",
-					 Frame(front_sick_x,
-					       front_sick_y,
-					       front_sick_theta),
+					 front_sick_x,
+					 front_sick_y,
+					 front_sick_theta,
 					 sick_nscans,
 					 sick_rhomax,
 					 sick_phi0,
 					 sick_phirange));
+    if(0 > sick_handle[0])
+      return -2;
+    sick_handle[1] = (sfl_create_Scanner(hal_handle, rear_sick_channel,
+					 "rear_sick",
+					 rear_sick_x,
+					 rear_sick_y,
+					 rear_sick_theta,
+					 sick_nscans,
+					 sick_rhomax,
+					 sick_phi0,
+					 sick_phirange));
+    if(0 > sick_handle[1])
+      return -3;
   
-    int rear_sick_channel(1);
-    double rear_sick_x(-0.3);
-    double rear_sick_y(0);
-    double rear_sick_theta(-M_PI/2);
-    handle->rear_sick.reset(new Scanner(handle->hal.get(), rear_sick_channel,
-					"rear_sick",
-					Frame(rear_sick_x,
-					      rear_sick_y,
-					      rear_sick_theta),
-					sick_nscans,
-					sick_rhomax,
-					sick_phi0,
-					sick_phirange));
+    int drive_handle(sfl_create_DiffDrive(hal_handle, wheelbase, wheelradius));
+    if(0 > drive_handle)
+      return -4;
+    
+    
+    const double sdd_max(0.75 * wheelradius * qdd_max);
+    const double thetadd_max(1.5 * wheelradius * qdd_max / wheelbase);
+    
+    int model_handle(sfl_create_RobotModel(timestep, security_distance,
+					   wheelbase, wheelradius,
+					   qd_max, qdd_max,
+					   sd_max, thetad_max,
+					   sdd_max, thetadd_max,
+					   hull_x, hull_y, hull_len));
+    if(0 > model_handle)
+      return -5;
+    
+    int mc_handle(expo_create_MotionController(model_handle, drive_handle));
+    if(0 > mc_handle)
+      return -6;
+    
+    int dwa_handle(sfl_create_DynamicWindow(model_handle,
+					    mc_handle,
+					    dwa_dimension,
+					    dwa_grid_width,
+					    dwa_grid_height,
+					    dwa_grid_resolution,
+					    dwa_alpha_distance,
+					    dwa_alpha_heading,
+					    dwa_alpha_speed));
+    if(0 > dwa_handle)
+      return -7;
+    
+    int odo_handle(sfl_create_Odometry(hal_handle));
+    if(0 > odo_handle)
+      return -8;
   
-    double wheelbase(0.6);
-    double wheelradius(0.09);
-    handle->drive.reset(new DiffDrive(handle->hal.get(),
-				      wheelbase, wheelradius));
-  
-    double timestep(0.1);
-    double security_distance(0.05);
-    double qd_max(0.1);
-    double qdd_max(0.1);
-    double sd_max(0.3);
-    double thetad_max(0.1);
-    double sdd_max(0.75 * wheelradius * qdd_max);
-    double thetadd_max(1.5 * wheelradius * qdd_max / wheelbase);
-    RobotModel::Parameters rm_parameters(security_distance,
-					 wheelbase,
-					 wheelradius,
-					 qd_max,
-					 qdd_max,
-					 sd_max,
-					 thetad_max,
-					 sdd_max,
-					 thetadd_max);
-    Polygon poly;
-    double x0(-0.3);
-    double y0(-0.2);
-    double x1(0.3);
-    double y1(0.2);
-    poly.AddPoint(x0, y0);
-    poly.AddPoint(x1, y0);
-    poly.AddPoint(x1, y1);
-    poly.AddPoint(x0, y1);
-    shared_ptr<Hull> hull(new Hull());
-    hull->AddPolygon(poly);
-    handle->robot_model.reset(new RobotModel(timestep, rm_parameters, hull));
-  
-    handle->motion_controller.reset(new MotionController("motion_controller",
-							 *handle->robot_model,
-							 *handle->drive));
-
-    int dwa_dimension(41);
-    double dwa_grid_width(2.2);
-    double dwa_grid_height(1.5);
-    double dwa_grid_resolution(0.03);
-    double dwa_alpha_distance(0.5);
-    double dwa_alpha_heading(0.1);
-    double dwa_alpha_speed(0.1);
-    handle->dynamic_window.reset(new DynamicWindow(dwa_dimension,
-						   dwa_grid_width,
-						   dwa_grid_height,
-						   dwa_grid_resolution,
-						   *handle->robot_model,
-						   *handle->motion_controller,
-						   dwa_alpha_distance,
-						   dwa_alpha_heading,
-						   dwa_alpha_speed));
-  
-    handle->odometry.reset(new Odometry(handle->hal.get()));
-  
-    double bb_shortpath(4);
-    double bb_longpath(8);
-    double bb_max_ignore_distance(4);
-    sfl::BubbleList::Parameters bb_parameters(bb_shortpath,
-					      bb_longpath,
-					      bb_max_ignore_distance);
-    handle->bubble_band.reset(new BubbleBand(*handle->robot_model,
-					     *handle->odometry,
-					     bb_parameters));
-  
-    handle->multiscanner.reset(new Multiscanner());
-    handle->multiscanner->Add(handle->front_sick);
-    handle->multiscanner->Add(handle->rear_sick);
-  
-    handle->motion_planner.reset(new MotionPlanner(*handle->motion_controller,
-						   *handle->dynamic_window,
-						   *handle->multiscanner,
-						   *handle->robot_model,
-						   *handle->bubble_band,
-						   *handle->odometry));
-  
-    return handlemap.Insert(handle);
+    int bb_handle(sfl_create_BubbleBand(model_handle,
+					odo_handle,
+					bb_shortpath,
+					bb_longpath,
+					bb_max_ignore_distance));
+    if(0 > bb_handle)
+      return -9;
+    
+    int ms_handle(sfl_create_Multiscanner(sick_handle, 2));
+    if(0 > bb_handle)
+      return -9;
+    
+    int mp_handle(expo_create_MotionPlanner(mc_handle,
+					    dwa_handle,
+					    ms_handle,
+					    model_handle,
+					    bb_handle,
+					    odo_handle));
+    if(0 > mp_handle)
+      return -10;
+    
+    return mp_handle;
   }
 
 
@@ -215,44 +251,38 @@ namespace sfl_cwrap {
 		    double dtheta,
 		    int viaGoal)
   {
-    shared_ptr<Handle> h(handlemap.Find(handle));
-    if( ! h)
+    shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
+    if( ! mp)
       return -1;
-    h->motion_planner->SetGoal(Goal(x, y, theta, dr, dtheta, viaGoal));
+    mp->SetGoal(Goal(x, y, theta, dr, dtheta, viaGoal));
     return 0;
   }
 
 
   int expo_goal_reached(int handle)
   {
-    shared_ptr<Handle> h(handlemap.Find(handle));
-    if( ! h)
+    shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
+    if( ! mp)
       return -1;
-    return h->motion_planner->GoalReached() ? 1 : 0;
+    return mp->GoalReached() ? 1 : 0;
   }
 
 
   int expo_update_all(int handle)
   {
-    shared_ptr<Handle> h(handlemap.Find(handle));
-    if( ! h)
+    shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
+    if( ! mp)
       return -1;
-    if(0 != h->odometry->Update())
-      return -2;
-    if(0 != h->front_sick->Update())
-      return -3;
-    if(0 != h->rear_sick->Update())
-      return -4;
-    h->motion_planner->Update();
-    if(0 != h->motion_controller->Update())
-      return -5;
+    mp->UpdateAll();
     return 0;
   }
+  
+  
+  void expo_destroy_MotionController(int handle)
+  { MotionController_map.Erase(handle); }
+  
 
-
-  void expo_destroy(int handle)
-  {
-    handlemap.Erase(handle);
-  }
+  void expo_destroy_MotionPlanner(int handle)
+  { MotionPlanner_map.Erase(handle); }
 
 }

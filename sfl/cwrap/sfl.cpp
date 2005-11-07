@@ -22,6 +22,7 @@
 #include "Handlemap.hpp"
 #include "cwrapHAL.hpp"
 #include <sfl/api/Scanner.hpp>
+#include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
@@ -39,6 +40,7 @@ namespace sfl_cwrap {
 
   static Handlemap<HAL>           HAL_map;
   static Handlemap<Scanner>       Scanner_map;
+  static Handlemap<Multiscanner>  Multiscanner_map;
   static Handlemap<DiffDrive>     DiffDrive_map;
   static Handlemap<RobotModel>    RobotModel_map;
   static Handlemap<DynamicWindow> DynamicWindow_map;
@@ -48,10 +50,14 @@ namespace sfl_cwrap {
   
   shared_ptr<HAL> get_HAL(int handle)
   { return HAL_map.Find(handle); }
-
+  
   
   shared_ptr<Scanner> get_Scanner(int handle)
   { return Scanner_map.Find(handle); }
+  
+  
+  shared_ptr<Multiscanner> get_Multiscanner(int handle)
+  { return Multiscanner_map.Find(handle); }
 
   
   shared_ptr<DiffDrive> get_DiffDrive(int handle)
@@ -91,6 +97,19 @@ namespace sfl_cwrap {
 						   mount_y,
 						   mount_theta),
 					     nscans, rhomax, phi0, phirange));
+  }
+  
+  
+  int sfl_create_Multiscanner(int * Scanner_handle, int nscanners)
+  {
+    shared_ptr<Multiscanner> ms(new Multiscanner());
+    for(int is(0); is < nscanners; ++is){
+      shared_ptr<Scanner> sc(get_Scanner(Scanner_handle[is]));
+      if( ! sc)
+	return -1;
+      ms->Add(sc);
+    }
+    return Multiscanner_map.Insert(ms);
   }
   
   
@@ -191,5 +210,9 @@ namespace sfl_cwrap {
   
   void sfl_destroy_BubbleBand(int handle)
   { BubbleBand_map.Erase(handle); }
+  
+  
+  void sfl_destroy_Odometry(int handle)
+  { Odometry_map.Erase(handle); }
   
 }  

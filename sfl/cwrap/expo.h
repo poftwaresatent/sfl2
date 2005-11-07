@@ -42,10 +42,42 @@ extern "C" {
   
   int expo_create_MotionPlanner(int MotionController_handle,
 				int DynamicWindow_handle,
-				int * Scanner_handle, int nscanners,
+				int Multiscanner_handle,
 				int RobotModel_handle,
 				int BubbleBand_handle,
 				int Odometry_handle);
+  
+  /** \return a MotionPlanner handle */
+  int expo_factory(struct cwrap_hal_s * hal,
+		   int front_sick_channel,
+		   double front_sick_x,
+		   double front_sick_y,
+		   double front_sick_theta,
+		   int rear_sick_channel,
+		   double rear_sick_x,
+		   double rear_sick_y,
+		   double rear_sick_theta,		   
+		   double wheelbase,
+		   double wheelradius,
+		   double timestep,
+		   double security_distance,
+		   double qd_max,
+		   double qdd_max,
+		   double sd_max,
+		   double thetad_max,
+		   double * hull_x,
+		   double * hull_y,
+		   int hull_len,
+		   int dwa_dimension,
+		   double dwa_grid_width,
+		   double dwa_grid_height,
+		   double dwa_grid_resolution,
+		   double dwa_alpha_distance,
+		   double dwa_alpha_heading,
+		   double dwa_alpha_speed,
+		   double bb_shortpath,
+		   double bb_longpath,
+		   double bb_max_ignore_distance);
   
   
   /**
