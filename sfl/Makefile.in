@@ -40,7 +40,7 @@ CPPFLAGS=       -I$(top_builddir)
 
 SHLIB_CURRENT=	0
 SHLIB_REVISION=	3
-SHLIB_AGE=	0
+SHLIB_AGE=	1
 LIB=            libsunflower.la
 
 SRCS=           util/Frame.cpp \
