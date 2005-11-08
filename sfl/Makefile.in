@@ -142,7 +142,11 @@ VPATH=		@srcdir@
 
 sinclude .depend
 
-all: softlink depend subdirs $(LIB)
+all: hacked_redepend softlink depend subdirs $(LIB)
+
+# for the moment dependencies don't work
+hacked_redepend:
+	-rm -f .depend
 
 $(LIB): $(OBJS)
 	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) \

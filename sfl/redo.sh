@@ -9,7 +9,7 @@ echo "redo.sh: running autogen.sh"
 echo "redo.sh: setting up build dir"
 mkdir build
 cd build
-../configure --prefix=/tmp/local
+../configure --prefix=/home/rolo/local
 
 echo "redo.sh: compiling"
 make
