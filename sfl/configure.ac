@@ -14,13 +14,15 @@ if test "x${GXX}" = "xyes"; then
   CXXFLAGS="${CXXFLAGS} -Wall"
 fi
 
-AC_PROG_MKDEP
+AC_PATH_PROG(MKDEP, mkdep, no, $prefix/bin:$exec_prefix/bin:$PATH)
+
+AC_LANG_PUSH(C++)
+AC_CHECK_HEADERS(boost/shared_ptr.hpp, [], AC_MSG_ERROR(BOOST not found))
+AC_LANG_POP
 
 AC_PROG_LIBTOOL
 
 AC_PROG_INSTALL
-
-ROBOT_PROG_MKDEP
 
 AC_SUBST(PACKAGE_VERSION)
 
