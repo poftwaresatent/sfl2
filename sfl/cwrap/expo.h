@@ -37,6 +37,16 @@ extern "C" {
 #include <stdio.h>
   
   
+  /** retval of expo_get_state() */
+  enum EXPO_CWRAP_STATE_ID {
+    EXPO_CWRAP_INVALID = -1,
+    EXPO_CWRAP_TAKE_AIM,
+    EXPO_CWRAP_AIMED,
+    EXPO_CWRAP_ADJUST_GOAL_HEADING,
+    EXPO_CWRAP_AT_GOAL
+  };
+  
+  
   int expo_create_MotionController(int RobotModel_handle,
 				   int DiffDrive_handle);
   
@@ -107,7 +117,7 @@ extern "C" {
      \return 0 if the goal has NOT been reached, 1 if the robot has
      reached the goal, -1 if the handle is invalid
   */
-  int expo_goal_reached(/** the handle obtained from expo_create() */
+  int expo_goal_reached(/** the handle from expo_create_MotionPlanner() */
 			int MotionPlanner_handle);
   
   
@@ -124,12 +134,21 @@ extern "C" {
      <ul><li>  0 success </li>
          <li> -1 invalid handle </li>
          <li> -2 odometry update error </li>
-         <li> -3 front sick update error </li>
-         <li> -4 rear sick update error </li>
-         <li> -5 motion controller update error </li></ul>
+         <li> -3 (multi)scanner update error </li>
+         <li> -4 motion controller update error </li></ul>
   */
-  int expo_update_all(/** the handle obtained from expo_create() */
+  int expo_update_all(/** the handle from expo_create_MotionPlanner() */
 		      int MotionPlanner_handle);
+  
+  /* \return
+     <ul><li> -1 invalid handle </li>
+         <li> EXPO_CWRAP_TAKE_AIM </li>
+         <li> EXPO_CWRAP_AIMED </li>
+         <li> EXPO_CWRAP_ADJUST_GOAL_HEADING </li>
+         <li> EXPO_CWRAP_AT_GOAL </li></ul>
+  */
+  int expo_get_state(/** the handle from expo_create_MotionPlanner() */
+		     int MotionPlanner_handle);
   
   
   /** \note Invalid handles are silently ignored. */
