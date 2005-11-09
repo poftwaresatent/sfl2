@@ -278,7 +278,9 @@ int expo_update_all(int handle)
   shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
   if( ! mp)
     return -1;
-  mp->UpdateAll();
+  const int res(mp->UpdateAll());
+  if(0 > res)
+    return res - 1;
   return 0;
 }
   
