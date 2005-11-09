@@ -283,6 +283,27 @@ int expo_update_all(int handle)
     return res - 1;
   return 0;
 }
+
+
+int expo_get_state(int handle)
+{
+  shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
+  if( ! mp)
+    return -1;
+  switch(mp->GetStateId()){
+  case MotionPlanner::take_aim:
+    return EXPO_CWRAP_TAKE_AIM;
+  case MotionPlanner::aimed:
+    return EXPO_CWRAP_AIMED;
+  case MotionPlanner::adjust_goal_heading:
+    return EXPO_CWRAP_ADJUST_GOAL_HEADING;
+  case MotionPlanner::at_goal:
+    return EXPO_CWRAP_AT_GOAL;
+  case MotionPlanner::null:
+    return EXPO_CWRAP_INVALID;
+  }
+  return EXPO_CWRAP_INVALID;
+}
   
   
 void expo_destroy_MotionController(int handle)

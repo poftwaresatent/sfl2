@@ -39,6 +39,15 @@ namespace expo {
     public sfl::MotionPlanner
   {
   public:
+    enum state_id_t {
+      take_aim,
+      aimed,
+      adjust_goal_heading,
+      at_goal,
+      null
+    };
+    
+    
     MotionPlanner(MotionController & motion_controller,
 		  sfl::DynamicWindow & dynamic_window,
 		  sfl::Multiscanner & multiscanner,
@@ -50,8 +59,13 @@ namespace expo {
     void SetGoal(const sfl::Goal & goal);
     const sfl::Goal & GetGoal() const;
     bool GoalReached() const;
+    state_id_t GetStateId() const;
     
-    /** \note Hack for Cogniron, does ugly things like const_casts! */
+    /** \note Hack for Cogniron, does ugly things like const_casts!
+	\return <ul><li>  0: success                        </li>
+                    <li> -1: odometry update error          </li>
+		    <li> -2: multiscanner update error      </li>
+		    <li> -3: motion controller update error </li></ul> */
     int UpdateAll();
     
   private:

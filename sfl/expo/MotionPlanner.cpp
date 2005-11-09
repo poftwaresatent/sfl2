@@ -93,7 +93,25 @@ namespace expo {
     if(0 > _multiscanner.UpdateAll())
       return -2;
     Update();
-    return _fields.motionController.Update();
+    if(0 > _fields.motionController.Update())
+      return -3;
+    return 0;
+  }
+  
+  
+  MotionPlanner::state_id_t MotionPlanner::
+  GetStateId()
+    const
+  {
+    if(_internal_state == _fields.at_goal_state)
+      return at_goal;
+    if(_internal_state == _fields.aimed_state)
+      return aimed;
+    if(_internal_state == _fields.adjust_goal_heading_state)
+      return adjust_goal_heading;
+    if(_internal_state == _fields.at_goal_state)
+      return at_goal;
+    return null;
   }
   
   
