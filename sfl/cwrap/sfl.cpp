@@ -228,3 +228,7 @@ void sfl_destroy_BubbleBand(int handle)
   
 void sfl_destroy_Odometry(int handle)
 { Odometry_map.Erase(handle); }
+  
+  
+void sfl_destroy_Multiscanner(int handle)
+{ Multiscanner_map.Erase(handle); }
