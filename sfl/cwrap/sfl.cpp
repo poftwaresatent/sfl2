@@ -29,6 +29,8 @@
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionController.hpp>
+#include <sstream>
+#include <iostream>
 
 
 using namespace sfl;
@@ -232,3 +234,43 @@ void sfl_destroy_Odometry(int handle)
   
 void sfl_destroy_Multiscanner(int handle)
 { Multiscanner_map.Erase(handle); }
+
+
+int sfl_dump_obstacles(int DynamicWindow_handle,
+		       FILE * stream,
+		       const char * prefix)
+{
+  shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
+  if( ! dwa)
+    return -1;
+  if(stream == stdout)
+    dwa->DumpObstacles(std::cout, prefix);
+  else if(stream == stderr)
+    dwa->DumpObstacles(std::cerr, prefix);
+  else{
+    std::ostringstream os;
+    dwa->DumpObstacles(os, prefix);
+    fprintf(stream, "%s", os.str().c_str());
+  }
+  return 0;
+}
+
+
+int sfl_dump_dwa(int DynamicWindow_handle,
+		 FILE * stream,
+		 const char * prefix)
+{
+  shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
+  if( ! dwa)
+    return -1;
+  if(stream == stdout)
+    dwa->DumpObjectives(std::cout, prefix);
+  else if(stream == stderr)
+    dwa->DumpObjectives(std::cerr, prefix);
+  else{
+    std::ostringstream os;
+    dwa->DumpObjectives(os, prefix);
+    fprintf(stream, "%s", os.str().c_str());
+  }
+  return 0;
+}

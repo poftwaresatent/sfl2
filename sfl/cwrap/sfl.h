@@ -85,6 +85,21 @@ extern "C" {
   int sfl_create_Odometry(int HAL_handle);
   
   
+  /** \todo Uses a heavyweight approach internally to make it sort of generic.
+      \return <ul><li>  0: success        </li>
+                  <li> -1: invalid handle </li></ul> */
+  int sfl_dump_obstacles(int DynamicWindow_handle,
+			 FILE * stream,
+			 const char * prefix);
+  
+  /** \todo Uses a heavyweight approach internally to make it sort of generic.
+      \return <ul><li>  0: success        </li>
+                  <li> -1: invalid handle </li></ul> */
+  int sfl_dump_dwa(int DynamicWindow_handle,
+		   FILE * stream,
+		   const char * prefix);
+  
+  
   void sfl_destroy_HAL(int handle);
   void sfl_destroy_Scanner(int handle);
   void sfl_destroy_Multiscanner(int handle);
