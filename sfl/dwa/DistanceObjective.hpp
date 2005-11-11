@@ -78,7 +78,14 @@ namespace sfl {
     
     
     void Initialize(std::ostream * progress_stream);
-    bool CheckLookup(std::ostream & os) const;
+    
+    /** \note special version for dumping on C stream for cwrap API */
+    void Initialize(FILE * c_progress_stream);
+
+    bool CheckLookup(std::ostream * os) const;
+
+    /** \note special version for dumping on C stream for cwrap API */
+    bool CheckLookup(FILE * cstream) const;
 
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from

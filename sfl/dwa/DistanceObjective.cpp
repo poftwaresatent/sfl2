@@ -109,6 +109,12 @@ namespace sfl {
   void DistanceObjective::
   Initialize(ostream * progress_stream)
   {
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //// BEWARE code duplication with Initialize(FILE*)
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    
     // precalculate lookup tables
     for(unsigned int i = 0; i < _dimension; ++i)
       _qdLookup[i] = _dynamic_window.Qd(i);
@@ -195,13 +201,22 @@ namespace sfl {
   
   
   bool DistanceObjective::
-  CheckLookup(ostream & os)
+  CheckLookup(ostream * os)
     const
   {
-    os << "INFO from DistanceObjective::CheckLookup():\n";
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //// BEWARE code duplication with CheckLookup(FILE*)
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    
+    if(0 != os)
+      (*os) << "INFO from DistanceObjective::CheckLookup():\n";
     for(unsigned int i = 0; i < _dimension; ++i)
       if(_qdLookup[i] != _dynamic_window.Qd(i)){
-	os << "  ERROR _qdLookup[" << i << "] is wrong\n";
+	if(0 != os)
+	  (*os) << "  ERROR _qdLookup[" << i << "] is " << _qdLookup[i]
+		<< " but should be " << _dynamic_window.Qd(i) << "\n";
 	return false;
       }
     
@@ -212,13 +227,15 @@ namespace sfl {
 	   maxval(absval(_qdLookup[i]),
 		  absval(_qdLookup[j])) /
 	   _robot_model.QddMax()){
-	  os << "  ERROR _maxTimeLookup["<<i<<"]["<<j<<"] is wrong\n";
+	  if(0 != os)
+	    (*os) << "  ERROR _maxTimeLookup["<<i<<"]["<<j<<"] is wrong\n";
 	  return false;
 	}
     }
     
     for(int igy = _dimy - 1; igy >= 0; --igy){
-      os << "  ";
+      if(0 != os)
+	(*os) << "  ";
       double y(FindYlength(igy));
       for(int igx = 0; igx < _dimx; ++igx){
 	double x(FindXlength(igx));
@@ -244,30 +261,212 @@ namespace sfl {
 	    if(wanted != compressed){
 	      if(0 > wanted){
 		if(_timeLookup[igx][igy]){
-		  os << "\n  ERROR _timeLookup[" << igx << "][" << igy
-		     << "] should be -1 but is " << compressed << "\n"
-		     << "  cell [" << igx << "][" << igy << "] at (" << x
-		     << ", " << y << ")\n";
+		  if(0 != os)
+		    (*os) << "\n  ERROR _timeLookup[" << igx << "][" << igy
+			  << "] should be -1 but is " << compressed << "\n"
+			  << "  cell [" << igx << "][" << igy << "] at (" << x
+			  << ", " << y << ")\n";
 		  return false;
 		}
-		os << "\nBUG in check procedure?\n";
+		if(0 != os)
+		  (*os) << "\nBUG in check procedure?\n";
 		return false;
 	      }
 	      if(0 > compressed){
-		os << "\n  ERROR _timeLookup[" << igx << "][" << igy
-		   << "] should be " << wanted << " but is "
-		   << compressed << " (which should be -1)\n"
-		   << "  cell [" << igx << "][" << igy << "] at (" << x
-		   << ", " << y << ")\n";
+		if(0 != os)
+		  (*os) << "\n  ERROR _timeLookup[" << igx << "][" << igy
+			<< "] should be " << wanted << " but is "
+			<< compressed << " (which should be -1)\n"
+			<< "  cell [" << igx << "][" << igy << "] at (" << x
+			<< ", " << y << ")\n";
 		return false;
 	      }
 	    }
 	    // update stats here?
 	  }
 	}
-	os << ".";
+	if(0 != os)
+	  (*os) << ".";
       }
-      os << "\n";
+      if(0 != os)
+	(*os) << "\n";
+    }
+    return true;
+  }
+
+  
+  void DistanceObjective::
+  Initialize(FILE * cstream)
+  {
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //// BEWARE code duplication with Initialize(std::ostream*)
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    
+    // precalculate lookup tables
+    for(unsigned int i = 0; i < _dimension; ++i)
+      _qdLookup[i] = _dynamic_window.Qd(i);
+
+    for(unsigned int i = 0; i < _dimension; ++i)
+      for(unsigned int j = 0; j < _dimension; ++j)
+	_maxTimeLookup[i][j] =
+	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
+	  _robot_model.QddMax();
+
+    fprintf(cstream,
+	    "DistanceObjective::Initialize()\n"
+	    "   calculating main lookup table...\n");
+    
+    for(int igy = _dimy - 1; igy >= 0; --igy){
+      double y(FindYlength(igy));
+
+      for(int igx = 0; igx < _dimx; ++igx){
+	double x(FindXlength(igx));
+      
+	if(_evaluationHull->Contains(x, y) &&
+	   ! _paddedHull->Contains(x, y)){
+	  unsigned int nValidCollisions(0);
+
+	  // fill the actuator lookup table with collision times
+	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
+	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
+	      if(_dynamic_window.Forbidden(iqdl, iqdr))
+		Lookup::LoadBuffer(iqdl, iqdr, - 1);
+	      else{
+		double t(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
+					  x, y));
+
+		if((t > 0) && (t <= _maxTime)){
+		  ++nValidCollisions;
+		  Lookup::LoadBuffer(iqdl, iqdr, t);
+		}
+		else
+		  Lookup::LoadBuffer(iqdl, iqdr, - 1);
+	      }
+	
+	  if(nValidCollisions > 0){
+	    fprintf(cstream, "*");
+
+	    // allocate a lookup table for this grid cell
+	    _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
+	
+	    // tell timeLookup to store the distances (compressed)
+	    _timeLookup[igx][igy]->SaveBuffer();
+	  }
+	  else
+	    fprintf(cstream, "o");
+	}
+	else{
+	  // fill it with epsilon collision time to make the robot stop if
+	  // there's something inside the outline (which is quite a hack
+	  // because the same could be achieved using a simple flag,
+	  // which wastes less ram and time... ah well)
+	  //
+	  // can't simply use -1 because then the compression code
+	  // segfaults (it's looking for a minimum over positive
+	  // values), can't simply use 0 because somewhere else in this
+	  // code here I chack against zero... in short,
+	  // DistanceObjective NEEDS A GENERAL OVERHAUL!!!
+	
+	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
+	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
+	      Lookup::LoadBuffer(iqdl, iqdr, epsilon);
+	  _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
+	  _timeLookup[igx][igy]->SaveBuffer();
+	
+	  fprintf(cstream, ".");
+	}
+      }
+      fprintf(cstream, "\n");
+    }
+    fprintf(cstream, "   finished.\n");
+  }
+  
+  
+  bool DistanceObjective::
+  CheckLookup(FILE * cstream)
+    const
+  {
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //// BEWARE code duplication with CheckLookup(std::ostream*)
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    
+    fprintf(cstream, "INFO from DistanceObjective::CheckLookup():\n");
+    for(unsigned int i = 0; i < _dimension; ++i)
+      if(_qdLookup[i] != _dynamic_window.Qd(i)){
+	fprintf(cstream, "ERROR _qdLookup[%d] is %f but should be %f\n",
+		i, _qdLookup[i], _dynamic_window.Qd(i));
+	return false;
+      }
+    
+    for(unsigned int i = 0; i < _dimension; ++i){
+      for(unsigned int j = 0; j < _dimension; ++j)
+	if(_maxTimeLookup[i][j]
+	   !=
+	   maxval(absval(_qdLookup[i]),
+		  absval(_qdLookup[j])) /
+	   _robot_model.QddMax()){
+	  fprintf(cstream, "  ERROR _maxTimeLookup[%d][%d] is wrong\n", i, j);
+	  return false;
+	}
+    }
+    
+    for(int igy = _dimy - 1; igy >= 0; --igy){
+      fprintf(cstream, "  ");
+      double y(FindYlength(igy));
+      for(int igx = 0; igx < _dimx; ++igx){
+	double x(FindXlength(igx));
+	for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl){
+	  for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr){
+	    double wanted(-1);
+	    if(_evaluationHull->Contains(x, y))
+	      if(_paddedHull->Contains(x, y))
+		wanted = epsilon; // due to epsilon hack above...
+	      else{
+		if( ! _dynamic_window.Forbidden(iqdl, iqdr)){
+		  const double t(PredictCollision(_qdLookup[iqdl],
+						  _qdLookup[iqdr],
+						  x, y));
+		  if((t > 0) && (t <= _maxTime))
+		    wanted = t;
+		}
+	      }
+	    double compressed(-1);
+	    if(_timeLookup[igx][igy])
+	      compressed = _timeLookup[igx][igy]->Get(iqdl, iqdr);
+	    
+	    if(wanted != compressed){
+	      if(0 > wanted){
+		if(_timeLookup[igx][igy]){
+		  fprintf(cstream,
+			  "\n  "
+			  "ERROR _timeLookup[%d][%d] should be -1 but is %f\n"
+			  "  cell [%d][%d] at (%f, %f)\n",
+			  igx, igy, compressed, igx, igy, x, y);
+		  return false;
+		}
+		fprintf(cstream, "\nBUG in check procedure?\n");
+		return false;
+	      }
+	      if(0 > compressed){
+		fprintf(cstream,
+			"\n  "
+			"ERROR _timeLookup[%d][%d] should be %f but is %f "
+			"(which should be -1)\n"
+			"  cell [%d][%d] at (%f, %f)\n",
+			igx, igy, wanted, compressed, igx, igy, x, y);
+		return false;
+	      }
+	    }
+	    // update stats here?
+	  }
+	}
+	fprintf(cstream, ".");
+      }
+      fprintf(cstream, "\n");
     }
     return true;
   }

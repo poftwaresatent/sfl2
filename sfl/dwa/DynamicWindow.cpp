@@ -43,7 +43,8 @@ namespace sfl {
 		const MotionController & motion_controller,
 		double alpha_distance,
 		double alpha_heading,
-		double alpha_speed):
+		double alpha_speed,
+		bool auto_init):
     _reachableQd(robot_model.Timestep() * robot_model.QddMax()),
     _dimension(dimension),
     _resolution(2 * robot_model.QdMax() / dimension),
@@ -75,30 +76,71 @@ namespace sfl {
     for(int i = 0; i < _dimension; ++i)
       _objective[i] = new double[_dimension];
 
-    // initialisations
+    if(auto_init)
+      Initialize(& cerr, false);
+  }
+  
+  
+  bool DynamicWindow::
+  Initialize(FILE * cstream,
+	     bool paranoid)
+  {
+    // BEWARE code duplication with Initialize(std::ostream&, bool)
     for(int i = 0; i < _dimension; ++i)
       _qd[i] = FindQd(i);
-  
+    
     for(int i = 0; i < _dimension; ++i)
       _stopDistance[i] =
 	0.5 * _robot_model.WheelRadius()
 	* _qd[i] * _qd[i]
 	/ _robot_model.QddMax();
-
-    InitForbidden();
-
-    _distance_objective.Initialize(& cerr);
-    static const bool check_distance_objective(false);
-    if(check_distance_objective){
-      if( ! _distance_objective.CheckLookup(cerr))
-	abort();
-    }
     
+    InitForbidden();
+    
+    _distance_objective.Initialize(cstream);
+
     _heading_objective.Initialize(0);
     _speed_objective.Initialize(0);
+    
+    if((paranoid)
+       && ( ! _distance_objective.CheckLookup(cstream)))
+      return false;
+    return true;
   }
-
-
+  
+  
+  bool DynamicWindow::
+  Initialize(ostream * os,
+	     bool paranoid)
+  {
+    // BEWARE code duplication with Initialize(FILE*, bool)
+    for(int i = 0; i < _dimension; ++i)
+      _qd[i] = FindQd(i);
+    
+    for(int i = 0; i < _dimension; ++i)
+      _stopDistance[i] =
+	0.5 * _robot_model.WheelRadius()
+	* _qd[i] * _qd[i]
+	/ _robot_model.QddMax();
+    
+    InitForbidden();
+    
+    _distance_objective.Initialize(os);
+    
+    if(paranoid){
+      _heading_objective.Initialize(os);
+      _speed_objective.Initialize(os);
+      if( ! _distance_objective.CheckLookup(os))
+	return false;
+    }
+    else{
+      _heading_objective.Initialize(0);
+      _speed_objective.Initialize(0);
+    }
+    return true;
+  }
+  
+  
   DynamicWindow::
   ~DynamicWindow()
   {

@@ -75,17 +75,23 @@ namespace sfl {
 		  const MotionController & motion_controller,
 		  double alpha_distance,
 		  double alpha_heading,
-		  double alpha_speed);
+		  double alpha_speed,
+		  bool auto_init);
     ~DynamicWindow();
-
-
+    
+    
+    /** \note special version for dumping on C stream for cwrap API */
+    bool Initialize(FILE * cstream, bool paranoid);
+    
+    bool Initialize(std::ostream * os, bool paranoid);
+    
     int Dimension() const;
-
+    
     bool Forbidden(int qdlIndex, int qdrIndex) const;
     bool Admissible(int qdlIndex, int qdrIndex) const;
     bool Reachable(int qdlIndex, int qdrIndex) const;
     double Qd(int index) const;
-
+    
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
 	Multiscanner::CollectScans() and
@@ -99,7 +105,7 @@ namespace sfl {
 		double dy,
 		boost::shared_ptr<const Scan> local_scan,
 		std::ostream * dbgos = 0);
-
+    
     void GetSubGoal(double & local_x, double & local_y) const;
     void SetHeadingOffset(double angle);
     double GetHeadingOffset() const;
