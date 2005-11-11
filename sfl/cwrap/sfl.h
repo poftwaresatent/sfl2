@@ -76,7 +76,8 @@ extern "C" {
 			       double grid_resolution,
 			       double alpha_distance,
 			       double alpha_heading,
-			       double alpha_speed);
+			       double alpha_speed,
+			       FILE *progress);
   
   int sfl_create_BubbleBand(int RobotModel_handle, int Odometry_handle,
 			    double shortpath, double longpath,

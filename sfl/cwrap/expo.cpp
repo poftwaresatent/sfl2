@@ -215,7 +215,8 @@ int expo_factory(struct cwrap_hal_s * hal,
 					  dwa_grid_resolution,
 					  dwa_alpha_distance,
 					  dwa_alpha_heading,
-					  dwa_alpha_speed));
+					  dwa_alpha_speed,
+					  stderr));
   if(0 > dwa_handle)
     return -7;
     

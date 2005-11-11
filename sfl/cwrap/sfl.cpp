@@ -174,7 +174,8 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
 			     double grid_resolution,
 			     double alpha_distance,
 			     double alpha_heading,
-			     double alpha_speed)
+			     double alpha_speed,
+			     FILE *progress)
 {
   shared_ptr<RobotModel> rm(get_RobotModel(RobotModel_handle));
   if( ! rm)
@@ -183,15 +184,19 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
     mc(get_MotionController(MotionController_handle));
   if( ! mc)
     return -2;
-  return DynamicWindow_map.InsertRaw(new DynamicWindow(dimension,
-						       grid_width,
-						       grid_height,
-						       grid_resolution,
-						       *rm,
-						       *mc,
-						       alpha_distance,
-						       alpha_heading,
-						       alpha_speed));
+  shared_ptr<DynamicWindow> dwa(new DynamicWindow(dimension,
+						  grid_width,
+						  grid_height,
+						  grid_resolution,
+						  *rm,
+						  *mc,
+						  alpha_distance,
+						  alpha_heading,
+						  alpha_speed,
+						  false));
+  if( ! dwa->Initialize(progress, true))
+    return -3;
+  return DynamicWindow_map.Insert(dwa);
 }
 
 
