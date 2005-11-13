@@ -223,12 +223,13 @@ namespace sfl {
     for(unsigned int i = 0; i < _dimension; ++i){
       for(unsigned int j = 0; j < _dimension; ++j)
 	if(_maxTimeLookup[i][j]
-	   !=
-	   maxval(absval(_qdLookup[i]),
-		  absval(_qdLookup[j])) /
-	   _robot_model.QddMax()){
+	   != maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+	      / _robot_model.QddMax()){
 	  if(0 != os)
-	    (*os) << "  ERROR _maxTimeLookup["<<i<<"]["<<j<<"] is wrong\n";
+	    (*os) << "  ERROR _maxTimeLookup[" << i << "][" << j<< "] is "
+		  << _maxTimeLookup[i][j] << "but should be "
+		  << maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+	             / _robot_model.QddMax() << "\n";
 	  return false;
 	}
     }
@@ -301,23 +302,32 @@ namespace sfl {
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
     //// BEWARE code duplication with Initialize(std::ostream*)
+    //// this version is a bit more verbose
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
     
+    fprintf(cstream, "DistanceObjective::Initialize(): this = 0x%08X\n",
+	    reinterpret_cast<void *>(this));
+	    
     // precalculate lookup tables
-    for(unsigned int i = 0; i < _dimension; ++i)
+    for(unsigned int i = 0; i < _dimension; ++i){
       _qdLookup[i] = _dynamic_window.Qd(i);
-
-    for(unsigned int i = 0; i < _dimension; ++i)
-      for(unsigned int j = 0; j < _dimension; ++j)
+      fprintf(cstream, "  _qdLookup[%ud] = %f\n", i, _qdLookup[i]);
+    }
+    
+    fprintf(cstream, "  _maxTimeLookup:\n");
+    for(unsigned int i = 0; i < _dimension; ++i){
+      fprintf(cstream, "    [%ud][0...%ud]", i, _dimension - 1);
+      for(unsigned int j = 0; j < _dimension; ++j){
 	_maxTimeLookup[i][j] =
 	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
 	  _robot_model.QddMax();
-
-    fprintf(cstream,
-	    "DistanceObjective::Initialize()\n"
-	    "   calculating main lookup table...\n");
+	fprintf(cstream, "  %4.2f", _maxTimeLookup[i][j]);
+      }
+      fprintf(cstream, "\n");
+    }
     
+    fprintf(cstream, "   calculating main lookup table...\n");
     for(int igy = _dimy - 1; igy >= 0; --igy){
       double y(FindYlength(igy));
 
@@ -394,7 +404,10 @@ namespace sfl {
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
     
-    fprintf(cstream, "INFO from DistanceObjective::CheckLookup():\n");
+    
+    fprintf(cstream, "DistanceObjective::CheckLookup(): this = 0x%08X\n",
+	    reinterpret_cast<const void *>(this));
+    
     for(unsigned int i = 0; i < _dimension; ++i)
       if(_qdLookup[i] != _dynamic_window.Qd(i)){
 	fprintf(cstream, "ERROR _qdLookup[%d] is %f but should be %f\n",
@@ -405,11 +418,13 @@ namespace sfl {
     for(unsigned int i = 0; i < _dimension; ++i){
       for(unsigned int j = 0; j < _dimension; ++j)
 	if(_maxTimeLookup[i][j]
-	   !=
-	   maxval(absval(_qdLookup[i]),
-		  absval(_qdLookup[j])) /
-	   _robot_model.QddMax()){
-	  fprintf(cstream, "  ERROR _maxTimeLookup[%d][%d] is wrong\n", i, j);
+	   != maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+	      / _robot_model.QddMax()){
+	  fprintf(cstream,
+		  "  ERROR _maxTimeLookup[%d][%d] is %f but should be %f\n",
+		  i, j, _maxTimeLookup[i][j],
+		  maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+		  / _robot_model.QddMax());
 	  return false;
 	}
     }
