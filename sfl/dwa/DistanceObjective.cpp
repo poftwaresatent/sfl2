@@ -220,19 +220,20 @@ namespace sfl {
 	return false;
       }
     
-    for(unsigned int i = 0; i < _dimension; ++i){
-      for(unsigned int j = 0; j < _dimension; ++j)
-	if(_maxTimeLookup[i][j]
-	   != maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
-	      / _robot_model.QddMax()){
+    for(unsigned int i = 0; i < _dimension; ++i)
+      for(unsigned int j = 0; j < _dimension; ++j){
+	const double check(maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+			   / _robot_model.QddMax());
+	if(epsilon < absval(_maxTimeLookup[i][j] - check)){
 	  if(0 != os)
 	    (*os) << "  ERROR _maxTimeLookup[" << i << "][" << j<< "] is "
 		  << _maxTimeLookup[i][j] << "but should be "
-		  << maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
-	             / _robot_model.QddMax() << "\n";
+		  << check << "\n"
+		  << "        difference = " << _maxTimeLookup[i][j] - check
+		  << "\n";
 	  return false;
 	}
-    }
+      }
     
     for(int igy = _dimy - 1; igy >= 0; --igy){
       if(0 != os)
@@ -317,12 +318,12 @@ namespace sfl {
     
     fprintf(cstream, "  _maxTimeLookup:\n");
     for(unsigned int i = 0; i < _dimension; ++i){
-      fprintf(cstream, "    [%ud][0...%ud]", i, _dimension - 1);
+      fprintf(cstream, "  [%u][0-%u]", i, _dimension - 1);
       for(unsigned int j = 0; j < _dimension; ++j){
 	_maxTimeLookup[i][j] =
 	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
 	  _robot_model.QddMax();
-	fprintf(cstream, "  %4.2f", _maxTimeLookup[i][j]);
+	fprintf(cstream, " %3.2f", _maxTimeLookup[i][j]);
       }
       fprintf(cstream, "\n");
     }
@@ -415,19 +416,19 @@ namespace sfl {
 	return false;
       }
     
-    for(unsigned int i = 0; i < _dimension; ++i){
-      for(unsigned int j = 0; j < _dimension; ++j)
-	if(_maxTimeLookup[i][j]
-	   != maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
-	      / _robot_model.QddMax()){
+    for(unsigned int i = 0; i < _dimension; ++i)
+      for(unsigned int j = 0; j < _dimension; ++j){
+	const double check(maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+			   / _robot_model.QddMax());
+	if(epsilon < absval(_maxTimeLookup[i][j] - check)){
 	  fprintf(cstream,
-		  "  ERROR _maxTimeLookup[%d][%d] is %f but should be %f\n",
-		  i, j, _maxTimeLookup[i][j],
-		  maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
-		  / _robot_model.QddMax());
+		  "  ERROR _maxTimeLookup[%d][%d] is %f but should be %f\n"
+		  "        difference = %e\n",
+		  i, j, _maxTimeLookup[i][j], check,
+		  _maxTimeLookup[i][j] - check);
 	  return false;
 	}
-    }
+      }
     
     for(int igy = _dimy - 1; igy >= 0; --igy){
       fprintf(cstream, "  ");
