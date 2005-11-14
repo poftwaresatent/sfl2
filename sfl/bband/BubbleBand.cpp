@@ -31,7 +31,7 @@
 #include <iostream>
 
 
-#define DEBUG_SFL_BUBBLE_BAND
+//#define DEBUG_SFL_BUBBLE_BAND
 #ifdef DEBUG_SFL_BUBBLE_BAND
 using std::cout;
 #endif // DEBUG_SFL_BUBBLE_BAND
