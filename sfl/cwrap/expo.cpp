@@ -288,31 +288,26 @@ int expo_update_all(int handle)
 
 int expo_get_state(int handle)
 {
-  CWRAP_PDEBUG(__FILE__": DEBUG expo_get_state()\n");
   shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
   if( ! mp){
-    CWRAP_PDEBUG("  invalid handle\n");
+    CWRAP_PDEBUG(__FILE__": DEBUG expo_get_state(): invalid handle\n");
     return -1;
   }
   const MotionPlanner::state_id_t state(mp->GetStateId());
   switch(state){
   case MotionPlanner::take_aim:
-    CWRAP_PDEBUG("  take_aim            => TAKE_AIM\n");
     return EXPO_CWRAP_TAKE_AIM;
   case MotionPlanner::aimed:
-    CWRAP_PDEBUG("  aimed               => AIMED\n");
     return EXPO_CWRAP_AIMED;
   case MotionPlanner::adjust_goal_heading:
-    CWRAP_PDEBUG("  adjust_goal_heading => ADJUST_GOAL_HEADING\n");
     return EXPO_CWRAP_ADJUST_GOAL_HEADING;
   case MotionPlanner::at_goal:
-    CWRAP_PDEBUG("  at_goal             => AT_GOAL\n");
     return EXPO_CWRAP_AT_GOAL;
   case MotionPlanner::null:
-    CWRAP_PDEBUG("  null                => NULL\n");
     return EXPO_CWRAP_NULL;
   }
-  CWRAP_PDEBUG(__FILE__"  unhandled state id %d\n", state);
+  CWRAP_PDEBUG(__FILE__": DEBUG expo_get_state(): unhandled state %d\n",
+	       state);
   return EXPO_CWRAP_INVALID;
 }
   
