@@ -39,7 +39,7 @@ CXXFLAGS=       @CXXFLAGS@ -I$(top_builddir)
 CPPFLAGS=       -I$(top_builddir)
 
 SHLIB_CURRENT=	0
-SHLIB_REVISION=	3
+SHLIB_REVISION=	4
 SHLIB_AGE=	0
 LIB=            libsunflower.la
 

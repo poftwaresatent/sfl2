@@ -1,5 +1,5 @@
 AC_REVISION($Id$)
-AC_INIT(libsunflower,0.5-pre)
+AC_INIT(libsunflower,0.5)
 AC_PREREQ(2.57)
 
 AC_CANONICAL_HOST
