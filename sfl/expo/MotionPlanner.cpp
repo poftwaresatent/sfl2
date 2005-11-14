@@ -23,7 +23,13 @@
 
 
 #include "MotionPlanner.hpp"
-using namespace std;
+
+
+#define DEBUG_EXPO_MOTION_PLANNER
+#ifdef DEBUG_EXPO_MOTION_PLANNER
+# include <iostream>
+using std::cerr;
+#endif // DEBUG_EXPO_MOTION_PLANNER
 
 
 namespace expo {
@@ -50,9 +56,24 @@ namespace expo {
   void MotionPlanner::
   Update()
   {
+#ifdef DEBUG_EXPO_MOTION_PLANNER
+    const MotionPlannerState * oldstate(_internal_state);
+    const char * oldstatename(GetStateName());
+#endif // DEBUG_EXPO_MOTION_PLANNER
+
     _internal_state = _internal_state->NextState();
     _internal_state->Act(_multiscanner.
 			 CollectGlobalScans(_fields.odometry.Get()));
+    
+#ifdef DEBUG_EXPO_MOTION_PLANNER
+    if(oldstate != _internal_state){
+      cerr << "DEBUG expo::MotionPlanner::Update()\n"
+	   << "  state transition " << oldstatename << " => " << GetStateName()
+	   << "\n";
+      if(_internal_state == _fields.null_state)
+	cerr << "  WARNING: transition to null state!\n";
+    }
+#endif // DEBUG_EXPO_MOTION_PLANNER
   }
 
 
@@ -103,6 +124,8 @@ namespace expo {
   GetStateId()
     const
   {
+    if(_internal_state == _fields.take_aim_state)
+      return take_aim;
     if(_internal_state == _fields.at_goal_state)
       return at_goal;
     if(_internal_state == _fields.aimed_state)
@@ -111,7 +134,31 @@ namespace expo {
       return adjust_goal_heading;
     if(_internal_state == _fields.at_goal_state)
       return at_goal;
+    if(_internal_state == _fields.null_state)
+      return null;
+
+#ifdef DEBUG_EXPO_MOTION_PLANNER
+    cerr << "WARNING in expo::MotionPlanner::GetStateId(): unhandled case\n";
+#endif // DEBUG_EXPO_MOTION_PLANNER
     return null;
+  }
+  
+  
+  const char * MotionPlanner::
+  GetStateName()
+    const
+  {
+    if(_internal_state == _fields.null_state)
+      return "NULL";
+    if(_internal_state == _fields.take_aim_state)
+      return "TAKE_AIM";
+    if(_internal_state == _fields.aimed_state)
+      return "AIMED";
+    if(_internal_state == _fields.adjust_goal_heading_state)
+      return "ADJUST_GOAL_HEADING";
+    if(_internal_state == _fields.at_goal_state)
+      return "AT_GOAL";
+    return "<invalid>";
   }
   
   

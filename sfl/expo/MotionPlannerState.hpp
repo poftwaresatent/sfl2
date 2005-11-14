@@ -38,6 +38,9 @@ namespace expo {
 
   class MotionPlannerState
   {
+  private:
+    MotionPlannerState(const MotionPlannerState &); // non-copyable
+    
   protected:
     MotionPlannerState(const std::string & name,
 		       MotionPlannerFields * fields);
@@ -127,6 +130,9 @@ namespace expo {
   class TakeAimState:
     public MotionPlannerState
   {
+  private:
+    TakeAimState(const TakeAimState &); // non-copyable
+    
   public:
     TakeAimState(MotionPlannerFields * fields);
 
@@ -149,6 +155,9 @@ namespace expo {
   class AimedState:
     public MotionPlannerState
   {
+  private:
+    AimedState(const AimedState &); // non-copyable
+    
   public:
     AimedState(MotionPlannerFields * fields);
 
@@ -172,6 +181,9 @@ namespace expo {
   class AdjustGoalHeadingState:
     public MotionPlannerState
   {
+  private:
+    AdjustGoalHeadingState(const AdjustGoalHeadingState &); // non-copyable
+    
   public:
     AdjustGoalHeadingState(MotionPlannerFields * fields);
 
@@ -186,6 +198,9 @@ namespace expo {
   class AtGoalState:
     public MotionPlannerState
   {
+  private:
+    AtGoalState(const AtGoalState &); // non-copyable
+    
   public:
     AtGoalState(MotionPlannerFields * fields);
 
@@ -201,6 +216,9 @@ namespace expo {
   class NullState:
     public MotionPlannerState
   {
+  private:
+    NullState(const NullState &); // non-copyable
+    
   public:
     NullState(MotionPlannerFields * fields);
 
