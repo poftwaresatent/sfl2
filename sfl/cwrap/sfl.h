@@ -20,6 +20,15 @@
 #ifndef CWRAP_SFL_H
 #define CWRAP_SFL_H
 
+
+#define CWRAP_DEBUG
+#ifdef CWRAP_DEBUG
+#define CWRAP_PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+#else
+#define CWRAP_PDEBUG(fmt, args...) /* nothing */
+#endif
+
+
 #ifdef __cplusplus
 # include <boost/shared_ptr.hpp>
 namespace sfl {

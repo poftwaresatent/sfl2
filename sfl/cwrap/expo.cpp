@@ -289,8 +289,10 @@ int expo_update_all(int handle)
 int expo_get_state(int handle)
 {
   shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
-  if( ! mp)
+  if( ! mp){
+    CWRAP_PDEBUG(__FILE__": DEBUG expo_get_state(): invalid handle\n");
     return -1;
+  }
   switch(mp->GetStateId()){
   case MotionPlanner::take_aim:
     return EXPO_CWRAP_TAKE_AIM;
@@ -301,8 +303,10 @@ int expo_get_state(int handle)
   case MotionPlanner::at_goal:
     return EXPO_CWRAP_AT_GOAL;
   case MotionPlanner::null:
-    return EXPO_CWRAP_INVALID;
+    return EXPO_CWRAP_NULL;
   }
+  CWRAP_PDEBUG(__FILE__": DEBUG expo_get_state(): unhandled state id %d\n",
+	       mp->GetStateId());
   return EXPO_CWRAP_INVALID;
 }
   

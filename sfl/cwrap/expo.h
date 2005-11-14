@@ -39,7 +39,8 @@ extern "C" {
   
   /** retval of expo_get_state() */
   enum EXPO_CWRAP_STATE_ID {
-    EXPO_CWRAP_INVALID = -1,
+    EXPO_CWRAP_INVALID = -2,
+    EXPO_CWRAP_NULL = 0,
     EXPO_CWRAP_TAKE_AIM,
     EXPO_CWRAP_AIMED,
     EXPO_CWRAP_ADJUST_GOAL_HEADING,
@@ -141,11 +142,13 @@ extern "C" {
 		      int MotionPlanner_handle);
   
   /* \return
-     <ul><li> -1 invalid handle </li>
-         <li> EXPO_CWRAP_TAKE_AIM </li>
-         <li> EXPO_CWRAP_AIMED </li>
-         <li> EXPO_CWRAP_ADJUST_GOAL_HEADING </li>
-         <li> EXPO_CWRAP_AT_GOAL </li></ul>
+     <ul><li> -1: invalid handle </li>
+         <li> -2: EXPO_CWRAP_INVALID </li>
+         <li>  0: EXPO_CWRAP_NULL </li>
+         <li>  1: EXPO_CWRAP_TAKE_AIM </li>
+         <li>  2: EXPO_CWRAP_AIMED </li>
+         <li>  3: EXPO_CWRAP_ADJUST_GOAL_HEADING </li>
+         <li>  4: EXPO_CWRAP_AT_GOAL </li></ul>
   */
   int expo_get_state(/** the handle from expo_create_MotionPlanner() */
 		     int MotionPlanner_handle);
