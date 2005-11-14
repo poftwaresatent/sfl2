@@ -60,6 +60,7 @@ namespace expo {
     const sfl::Goal & GetGoal() const;
     bool GoalReached() const;
     state_id_t GetStateId() const;
+    const char * GetStateName() const;
     
     /** \note Hack for Cogniron, does ugly things like const_casts!
 	\return <ul><li>  0: success                        </li>
