@@ -323,7 +323,7 @@ namespace sfl {
 	_maxTimeLookup[i][j] =
 	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
 	  _robot_model.QddMax();
-	fprintf(cstream, " %3.2f", _maxTimeLookup[i][j]);
+	fprintf(cstream, " %3.1f", _maxTimeLookup[i][j]);
       }
       fprintf(cstream, "\n");
     }
