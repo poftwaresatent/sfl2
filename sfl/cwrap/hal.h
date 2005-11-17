@@ -24,7 +24,22 @@
 extern "C" {
 #endif // __cplusplus
   
-  
+
+  /**
+     example usage:
+     \code
+     struct cwrap_hal_s *hal_cb = calloc(1, sizeof(*hal_cb));
+     if(0 == hal_cb){
+       fprintf(stderr, "ERROR: out of memory\n");
+       exit(EXIT_FAILURE);
+       }
+       hal_cb->time_get     = time_get;
+       hal_cb->odometry_set = odometry_set;
+       hal_cb->speed_set    = sflSetSpeed;
+       hal_cb->odometry_get = odometry_get_generic;
+       hal_cb->scan_get     = scan_get_generic;
+     \endcode
+  */  
   struct cwrap_hal_s {
     int (*time_get)(struct timespec * stamp);
     int (*odometry_set)(double x, double y, double theta,
@@ -35,8 +50,33 @@ extern "C" {
 			double * sxx, double * syy, double * stt,
 			double * sxy, double * sxt, double * syt);
     int (*speed_set)(double qdl, double qdr);
+
+    /**
+       \param[in]  channel: scanner channel number
+       \param[in]  rho_len: length of the rho array
+       
+       \param[out] rho: array of distances, unit = [m]
+       \param[out] t0: lower bound on acquisition time
+       \param[out] t1: upper bound on acquisition time
+
+       \return 0 on success
+    */
     int (*scan_get)(int channel, double * rho, int rho_len,
 		    struct timespec * t0, struct timespec * t1);
+    
+    /**
+       \param[in] channel: scanner channel number
+
+       \return 0 on success
+    */
+    int (*scan_init)(int channel);
+
+    /**
+       \param[in] channel: scanner channel number
+
+       \return 0 on success
+    */
+    int (*scan_end)(int channel);
   };
   
   
