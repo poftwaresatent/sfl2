@@ -84,7 +84,8 @@ SRCS=           util/Frame.cpp \
                 gplan/NF1Wave.cpp \
                 cwrap/cwrapHAL.cpp \
                 cwrap/expo.cpp \
-                cwrap/sfl.cpp
+                cwrap/sfl.cpp \
+                contrib/xcf_hal.cpp
 
 HEADERS=        util/Frame.hpp \
                 util/functors.hpp \
@@ -134,19 +135,16 @@ HEADERS=        util/Frame.hpp \
                 cwrap/expo.h \
                 cwrap/hal.h \
                 cwrap/sfl.h \
+                contrib/xcf_hal.h
 
 OBJS=           $(SRCS:%.cpp=%.lo)
 
 VPATH=		@srcdir@
 
 
-sinclude .depend
+## doesn't work sinclude .depend
 
-all: hacked_redepend softlink depend subdirs $(LIB)
-
-# for the moment dependencies don't work
-hacked_redepend:
-	-rm -f .depend
+all: softlink subdirs $(LIB)
 
 $(LIB): $(OBJS)
 	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) \
@@ -162,7 +160,7 @@ softlink:
 	- ln -s $(top_srcdir) sfl
 
 subdirs:
-	- mkdir util api bband cwrap dwa expo gplan
+	- mkdir util api bband cwrap dwa expo gplan contrib
 
 install:: $(LIB)
 	$(MKINSTALLDIRS) $(BINDIR) $(LIBDIR)
@@ -186,8 +184,8 @@ clean:
 	$(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB)
 
 
-depend: $(SRCS)
-	$(MAKE) softlink
-	$(MKDEP) -c$(CC) -o.depend -t.lo $(CPPFLAGS) $?
+#depend: $(SRCS)
+#	$(MAKE) softlink
+#	$(MKDEP) -c$(CC) -o.depend -t.lo $(CPPFLAGS) $?
 
-.PHONY: all clean distclean install depend
+.PHONY: all clean distclean install #depend
