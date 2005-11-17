@@ -5,9 +5,14 @@
 extern "C" {
 #endif // __cplusplus
   
+  
+#include <stdint.h>
+  
+  
   int xcf_odometry_init();
   
-  int xcf_odometry_get(double x_mm, double y_mm, double theta_rad);
+  int xcf_odometry_get(double * x, double * y, double * theta_rad,
+		       uint64_t * timestamp_ms);
 
   int xcf_odometry_end();
   

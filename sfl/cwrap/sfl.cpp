@@ -194,7 +194,7 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
 						  alpha_heading,
 						  alpha_speed,
 						  false));
-  if( ! dwa->Initialize(progress, true))
+  if( ! dwa->Initialize(progress, false))
     return -3;
   return DynamicWindow_map.Insert(dwa);
 }
