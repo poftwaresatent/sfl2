@@ -61,6 +61,30 @@ extern "C" {
   
   int xcf_scan_end(int channel);
   
+  
+  //INPUT from ESV
+  int xcf_navgoal_init();
+
+  int xcf_navgoal_receive(char * location, size_t location_len,
+			  /** to be given back through xcf_navresult_send() */
+			  int * transaction_id,
+			  /** to be given back through xcf_navresult_send() */
+			  char * esv_state, size_t esv_state_len);
+  int xcf_navgoal_end();
+  
+  
+  //OUTPUT to ESV
+  int xcf_navresult_init();
+
+  /** \todo hard-code DLG as sender */
+  int xcf_navresult_send(const char * result,
+			 /** from xcf_navgoal_receive() */
+			 int transaction_id,
+			 /** from xcf_navgoal_receive() */
+			 const char * esv_state);
+
+  int xcf_navresult_end();
+  
 #ifdef __cplusplus
 }
 #endif // __cplusplus
