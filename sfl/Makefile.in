@@ -43,7 +43,8 @@ SHLIB_REVISION=	4
 SHLIB_AGE=	0
 LIB=            libsunflower.la
 
-SRCS=           util/Frame.cpp \
+SRCS=           contrib/xcf_hal.cpp \
+                util/Frame.cpp \
                 util/Hull.cpp \
                 util/Line.cpp \
                 util/numeric.cpp \
@@ -84,8 +85,7 @@ SRCS=           util/Frame.cpp \
                 gplan/NF1Wave.cpp \
                 cwrap/cwrapHAL.cpp \
                 cwrap/expo.cpp \
-                cwrap/sfl.cpp \
-                contrib/xcf_hal.cpp
+                cwrap/sfl.cpp
 
 HEADERS=        util/Frame.hpp \
                 util/functors.hpp \

@@ -79,7 +79,6 @@ extern "C" {
   //OUTPUT to ESV
   int xcf_navresult_init();
 
-  /** \todo hard-code DLG as sender */
   int xcf_navresult_send(const char * result,
 			 /** from xcf_navgoal_receive() */
 			 int transaction_id,
