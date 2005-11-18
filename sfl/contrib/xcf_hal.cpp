@@ -204,6 +204,11 @@ int xcf_speed_set(double v, double w)
     mvd.dVRot = 0;
   else
     mvd.dVRot = w;
+
+  fprintf(debugstream, __FILE__ ": WARNING xcf_speed_set(): using zero\n");
+  mvd.dVTrans = 0;
+  mvd.dVRot = 0;
+  
   mvd.sGenerator = "NAV";  
 
   //converting struct to xml
