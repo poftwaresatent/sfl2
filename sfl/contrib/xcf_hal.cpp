@@ -205,7 +205,7 @@ int xcf_speed_set(double v, double w)
   else
     mvd.dVRot = w;
 
-  fprintf(debugstream, __FILE__ ": WARNING xcf_speed_set(): using zero\n");
+  fprintf(stderr, __FILE__ ": WARNING xcf_speed_set(): using zero\n");
   mvd.dVTrans = 0;
   mvd.dVRot = 0;
   
