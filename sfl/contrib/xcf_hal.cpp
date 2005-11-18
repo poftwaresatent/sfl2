@@ -21,6 +21,7 @@
 
 #include "xcf_hal.h"
 
+#include <sfl/util/numeric.hpp>
 #include <sys/time.h>
 #include <iostream>
 #include <xcf/xcf.hpp>
@@ -34,7 +35,6 @@
  * schema
  */
 #define MOVESCHEMA            "MoveMsgKE1.xsd"
-#define SCHEMAPATH           "../cfg/schemas/"
 
 /**
  * default parameter for xcf communication
@@ -67,6 +67,8 @@ static tOdometryData odo;
 static XCF::PublisherPtr _RelPosPublisher;
 static XCF::SubscriberPtr laser_subscriber;
 static tLaserData ld;
+
+static string SCHEMAPATH = string(getenv("BIRON")) + "/cfg/schemas/";
 
 
 int xcf_odometry_init()
@@ -179,9 +181,16 @@ int xcf_speed_set(double v, double w)
   lMSecs  = static_cast<uint64_t>(tCurTime.tv_sec  * 1000);
   lMSecs += static_cast<uint64_t>(tCurTime.tv_usec / 1000);
   mvd.lTimeStamp = lMSecs;
-  mvd.dVTrans = v;
-  mvd.dVRot = w;
-  
+  if(sfl::absval(v) < 1e-3)
+    mvd.dVTrans = 0;
+  else
+    mvd.dVTrans = v;
+  if(sfl::absval(w) < 1e-3)
+    mvd.dVRot = 0;
+  else
+    mvd.dVRot = w;
+  mvd.sGenerator = "NAV";  
+
   //converting struct to xml
   Location mvdl(sMovementData_tmpl,"/MSG");
   mvdl = mvd;
