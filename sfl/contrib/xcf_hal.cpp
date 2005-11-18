@@ -322,7 +322,7 @@ int xcf_navgoal_receive(char * location, size_t location_len,
 {
   if(0 != debugstream){
     fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_receive()\n");
-    strncpy(location, "kitchen", location_len);
+    strncpy(location, "Kitchen", location_len);
     *transaction_id = 42;
     strncpy(esv_state, "rockin' baby!", esv_state_len);
     return 0;
