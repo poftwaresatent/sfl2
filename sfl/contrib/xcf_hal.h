@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2005 Universitaet Bielefeld, Germany
+ *                    and LAAS/CNRS, France
+ *
+ * Authors: Thorsten Spexard <tspexard@techfak.uni-bielefeld.de>
+ *          Roland Philippsen <roland.philippsen@gmx.net>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+
 #ifndef XCF_HAL_H
 #define XCF_HAL_H
 
@@ -7,24 +28,31 @@ extern "C" {
   
   
 #include <stdint.h>
+#include <stdio.h>
+  
+  
+  void xcf_hal_dryrun_on(FILE * stream);
+  
+  void xcf_hal_dryrun_off();
+  
   
   
   int xcf_odometry_init();
   
   int xcf_odometry_get(double * x, double * y, double * theta_rad,
 		       uint64_t * timestamp_ms);
-
+  
   int xcf_odometry_end();
   
-
-
+  
+  
   int xcf_speed_init();
   
   int xcf_speed_set(double v, double w);
-
+  
   int xcf_speed_end();
-
-
+  
+  
   
   int xcf_scan_init(int channel);
   
@@ -36,5 +64,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-  
+
 #endif // XCF_HAL_H
