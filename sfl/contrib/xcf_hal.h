@@ -64,7 +64,10 @@ extern "C" {
   
   //INPUT from ESV
   int xcf_navgoal_init();
-
+  
+  /** \return <ul><li>  0: success, new location received </li>
+                  <li>  1: no new location (empty stream) </li>
+                  <li> <0: ERROR                          </li></ul> */
   int xcf_navgoal_receive(char * location, size_t location_len,
 			  /** to be given back through xcf_navresult_send() */
 			  int * transaction_id,

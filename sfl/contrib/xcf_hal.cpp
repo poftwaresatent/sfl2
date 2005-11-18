@@ -304,3 +304,77 @@ void xcf_hal_dryrun_off()
 {
   debugstream = 0;
 }
+
+
+int xcf_navgoal_init()
+{
+  if(0 != debugstream){
+    fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_init()\n");
+    return 0;
+  }
+  return -42;
+}
+
+
+int xcf_navgoal_receive(char * location, size_t location_len,
+			int * transaction_id,
+			char * esv_state, size_t esv_state_len)
+{
+  if(0 != debugstream){
+    fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_receive()\n");
+    strncpy(location, "kitchen", location_len);
+    *transaction_id = 42;
+    strncpy(esv_state, "rockin' baby!", esv_state_len);
+    return 0;
+  }
+  return -42;
+}
+
+
+int xcf_navgoal_end()
+{
+  if(0 != debugstream){
+    fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_end()\n");
+    return 0;
+  }
+  return -42;
+}
+
+
+int xcf_navresult_init()
+{
+  if(0 != debugstream){
+    fprintf(debugstream, __FILE__ ": DEBUG xcf_navresult_init()\n");
+    return 0;
+  }
+  return -42;
+}
+
+
+int xcf_navresult_send(const char * result,
+		       int transaction_id,
+		       const char * esv_state)
+{
+  if(0 != debugstream){
+    fprintf(debugstream, __FILE__
+	    ": DEBUG xcf_navresult_send()\n"
+	    "  result         = \"%s\"\n"
+	    "  transaction_id =%d\n"
+	    "  esv_state      = \"%s\"\n",
+	    result,
+	    transaction_id,
+	    esv_state);
+    return 0;
+  }
+  return -42;
+}
+
+
+int xcf_navresult_end()
+{
+  if(0 != debugstream){
+    fprintf(debugstream, __FILE__ ": DEBUG xcf_navresult_end()\n");
+    return 0;
+  }
+  return -42;
+}
