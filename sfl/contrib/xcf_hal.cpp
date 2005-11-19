@@ -204,11 +204,6 @@ int xcf_speed_set(double v, double w)
     mvd.dVRot = 0;
   else
     mvd.dVRot = w;
-
-  //  fprintf(stderr, __FILE__ ": WARNING xcf_speed_set(): using zero\n");
-  mvd.dVTrans = 0;
-  mvd.dVRot = 0;
-  
   mvd.sGenerator = "NAV";  
 
   //converting struct to xml
@@ -219,6 +214,7 @@ int xcf_speed_set(double v, double w)
   try
     {
       _RelPosPublisher->send(mvdl.getDocumentText());
+//      cerr << "OK, sent speed\n";
     }
   catch(const XCF::ValidateFailedException& vex) 
     {
@@ -444,6 +440,7 @@ int xcf_navresult_send(const char * result,
     //sending xml string
     try
     {
+//	cout << "Sending XCF: " <<evdl.getDocumentText()<< endl;
 	_EQPublisher->send(evdl.getDocumentText());
     }
     catch(const XCF::ValidateFailedException& vex) 
