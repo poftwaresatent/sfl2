@@ -357,9 +357,11 @@ int xcf_navgoal_receive(char * location, size_t location_len,
 	return 1;
     }
     sd = extract<tStatusData>(Location(msg_status,"/MSG"));
+    if ((sd.sName !="GotoLabel") && (sd.sName != "StopNav"))
+	return 1;
     strncpy(location, sd.sData.c_str(), location_len);
     *transaction_id = sd.iOriginNum;
-;
+
     strncpy(esv_state, sd.sState.c_str(), esv_state_len);
     return 0;    
 }
