@@ -362,7 +362,8 @@ int xcf_navgoal_receive(char * location, size_t location_len,
     }
     sd = extract<tStatusData>(Location(msg_status,"/MSG"));
     strncpy(location, sd.sData.c_str(), location_len);
-    *transaction_id = 1;
+    *transaction_id = sd.iOriginNum;
+;
     strncpy(esv_state, sd.sState.c_str(), esv_state_len);
     return 0;    
 }
@@ -437,7 +438,7 @@ int xcf_navresult_send(const char * result,
     evd.lBestBefore = lMSecs + 500;
     
     //converting struct to xml
-    Location evdl(sEventData_tmpl,"/MSG");
+    Location evdl(sEventData_Ref_tmpl,"/MSG");
     evdl = evd;
 
     //sending xml string
