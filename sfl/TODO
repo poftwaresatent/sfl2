@@ -1,23 +1,27 @@
+Aim: Less dependent on exact execution period
+     - use measured timestep to predict pose in DWA
+     - enable non-lookup mode that takes into account
+       the actual time since last call (see also below)
+
 Aim: Cleanup for external use
      - Some many \todo comments should be \note
      - Remove api/types.hpp, use std::size_t instead of sfl::index_t
-     - Remove ReplanHandler thread emulation
      - Make use of BubbleFactory optional (but KEEP it, make it a
        configurable behavior)
      - Make use of (compressed) lookup optional in DWA (but KEEP it,
        make it configurable behavior)
 
 Aim: Port to OpenRobots
-     - Replace HALProxy class by C struct with function pointers
-     - Invent eg handle-based opaque access to objects in C wrappers
-       that provide an API eg on a per-directory basis.
+     DONE - Replace HALProxy class by C struct with function pointers
+     DONE - Invent eg handle-based opaque access to objects in C wrappers
+            that provide an API eg on a per-directory basis.
      - Extract multi-tasking stuff from XOberon code (ie mutexes and
        initialization of threads)
 
 Aim: Promote use by Cogniron partners
      - Write XCF wrapper
      - Write PlayerStage wrapper
-     - Create autotools scripts for those who don't have SCons
+     DONE - Create autotools scripts for those who don't have SCons
      - Include boost::smart_ptr library in package (check licence first!)
 
 Aim: Make self-testing
