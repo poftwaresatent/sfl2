@@ -319,8 +319,8 @@ int xcf_navgoal_init()
   // register xcf-subscriber and connect to xcf-publisher
   try {
     status_subscriber = XCF::Subscriber::create(DEFAULT_ESV2NAV_PUBLISHER_NAME);
-    // no message cueing
-    status_subscriber->setOnlyReceiveLast(true);
+    // with message cueing
+    status_subscriber->setOnlyReceiveLast(false);
     cout << "Connected to StreamServer" << endl;
   }
   catch(const XCF::GenericException& ex) {
@@ -436,7 +436,7 @@ int xcf_navresult_send(const char * result,
     evd.lBestBefore = lMSecs + 500;
     
     //converting struct to xml
-    Location evdl(sEventData_Ref_tmpl,"/MSG");
+    Location evdl(sEventData_tmpl,"/MSG");
     evdl = evd;
 
     //sending xml string
