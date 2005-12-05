@@ -80,7 +80,7 @@ namespace sfl {
     void Initialize(std::ostream * progress_stream);
     
     /** \note special version for dumping on C stream for cwrap API */
-    void Initialize(FILE * c_progress_stream);
+    void Initialize(FILE * c_progress_stream, bool paranoid);
 
     bool CheckLookup(std::ostream * os) const;
 

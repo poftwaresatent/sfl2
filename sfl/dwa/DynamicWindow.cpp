@@ -97,7 +97,7 @@ namespace sfl {
     
     InitForbidden();
     
-    _distance_objective.Initialize(cstream);
+    _distance_objective.Initialize(cstream, paranoid);
 
     _heading_objective.Initialize(0);
     _speed_objective.Initialize(0);

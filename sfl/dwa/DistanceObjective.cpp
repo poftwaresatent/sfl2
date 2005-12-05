@@ -298,7 +298,7 @@ namespace sfl {
 
   
   void DistanceObjective::
-  Initialize(FILE * cstream)
+  Initialize(FILE * cstream, bool paranoid)
   {
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
@@ -313,19 +313,24 @@ namespace sfl {
     // precalculate lookup tables
     for(unsigned int i = 0; i < _dimension; ++i){
       _qdLookup[i] = _dynamic_window.Qd(i);
-      fprintf(cstream, "  _qdLookup[%ud] = %f\n", i, _qdLookup[i]);
+      if(paranoid)
+	fprintf(cstream, "  _qdLookup[%ud] = %f\n", i, _qdLookup[i]);
     }
     
-    fprintf(cstream, "  _maxTimeLookup:\n");
+    if(paranoid)
+      fprintf(cstream, "  _maxTimeLookup:\n");
     for(unsigned int i = 0; i < _dimension; ++i){
-      fprintf(cstream, "  [%u][0-%u]", i, _dimension - 1);
+      if(paranoid)
+	fprintf(cstream, "  [%u][0-%u]", i, _dimension - 1);
       for(unsigned int j = 0; j < _dimension; ++j){
 	_maxTimeLookup[i][j] =
 	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
 	  _robot_model.QddMax();
-	fprintf(cstream, " %3.1f", _maxTimeLookup[i][j]);
+	if(paranoid)
+	  fprintf(cstream, " %3.1f", _maxTimeLookup[i][j]);
       }
-      fprintf(cstream, "\n");
+      if(paranoid)
+	fprintf(cstream, "\n");
     }
     
     fprintf(cstream, "   calculating main lookup table...\n");
