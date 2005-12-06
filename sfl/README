@@ -70,6 +70,10 @@ way of building is in a separate directory:
 Note that the last command might require root privileges depending on
 the permissions of YOUR_PREFERRED_INSTALLATION_PATH.
 
+If you have XCF installed on your system, you probably want to pass
+the "--with-xcf" argument to the configure script as well. This will
+include the optional XCF HAL from the contrib/ directory.
+
 
 3. DOCUMENTATION
 
