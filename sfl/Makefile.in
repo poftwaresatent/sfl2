@@ -43,7 +43,13 @@ SHLIB_REVISION=	4
 SHLIB_AGE=	0
 LIB=            libsunflower.la
 
-SRCS=           contrib/xcf_hal.cpp \
+# Depending on configure options, @WITH_XCF@ is either "XCF_" or
+# "NOXCF_", in the former case this will lead to inclusion in the SRCS
+# and HEADERS variables below.
+@WITH_XCF@SRCS=    contrib/xcf_hal.cpp
+@WITH_XCF@HEADERS= contrib/xcf_hal.h
+
+SRCS=           $(XCF_SRCS) \
                 util/Frame.cpp \
                 util/Hull.cpp \
                 util/Line.cpp \
@@ -87,7 +93,8 @@ SRCS=           contrib/xcf_hal.cpp \
                 cwrap/expo.cpp \
                 cwrap/sfl.cpp
 
-HEADERS=        util/Frame.hpp \
+HEADERS=        $(XCF_HEADERS) \
+                util/Frame.hpp \
                 util/functors.hpp \
                 util/Hull.hpp \
                 util/Line.hpp \
@@ -134,8 +141,7 @@ HEADERS=        util/Frame.hpp \
                 cwrap/cwrapHAL.hpp \
                 cwrap/expo.h \
                 cwrap/hal.h \
-                cwrap/sfl.h \
-                contrib/xcf_hal.h
+                cwrap/sfl.h
 
 OBJS=           $(SRCS:%.cpp=%.lo)
 

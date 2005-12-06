@@ -20,6 +20,12 @@ AC_LANG_PUSH(C++)
 AC_CHECK_HEADERS(boost/shared_ptr.hpp, [], AC_MSG_ERROR(BOOST not found))
 AC_LANG_POP
 
+AC_ARG_WITH([xcf],
+            AC_HELP_STRING([--with-xcf],
+                           [enable XCF support]),
+	    AC_SUBST(WITH_XCF, "XCF_"),
+            AC_SUBST(WITH_XCF, "NOXCF_"))
+
 AC_PROG_LIBTOOL
 
 AC_PROG_INSTALL
