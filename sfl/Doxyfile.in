@@ -62,7 +62,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = api bband dwa expo gplan util cwrap
+INPUT                  = api bband dwa expo gplan util cwrap contrib
 FILE_PATTERNS          = *pp *.dox
 RECURSIVE              = YES
 EXCLUDE                = 
