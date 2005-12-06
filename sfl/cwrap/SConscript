@@ -1,5 +1,0 @@
-Import('env')
-sources = ['expo.cpp', 'sfl.cpp', 'cwrapHAL.cpp']
-headers = ['expo.h', 'sfl.h', 'hal.h']
-env.StageLibrary(env.StaticLibrary('sflcwrap', sources))
-env.StageHeader('sfl/cwrap', headers)
