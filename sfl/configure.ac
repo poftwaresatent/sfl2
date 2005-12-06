@@ -1,5 +1,5 @@
 AC_REVISION($Id$)
-AC_INIT(libsunflower,0.6)
+AC_INIT(libsunflower,0.7-pre)
 AC_PREREQ(2.57)
 
 AC_CANONICAL_HOST
@@ -32,5 +32,4 @@ AC_PROG_INSTALL
 
 AC_SUBST(PACKAGE_VERSION)
 
-AC_OUTPUT(Makefile sunflower.pc)
-
+AC_OUTPUT(Makefile sunflower.pc Doxyfile)
