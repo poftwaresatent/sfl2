@@ -10,10 +10,10 @@ Copyright (C) 2004, Autonomous Systems Lab,
 The C-wrapper code and autotools build files are
 Copyright (C) 2005, LAAS/CNRS. All rights reserved.
 
-Maintainer: Roland Philippsen <roland.philippsen@gmx.net>
-Authors:    Viet Nguyen <viet.nguyen@epfl.ch>
-            Frederic Pont <frederic.pont@epfl.ch>
-            Agostino Martinelli <agostino.martinelli@epfl.ch>
+Maintainer: Roland Philippsen <roland dot philippsen at gmx dot net>
+Authors:    Viet Nguyen <viet dot nguyen at epfl ch>
+            Frederic Pont <frederic dot pont at epfl dot ch>
+            Agostino Martinelli <agostino dot martinelli at epfl dot ch>
 
 The sunflower library is released under the GNU General Public
 License. The C-wrapper and autotools files are released under the new

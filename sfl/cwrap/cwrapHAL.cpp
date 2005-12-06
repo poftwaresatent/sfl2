@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2005 CNRS/LAAS
  *
- * Author: Roland Philippsen <roland.philippsen@gmx.net>
+ * Author: Roland Philippsen <roland dot philippsen at gmx dot net>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -2,7 +2,7 @@
  * Copyright (C) 2004
  * Swiss Federal Institute of Technology, Lausanne. All rights reserved.
  * 
- * Author: Roland Philippsen <roland.philippsen@gmx.net>
+ * Author: Roland Philippsen <roland dot philippsen at gmx dot net>
  *         Autonomous Systems Lab <http://asl.epfl.ch/>
  * 
  * This program is free software; you can redistribute it and/or modify

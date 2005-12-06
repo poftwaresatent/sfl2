@@ -2,8 +2,8 @@
  * Copyright (c) 2005 Universitaet Bielefeld, Germany
  *                    and LAAS/CNRS, France
  *
- * Authors: Thorsten Spexard <tspexard@techfak.uni-bielefeld.de>
- *          Roland Philippsen <roland.philippsen@gmx.net>
+ * Authors: Thorsten Spexard <tspexard at techfak dot uni-bielefeld dot de>
+ *          Roland Philippsen <roland dot philippsen at gmx dot net>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
