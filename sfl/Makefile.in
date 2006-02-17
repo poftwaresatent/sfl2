@@ -34,9 +34,9 @@ LTCC=		$(LIBTOOL) --mode=compile $(CC)
 LTCXX=		$(LIBTOOL) --mode=compile $(CXX)
 LTLD=		$(LIBTOOL) --mode=link $(CC)
 
-CFLAGS=         @CFLAGS@ -I$(top_builddir)
-CXXFLAGS=       @CXXFLAGS@ -I$(top_builddir)
-CPPFLAGS=       -I$(top_builddir)
+CFLAGS=         @CFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
+CXXFLAGS=       @CXXFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
+CPPFLAGS=       @BOOST_CPPFLAGS@ -I$(top_builddir)
 
 SHLIB_CURRENT=	1
 SHLIB_REVISION=	0
