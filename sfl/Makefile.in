@@ -22,9 +22,10 @@ BINDIR=		@bindir@
 LIBDIR=		@libdir@
 INCLUDEDIR=	@includedir@/sfl
 
+SHELL=          /bin/bash
+AWK=            @AWK@
 CC=		@CC@
 CXX=		@CXX@
-MKDEP=		@MKDEP@
 LIBTOOL=	@LIBTOOL@
 INSTALL=	@INSTALL@
 INSTALL_DATA=   $(INSTALL) -m644
@@ -36,7 +37,7 @@ LTLD=		$(LIBTOOL) --mode=link $(CC)
 
 CFLAGS=         @CFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
 CXXFLAGS=       @CXXFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
-CPPFLAGS=       @BOOST_CPPFLAGS@ -I$(top_builddir)
+CPPFLAGS=       @CPPFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
 
 SHLIB_CURRENT=	1
 SHLIB_REVISION=	0
@@ -148,25 +149,14 @@ OBJS=           $(SRCS:%.cpp=%.lo)
 VPATH=		@srcdir@
 
 
-## doesn't work sinclude .depend
+all: depend subdirs sfl $(LIB)
 
-all: softlink subdirs $(LIB)
-
-$(LIB): $(OBJS)
-	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) \
-          -version-info $(SHLIB_CURRENT):$(SHLIB_REVISION):$(SHLIB_AGE) $(OBJS)
-
-%.lo: %.c
-	$(LTCC) $(CFLAGS) -o $*.o -c $<
-
-%.lo: %.cpp
-	$(LTCXX) $(CXXFLAGS) -o $*.o -c $<
-
-softlink:
-	- ln -s $(top_srcdir) sfl
+sfl:
+	ln -s $(top_srcdir) sfl
 
 subdirs:
 	- mkdir util api bband cwrap dwa expo gplan contrib
+	echo "subdirs created `date`" > subdirs
 
 install:: $(LIB)
 	$(MKINSTALLDIRS) $(BINDIR) $(LIBDIR)
@@ -183,15 +173,44 @@ install::
 	  $(INSTALL_DATA) $(srcdir)/$$header $(INCLUDEDIR)/$$subdir; \
 	done
 
+
+
+$(LIB): $(OBJS)
+	$(LTLD) -o $@ -rpath $(LIBDIR) -R$(LIBDIR) \
+          -version-info $(SHLIB_CURRENT):$(SHLIB_REVISION):$(SHLIB_AGE) $(OBJS)
+
+%.lo: %.c
+	$(LTCC) $(CFLAGS) -o $*.o -c $<
+
+%.lo: %.cpp
+	$(LTCXX) $(CXXFLAGS) -o $*.o -c $<
+
+
+
 distclean: clean
-	rm -f .depend Makefile config.log config.status sunflower.pc libtool
+	rm -f Makefile Doxyfile config.log config.status sunflower.pc libtool
 
-clean: 
-	$(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB)
+clean:
+	rm -f depend subdirs Makefile.depend sfl
+	- $(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB)
 
 
-#depend: $(SRCS)
-#	$(MAKE) softlink
-#	$(MKDEP) -c$(CC) -o.depend -t.lo $(CPPFLAGS) $?
+depend:
+	test -L sfl || ln -s $(top_srcdir) sfl
+	rm -f Makefile.depend
+	for source in $(SRCS); \
+	  do \
+	    subdir=`dirname $$source`; \
+	    $(CC) -MM $(CPPFLAGS) $(top_srcdir)/$$source \
+	      | $(AWK) -v subdir=$$subdir \
+	'{if($$0~/^[^ ]/){sub(/o:/,"lo:"); print subdir "/" $$0} else print}' \
+	     >> Makefile.depend; \
+	done
+	echo -n "depend:" >> Makefile.depend
+	for source in $(SRCS) $(HEADERS); \
+	  do \
+	    echo -n " $(top_srcdir)/$$source" >> Makefile.depend; \
+	done
+	echo "Makefile.depend written `date`" > depend
 
-.PHONY: all clean distclean install #depend
+sinclude Makefile.depend

@@ -6,16 +6,15 @@ AC_CANONICAL_HOST
 
 AC_PROG_CC
 if test "x${GCC}" = "xyes"; then
-  CFLAGS="${CFLAGS} -Wall"
+  CFLAGS="-O2 -Wall -pipe"
 fi
 
 AC_PROG_CXX
 if test "x${GXX}" = "xyes"; then
-  CXXFLAGS="${CXXFLAGS} -Wall"
+  CXXFLAGS="-O2 -Wall -pipe"
 fi
 
-AC_PATH_PROG(MKDEP, mkdep, no, $prefix/bin:$exec_prefix/bin:$PATH)
-
+dnl Check for boost library.
 AC_DEFUN([CLBS_CHECK_BOOST],
  [
   AC_SUBST(BOOST_CPPFLAGS)
@@ -209,6 +208,8 @@ AC_ARG_WITH([xcf],
 AC_PROG_LIBTOOL
 
 AC_PROG_INSTALL
+
+AC_PROG_AWK
 
 AC_SUBST(PACKAGE_VERSION)
 
