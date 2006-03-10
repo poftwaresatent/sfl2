@@ -10,7 +10,7 @@ For the impatient:
  maybe as root: $ make install
 
 Documentation (if not included):
- in top-level:  $ doxygen build/Doxyfile
+ in build dir:  $ doxygen Doxyfile
                 $ firefox doc/html/index.html &
 
 
@@ -68,9 +68,9 @@ way of building is in a separate directory:
 Note that the last command might require root privileges depending on
 the permissions of YOUR_PREFERRED_INSTALLATION_PATH.
 
-If you have XCF installed on your system, you probably want to pass
-the "--with-xcf" argument to the configure script as well. This will
-include the optional XCF HAL from the contrib/ directory.
+If you have XCF [4] installed on your system, you probably want to
+pass the "--with-xcf" argument to the configure script as well. This
+will include the optional XCF HAL from the contrib/ directory.
 
 
 3. DOCUMENTATION
@@ -137,3 +137,5 @@ contrib/
     Python, IDL (Corba and Microsoft flavors) and to some extent PHP,
     C#, and D.
     <http://www.doxygen.org>
+
+[4] XCF Integration Architecture <http://xcf.sourceforge.net/>

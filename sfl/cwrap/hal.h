@@ -26,7 +26,9 @@ extern "C" {
   
 
   /**
-     example usage:
+     Collection of HAL function pointers.
+     
+     Example usage:
      \code
      struct cwrap_hal_s *hal_cb = calloc(1, sizeof(*hal_cb));
      if(0 == hal_cb){
