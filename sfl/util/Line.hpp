@@ -92,6 +92,9 @@ namespace sfl {
 
     /**
        Calculates the intersection(s) between a circle and the Line.
+       
+       \note The implementation has been moved to numeric.cpp, this
+       method simply calls LineCircleIntersect().
     */
     void CircleIntersect(/** x-coordinate of circle's center */
 			 double cx,
@@ -100,17 +103,17 @@ namespace sfl {
 			 /** radius of the circle */
 			 double cr,
 			 /** (return) x-coordinate of first intersection */
-			 double &q1x,
+			 double & q1x,
 			 /** (return) y-coordinate of first intersection */
-			 double &q1y,
+			 double & q1y,
 			 /** (return) x-coordinate of second intersection */
-			 double &q2x,
+			 double & q2x,
 			 /** (return) y-coordinate of second intersection */
-			 double &q2y,
+			 double & q2y,
 			 /** (return) is (q1x, q1y) a valid intersection? */
-			 bool &valid1,
+			 bool & valid1,
 			 /** (return) is (q2x, q2y) a valid intersection? */
-			 bool &valid2
+			 bool & valid2
 			 ) const;
   
   

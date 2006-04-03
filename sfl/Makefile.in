@@ -118,7 +118,6 @@ HEADERS=        $(XCF_HEADERS) \
                 api/Scan.hpp \
                 api/Scanner.hpp \
                 api/Timestamp.hpp \
-                api/types.hpp \
                 bband/Bubble.hpp \
                 bband/BubbleBand.hpp \
                 bband/BubbleFactory.hpp \
@@ -188,10 +187,11 @@ $(LIB): $(OBJS)
 
 
 distclean: clean
-	rm -f Makefile Doxyfile config.log config.status sunflower.pc libtool
+	rm -f Makefile Doxyfile sunflower.pc
+	rm -rf util api bband cwrap dwa expo gplan contrib .libs
 
 clean:
-	rm -f depend subdirs Makefile.depend sfl
+	rm -f depend redepend subdirs Makefile.depend sfl
 	- $(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB)
 
 
@@ -206,11 +206,24 @@ depend:
 	'{if($$0~/^[^ ]/){sub(/o:/,"lo:"); print subdir "/" $$0} else print}' \
 	     >> Makefile.depend; \
 	done
-	echo -n "depend:" >> Makefile.depend
+	echo "depend built `date`" > depend
+
+redepend:
+	test -L sfl || ln -s $(top_srcdir) sfl
+	rm -f Makefile.depend
+	for source in $(SRCS); \
+	  do \
+	    subdir=`dirname $$source`; \
+	    $(CC) -MM $(CPPFLAGS) $(top_srcdir)/$$source \
+	      | $(AWK) -v subdir=$$subdir \
+	'{if($$0~/^[^ ]/){sub(/o:/,"lo:"); print subdir "/" $$0} else print}' \
+	     >> Makefile.depend; \
+	done
+	echo -n "redepend:" >> Makefile.depend
 	for source in $(SRCS) $(HEADERS); \
 	  do \
 	    echo -n " $(top_srcdir)/$$source" >> Makefile.depend; \
 	done
-	echo "Makefile.depend written `date`" > depend
+	echo "redepend built `date`" > redepend
 
 sinclude Makefile.depend

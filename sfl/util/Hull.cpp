@@ -91,21 +91,17 @@ namespace sfl {
   
   
   shared_ptr<Line> Hull::
-  GetLine(int index)
+  GetLine(size_t index)
     const
   {
-    if(index < 0)
-      return shared_ptr<Line>();
-    
     for(subhulls_t::const_iterator is(m_subhulls.begin());
 	is != m_subhulls.end();
 	++is){
-      const int npoints((*is)->GetNPoints());
+      const size_t npoints((*is)->GetNPoints());
       if(index < npoints)
 	return (*is)->GetLine(index);
       index -= npoints;
     }
-    
     return shared_ptr<Line>();
   }
   
@@ -125,12 +121,65 @@ namespace sfl {
   
   
   shared_ptr<const Polygon> Hull::
-  GetPolygon(int index)
+  GetPolygon(size_t index)
     const
   {
-    if((index < 0) || (index >= (int) m_subhulls.size()))
+    if(index >= m_subhulls.size())
       return shared_ptr<const Polygon>();
     return m_subhulls[index];
+  }
+  
+  
+  HullIterator::
+  HullIterator(const Hull & hull)
+    : m_hull(hull),
+      m_valid(false)
+  {
+    // find first valid pair of points
+    for(m_ipoly = 0; m_ipoly < m_hull.GetNPolygons(); ++m_ipoly){
+      m_poly = m_hull.GetPolygon(m_ipoly);
+      if(m_poly->GetNPoints() <= 1)
+	continue;
+      m_p0 = m_poly->GetPoint(m_poly->GetNPoints() - 1);
+      m_p1 = m_poly->GetPoint(0);
+      m_ipoint = 0;
+      m_valid = true;
+      break;
+    }
+  }
+  
+  
+  void HullIterator::
+  Increment()
+  {
+    if( ! m_valid)
+      return;;
+    
+    ++m_ipoint;
+    if(m_ipoint < m_poly->GetNPoints()){
+      m_p0 = m_p1;
+      m_p1 = m_poly->GetPoint(m_ipoint);
+      return;
+    }
+    
+    ++m_ipoly;
+    if(m_ipoly >= m_hull.GetNPolygons()){
+      m_valid = false;
+      return;
+    }
+    
+    m_poly = m_hull.GetPolygon(m_ipoly);
+    while(m_poly->GetNPoints() <= 1){
+      ++m_ipoly;
+      if(m_ipoly >= m_hull.GetNPolygons()){
+	m_valid = false;
+	return;
+      }
+      m_poly = m_hull.GetPolygon(m_ipoly);      
+    }
+    m_p0 = m_poly->GetPoint(m_poly->GetNPoints() - 1);
+    m_p1 = m_poly->GetPoint(0);
+    m_ipoint = 0;
   }
   
 }

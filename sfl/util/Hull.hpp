@@ -60,22 +60,24 @@ namespace sfl {
     double CalculateRadius() const;
     
     /** \return The total number of sub-hulls. */
-    int GetNPolygons() const { return m_subhulls.size(); }
+    size_t GetNPolygons() const { return m_subhulls.size(); }
     
     /** \return A pointer to a subhull iff 0<=index<GetNPolygons(), 0
 	otherwise. */
-    boost::shared_ptr<const Polygon> GetPolygon(int index) const;
+    boost::shared_ptr<const Polygon> GetPolygon(size_t index) const;
     
     /** \return The total number of points in the sub-hulls. */
-    int GetNPoints() const { return m_npoints; }
+    size_t GetNPoints() const { return m_npoints; }
     
     /**
        Convenience method for legacy code.
+       
+       \note DEPRECATED! Use a HullIterator instead.
               
        \return A copy of one of the lines of one of the sub-hulls (iff
        0<=index<GetNPoints()).
     */
-    boost::shared_ptr<Line> GetLine(int index) const;
+    boost::shared_ptr<Line> GetLine(size_t index) const;
     
     /**
        Determine whether a given point lies within any of the
@@ -88,7 +90,39 @@ namespace sfl {
     typedef std::vector<boost::shared_ptr<Polygon> > subhulls_t;
     
     subhulls_t m_subhulls;
-    int m_npoints;
+    size_t m_npoints;
+  };
+  
+  
+  /**
+     Iterator over the lines of a hull.
+     
+     It is actually a bit tricky to loop over the line segments
+     defined by a Hull instance, as only points belonging to the same
+     Polygon instance should be connected, and the connection from the
+     first to the last point of each Polygon must be included.
+     
+     \todo Do the same for Polygon.
+  */
+  class HullIterator
+  {
+  public:
+    HullIterator(const Hull & hull);
+    
+    void Increment();
+    
+    bool IsValid()        const { return m_valid; }
+    const Point * GetP0() const { return m_p0; }
+    const Point * GetP1() const { return m_p1; }
+    
+  private:
+    const Hull & m_hull;
+    bool m_valid;
+    const Point * m_p0;
+    const Point * m_p1;
+    size_t m_ipoly;
+    boost::shared_ptr<const Polygon> m_poly;
+    size_t m_ipoint;
   };
   
 }

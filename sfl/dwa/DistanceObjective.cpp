@@ -93,8 +93,8 @@ namespace sfl {
     double padding(sqrt(_dx * _dx + _dy * _dy));
     _paddedHull = _hull->CreateGrownHull(padding);
 
-    for(int i(0); i < _paddedHull->GetNPoints(); ++i)
-      _outline.push_back(_paddedHull->GetLine(i));
+    for(size_t ii(0); ii < _paddedHull->GetNPoints(); ++ii)
+      _outline.push_back(_paddedHull->GetLine(ii));
     
     // some more inter-version compatibility
     Polygon foo;
@@ -179,7 +179,7 @@ namespace sfl {
 	  // can't simply use -1 because then the compression code
 	  // segfaults (it's looking for a minimum over positive
 	  // values), can't simply use 0 because somewhere else in this
-	  // code here I chack against zero... in short,
+	  // code here I check against zero... in short,
 	  // DistanceObjective NEEDS A GENERAL OVERHAUL!!!
 	
 	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)

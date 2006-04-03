@@ -56,17 +56,8 @@ namespace sfl {
 
     /**
        Calculate the intersection between a Line and a Ray.
-     
-       \return
-       <ul>
-       <li> -1 if no intersection exists </li>
-       <li> mu >= 0 if an intersection exists, where mu is the factor
-       needed to multiply the Ray's directing vector in order to
-       reach the intersection point from the Ray's base point. In
-       other words, if the Ray's directing vector is a unit
-       vector, mu is the distance that needs to be travelled
-       along the Ray before hitting the Line. </li>
-       </ul>
+       
+       Simply calls LineRayIntersect(), see there for more information.
     */
     double Intersect(const Line & line) const;
 

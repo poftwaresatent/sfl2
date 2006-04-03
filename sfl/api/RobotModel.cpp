@@ -33,7 +33,7 @@ namespace sfl {
 
 
   RobotModel::Parameters::
-  Parameters(double _securityDistance,
+  Parameters(double _safetyDistance,
 	     double _wheelBase,
 	     double _wheelRadius,
 	     double _qdMax,
@@ -42,7 +42,7 @@ namespace sfl {
 	     double _thetadMax,
 	     double _sddMax,
 	     double _thetaddMax)
-    : securityDistance(_securityDistance),
+    : safetyDistance(_safetyDistance),
       wheelBase(_wheelBase),
       wheelRadius(_wheelRadius),
       qdMax(_qdMax),
@@ -61,7 +61,8 @@ namespace sfl {
 	     shared_ptr<const Hull> hull):
     m_timestep(timestep),
     m_params(parameters),
-    m_hull(hull)
+    m_hull(hull),
+    m_safety_hull(hull->CreateGrownHull(parameters.safetyDistance))
   {
   }
 
@@ -89,7 +90,7 @@ namespace sfl {
   SecurityDistance()
     const
   {
-    return m_params.securityDistance;
+    return m_params.safetyDistance;
   }
 
 

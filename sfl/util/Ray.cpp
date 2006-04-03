@@ -57,39 +57,10 @@ namespace sfl {
   Intersect(const Line & line)
     const
   {
-    // describe line as {point, vector} in global frame
-    double p0x(line.X0());
-    double p0y(line.Y0());
-    double v0x(line.X1() - p0x);
-    double v0y(line.Y1() - p0y);
-   
-    // determinant of intersection matrix
-    double det(_frame.Costheta() * v0y -
-	       v0x               * _frame.Sintheta());
-   
-    // check if ray is parallel
-    if(absval(det) <= 1e-9)		// hax: hardcoded epsilon
-      return -1;
-
-    // look where the ray intersects with the line segment
-    double mu0((_frame.Costheta() * (_frame.Y() - p0y)  -
-		_frame.Sintheta() * (_frame.X() - p0x)) /
-	       det);
-  
-    // check if it intersects inside the segment
-    if((mu0 < 0) || (mu0 > 1))
-      return -1;
-
-    // calculate distance from ray origin to intersection
-    double mu1((v0x * (_frame.Y() - p0y)  -
-		v0y * (_frame.X() - p0x)) /
-	       det);
-  
-    // check if it's a forward intersection
-    if(mu1 < 0)
-      return -1;
-
-    return mu1;
+    return LineRayIntersect(line.X0(), line.Y0(),
+			    line.X1(), line.Y1(),
+			    _frame.X(), _frame.Y(),
+			    _frame.Costheta(), _frame.Sintheta());
   }
-
+  
 }

@@ -82,7 +82,7 @@ namespace sfl {
     */
     double CalculateRadius() const;
     
-    unsigned int GetNPoints() const { return m_point.size(); }
+    size_t GetNPoints() const { return m_point.size(); }
     
     /**
        Convenience method for legacy code.
@@ -90,10 +90,10 @@ namespace sfl {
        \return A copy of the line between the corners (index) and
        (index + 1). The last point is connected with the first one.
     */
-    boost::shared_ptr<Line> GetLine(int index) const;
+    boost::shared_ptr<Line> GetLine(size_t index) const;
     
     /** \return Pointer to the point at given index, or 0 if invalid index. */
-    const Point * GetPoint(unsigned int index) const;
+    const Point * GetPoint(size_t index) const;
     
     /**
        Writes the corners in human readable format on the provided ostream.

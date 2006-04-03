@@ -41,7 +41,7 @@ namespace sfl {
   }
   
   
-  index_t Multiscanner::
+  size_t Multiscanner::
   Nscanners()
     const
   {
@@ -50,7 +50,7 @@ namespace sfl {
 
   
   shared_ptr<Scanner> Multiscanner::
-  GetScanner(index_t i)
+  GetScanner(size_t i)
     const
   {
     if((i < 0) || (i >= m_scanner.size()))

@@ -30,6 +30,7 @@
 #include <sfl/gplan/NF1.hpp>
 #include <sfl/bband/BubbleFactory.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <string>
 
 
 namespace sfl {

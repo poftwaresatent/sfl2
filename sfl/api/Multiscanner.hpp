@@ -50,10 +50,10 @@ namespace sfl {
     void Add(boost::shared_ptr<Scanner> scanner);
 
     /** \return The number of registered Scanners. */
-    index_t Nscanners() const;
+    size_t Nscanners() const;
 
     /** \return A pointer to a registered Scanner, or 0 if no such index. */
-    boost::shared_ptr<Scanner> GetScanner(index_t i) const;
+    boost::shared_ptr<Scanner> GetScanner(size_t i) const;
 
     /**
        Concatenates data from all Scanners into a single Scan
@@ -95,7 +95,7 @@ namespace sfl {
   protected:
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
     
-    index_t m_total_nscans;
+    size_t m_total_nscans;
     vector_t m_scanner;
   };
   

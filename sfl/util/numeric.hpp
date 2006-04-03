@@ -120,7 +120,72 @@ namespace sfl {
   */
   int QuadraticEquation(double a, double b, double c,
 			double & x1, double & x2);
+  
+  
+  /**
+     Intersect a line (x0, y0, x1, y1) with a circle (cx, cy) of radius cr.
+     
+     \return The number of intersections (0, 1, or 2).
+     
+     \note If the function returns 1, you still have to check which of
+     the two solutions is valid, don't just blindly use the first one!
+  */
+  int LineCircleIntersect(/** x-coordinate of the first line endpoint */
+			  double x0,
+			  /** y-coordinate of the first line endpoint */
+			  double y0,
+			  /** x-coordinate of the second line endpoint */
+			  double x1,
+			  /** y-coordinate of the second line endpoint */
+			  double y1,
+			  /** x-coordinate of circle's center */
+			  double cx,
+			  /** y-coordinate of circle's center */
+			  double cy,
+			  /** radius of the circle */
+			  double cr,
+			  /** (return) x-coordinate of first intersection */
+			  double & q1x,
+			  /** (return) y-coordinate of first intersection */
+			  double & q1y,
+			  /** (return) x-coordinate of second intersection */
+			  double & q2x,
+			  /** (return) y-coordinate of second intersection */
+			  double & q2y,
+			  /** (return) is (q1x, q1y) a valid intersection? */
+			  bool & valid1,
+			  /** (return) is (q2x, q2y) a valid intersection? */
+			  bool & valid2);
 
+  /**
+     Intersect a Line (finite segment) and a Ray (half-infinite).
+     
+     \return
+     - -1 if no intersection exists
+     - mu >= 0 if an intersection exists, where mu is the factor
+       needed to multiply the Ray's directing vector in order to
+       reach the intersection point from the Ray's base point. In
+       other words, if the Ray's directing vector is a unit
+       vector, mu is the distance that needs to be travelled
+       along the Ray before hitting the Line.
+  */
+  double LineRayIntersect(/** x-coordinate of the first line endpoint */
+			  double x0,
+			  /** y-coordinate of the first line endpoint */
+			  double y0,
+			  /** x-coordinate of the second line endpoint */
+			  double x1,
+			  /** y-coordinate of the second line endpoint */
+			  double y1,
+			  /** x-coordinate of ray origin */
+			  double rx,
+			  /** y-coordinate of ray origin */
+			  double ry,
+			  /** x-component of ray direction vector */
+			  double dx,
+			  /** y-component of ray direction vector */
+			  double dy);
+  
 }
 
 #endif // SUNFLOWER_NUMERIC_HPP

@@ -63,8 +63,11 @@ namespace sfl {
      local obstacle grid attached to the robot and is a sampling of the
      workspace. The latter is (mostly) referred to with grid_WHATEVER.
 
-     \todo The handling of border cells might still have the same
-     problems as in the XOberon port. Check Initialize()!
+     \todo
+     - The handling of border cells might still have the same problems
+       as in the XOberon port. Check Initialize()!
+     - Look at the comments in the code of Initialize(): This class
+       needs a general overhaul!
   */
   class DistanceObjective:
     public Objective

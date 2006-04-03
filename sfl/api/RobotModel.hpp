@@ -51,7 +51,7 @@ namespace sfl {
     */
     class Parameters{
     public:
-      const double securityDistance;
+      const double safetyDistance;
       const double wheelBase;
       const double wheelRadius;
       const double qdMax;
@@ -61,7 +61,7 @@ namespace sfl {
       const double sddMax;
       const double thetaddMax;
       
-      Parameters(double securityDistance,
+      Parameters(double safetyDistance,
 		 double wheelBase,
 		 double wheelRadius,
 		 double qdMax,
@@ -87,12 +87,19 @@ namespace sfl {
     double Timestep() const;
     
     /**
-       \return A reference to the robot's hull.
+       \return The robot's hull (without safety buffer zone).
     */
     boost::shared_ptr<const Hull> GetHull() const;
     
     /**
-       \return The security distance.
+       \return The robot's hull with safety buffer zone
+       (Parameters::safetyDistance).
+    */
+    boost::shared_ptr<const Hull> GetSafetyHull() const;    
+    
+    /**
+       \return The safety distance.
+       \todo should be renamed SafetyDistance().
     */
     double SecurityDistance() const;
     
@@ -183,6 +190,7 @@ namespace sfl {
     const double m_timestep;
     const Parameters m_params;
     boost::shared_ptr<const Hull> m_hull;
+    boost::shared_ptr<const Hull> m_safety_hull;
   };
 
 }

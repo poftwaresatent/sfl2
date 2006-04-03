@@ -201,7 +201,7 @@ namespace sfl {
     if(m_point.size() < 3)
       return polygon;
     
-    int lastpoint = m_point.size() - 1;
+    size_t lastpoint = m_point.size() - 1;
     
     // special treatment for first point
     Point v0(m_point[lastpoint]->X() - m_point[0]->X(),
@@ -220,11 +220,11 @@ namespace sfl {
 		      m_point[0]->Y() + mu * u.Y());
   
     // normal treatment for all except last point
-    for(int i = 1; i < lastpoint; ++i){
-      v0.X(m_point[i - 1]->X() - m_point[i]->X());
-      v0.Y(m_point[i - 1]->Y() - m_point[i]->Y());
-      v1.X(m_point[i + 1]->X() - m_point[i]->X());
-      v1.Y(m_point[i + 1]->Y() - m_point[i]->Y());
+    for(size_t ii(1); ii < lastpoint; ++ii){
+      v0.X(m_point[ii - 1]->X() - m_point[ii]->X());
+      v0.Y(m_point[ii - 1]->Y() - m_point[ii]->Y());
+      v1.X(m_point[ii + 1]->X() - m_point[ii]->X());
+      v1.Y(m_point[ii + 1]->Y() - m_point[ii]->Y());
       l0 = sqrt(v0.X() * v0.X() + v0.Y() * v0.Y());
       l1 = sqrt(v1.X() * v1.X() + v1.Y() * v1.Y());
     
@@ -233,8 +233,8 @@ namespace sfl {
     
       mu = padding * l0 / (v0.X() * u.Y() - v0.Y() * u.X());
     
-      polygon->AddPoint(m_point[i]->X() + mu * u.X(),
-			m_point[i]->Y() + mu * u.Y());
+      polygon->AddPoint(m_point[ii]->X() + mu * u.X(),
+			m_point[ii]->Y() + mu * u.Y());
     }
 
     // special treatment for last point
@@ -280,12 +280,12 @@ namespace sfl {
   
   
   shared_ptr<Line> Polygon::
-  GetLine(int index)
+  GetLine(size_t index)
     const
   {
-    if((index < 0) || ((unsigned) index >= m_point.size()))
+    if(index >= m_point.size())
       return shared_ptr<Line>();
-    if((unsigned) index == m_point.size() - 1)
+    if(index == m_point.size() - 1)
       return shared_ptr<Line>(new Line(m_point[m_point.size() - 1]->X(),
 				       m_point[m_point.size() - 1]->Y(),
 				       m_point[0]->X(),
@@ -312,7 +312,7 @@ namespace sfl {
   
   
   const Point * Polygon::
-  GetPoint(unsigned int index)
+  GetPoint(size_t index)
     const
   {
     if(index >= m_point.size())

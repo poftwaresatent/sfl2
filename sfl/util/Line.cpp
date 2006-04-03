@@ -77,39 +77,8 @@ namespace sfl {
 		  bool &valid2)
     const
   {
-    double delta_cx(cx - p0.X());
-    double delta_cy(cy - p0.Y());
-    double delta_px(p1.X() - p0.X());
-    double delta_py(p1.Y() - p0.Y());
-
-    double a(delta_px * delta_px +
-	     delta_py * delta_py);
-    double c(delta_cx * delta_cx +
-	     delta_cy * delta_cy -
-	     cr * cr);
-    double b(- 2 * (delta_cx * delta_px +
-		    delta_cy * delta_py));
-
-    double l1, l2;
-    switch(QuadraticEquation(a, b, c, l1, l2)){
-    case 0:
-      valid1 = false;
-      valid2 = false;
-      break;
-    case 1:
-      q1x = p0.X() + l1 * delta_px;
-      q1y = p0.Y() + l1 * delta_py;
-      valid1 = (l1 >= 0) && (l1 <= 1);
-      valid2 = false;
-      break;
-    default:
-      q1x = p0.X() + l1 * delta_px;
-      q1y = p0.Y() + l1 * delta_py;
-      q2x = p0.X() + l2 * delta_px;
-      q2y = p0.Y() + l2 * delta_py;
-      valid1 = (l1 >= 0) && (l1 <= 1);
-      valid2 = (l2 >= 0) && (l2 <= 1);
-    }
+    LineCircleIntersect(p0.X(), p0.Y(), p1.X(), p1.Y(),
+			cx, cy, cr, q1x, q1y, q2x, q2y, valid1, valid2);
   }
-
+  
 }

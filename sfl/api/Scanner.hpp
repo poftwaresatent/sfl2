@@ -29,10 +29,10 @@
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Scan.hpp>
 #include <sfl/api/HAL.hpp>
-#include <sfl/api/types.hpp>
 #include <sfl/api/Timestamp.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <string>
 
 
 namespace sfl {
@@ -221,7 +221,7 @@ namespace sfl {
 		    double & sinphi) const;
     
     /** \return The number of data points per scan. */
-    index_t Nscans() const { return m_nscans; }
+    size_t Nscans() const { return m_nscans; }
     
     /** \return Reference to the sensor's mount point in the robot frame. */
     const Frame & Mount() const { return m_mount; }

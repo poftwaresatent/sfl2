@@ -4,8 +4,9 @@ Aim: Less dependent on exact execution period
        the actual time since last call (see also below)
 
 Aim: Cleanup for external use
-     - Some many \todo comments should be \note
-     - Remove api/types.hpp, use std::size_t instead of sfl::index_t
+     - Some (many) \todo comments should be \note
+     DONE - Remove api/types.hpp, use std::size_t instead of sfl::index_t,
+            unsigned int, or (gasp!) int
      - Make use of BubbleFactory optional (but KEEP it, make it a
        configurable behavior)
      - Make use of (compressed) lookup optional in DWA (but KEEP it,
