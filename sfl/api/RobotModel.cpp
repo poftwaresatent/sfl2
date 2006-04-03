@@ -233,5 +233,12 @@ namespace sfl {
   {
     LocalKinematics(sd, thetad, m_timestep, deltax, deltay, deltatheta);
   }
-
+  
+  
+  boost::shared_ptr<const Hull> RobotModel::
+  GetSafetyHull() const
+  {
+    return m_safety_hull;
+  }
+  
 }

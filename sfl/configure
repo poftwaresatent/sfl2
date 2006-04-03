@@ -2514,7 +2514,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 if test "x${GCC}" = "xyes"; then
-  CFLAGS="-O2 -Wall -pipe"
+  CFLAGS="$CFLAGS -Wall -pipe"
 fi
 
 ac_ext=cc
@@ -2873,7 +2873,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 if test "x${GXX}" = "xyes"; then
-  CXXFLAGS="-O2 -Wall -pipe"
+  CXXFLAGS="$CXXFLAGS -Wall -pipe"
 fi
 
 

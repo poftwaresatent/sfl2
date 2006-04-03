@@ -6,12 +6,12 @@ AC_CANONICAL_HOST
 
 AC_PROG_CC
 if test "x${GCC}" = "xyes"; then
-  CFLAGS="-O2 -Wall -pipe"
+  CFLAGS="$CFLAGS -Wall -pipe"
 fi
 
 AC_PROG_CXX
 if test "x${GXX}" = "xyes"; then
-  CXXFLAGS="-O2 -Wall -pipe"
+  CXXFLAGS="$CXXFLAGS -Wall -pipe"
 fi
 
 dnl Check for boost library.
