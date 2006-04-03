@@ -92,7 +92,8 @@ SRCS=           $(XCF_SRCS) \
                 gplan/NF1Wave.cpp \
                 cwrap/cwrapHAL.cpp \
                 cwrap/expo.cpp \
-                cwrap/sfl.cpp
+                cwrap/sfl.cpp \
+		contrib/DummyHAL.cpp
 
 HEADERS=        $(XCF_HEADERS) \
                 util/Frame.hpp \
@@ -141,7 +142,8 @@ HEADERS=        $(XCF_HEADERS) \
                 cwrap/cwrapHAL.hpp \
                 cwrap/expo.h \
                 cwrap/hal.h \
-                cwrap/sfl.h
+                cwrap/sfl.h \
+		contrib/DummyHAL.cpp
 
 OBJS=           $(SRCS:%.cpp=%.lo)
 

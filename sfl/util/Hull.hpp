@@ -121,6 +121,10 @@ namespace sfl {
     bool IsValid()        const { return m_valid; }
     const Point * GetP0() const { return m_p0; }
     const Point * GetP1() const { return m_p1; }
+    double GetX0()        const { return m_p0->X(); }
+    double GetY0()        const { return m_p0->Y(); }
+    double GetX1()        const { return m_p1->X(); }
+    double GetY1()        const { return m_p1->Y(); }
     
   private:
     const Hull & m_hull;

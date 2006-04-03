@@ -134,6 +134,10 @@ namespace sfl {
     
     void DumpGrid(std::ostream & os, const char * prefix) const;
     
+    double PredictCollision(double qdl, double qdr, double lx, double ly)
+      const;
+    
+    
   protected:
     const double _securityDistance;
     const double _maxTime;
@@ -165,11 +169,7 @@ namespace sfl {
 	of range (represented as readings at the maximum rho
 	value). */
     void UpdateGrid(boost::shared_ptr<const Scan> local_scan);
-    double MinTime(unsigned int iqdl, unsigned int iqdr);
-
-    double PredictCollision(double qdl, double qdr, double lx, double ly)
-      const;
-    
+    double MinTime(unsigned int iqdl, unsigned int iqdr);    
     double CalculateValue(double measure, double floor);
   };
 
