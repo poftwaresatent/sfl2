@@ -127,7 +127,7 @@ namespace sfl {
     { return _hull; }
     boost::shared_ptr<const Hull> GetPaddedHull() const
     { return _paddedHull; }
-    boost::shared_ptr<const Polygon> GetEvaluationHull() const
+    boost::shared_ptr<const sfl::Hull> GetEvaluationHull() const
     { return _evaluationHull; }
     double GetDeltaX() const { return _dx; }
     double GetDeltaY() const { return _dy; }
@@ -141,10 +141,10 @@ namespace sfl {
 
     const RobotModel & _robot_model;
 
-    std::vector<boost::shared_ptr<Line> > _outline;
-    boost::shared_ptr<const Hull> _hull;
-    boost::shared_ptr<const Hull> _paddedHull;
-    boost::shared_ptr<const Polygon> _evaluationHull;
+    std::vector<boost::shared_ptr<sfl::Line> > _outline;
+    boost::shared_ptr<const sfl::Hull> _hull;
+    boost::shared_ptr<const sfl::Hull> _paddedHull;
+    boost::shared_ptr<const sfl::Hull> _evaluationHull;
     
     boost::scoped_array<boost::scoped_array<bool> > _grid;
     double _x0, _y0, _x1, _y1; // bounding box of grid (currently symetric)

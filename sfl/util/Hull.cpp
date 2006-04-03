@@ -51,6 +51,14 @@ namespace sfl {
   }
   
   
+  Hull::
+  Hull(const Polygon & poly)
+    : m_npoints(0)
+  {
+    AddPolygon(poly);
+  }
+  
+  
   void Hull::
   AddPolygon(const Polygon & polygon)
   {

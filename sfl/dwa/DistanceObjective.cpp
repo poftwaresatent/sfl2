@@ -102,7 +102,7 @@ namespace sfl {
     foo.AddPoint(_x1, _y0);
     foo.AddPoint(_x1, _y1);
     foo.AddPoint(_x0, _y1);
-    _evaluationHull = foo.CreateConvexHull();
+    _evaluationHull.reset(new Hull(foo));
   }
   
   

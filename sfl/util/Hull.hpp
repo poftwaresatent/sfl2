@@ -45,6 +45,13 @@ namespace sfl {
     Hull(const Hull & original);
     
     /**
+       Convenient way of creating a hull with a single polygon:
+       Creates the provided Polygon's convex hull and adds it to the
+       list of convex sub-hulls.
+    */
+    explicit Hull(const Polygon & poly);
+    
+    /**
        Copies the provided polygon, creates its convex hull, and adds
        it to the list of convex sub-hulls.
     */
