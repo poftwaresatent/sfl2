@@ -63,6 +63,9 @@ namespace sfl {
 		       double radius,
 		       double value);
     
+    const Frame & GetFrame() const { return m_frame; }
+    
+    
   private:
     double m_delta;
     double m_delta_inv;
