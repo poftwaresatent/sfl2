@@ -23,9 +23,14 @@
 
 
 #include "DynamicWindow.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+
+
+#define PDEBUG PDEBUG_OFF
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace std;
@@ -200,14 +205,15 @@ namespace sfl {
   {
     double qdl, qdr;
     _motion_controller.GetActuators(qdl, qdr);
- 
+    PDEBUG("local goal: %g   %g   qd: %g   %g\n", dx, dy, qdl, qdr);
+    
     CalculateReachable(qdl, qdr);
-
+    
     _distance_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax,
 				  local_scan);
-
+    
     CalculateAdmissible();
-
+    
     _heading_objective.SetGoal(dx, dy);
     _heading_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax);
     _speed_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax);
@@ -215,7 +221,7 @@ namespace sfl {
     CalculateOptimum(_alphaDistance,
 		     _alphaHeading,
 		     _alphaSpeed);
-
+    
     if(dbgos != 0){
       (*dbgos) << "INFO from DynamicWindow::Update():\n"
 	       << "  obstacles:\n";
@@ -225,8 +231,8 @@ namespace sfl {
       (*dbgos) << "  FINISHED DynamicWindow::Update():\n";
     }
   }
-
-
+  
+  
   void DynamicWindow::
   GetSubGoal(double & local_x,
 	     double & local_y)
@@ -382,6 +388,7 @@ namespace sfl {
 	  if(_objective[il][ir] < _objectiveMin)
 	    _objectiveMin = _objective[il][ir];
 	}
+    PDEBUG("[%d   %d]: %g\n", _qdlOpt, _qdrOpt, _objectiveMax);
   }
 
 
