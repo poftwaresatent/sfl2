@@ -96,6 +96,7 @@ SRCS=           $(XCF_SRCS) \
 		contrib/DummyHAL.cpp
 
 HEADERS=        $(XCF_HEADERS) \
+                util/pdebug.hpp \
                 util/Frame.hpp \
                 util/functors.hpp \
                 util/Hull.hpp \
