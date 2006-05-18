@@ -160,6 +160,12 @@ subdirs:
 	- mkdir util api bband cwrap dwa expo gplan contrib
 	echo "subdirs created `date`" > subdirs
 
+doc:
+	mkdir -p html
+	cp $(top_srcdir)/doxylogo.png html
+	doxygen
+	echo "doc build `date`" > doc
+
 install:: $(LIB)
 	$(MKINSTALLDIRS) $(BINDIR) $(LIBDIR)
 	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
