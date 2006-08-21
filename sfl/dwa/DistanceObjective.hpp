@@ -129,7 +129,7 @@ namespace sfl {
     double PredictCollision(double qdl, double qdr,
 			    double lx, double ly) const;
     
-    static const double invalidTime = -1;
+    static const double invalidTime;
     
     
   protected:

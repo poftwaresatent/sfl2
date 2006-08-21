@@ -35,6 +35,9 @@ using std::ostream;
 using std::vector;
 
 
+const double sfl::DistanceObjective::invalidTime = -1;
+
+
 namespace sfl {
   
   
