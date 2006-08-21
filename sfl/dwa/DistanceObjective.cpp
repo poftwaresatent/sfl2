@@ -54,7 +54,7 @@ namespace sfl {
     _y0( - grid_height / 2),
     _x1(   grid_width  / 2),
     _y1(   grid_height / 2),
-    _maxTimeLookup(dimension, dimension, invalidTime)
+    m_base_brake_time(dimension, dimension, invalidTime)
   {
     double delta(absval(_x1 - _x0));
     double dim(ceil(absval(delta / _gridResolution)));
@@ -98,7 +98,7 @@ namespace sfl {
     
     for(size_t ii(0); ii < dimension; ++ii)
       for(size_t jj(0); jj < dimension; ++jj)
-	_maxTimeLookup[ii][jj] =
+	m_base_brake_time[ii][jj] =
 	  maxval(absval(_qdLookup[ii]), absval(_qdLookup[jj])) /
 	  _robot_model.QddMax();
     
@@ -165,8 +165,7 @@ namespace sfl {
   
   
   bool DistanceObjective::
-  CheckLookup(ostream * os)
-    const
+  CheckLookup(ostream * os) const
   {
     if(0 != os)
       (*os) << "INFO from DistanceObjective::CheckLookup():\n";
@@ -182,13 +181,12 @@ namespace sfl {
       for(size_t jj(0); jj < dimension; ++jj){
 	const double check(maxval(absval(_qdLookup[ii]), absval(_qdLookup[jj]))
 			   / _robot_model.QddMax());
-	if(epsilon < absval(_maxTimeLookup[ii][jj] - check)){
+	if(epsilon < absval(m_base_brake_time[ii][jj] - check)){
 	  if(0 != os)
-	    (*os) << "  ERROR _maxTimeLookup[" << ii << "][" << jj << "] is "
-		  << _maxTimeLookup[ii][jj] << "but should be "
-		  << check << "\n"
-		  << "        difference = " << _maxTimeLookup[ii][jj] - check
-		  << "\n";
+	    (*os) << "  ERROR m_base_brake_time[" << ii << "][" << jj
+		  << "] is " << m_base_brake_time[ii][jj] << "but should be "
+		  << check << "\n        difference = "
+		  << m_base_brake_time[ii][jj] - check << "\n";
 	  return false;
 	}
       }
@@ -262,9 +260,19 @@ namespace sfl {
     UpdateGrid(local_scan);
     for(size_t iqdl(qdlMin); iqdl <= qdlMax; ++iqdl)
       for(size_t iqdr(qdrMin); iqdr <= qdrMax; ++iqdr)      
-	if( ! m_dynamic_window.Forbidden(iqdl, iqdr))
-	  m_value[iqdl][iqdr] = CalculateValue(timestep + MinTime(iqdl, iqdr),
-					       _maxTimeLookup[iqdl][iqdr]);
+	if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
+	  const double ctime(MinTime(iqdl, iqdr));
+	  if((ctime == invalidTime) || (ctime >= _maxTime))
+	    m_value[iqdl][iqdr] = maxValue;
+	  else{
+	    const double btime(m_base_brake_time[iqdl][iqdr] + timestep);
+	    if(ctime <= btime)
+	      m_value[iqdl][iqdr] = minValue;
+	    else
+	      m_value[iqdl][iqdr] =
+		minValue + (ctime-btime)*(maxValue-minValue)/(_maxTime-btime);
+	  }
+	}
   }
 
 
@@ -295,16 +303,16 @@ namespace sfl {
   /** \todo easy speedup: remember how many points there are, return
       as soon as all are processed. */
   double DistanceObjective::
-  MinTime(size_t iqdl,
-	  size_t iqdr)
+  MinTime(size_t iqdl, size_t iqdr)
   {
-    double minTime(_maxTime);
+    double minTime(invalidTime);
     for(size_t ix(0); ix < _dimx; ++ix)
       for(size_t iy(0); iy < _dimy; ++iy)
 	if((*_grid)[ix][iy] &&	// cell is occupied
 	   ((*_timeLookup)[ix][iy])){ // cell is inside evaluation region
 	  double tt((*_timeLookup)[ix][iy]->Get(iqdl, iqdr));
-	  if((tt != invalidTime) && (tt < minTime))
+	  if((tt != invalidTime)
+	     && ((tt < minTime) || (minTime == invalidTime)))
 	    minTime = tt;
 	}
     return minTime;
@@ -312,32 +320,28 @@ namespace sfl {
   
   
   ssize_t DistanceObjective::
-  FindXindex(double d)
-    const
+  FindXindex(double d) const
   {
     return static_cast<ssize_t>(floor((d - _x0) * _dxInv));
   }
 
 
   double DistanceObjective::
-  FindXlength(ssize_t i)
-    const
+  FindXlength(ssize_t i) const
   {
     return (0.5 + (double) i) * _dx + _x0;
   }
 
 
   ssize_t DistanceObjective::
-  FindYindex(double d)
-    const
+  FindYindex(double d) const
   {
     return static_cast<ssize_t>(floor((d - _y0) * _dyInv));
   }
 
 
   double DistanceObjective::
-  FindYlength(ssize_t i)
-    const
+  FindYlength(ssize_t i) const
   {
     return (0.5 + (double) i) * _dy + _y0;
   }
@@ -407,23 +411,8 @@ namespace sfl {
   }
   
   
-  double DistanceObjective::
-  CalculateValue(double measure, double floor)
-  {
-    return
-      boundval(minValue,
-	       minValue +
-	       (measure - floor) * (maxValue - minValue) / (_maxTime - floor),
-	       maxValue);
-  }
-  
-  
   void DistanceObjective::
-  GetRange(double & x0,
-	   double & y0,
-	   double & x1,
-	   double & y1)
-    const
+  GetRange(double & x0, double & y0, double & x1, double & y1) const
   {
     x0 = _x0;
     y0 = _y0;
@@ -433,8 +422,7 @@ namespace sfl {
 
   
   void DistanceObjective::
-  DumpGrid(std::ostream & os, const char * prefix)
-    const
+  DumpGrid(std::ostream & os, const char * prefix) const
   {
     for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
       const double yy(FindYlength(igy));

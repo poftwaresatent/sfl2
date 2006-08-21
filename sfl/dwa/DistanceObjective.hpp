@@ -100,7 +100,7 @@ namespace sfl {
     size_t DimY() const;
     bool CellOccupied(size_t ix, size_t iy) const;
     
-    /** \return -1 if not valid */
+    /** \return invalidTime if not valid (no collision) */
     double CollisionTime(size_t ix, size_t iy, size_t iqdl, size_t iqdr) const;
     
     /** \note Expects signed ssize_t to be consistent with FindXindex(). */
@@ -129,10 +129,10 @@ namespace sfl {
     double PredictCollision(double qdl, double qdr,
 			    double lx, double ly) const;
     
-    
-  protected:
     static const double invalidTime = -1;
     
+    
+  protected:
     const double _securityDistance;
     const double _maxTime;
     const double _gridResolution;
@@ -149,7 +149,7 @@ namespace sfl {
     double _dx, _dy, _dxInv, _dyInv; // effective resolution along x and y
     size_t _dimx, _dimy;	// dimensions of grid
     std::vector<double> _qdLookup;
-    array2d<double> _maxTimeLookup;
+    array2d<double> m_base_brake_time;
     boost::scoped_ptr<array2d<boost::shared_ptr<Lookup> > > _timeLookup;
     
     void ResetGrid();
@@ -162,8 +162,13 @@ namespace sfl {
 	of range (represented as readings at the maximum rho
 	value). */
     void UpdateGrid(boost::shared_ptr<const Scan> local_scan);
+    
+    /** \return The minimum predicted time until collision for a given
+	actuator command, given the current obstacles. In case the are
+	no collisions, or if they all would appear after the maximum
+	braking time, invalidTime is returned to signal "no
+	danger". */
     double MinTime(size_t iqdl, size_t iqdr);    
-    double CalculateValue(double measure, double floor);
   };
 
 }
