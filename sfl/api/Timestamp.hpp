@@ -114,6 +114,10 @@ namespace sfl {
     /** Decrement operator. */
     Timestamp & operator -= (const Timestamp & other);
     
+    /** const access to the underlying timespec instance */
+    const struct ::timespec & Get() const
+    { return m_stamp; }
+    
   private:
     struct ::timespec m_stamp;
   };
