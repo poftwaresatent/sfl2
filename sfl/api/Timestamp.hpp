@@ -29,39 +29,32 @@
 #include <iosfwd>
 
 
+/* See comments in HAL.hpp */
+struct timespec;
+
+
 namespace sfl {
 
 
-  class HAL;
-
-
   /**
-     Encapsulates the HAL's timestamp type and presents it through a
-     useful object-oriented interface. Much is inlined for efficient
-     use, especially in conjunction with the STL.
+     Encapsulates timestamps (i.e. from HAL). Much is inlined for
+     efficient use, especially in conjunction with the STL.
+     
+     \note By relying on HAL for timestamps, it is possible to
+     "freeze" sunflower execution in simulation, which is extremely
+     useful when debugging those fancy algorithms.
   */
   class Timestamp
   {
   public:
     /** Default Timestamp with all zeros. */
-    Timestamp() {
-      m_stamp.tv_sec = 0;
-      m_stamp.tv_nsec = 0;
-    }
+    Timestamp();
     
     /**
        Converts a HAL timestamp into a Timestamp instance. If you need
        a Timestamp of "unspecified" time, use Last() or First().
     */
-    Timestamp(const struct ::timespec & stamp)
-      : m_stamp(stamp) { }
-    
-    /**
-       Sets the provided timespec to the current time.
-       
-       \return 0 on success.
-    */
-    static int Now(HAL * hal, struct ::timespec * spec);
+    explicit Timestamp(const struct ::timespec & stamp);
     
     /**
        \return A (static) Timestamp of the last representable
@@ -77,25 +70,10 @@ namespace sfl {
     */
     static const Timestamp & First();
     
-    /** Assignement operator. */
-    Timestamp & operator = (const Timestamp & original) {
-      m_stamp = original.m_stamp;
-      return * this;
-    }
+    /** Conversion operator. */
+    Timestamp & operator = (const struct ::timespec & original);
     
-    /**
-       Dereference operator. You can use a Timestamp instance instead
-       of a struct timespec, ie Timestamp behaves like a pointer to a
-       <code>struct timespec</code> in certain circumstances.
-    */
-    struct ::timespec operator * () const { return m_stamp; }
-    
-    /**
-       Ouput operator for human-readable messages, prints the
-       Timestamp as a floating point number in seconds.
-       
-       \todo Is the field width reset to old after this call?
-    */
+    /** Prints the Timestamp as "seconds.nanoseconds". */
     friend std::ostream & operator << (std::ostream & os, const Timestamp & t);
     
     /**
@@ -125,67 +103,21 @@ namespace sfl {
 	 cerr << id->first << ": " << id->second << "\n";
        \endcode
     */
-    friend bool operator < (const Timestamp & left, const Timestamp & right)
-    { return
-	(   left.m_stamp.tv_sec  <  right.m_stamp.tv_sec ) ||
-	( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
-	  ( left.m_stamp.tv_nsec <  right.m_stamp.tv_nsec )   ); }
+    friend bool operator < (const Timestamp & left, const Timestamp & right);
     
     /** The opposite of Timestamp::operator<(). */
-    friend bool operator > (const Timestamp & left, const Timestamp & right)
-    { return
-	(   left.m_stamp.tv_sec  >  right.m_stamp.tv_sec ) ||
-	( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
-	  ( left.m_stamp.tv_nsec >  right.m_stamp.tv_nsec )   ); }
+    friend bool operator > (const Timestamp & left, const Timestamp & right);
     
     /** Equality operator. */
-    friend bool operator == (const Timestamp & left, const Timestamp & right)
-    { return
-	( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
-	( left.m_stamp.tv_nsec == right.m_stamp.tv_nsec ); }
+    friend bool operator == (const Timestamp & left, const Timestamp & right);
     
     /** Decrement operator. */
-    Timestamp & operator -= (const Timestamp & other) {
-      if(other.m_stamp.tv_nsec > m_stamp.tv_nsec){
-	--m_stamp.tv_sec;
-	m_stamp.tv_nsec += 1000000000;
-      }
-      m_stamp.tv_sec  -= other.m_stamp.tv_sec;
-      m_stamp.tv_nsec -= other.m_stamp.tv_nsec;
-      return * this;
-    }
-    
-    /**
-       Functor for using as sort key in STL containers. For
-       example, you can create a set of timestamps that is
-       automatically sorted in ascending chronological order like
-       this:
-       
-       \code
-       typedef std::set<Timestamp, Timestamp::less> chronology_t;
-       chronology_t chrono;
-       while(something())
-         chrono.insert(RandomTimestamp());
-       // print the random timestamps in ascending order:
-       for(chronology_t::iterator ic(chrono.begin(); ic != chrono.end(); ++ic)
-         cerr << * ic << "\n";
-       \endcode
-    */
-    class less {
-    public:
-      /** for references */
-      bool operator () (const Timestamp & left, const Timestamp & right) const
-      {return left < right; }
-      
-      /** for pointers */
-      bool operator () (const Timestamp * left, const Timestamp * right) const
-      { return (*left) < (*right); }
-    };
+    Timestamp & operator -= (const Timestamp & other);
     
   private:
     struct ::timespec m_stamp;
   };
-  
+
 }
 
 #endif // SUNFLOWER_TIMESTAMP_HPP

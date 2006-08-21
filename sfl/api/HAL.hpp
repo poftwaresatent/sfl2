@@ -26,6 +26,9 @@
 #define SUNFLOWER_HAL_HPP
 
 
+/** Declared in <time.h> but don't use system clock: The HAL is used
+    as centrall "wall clock" so that simulation can freeze time when
+    needed. */
 struct timespec;
 
 
@@ -41,12 +44,11 @@ namespace sfl {
      working with the nepumuk simulator - all with one and the same
      sunflower code.
 
-     \note This class is work in progress depending on the need for
-     sunflower and nepumuk development.
-     
-     \todo Turn this into a pure C struct of function pointers in
-     order to ease integration with other existing hardware
-     abstraction layers.
+     \note If you have an existing hardware abstraction layer coded in
+     C, have a look at sfl_cwrap::cwrapHAL in the cwrap/ directory. It
+     takes a collection of function pointers in a struct cwrap_hal_s
+     as ctor argument, which simplifies interfacing your C
+     implementation with libsunflower.
   */
   
   class HAL

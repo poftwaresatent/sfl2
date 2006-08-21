@@ -35,10 +35,26 @@ using namespace std;
 namespace sfl {
   
   
-  int Timestamp::
-  Now(HAL * hal, struct ::timespec * spec)
+  Timestamp::
+  Timestamp()
   {
-    return hal->time_get(spec);
+    m_stamp.tv_sec = 0;
+    m_stamp.tv_nsec = 0;
+  }
+  
+  
+  Timestamp::
+  Timestamp(const struct ::timespec & stamp)
+    : m_stamp(stamp)
+  {
+  }
+  
+  
+  Timestamp & Timestamp::
+  operator = (const struct ::timespec & original)
+  {
+    m_stamp = original;
+    return * this;
   }
   
   
@@ -69,10 +85,52 @@ namespace sfl {
   ostream & operator << (ostream & os,
 			 const Timestamp & t)
   {
-    char oldfill(os.fill('0'));
-    os << t.m_stamp.tv_sec << "." << setw(9) << t.m_stamp.tv_nsec;
+    os << t.m_stamp.tv_sec << ".";
+    const char oldfill(os.fill('0'));
+    const int oldwidth(os.width(9));
+    os << t.m_stamp.tv_nsec;
+    os.width(oldwidth);
     os.fill(oldfill);
     return os;
+  }
+  
+  
+  bool operator < (const Timestamp & left, const Timestamp & right)
+  {
+    return
+      (   left.m_stamp.tv_sec  <  right.m_stamp.tv_sec ) ||
+      ( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
+	( left.m_stamp.tv_nsec <  right.m_stamp.tv_nsec )   );
+  }
+  
+  
+  bool operator > (const Timestamp & left, const Timestamp & right)
+  {
+    return
+      (   left.m_stamp.tv_sec  >  right.m_stamp.tv_sec ) ||
+      ( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
+	( left.m_stamp.tv_nsec >  right.m_stamp.tv_nsec )   );
+  }
+  
+  
+  bool operator == (const Timestamp & left, const Timestamp & right)
+  {
+    return
+      ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
+      ( left.m_stamp.tv_nsec == right.m_stamp.tv_nsec );
+  }
+  
+  
+  Timestamp & Timestamp::
+  operator -= (const Timestamp & other)
+  {
+    if(other.m_stamp.tv_nsec > m_stamp.tv_nsec){
+      --m_stamp.tv_sec;
+      m_stamp.tv_nsec += 1000000000;
+    }
+    m_stamp.tv_sec  -= other.m_stamp.tv_sec;
+    m_stamp.tv_nsec -= other.m_stamp.tv_nsec;
+    return * this;
   }
   
 }

@@ -24,7 +24,7 @@
 extern "C" {
 #endif // __cplusplus
   
-
+  
   /**
      Collection of HAL function pointers.
      
@@ -54,12 +54,12 @@ extern "C" {
     int (*speed_set)(double qdl, double qdr);
 
     /**
-       \param[in]  channel: scanner channel number
-       \param[in]  rho_len: length of the rho array
+       \param channel (in): scanner channel number
+       \param rho_len (in): length of the rho array
        
-       \param[out] rho: array of distances, unit = [m]
-       \param[out] t0: lower bound on acquisition time
-       \param[out] t1: upper bound on acquisition time
+       \param rho (out): array of distances, unit = [m]
+       \param t0 (out): lower bound on acquisition time
+       \param t1 (out): upper bound on acquisition time
 
        \return 0 on success
     */
@@ -67,14 +67,14 @@ extern "C" {
 		    struct timespec * t0, struct timespec * t1);
     
     /**
-       \param[in] channel: scanner channel number
+       \param channel: scanner channel number
 
        \return 0 on success
     */
     int (*scan_init)(int channel);
 
     /**
-       \param[in] channel: scanner channel number
+       \param channel: scanner channel number
 
        \return 0 on success
     */
