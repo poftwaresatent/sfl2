@@ -26,7 +26,12 @@
 #include "Timestamp.hpp"
 #include "RobotModel.hpp"
 #include "DiffDrive.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <iostream>
+
+
+#define PDEBUG PDEBUG_OFF
+#define PVDEBUG PDEBUG_OFF
 
 
 namespace sfl {
@@ -39,8 +44,6 @@ namespace sfl {
     _qddMax(robotModel.QddMax()),
     _sdMax(robotModel.SdMax()),
     _thetadMax(robotModel.ThetadMax()),
-    //RFCTR _deltaQdMax(robotModel.Timestep() * robotModel.QddMax()),
-    //RFCTR _qdStoppable(robotModel.Timestep() * robotModel.QddMax()),
     _robotModel(robotModel),
     m_drive(drive),
     _proposedQdl(0),
@@ -54,28 +57,31 @@ namespace sfl {
   int MotionController::
   Update(double timestep, std::ostream * dbgos)
   {
+    PDEBUG("dt: %g   curr: %g   %g\n", timestep, _actualQdl, _actualQdr);
+    
     if(dbgos != 0)
       (*dbgos) << "INFO from MotionController::Update()\n"
 	       << "  proposed: (" << _proposedQdl << ", "
 	       << _proposedQdr << ")\n";
     
-    // check if proposed actuator values violate actuator dynamics
+    // limit proposed actuator speeds to actuator dynamics
     const double deltaQdMax(timestep * _qddMax);
-    const double qdlMax(minval(  _qdMax, _actualQdl + deltaQdMax));
-    const double qdlMin(maxval(- _qdMax, _actualQdl - deltaQdMax));
-    const double qdrMax(minval(  _qdMax, _actualQdr + deltaQdMax));
-    const double qdrMin(maxval(- _qdMax, _actualQdr - deltaQdMax));
+    const double qdlMax(boundval(- _qdMax, _actualQdl + deltaQdMax, _qdMax));
+    const double qdlMin(boundval(- _qdMax, _actualQdl - deltaQdMax, _qdMax));
+    const double qdrMax(boundval(- _qdMax, _actualQdr + deltaQdMax, _qdMax));
+    const double qdrMin(boundval(- _qdMax, _actualQdr - deltaQdMax, _qdMax));
+    PDEBUG("prop: %g   %g\n", _proposedQdl, _proposedQdr);
     _proposedQdl = boundval(qdlMin, _proposedQdl, qdlMax);
     _proposedQdr = boundval(qdrMin, _proposedQdr, qdrMax);
+    PDEBUG("prop: %g   %g\n", _proposedQdl, _proposedQdr);
     
-    // check if proposed actuator values violate global dynamics
+    // limit proposed actuator speeds to global dynamics
     double sd, thetad;
     _robotModel.Actuator2Global(_proposedQdl, _proposedQdr, sd, thetad);
-    sd = boundval(_sdMax, sd, - _sdMax);
-    thetad = boundval(_thetadMax, thetad, - _thetadMax);
-    
-    // load actualQd{l, r}
+    sd =     boundval( - _sdMax,     sd,     _sdMax);
+    thetad = boundval( - _thetadMax, thetad, _thetadMax);
     _robotModel.Global2Actuator(sd, thetad, _actualQdl, _actualQdr);
+    PDEBUG("act : %g   %g\n", _proposedQdl, _proposedQdr);
     
     // call actual motor control
     if(dbgos != 0)
@@ -86,16 +92,14 @@ namespace sfl {
   
   
   void MotionController::
-  ProposeSpeed(double sd,
-	       double thetad)
+  ProposeSpeed(double sd, double thetad)
   {
     _robotModel.Global2Actuator(sd, thetad, _proposedQdl, _proposedQdr);
   }
   
   
   void MotionController::
-  GetSpeed(double & sd,
-	   double & thetad)
+  GetSpeed(double & sd, double & thetad)
     const
   {
     _robotModel.Actuator2Global(_actualQdl, _actualQdr, sd, thetad);
@@ -103,8 +107,7 @@ namespace sfl {
   
   
   void MotionController::
-  GetActuators(double & qdLeft,
-	       double & qdRight)
+  GetActuators(double & qdLeft, double & qdRight)
     const
   {
     qdLeft = _actualQdl;
@@ -113,8 +116,7 @@ namespace sfl {
   
   
   void MotionController::
-  ProposeActuators(double qdLeft,
-		   double qdRight)
+  ProposeActuators(double qdLeft, double qdRight)
   {
     _proposedQdl = qdLeft;
     _proposedQdr = qdRight;

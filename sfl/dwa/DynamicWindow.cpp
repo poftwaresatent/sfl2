@@ -178,20 +178,19 @@ namespace sfl {
   {
     double qdl, qdr;
     _motion_controller.GetActuators(qdl, qdr);
-    PDEBUG("local goal: %g   %g   qd: %g   %g\n", dx, dy, qdl, qdr);
+    PDEBUG("dt: %g   goal: %g   %g   qd: %g   %g\n",
+	   timestep, dx, dy, qdl, qdr);
     
     CalculateReachable(timestep, qdl, qdr);
-    
-    _distance_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax,
+    _distance_objective.Calculate(timestep, _qdlMin, _qdlMax, _qdrMin, _qdrMax,
 				  local_scan);
-    
     CalculateAdmissible();
     
     _heading_objective.local_goal_x = dx;
     _heading_objective.local_goal_y = dy;
     _heading_objective.Calculate(timestep, _qdlMin, _qdlMax, _qdrMin, _qdrMax);
     _speed_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax);
-
+    
     CalculateOptimum(_alphaDistance, _alphaHeading, _alphaSpeed);
     
     if(dbgos != 0){

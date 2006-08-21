@@ -96,12 +96,8 @@ namespace sfl {
     const double _qddMax;
     const double _sdMax;
     const double _thetadMax;
-    //RFCTR const double _deltaQdMax;
-    //RFCTR const double _qdStoppable;
-    
     const RobotModel & _robotModel;
     DiffDrive & m_drive;
-    
     double _proposedQdl, _proposedQdr;
     double _actualQdl, _actualQdr;
   };
