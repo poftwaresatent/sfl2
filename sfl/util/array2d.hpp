@@ -42,16 +42,16 @@ namespace sfl {
     typedef boost::scoped_array<T> inner_t;
     typedef boost::scoped_array<inner_t> outer_t;
     
-    array2d(size_t xsize, size_t ysize)
-      : data(new inner_t[xsize])
-    { for(size_t ix(0); ix < xsize; ++ix) data[ix].reset(new T[ysize]); }
+    array2d(size_t _xsize, size_t _ysize)
+      : xsize(_xsize), ysize(_ysize), data(new inner_t[_xsize])
+    { for(size_t ix(0); ix < _xsize; ++ix) data[ix].reset(new T[_ysize]); }
     
-    array2d(size_t xsize, size_t ysize, const T & init)
-      : data(new inner_t[xsize])
+    array2d(size_t _xsize, size_t _ysize, const T & init)
+      : xsize(_xsize), ysize(_ysize), data(new inner_t[_xsize])
     {
-      for(size_t ix(0); ix < xsize; ++ix){
-	data[ix].reset(new T[ysize]);
-	for(size_t iy(0); iy < ysize; ++iy) data[ix][iy] = init;
+      for(size_t ix(0); ix < _xsize; ++ix){
+	data[ix].reset(new T[_ysize]);
+	for(size_t iy(0); iy < _ysize; ++iy) data[ix][iy] = init;
       }
     }
     
@@ -61,6 +61,8 @@ namespace sfl {
     const inner_t & operator [] (size_t ix) const
     { return data[ix]; }
     
+    const size_t xsize;
+    const size_t ysize;
     outer_t data;
   };
   
