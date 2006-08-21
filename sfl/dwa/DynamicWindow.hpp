@@ -79,10 +79,6 @@ namespace sfl {
 		  bool auto_init);
     ~DynamicWindow();
     
-    
-    /** \note special version for dumping on C stream for cwrap API */
-    bool Initialize(FILE * cstream, bool paranoid);
-    
     bool Initialize(std::ostream * os, bool paranoid);
     
     int Dimension() const;

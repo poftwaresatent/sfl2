@@ -79,16 +79,10 @@ namespace sfl {
 		      double grid_height,
 		      double grid_resolution);
     
-    
     void Initialize(std::ostream * progress_stream);
-    
-    /** \note special version for dumping on C stream for cwrap API */
-    void Initialize(FILE * c_progress_stream, bool paranoid);
-
+    //RFCTR    void Initialize(FILE * c_progress_stream);
     bool CheckLookup(std::ostream * os) const;
-
-    /** \note special version for dumping on C stream for cwrap API */
-    bool CheckLookup(FILE * cstream) const;
+    //RFCTR    bool CheckLookup(FILE * cstream) const;
 
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from

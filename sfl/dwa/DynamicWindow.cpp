@@ -89,34 +89,6 @@ namespace sfl {
   
   
   bool DynamicWindow::
-  Initialize(FILE * cstream,
-	     bool paranoid)
-  {
-    // BEWARE code duplication with Initialize(std::ostream&, bool)
-    for(int i = 0; i < _dimension; ++i)
-      _qd[i] = FindQd(i);
-    
-    for(int i = 0; i < _dimension; ++i)
-      _stopDistance[i] =
-	0.5 * _robot_model.WheelRadius()
-	* _qd[i] * _qd[i]
-	/ _robot_model.QddMax();
-    
-    InitForbidden();
-    
-    _distance_objective.Initialize(cstream, paranoid);
-
-    _heading_objective.Initialize(0);
-    _speed_objective.Initialize(0);
-    
-    if((paranoid)
-       && ( ! _distance_objective.CheckLookup(cstream)))
-      return false;
-    return true;
-  }
-  
-  
-  bool DynamicWindow::
   Initialize(ostream * os,
 	     bool paranoid)
   {

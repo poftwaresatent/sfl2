@@ -26,6 +26,7 @@
 #include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
+#include <sfl/util/fprintfos.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionController.hpp>
@@ -194,7 +195,8 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
 						  alpha_heading,
 						  alpha_speed,
 						  false));
-  if( ! dwa->Initialize(progress, false))
+  fprintfos os(progress);
+  if( ! dwa->Initialize( & os, false))
     return -3;
   return DynamicWindow_map.Insert(dwa);
 }
