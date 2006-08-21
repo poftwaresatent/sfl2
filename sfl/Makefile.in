@@ -97,6 +97,7 @@ SRCS=           $(XCF_SRCS) \
 
 HEADERS=        $(XCF_HEADERS) \
                 util/array2d.hpp \
+                util/fprintfos.hpp \
                 util/pdebug.hpp \
                 util/Frame.hpp \
                 util/functors.hpp \
