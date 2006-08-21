@@ -147,7 +147,7 @@ int sfl_create_DiffDrive(int hal_handle,
 }
   
   
-int sfl_create_RobotModel(double timestep, double security_distance,
+int sfl_create_RobotModel(double security_distance,
 			  double wheelbase, double wheelradius,
 			  double qd_max, double qdd_max,
 			  double sd_max, double thetad_max,
@@ -162,7 +162,7 @@ int sfl_create_RobotModel(double timestep, double security_distance,
     poly.AddPoint(hull_x[ip], hull_y[ip]);
   shared_ptr<Hull> hull(new Hull());
   hull->AddPolygon(poly);
-  return RobotModel_map.InsertRaw(new RobotModel(timestep, parms, hull));
+  return RobotModel_map.InsertRaw(new RobotModel(parms, hull));
 }
   
   

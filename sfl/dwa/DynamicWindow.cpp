@@ -50,8 +50,9 @@ namespace sfl {
 		double alpha_heading,
 		double alpha_speed,
 		bool auto_init):
-    _reachableQd(robot_model.Timestep() * robot_model.QddMax()),
+    //RFCTR _reachableQd(robot_model.Timestep() * robot_model.QddMax()),
     _dimension(dimension),
+    _maxindex(dimension - 1),
     _resolution(2 * robot_model.QdMax() / dimension),
     _alphaDistance(alpha_distance),
     _alphaHeading(alpha_heading),
@@ -66,7 +67,8 @@ namespace sfl {
     _heading_objective(*this, robot_model),
     _speed_objective(*this, robot_model),
     _qdlOpt(-1),
-    _qdrOpt(-1)
+    _qdrOpt(-1),
+    _qddMax(robot_model.QddMax())
   {
     // allocations
     _qd = new double[_dimension];
@@ -198,8 +200,7 @@ namespace sfl {
 
 
   void DynamicWindow::
-  Update(double dx,
-	 double dy,
+  Update(double timestep, double dx, double dy,
 	 boost::shared_ptr<const Scan> local_scan,
 	 ostream * dbgos)
   {
@@ -207,20 +208,19 @@ namespace sfl {
     _motion_controller.GetActuators(qdl, qdr);
     PDEBUG("local goal: %g   %g   qd: %g   %g\n", dx, dy, qdl, qdr);
     
-    CalculateReachable(qdl, qdr);
+    CalculateReachable(timestep, qdl, qdr);
     
     _distance_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax,
 				  local_scan);
     
     CalculateAdmissible();
     
-    _heading_objective.SetGoal(dx, dy);
-    _heading_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax);
+    _heading_objective.local_goal_x = dx;
+    _heading_objective.local_goal_y = dy;
+    _heading_objective.Calculate(timestep, _qdlMin, _qdlMax, _qdrMin, _qdrMax);
     _speed_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax);
 
-    CalculateOptimum(_alphaDistance,
-		     _alphaHeading,
-		     _alphaSpeed);
+    CalculateOptimum(_alphaDistance, _alphaHeading, _alphaSpeed);
     
     if(dbgos != 0){
       (*dbgos) << "INFO from DynamicWindow::Update():\n"
@@ -238,14 +238,15 @@ namespace sfl {
 	     double & local_y)
     const
   {
-    _heading_objective.GetGoal(local_x, local_y);
+    local_x = _heading_objective.local_goal_x;
+    local_y = _heading_objective.local_goal_y;
   }
 
 
   void DynamicWindow::
   SetHeadingOffset(double angle)
   {
-    _heading_objective.SetOffset(angle);
+    _heading_objective.angle_offset = angle;
   }
 
 
@@ -253,10 +254,10 @@ namespace sfl {
   GetHeadingOffset()
     const
   {
-    return _heading_objective.GetOffset();
+    return _heading_objective.angle_offset;
   }
-
-
+  
+  
   void DynamicWindow::
   GoFast()
   {
@@ -274,7 +275,7 @@ namespace sfl {
   void DynamicWindow::
   GoForward()
   {
-    _heading_objective.SetOffset(0);
+    _heading_objective.angle_offset = 0;
     _speed_objective.GoForward();
   }
 
@@ -282,7 +283,7 @@ namespace sfl {
   void DynamicWindow::
   GoBackward()
   {
-    _heading_objective.SetOffset(M_PI);
+    _heading_objective.angle_offset = M_PI;
     _speed_objective.GoBackward();
   }
 
@@ -334,14 +335,13 @@ namespace sfl {
 
 
   void DynamicWindow::
-  CalculateReachable(double qdl,
-		     double qdr)
+  CalculateReachable(double timestep, double qdl, double qdr)
   {
-    _qdlMin = maxval(0             , FindIndex(qdl - _reachableQd));
-    _qdlMax = minval(_dimension - 1, FindIndex(qdl + _reachableQd));
-    _qdrMin = maxval(0             , FindIndex(qdr - _reachableQd));
-    _qdrMax = minval(_dimension - 1, FindIndex(qdr + _reachableQd));
-  
+    const double reachableQd(timestep * _qddMax);
+    _qdlMin = boundval(0, FindIndex(qdl - reachableQd), _maxindex);
+    _qdlMax = boundval(0, FindIndex(qdl + reachableQd), _maxindex);
+    _qdrMin = boundval(0, FindIndex(qdr - reachableQd), _maxindex);
+    _qdrMax = boundval(0, FindIndex(qdr + reachableQd), _maxindex);
     for(int il = _qdlMin; il <= _qdlMax; ++il)
       for(int ir = _qdrMin; ir <= _qdrMax; ++ir)
 	if(_state[il][ir] != FORBIDDEN)
@@ -352,8 +352,7 @@ namespace sfl {
   void DynamicWindow::
   CalculateAdmissible()
   {
-    double thresh(_distance_objective.MinValue() + epsilon);
-  
+    const double thresh(_distance_objective.minValue + epsilon);
     for(int il = _qdlMin; il <= _qdlMax; ++il)
       for(int ir = _qdrMin; ir <= _qdrMax; ++ir)
 	if((_state[il][ir] != FORBIDDEN) &&

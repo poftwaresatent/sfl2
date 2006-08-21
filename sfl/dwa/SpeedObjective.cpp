@@ -24,165 +24,130 @@
 
 #include "SpeedObjective.hpp"
 #include "DynamicWindow.hpp"
+
+
 using namespace std;
 
 
 namespace sfl {
-
-
-SpeedObjective::
-SpeedObjective(const DynamicWindow & dynamic_window,
-	       const RobotModel & robot_model):
-  Objective(dynamic_window),
-  _sdMax(robot_model.SdMax()),
-  _robot_model(robot_model),
-  _goForward(true),
-  _forward(_dimension, _minValue, _maxValue),
-  _backward(_dimension, _minValue, _maxValue),
-  _slow(_dimension, _minValue, _maxValue)
-{
-  _sd = new double*[_dimension];
-  for(unsigned int i = 0; i < _dimension; ++i)
-    _sd[i] = new double[_dimension];
-
-  _thetad = new double*[_dimension];
-  for(unsigned int i = 0; i < _dimension; ++i)
-    _thetad[i] = new double[_dimension];
-
-  _current = & _forward;
-}
-
-
-
-SpeedObjective::
-~SpeedObjective()
-{
-  for(unsigned int i = 0; i < _dimension; ++i)
-    delete[] _sd[i];
-  delete[] _sd;
-
-  for(unsigned int i = 0; i < _dimension; ++i)
-    delete[] _thetad[i];
-  delete[] _thetad;
-}
-
-
-
-void SpeedObjective::
-Initialize(ostream * progress_stream)
-{
-  for(unsigned int l = 0; l < _dimension; ++l)
-    for(unsigned int r = 0; r < _dimension; ++r)
-      _robot_model.Actuator2Global(_dynamic_window.Qd(l),
-				   _dynamic_window.Qd(r),
-				  _sd[l][r],
-				   _thetad[l][r]);
-
-  for(unsigned int r = 0; r < _dimension; ++r){
-    if((r % 2) != 0)
-      _forward.LoadBuffer(0,
-			  r,
-			  _minValue +
-			  (_maxValue - _minValue) *
-			  (_sd[0][r] + _sdMax) /
-			  (2 * _sdMax));
-    
-    for(unsigned int l = r % 2; l < _dimension; l += 2){
-      double val(_minValue +
-		 (_maxValue - _minValue) *
-		 (_sd[l][r] + _sdMax) /
-		 (2 * _sdMax));
-      _forward.LoadBuffer(l, r, val);
-      if(l < _dimension - 1)
-	_forward.LoadBuffer(l + 1, r, val);	
-    }
-  }
-  _forward.SaveBuffer();
-
-  for(unsigned int r = 0; r < _dimension; ++r){
-    if((r % 2) != 0)
-      _backward.LoadBuffer(_dimension - 1,
-			   r,
-			   _maxValue +
-			   _minValue -
-			   (_maxValue - _minValue) *
-			   (_sd[_dimension - 1][r] + _sdMax) /
-			   (2 * _sdMax));
-    for(unsigned int l = r % 2; l < _dimension; l += 2){
-      double val(_maxValue +
-		 _minValue -
-		 (_maxValue - _minValue) *
-		 (_sd[l][r] + _sdMax) /
-		 (2 * _sdMax));
-      _backward.LoadBuffer(l, r, val);
-      if(l > 0)
-	_backward.LoadBuffer(l - 1, r, val);	
-    }
-  }
-  _backward.SaveBuffer();
   
-  for(unsigned int l = 0; l < _dimension; ++l)
-    for(unsigned int r = 0; r < _dimension; ++r)
-      _slow.LoadBuffer(l,
-		       r,
-		       _maxValue -
-		       (_maxValue - _minValue) *
-		       absval(_sd[l][r]) /
-		       _sdMax);
-  _slow.SaveBuffer();
-}
+  
+  SpeedObjective::
+  SpeedObjective(const DynamicWindow & dynamic_window,
+		 const RobotModel & robot_model)
+    : Objective(dynamic_window),
+      sdMax(robot_model.SdMax()),
+      m_robot_model(robot_model),
+      m_forward(dimension, dimension),
+      m_backward(dimension, dimension),
+      m_slow(dimension, dimension),
+      m_current( & m_forward),
+      m_goForward(true)
+  {
+  }
+  
+  
+  void SpeedObjective::
+  Initialize(ostream * progress_stream)
+  {
+    for(size_t iqdr(0); iqdr < dimension; iqdr++){
+      if((iqdr % 2) != 0){
+	double sd, thetad;
+	m_robot_model.Actuator2Global(m_dynamic_window.Qd(0),
+				      m_dynamic_window.Qd(iqdr),
+				      sd, thetad);
+	m_forward[0][iqdr] =
+	  minValue + (maxValue - minValue) * (sd + sdMax) / (2 * sdMax);
+      }
+      for(size_t iqdl(iqdr % 2); iqdl < dimension; iqdl += 2){
+	double sd, thetad;
+	m_robot_model.Actuator2Global(m_dynamic_window.Qd(iqdl),
+				      m_dynamic_window.Qd(iqdr),
+				      sd, thetad);
+	const double
+	  val(minValue + (maxValue - minValue) * (sd + sdMax) / (2 * sdMax));
+	m_forward[iqdl][iqdr] = val;
+	if(iqdl < dimension - 1)
+	  m_forward[iqdl + 1][iqdr] = val;
+      }
+    }
+    
+    for(size_t iqdr(0); iqdr < dimension; iqdr++){
+      if((iqdr % 2) != 0){
+	double sd, thetad;
+	m_robot_model.Actuator2Global(m_dynamic_window.Qd(dimension - 1),
+				      m_dynamic_window.Qd(iqdr),
+				      sd, thetad);
+	m_backward[dimension - 1][iqdr] =
+	  maxValue + minValue
+	  - (maxValue - minValue) * (sd + sdMax) / (2 * sdMax);
+      }
+      for(size_t iqdl(iqdr % 2); iqdl < dimension; iqdl += 2){
+	double sd, thetad;
+	m_robot_model.Actuator2Global(m_dynamic_window.Qd(iqdl),
+				      m_dynamic_window.Qd(iqdr),
+				      sd, thetad);
+	const double
+	  val(maxValue + minValue
+	      - (maxValue - minValue) * (sd + sdMax) / (2 * sdMax));
+	m_backward[iqdl][iqdr] = val;
+	if(iqdl > 0)
+	  m_backward[iqdl - 1][iqdr] = val;
+      }
+    }
+    
+    for(size_t iqdl(0); iqdl < dimension; iqdl++)
+      for(size_t iqdr(0); iqdr < dimension; iqdr++){
+	double sd, thetad;
+	m_robot_model.Actuator2Global(m_dynamic_window.Qd(iqdl),
+				      m_dynamic_window.Qd(iqdr),
+				      sd, thetad);
+	m_slow[iqdl][iqdr] =
+	  maxValue - (maxValue - minValue) * absval(sd) / sdMax;
+      }
+  }
+  
+
+  void SpeedObjective::
+  Calculate(size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax)
+  {
+    for(size_t iqdl(qdlMin); iqdl <= qdlMax; iqdl++)
+      for(size_t iqdr(qdrMin); iqdr <= qdrMax; iqdr++)
+	if(m_dynamic_window.Admissible(iqdl, iqdr))
+	  m_value[iqdl][iqdr] = (*m_current)[iqdl][iqdr];
+	else
+	  m_value[iqdl][iqdr] = minValue;
+  }
 
 
-
-void SpeedObjective::
-Calculate(unsigned int qdlMin,
-	  unsigned int qdlMax,
-	  unsigned int qdrMin,
-	  unsigned int qdrMax)
-{
-  for(unsigned int l = qdlMin; l <= qdlMax; ++l)
-    for(unsigned int r = qdrMin; r <= qdrMax; ++r)
-      if(_dynamic_window.Admissible(l, r))
-	_value[l][r] = _current->Get(l, r);
-      else
-	_value[l][r] = _minValue;
-}
+  void SpeedObjective::
+  GoFast()
+  {
+    if(m_goForward)
+      m_current = & m_forward;
+    else
+      m_current = & m_backward;
+  }
 
 
-
-void SpeedObjective::
-GoFast()
-{
-  if(_goForward)
-    _current = & _forward;
-  else
-    _current = & _backward;
-}
+  void SpeedObjective::
+  GoSlow()
+  {
+    m_current = & m_slow;
+  }
 
 
-
-void SpeedObjective::
-GoSlow()
-{
-  _current = & _slow;
-}
-
+  void SpeedObjective::
+  GoForward()
+  {
+    m_goForward = true;
+  }
 
 
-void SpeedObjective::
-GoForward()
-{
-  _goForward = true;
-}
-
-
-
-void SpeedObjective::
-GoBackward()
-{
-  _goForward = false;
-}
-
-
+  void SpeedObjective::
+  GoBackward()
+  {
+    m_goForward = false;
+  }
 
 }

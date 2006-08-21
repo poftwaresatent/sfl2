@@ -99,7 +99,9 @@ namespace sfl {
 	Scanner::GetScanCopy() can still contain readings that are out
 	of range (represented as readings at the maximum rho
 	value). */
-    void Update(/** local goal x component */
+    void Update(/** (estimated or fixed) delay until next invocation */
+		double timestep,
+		/** local goal x component */
 		double dx,
 		/** local goal y component */
 		double dy,
@@ -177,9 +179,10 @@ namespace sfl {
     } speedstate_t;
 
 
-    const double _reachableQd;
+    //RFCTR const double _reachableQd;
 
     const int _dimension;
+    const int _maxindex;
     const double _resolution;
     
     double _alphaDistance;
@@ -208,12 +211,13 @@ namespace sfl {
 
     int _qdlMin, _qdlMax, _qdrMin, _qdrMax;
     int _qdlOpt, _qdrOpt;
-
-
+    const double _qddMax;
+    
+    
     int FindIndex(double qd) const;
     double FindQd(int index) const;
     void InitForbidden();
-    void CalculateReachable(double qdl, double qdr);
+    void CalculateReachable(double timestep, double qdl, double qdr);
     void CalculateAdmissible();
     void CalculateOptimum(double alphaDistance,
 			  double alphaHeading,

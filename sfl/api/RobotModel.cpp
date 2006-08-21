@@ -56,27 +56,16 @@ namespace sfl {
   
   
   RobotModel::
-  RobotModel(double timestep,
-	     Parameters parameters,
+  RobotModel(Parameters parameters,
 	     shared_ptr<const Hull> hull):
-    m_timestep(timestep),
     m_params(parameters),
     m_hull(hull),
     m_safety_hull(hull->CreateGrownHull(parameters.safetyDistance))
   {
   }
-
-
-
-  double RobotModel::
-  Timestep()
-    const
-  {
-    return m_timestep;
-  }
-
-
-
+  
+  
+  
   shared_ptr<const Hull> RobotModel::
   GetHull()
     const
@@ -221,24 +210,44 @@ namespace sfl {
       deltay = R * sin(0.5 * deltatheta);
     }
   }
-
-
-
-  void RobotModel::
-  LocalKinematics(double sd, double thetad,
-		  double & deltax,
-		  double & deltay,
-		  double & deltatheta)
-    const
-  {
-    LocalKinematics(sd, thetad, m_timestep, deltax, deltay, deltatheta);
-  }
   
   
   boost::shared_ptr<const Hull> RobotModel::
   GetSafetyHull() const
   {
     return m_safety_hull;
+  }
+  
+  
+  void RobotModel::
+  PredictStandstillAct(double qdl, double qdr, double safety_delay,
+		       double & dx, double & dy, double & dtheta) const
+  {
+    double sd, thetad;
+    Actuator2Global(qdl, qdr, sd, thetad);
+    double stoptime;
+    if(absval(qdl) > absval(qdr))
+      stoptime = absval(qdl) / QddMax();
+    else
+      stoptime = absval(qdr) / QddMax();
+    stoptime += safety_delay;
+    LocalKinematics(sd, thetad, stoptime, dx, dy, dtheta);
+  }
+  
+  
+  void RobotModel::
+  PredictStandstillGlob(double sd, double thetad, double safety_delay,
+			double & dx, double & dy, double & dtheta) const
+  {
+    double qdl, qdr;
+    Global2Actuator(sd, thetad, qdl, qdr);
+    double stoptime;
+    if(absval(qdl) > absval(qdr))
+      stoptime = absval(qdl) / QddMax();
+    else
+      stoptime = absval(qdr) / QddMax();
+    stoptime += safety_delay;
+    LocalKinematics(sd, thetad, stoptime, dx, dy, dtheta);
   }
   
 }

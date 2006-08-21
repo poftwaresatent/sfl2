@@ -42,7 +42,7 @@ namespace expo {
     
     /** \todo This is a bit of a hack that never really performed well. */
     bool AlmostStraight() const;
-    bool Stoppable() const;
+    bool Stoppable(double timestep) const;
     bool Moving() const;
   };
 

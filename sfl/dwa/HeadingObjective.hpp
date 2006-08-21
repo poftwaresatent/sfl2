@@ -28,6 +28,7 @@
 
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/util/Frame.hpp>
+#include <sfl/util/array2d.hpp>
 #include <sfl/dwa/Objective.hpp>
 
 
@@ -52,41 +53,19 @@ namespace sfl {
   public:
     HeadingObjective(const DynamicWindow & dynamic_window,
 		     const RobotModel & robot_model);
-    virtual ~HeadingObjective();
-
-    void Initialize(std::ostream * progress_stream);
-    void Calculate(unsigned int qdlMin,
-		   unsigned int qdlMax,
-		   unsigned int qdrMin,
-		   unsigned int qdrMax);
-
-    void SetGoal(double lx, double ly);
-    void GetGoal(double & lx, double & ly) const;
-    void SetOffset(double angle);
-    double GetOffset() const;
-
-    const Frame & PredictedStandstill(unsigned int iqdl,
-				      unsigned int iqdr) const;
-    const Frame & PredictedStep(unsigned int iqdl,
-				unsigned int iqdr) const;
     
+    void Calculate(double timestep,
+		   size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax);
+    
+    /** \pre (iqdl, iqdr) is admissible and was within the range of
+	the previous call to Calculate(). */
+    const Frame & PredictedStandstill(size_t iqdl, size_t iqdr) const;
+    
+    double local_goal_x, local_goal_y, angle_offset;
     
   protected:
-    const RobotModel & _robot_model;
-
-    /**
-       The predicted pose (in local frame) when moving during one
-       timestep at a given speed (using indices into
-       DynamicWindow::Qd()) followed by full deceleration at constant
-       curvature until standstill.
-
-       If the above is not clear, look at the code of Initialize().
-    */
-    Frame ** _standstill_prediction; //[dimension][dimension];
-    Frame ** _step_prediction;	//[dimension][dimension];
-    //    Frame ** _prediction;	//[dimension][dimension];
-
-    double _dx, _dy, _offset;
+    const RobotModel & m_robot_model;
+    array2d<Frame> m_standstill_prediction;
   };
 
 }

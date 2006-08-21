@@ -26,53 +26,40 @@
 #define SUNFLOWER_SPEEDOBJECTIVE_HPP
 
 
-
-#include <sfl/api/RobotModel.hpp>
+#include <sfl/util/array2d.hpp>
 #include <sfl/dwa/Objective.hpp>
-#include <sfl/dwa/Lookup.hpp>
-
 
 
 namespace sfl {
 
 
-
-class SpeedObjective:
-  public Objective
-{
-public:
-  SpeedObjective(const DynamicWindow & dynamic_window,
-		 const RobotModel & robot_model);
-  virtual ~SpeedObjective();
-
-  void Initialize(std::ostream * progress_stream);
-  void Calculate(unsigned int qdlMin,
-		 unsigned int qdlMax,
-		 unsigned int qdrMin,
-		 unsigned int qdrMax);
+  class RobotModel;
   
-  void GoFast();
-  void GoSlow();
-  void GoForward();
-  void GoBackward();
-
-
-
-protected:
-  const double _sdMax;
-
-  const RobotModel & _robot_model;
-
-  double ** _sd;		//[dimension][dimension];
-  double ** _thetad;		//[dimension][dimension];
-  bool _goForward;
-
-  Lookup _forward, _backward, _slow;
-  Lookup * _current;
-};
-
-
-
+  
+  class SpeedObjective
+    : public Objective
+  {
+  public:
+    SpeedObjective(const DynamicWindow & dynamic_window,
+		   const RobotModel & robot_model);
+    
+    void Initialize(std::ostream * progress_stream);
+    void Calculate(size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax);
+    
+    void GoFast();
+    void GoSlow();
+    void GoForward();
+    void GoBackward();
+    
+    const double sdMax;
+    
+  protected:
+    const RobotModel & m_robot_model;
+    array2d<double> m_forward, m_backward, m_slow;
+    array2d<double> * m_current;
+    bool m_goForward;
+  };
+  
 }
 
 #endif // SUNFLOWER_SPEEDOBJECTIVE_HPP

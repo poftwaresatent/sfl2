@@ -54,16 +54,16 @@ namespace expo {
 
 
   void MotionPlanner::
-  Update()
+  Update(double timestep)
   {
 #ifdef DEBUG_EXPO_MOTION_PLANNER
     const MotionPlannerState * oldstate(_internal_state);
     const char * oldstatename(GetStateName());
 #endif // DEBUG_EXPO_MOTION_PLANNER
 
-    _internal_state = _internal_state->NextState();
-    _internal_state->Act(_multiscanner.
-			 CollectGlobalScans(_fields.odometry.Get()));
+    _internal_state = _internal_state->NextState(timestep);
+    _internal_state->
+      Act(timestep, _multiscanner.CollectGlobalScans(_fields.odometry.Get()));
     
 #ifdef DEBUG_EXPO_MOTION_PLANNER
     if(oldstate != _internal_state){
@@ -106,15 +106,15 @@ namespace expo {
   
   
   int MotionPlanner::
-  UpdateAll()
+  UpdateAll(double timestep)
   {
     sfl::Odometry & odo(const_cast<sfl::Odometry &>(_fields.odometry));
     if(0 > odo.Update())
       return -1;
     if(0 > _multiscanner.UpdateAll())
       return -2;
-    Update();
-    if(0 > _fields.motionController.Update())
+    Update(timestep);
+    if(0 > _fields.motionController.Update(timestep))
       return -3;
     return 0;
   }

@@ -76,15 +76,8 @@ namespace sfl {
     
     
     /** \todo Good to pass parameters as instance? */
-    RobotModel(double timestep,
-	       Parameters parameters,
+    RobotModel(Parameters parameters,
 	       boost::shared_ptr<const Hull> hull);
-    
-    
-    /**
-       \return The timestep.
-    */
-    double Timestep() const;
     
     /**
        \return The robot's hull (without safety buffer zone).
@@ -143,7 +136,7 @@ namespace sfl {
        \return The maximum (global) rotational acceleration [rad/s/s].
     */
     double ThetaddMax() const;
-
+    
     /**
        Direct kinematic model for differential drive robots. Given
        left and right actuator speeds, returns the corresponding
@@ -152,7 +145,7 @@ namespace sfl {
     */
     void Actuator2Global(double qdl, double qdr,
 			 double & sd, double & thetad) const;
-  
+    
     /**
        Indirect kinematic model for differential drive robots. Given
        the global translational and rotational speeds, calculates the
@@ -160,7 +153,28 @@ namespace sfl {
     */
     void Global2Actuator(double sd, double thetad,
 			 double & qdl, double & qdr) const;
-  
+    
+    /**
+       Given current actuator wheel speeds, predicts the robot's
+       position if it brakes along a constant-curvature path until
+       standstill. An additional safety delay (before the braking
+       maneuver starts) can be added as well. The prediction is
+       expressed in the local frame of reference, that is to say the
+       current robot pose.
+       
+       \note See PredictStandstillGlob() for a version that takes
+       global speeds as input.
+    */    
+    void PredictStandstillAct(double qdl, double qdr, double safety_delay,
+			      double & dx, double & dy, double & dtheta) const;
+    
+    /**
+       Like PredictStandstillAct() but takes global wheel speeds.
+    */    
+    void PredictStandstillGlob(double sd, double thetad, double safety_delay,
+			       double & dx, double & dy, double & dtheta)
+      const;
+    
     /**
        Given (global) translational and rotational speeds, predicts
        the robot's position at a given timestep in the future. The
@@ -172,22 +186,9 @@ namespace sfl {
 				double & deltax,
 				double & deltay,
 				double & deltatheta);
-  
-    /**
-       Just like the LocalKinematics() with timestep parameter, but
-       the timestep parameter defaults to Timestep().
-       
-       \todo Maybe refactor to one method with the timestep as
-       parameter that defaults to Timestep()?
-    */
-    void LocalKinematics(double sd, double thetad,
-			 double & deltax,
-			 double & deltay,
-			 double & deltatheta) const;
-        
+    
     
   protected:
-    const double m_timestep;
     const Parameters m_params;
     boost::shared_ptr<const Hull> m_hull;
     boost::shared_ptr<const Hull> m_safety_hull;

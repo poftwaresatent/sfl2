@@ -25,110 +25,69 @@
 #include "Objective.hpp"
 #include "DynamicWindow.hpp"
 #include <sfl/util/numeric.hpp>
+#include <limits>
 
 
-using namespace std;
+using std::numeric_limits;
 
 
 namespace sfl {
-
-
+  
+  
   Objective::
   Objective(const DynamicWindow & dynamic_window):
-    _dynamic_window(dynamic_window),
-    _dimension(dynamic_window.Dimension())
+    dimension(dynamic_window.Dimension()),
+    m_dynamic_window(dynamic_window),
+    m_value(dimension, dimension)
   {
-    _value = new double*[_dimension];
-    for(unsigned int i = 0; i < _dimension; ++i)
-      _value[i] = new double[_dimension];
   }
-
-
-
-  Objective::
-  ~Objective()
-  {
-    for(unsigned int i = 0; i < _dimension; ++i)
-      delete[] _value[i];
-    delete[] _value;
-  }
-
-
-
+  
+  
   void Objective::
-  Rescale(unsigned int qdlMin,
-	  unsigned int qdlMax,
-	  unsigned int qdrMin,
-	  unsigned int qdrMax)
+  Rescale(size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax)
   {
-    double min(_maxValue);
-    double max(_minValue);
-    for(unsigned int l = qdlMin; l <= qdlMax; ++l)
-      for(unsigned int r = qdrMin; r <= qdrMax; ++r)
-	if(_dynamic_window.Admissible(l, r)){
-	  if(_value[l][r] < min)
-	    min = _value[l][r];
-	  if(_value[l][r] > max)
-	    max = _value[l][r];
+    double min(numeric_limits<double>::max());
+    double max(numeric_limits<double>::min());
+    for(size_t l = qdlMin; l <= qdlMax; ++l)
+      for(size_t r = qdrMin; r <= qdrMax; ++r)
+	if(m_dynamic_window.Admissible(l, r)){
+	  if(m_value[l][r] < min)
+	    min = m_value[l][r];
+	  if(m_value[l][r] > max)
+	    max = m_value[l][r];
 	}
-
-    if((max - min) < epsilon)
-      return;
-
-    double scale(1 / (max - min));
-    for(unsigned int l = qdlMin; l <= qdlMax; ++l)
-      for(unsigned int r = qdrMin; r <= qdrMax; ++r)
-	if(_dynamic_window.Admissible(l, r))
-	  _value[l][r] = scale * (_value[l][r] - min);
+    if((max - min) < epsilon) return;
+    const double scale(1 / (max - min));
+    for(size_t l = qdlMin; l <= qdlMax; ++l)
+      for(size_t r = qdrMin; r <= qdrMax; ++r)
+	if(m_dynamic_window.Admissible(l, r))
+	  m_value[l][r] = scale * (m_value[l][r] - min);
   }
-
-
-
+  
+  
   double Objective::
-  Value(unsigned int qdlIndex,
-	unsigned int qdrIndex)
-    const
+  Min(size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax) const
   {
-    //    if((qdlIndex < _dimension) && (qdrIndex < _dimension))
-    return _value[qdlIndex][qdrIndex];
-  }
-
-
-
-  double Objective::
-  Min(unsigned int qdlMin,
-      unsigned int qdlMax,
-      unsigned int qdrMin,
-      unsigned int qdrMax)
-    const
-  {
-    double min(_maxValue);
-    for(unsigned int l = qdlMin; l <= qdlMax; ++l)
-      for(unsigned int r = qdrMin; r <= qdrMax; ++r)
-	if(_dynamic_window.Admissible(l, r))
-	  if(_value[l][r] < min)
-	    min = _value[l][r];
-
+    double min(numeric_limits<double>::max());
+    for(size_t l = qdlMin; l <= qdlMax; ++l)
+      for(size_t r = qdrMin; r <= qdrMax; ++r)
+	if(m_dynamic_window.Admissible(l, r))
+	  if(m_value[l][r] < min)
+	    min = m_value[l][r];
     return min;
   }
-
-
-
+  
+  
   double Objective::
-  Max(unsigned int qdlMin,
-      unsigned int qdlMax,
-      unsigned int qdrMin,
-      unsigned int qdrMax)
-    const
+  Max(size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax) const
   {
-    double max(_minValue);
-    for(unsigned int l = qdlMin; l <= qdlMax; ++l)
-      for(unsigned int r = qdrMin; r <= qdrMax; ++r)
-	if(_dynamic_window.Admissible(l, r))
-	  if(_value[l][r] > max)
-	    max = _value[l][r];
-
+    double max(numeric_limits<double>::min());
+    for(size_t l = qdlMin; l <= qdlMax; ++l)
+      for(size_t r = qdrMin; r <= qdrMax; ++r)
+	if(m_dynamic_window.Admissible(l, r))
+	  if(m_value[l][r] > max)
+	    max = m_value[l][r];
     return max;
   }
-
+  
 }

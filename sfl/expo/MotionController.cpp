@@ -23,6 +23,7 @@
 
 
 #include "MotionController.hpp"
+#include <sfl/api/RobotModel.hpp>
 
 
 using sfl::maxval;
@@ -44,10 +45,11 @@ namespace expo {
   
   
   bool MotionController::
-  Stoppable()
+  Stoppable(double timestep)
     const
   {
-    return maxval(absval(_actualQdl), absval(_actualQdr)) < _qdStoppable;
+    const double qdStoppable(timestep * _robotModel.QddMax());
+    return maxval(absval(_actualQdl), absval(_actualQdr)) < qdStoppable;
   }
   
   

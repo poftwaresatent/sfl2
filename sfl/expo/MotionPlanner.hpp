@@ -55,7 +55,7 @@ namespace expo {
 		  sfl::BubbleBand & bubble_band,
 		  const sfl::Odometry & odometry);
 
-    void Update();
+    void Update(double timestep);
     void SetGoal(const sfl::Goal & goal);
     const sfl::Goal & GetGoal() const;
     bool GoalReached() const;
@@ -67,7 +67,7 @@ namespace expo {
                     <li> -1: odometry update error          </li>
 		    <li> -2: multiscanner update error      </li>
 		    <li> -3: motion controller update error </li></ul> */
-    int UpdateAll();
+    int UpdateAll(double timestep);
     
   private:
     MotionPlannerFields _fields;

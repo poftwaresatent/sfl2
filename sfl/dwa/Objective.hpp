@@ -26,6 +26,7 @@
 #define SUNFLOWER_OBJECTIVE_HPP
 
 
+#include <sfl/util/array2d.hpp>
 #include <iosfwd>
 
 
@@ -39,80 +40,38 @@ namespace sfl {
   {
   public:
     Objective(const DynamicWindow & dynamic_window);
-    virtual ~Objective();
 
-    virtual void Initialize(std::ostream * progress_stream) = 0;
-
-    // cannot be abstract because subclasses might need further
-    // information, such as the current scan, or the robot pose.
-    //     virtual void Calculate(unsigned int qdlMin,
-    // 			   unsigned int qdlMax,
-    // 			   unsigned int qdrMin,
-    // 			   unsigned int qdrMax) = 0;
-
-    void Rescale(unsigned int qdlMin,
-		 unsigned int qdlMax,
-		 unsigned int qdrMin,
-		 unsigned int qdrMax);
+    /** \note empty default implementation */
+    virtual ~Objective() {}
+    
+    /** \note empty default implementation */
+    virtual void Initialize(std::ostream * progress_stream) {}
+    
+    /** \pre all indices must be valid. */
+    void Rescale(size_t qdlMin, size_t qdlMax,
+		 size_t qdrMin, size_t qdrMax);
 
     /** \pre all indices must be valid. */
-    double Value(unsigned int qdlIndex,
-		 unsigned int qdrIndex) const;
+    double Value(size_t qdlIndex, size_t qdrIndex) const
+    { return m_value[qdlIndex][qdrIndex]; }
+    
+    /** \pre all indices must be valid. */
+    double Min(size_t qdlMin, size_t qdlMax,
+	       size_t qdrMin, size_t qdrMax) const;
 
     /** \pre all indices must be valid. */
-    double Min(unsigned int qdlMin,
-	       unsigned int qdlMax,
-	       unsigned int qdrMin,
-	       unsigned int qdrMax) const;
+    double Max(size_t qdlMin, size_t qdlMax,
+	       size_t qdrMin, size_t qdrMax) const;
 
-    /** \pre all indices must be valid. */
-    double Max(unsigned int qdlMin,
-	       unsigned int qdlMax,
-	       unsigned int qdrMin,
-	       unsigned int qdrMax) const;
-
-    inline double MinValue() const;
-    inline double MaxValue() const;
-    inline unsigned int Dimension() const;
-
-
-
+    static const double minValue = 0;
+    static const double maxValue = 1;
+    const size_t dimension;
+    
   protected:
-    static const double _minValue = 0;
-    static const double _maxValue = 1;
-
-    const DynamicWindow & _dynamic_window;
-    const unsigned int _dimension;
-
-    double ** _value;		//[dimension][dimension];
+    const DynamicWindow & m_dynamic_window;
+    array2d<double> m_value;
   };
-
-
-
-  double Objective::
-  MinValue()
-    const
-  {
-    return _minValue;
-  }
-
-
-  double Objective::
-  MaxValue()
-    const
-  {
-    return _maxValue;
-  }
-
-
-
-  unsigned int Objective::
-  Dimension()
-    const
-  {
-    return _dimension;
-  }
-
+  
 }
 
 #endif // SUNFLOWER_OBJECTIVE_HPP

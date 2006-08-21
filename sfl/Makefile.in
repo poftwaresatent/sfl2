@@ -39,7 +39,7 @@ CFLAGS=         @CFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
 CXXFLAGS=       @CXXFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
 CPPFLAGS=       @CPPFLAGS@ @BOOST_CPPFLAGS@ -I$(top_builddir)
 
-SHLIB_CURRENT=	1
+SHLIB_CURRENT=	2
 SHLIB_REVISION=	0
 SHLIB_AGE=	0
 LIB=            libsunflower.la
@@ -96,6 +96,7 @@ SRCS=           $(XCF_SRCS) \
 		contrib/DummyHAL.cpp
 
 HEADERS=        $(XCF_HEADERS) \
+                util/array2d.hpp \
                 util/pdebug.hpp \
                 util/Frame.hpp \
                 util/functors.hpp \

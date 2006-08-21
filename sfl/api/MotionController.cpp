@@ -36,10 +36,11 @@ namespace sfl {
   MotionController(const RobotModel & robotModel,
 		   DiffDrive & drive):
     _qdMax(robotModel.QdMax()),
+    _qddMax(robotModel.QddMax()),
     _sdMax(robotModel.SdMax()),
     _thetadMax(robotModel.ThetadMax()),
-    _deltaQdMax(robotModel.Timestep() * robotModel.QddMax()),
-    _qdStoppable(robotModel.Timestep() * robotModel.QddMax()),
+    //RFCTR _deltaQdMax(robotModel.Timestep() * robotModel.QddMax()),
+    //RFCTR _qdStoppable(robotModel.Timestep() * robotModel.QddMax()),
     _robotModel(robotModel),
     m_drive(drive),
     _proposedQdl(0),
@@ -51,49 +52,32 @@ namespace sfl {
   
   
   int MotionController::
-  Update(std::ostream * dbgos)
+  Update(double timestep, std::ostream * dbgos)
   {
     if(dbgos != 0)
       (*dbgos) << "INFO from MotionController::Update()\n"
 	       << "  proposed: (" << _proposedQdl << ", "
 	       << _proposedQdr << ")\n";
-
+    
     // check if proposed actuator values violate actuator dynamics
-    double qdlMax(minval(  _qdMax, _actualQdl + _deltaQdMax));
-    double qdlMin(maxval(- _qdMax, _actualQdl - _deltaQdMax));
-    double qdrMax(minval(  _qdMax, _actualQdr + _deltaQdMax));
-    double qdrMin(maxval(- _qdMax, _actualQdr - _deltaQdMax));
-
-    if(_proposedQdl > qdlMax)
-      _proposedQdl = qdlMax;
-    if(_proposedQdl < qdlMin)
-      _proposedQdl = qdlMin;
-
-    if(_proposedQdr > qdrMax)
-      _proposedQdr = qdrMax;
-    if(_proposedQdr < qdrMin)
-      _proposedQdr = qdrMin;
-
+    const double deltaQdMax(timestep * _qddMax);
+    const double qdlMax(minval(  _qdMax, _actualQdl + deltaQdMax));
+    const double qdlMin(maxval(- _qdMax, _actualQdl - deltaQdMax));
+    const double qdrMax(minval(  _qdMax, _actualQdr + deltaQdMax));
+    const double qdrMin(maxval(- _qdMax, _actualQdr - deltaQdMax));
+    _proposedQdl = boundval(qdlMin, _proposedQdl, qdlMax);
+    _proposedQdr = boundval(qdrMin, _proposedQdr, qdrMax);
+    
     // check if proposed actuator values violate global dynamics
     double sd, thetad;
     _robotModel.Actuator2Global(_proposedQdl, _proposedQdr, sd, thetad);
-
-    if(sd > _sdMax)
-      sd = _sdMax;
-    if(sd < - _sdMax)
-      sd = - _sdMax;
-
-    if(thetad > _thetadMax)
-      thetad = _thetadMax;
-    if(thetad < - _thetadMax)
-      thetad = - _thetadMax;
-  
+    sd = boundval(_sdMax, sd, - _sdMax);
+    thetad = boundval(_thetadMax, thetad, - _thetadMax);
+    
     // load actualQd{l, r}
     _robotModel.Global2Actuator(sd, thetad, _actualQdl, _actualQdr);
-  
-    ///////////////////////////////
-    // CALL ACTUAL MOTOR CONTROL //
-    ///////////////////////////////
+    
+    // call actual motor control
     if(dbgos != 0)
       (*dbgos) << "  sending : (" << _actualQdl << ", " << _actualQdr << ")\n";
     

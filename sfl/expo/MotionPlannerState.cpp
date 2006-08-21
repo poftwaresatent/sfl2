@@ -75,14 +75,14 @@ namespace expo {
 
 
   MotionPlannerState * MotionPlannerState::
-  NextState()
+  NextState(double timestep)
   {
     if(_fields->goal.DistanceReached(_fields->odometry.Get())){
       double dheading;
       if(_fields->goal.HeadingReached(_fields->odometry.Get(),
 				      _fields->goForward,
 				      dheading) &&
-	 _fields->motionController.Stoppable()){
+	 _fields->motionController.Stoppable(timestep)){
 	return _fields->at_goal_state;
       }
     
@@ -111,24 +111,24 @@ namespace expo {
 
 
   void MotionPlannerState::
-  TurnToward(direction_t direction,
+  TurnToward(double timestep, direction_t direction,
 	     shared_ptr<const GlobalScan> global_scan)
     const
   {
 //     cerr << "HELLO from MotionPlannerState::TurnToward()\n";
     _fields->dynamicWindow.GoSlow();
-    AskDynamicWindow(direction, global_scan);
+    AskDynamicWindow(timestep, direction, global_scan);
   }
 
 
   void MotionPlannerState::
-  GoAlong(direction_t direction,
+  GoAlong(double timestep, direction_t direction,
 	  shared_ptr<const GlobalScan> global_scan)
     const
   {
 //     cerr << "HELLO from MotionPlannerState::GoAlong()\n";
     _fields->dynamicWindow.GoFast();
-    AskDynamicWindow(direction, global_scan);
+    AskDynamicWindow(timestep, direction, global_scan);
   }
 
 
@@ -150,7 +150,8 @@ namespace expo {
 
 
   void MotionPlannerState::
-  AskDynamicWindow(direction_t direction,
+  AskDynamicWindow(double timestep,
+		   direction_t direction,
 		   shared_ptr<const GlobalScan> global_scan)
     const
   {
@@ -161,8 +162,7 @@ namespace expo {
 // 	 << "  scan tlower: " << global_scan.GetTlower() << "\n"
 // 	 << "  scan tupper: " << global_scan.GetTupper() << "\n";
     
-    _fields->dynamicWindow.Update(direction.first,
-				  direction.second,
+    _fields->dynamicWindow.Update(timestep, direction.first, direction.second,
 				  global_scan);
     
     double qdl, qdr;
@@ -185,16 +185,16 @@ namespace expo {
 
 
   void TakeAimState::
-  Act(shared_ptr<const GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const GlobalScan> global_scan)
   {
-    TurnToward(GetPathDirection(global_scan), global_scan);
+    TurnToward(timestep, GetPathDirection(global_scan), global_scan);
   }
 
 
   MotionPlannerState * TakeAimState::
-  NextState()
+  NextState(double timestep)
   {
-    MotionPlannerState * override(MotionPlannerState::NextState());
+    MotionPlannerState * override(MotionPlannerState::NextState(timestep));
     if(override != this)
       return override;
 
@@ -235,16 +235,16 @@ namespace expo {
 
 
   void AimedState::
-  Act(shared_ptr<const GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const GlobalScan> global_scan)
   {
-    GoAlong(GetPathDirection(global_scan), global_scan);
+    GoAlong(timestep, GetPathDirection(global_scan), global_scan);
   }
 
 
   MotionPlannerState * AimedState::
-  NextState()
+  NextState(double timestep)
   {
-    MotionPlannerState  *override(MotionPlannerState::NextState());
+    MotionPlannerState  *override(MotionPlannerState::NextState(timestep));
     if(override != this)
       return override;
   
@@ -285,9 +285,9 @@ namespace expo {
 
 
   void AdjustGoalHeadingState::
-  Act(shared_ptr<const GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const GlobalScan> global_scan)
   {
-    TurnToward(GetPathDirection(global_scan), global_scan);
+    TurnToward(timestep, GetPathDirection(global_scan), global_scan);
   }
 
 
@@ -310,16 +310,16 @@ namespace expo {
 
 
   void AtGoalState::
-  Act(shared_ptr<const GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const GlobalScan> global_scan)
   {
-    TurnToward(GetPathDirection(global_scan), global_scan);
+    TurnToward(timestep, GetPathDirection(global_scan), global_scan);
   }
 
 
   MotionPlannerState * AtGoalState::
-  NextState()
+  NextState(double timestep)
   {
-    MotionPlannerState  * override(MotionPlannerState::NextState());
+    MotionPlannerState  * override(MotionPlannerState::NextState(timestep));
     if(override != this)
       return override;
   
@@ -342,14 +342,14 @@ namespace expo {
 
 
   void NullState::
-  Act(shared_ptr<const GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const GlobalScan> global_scan)
   {
     _fields->motionController.ProposeActuators(0, 0);
   }
 
 
   MotionPlannerState * NullState::
-  NextState()
+  NextState(double timestep)
   {
     return _fields->at_goal_state;
   }

@@ -70,7 +70,6 @@ extern "C" {
 		   double rear_sick_theta,		   
 		   double wheelbase,
 		   double wheelradius,
-		   double timestep,
 		   double security_distance,
 		   double qd_max,
 		   double qdd_max,
@@ -139,7 +138,9 @@ extern "C" {
          <li> -4 motion controller update error </li></ul>
   */
   int expo_update_all(/** the handle from expo_create_MotionPlanner() */
-		      int MotionPlanner_handle);
+		      int MotionPlanner_handle,
+		      /** (expected/fixed) delay until the next invokation */
+		      double timestep);
   
   /* \return
      <ul><li> -1: invalid handle </li>

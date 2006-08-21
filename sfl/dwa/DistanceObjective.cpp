@@ -57,11 +57,11 @@ namespace sfl {
     _x1(   grid_width  / 2),
     _y1(   grid_height / 2)
   {
-    _qdLookup.reset(new double[_dimension]);
+    _qdLookup.reset(new double[dimension]);
 
-    _maxTimeLookup.reset(new scoped_array<double>[_dimension]);
-    for(unsigned int i = 0; i < _dimension; ++i)
-      _maxTimeLookup[i].reset(new double[_dimension]);
+    _maxTimeLookup.reset(new scoped_array<double>[dimension]);
+    for(unsigned int i = 0; i < dimension; ++i)
+      _maxTimeLookup[i].reset(new double[dimension]);
 
     // could be a little more paranoid and absval() everything...
 
@@ -116,11 +116,11 @@ namespace sfl {
     //////////////////////////////////////////////////
     
     // precalculate lookup tables
-    for(unsigned int i = 0; i < _dimension; ++i)
-      _qdLookup[i] = _dynamic_window.Qd(i);
+    for(unsigned int i = 0; i < dimension; ++i)
+      _qdLookup[i] = m_dynamic_window.Qd(i);
 
-    for(unsigned int i = 0; i < _dimension; ++i)
-      for(unsigned int j = 0; j < _dimension; ++j)
+    for(unsigned int i = 0; i < dimension; ++i)
+      for(unsigned int j = 0; j < dimension; ++j)
 	_maxTimeLookup[i][j] =
 	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
 	  _robot_model.QddMax();
@@ -140,9 +140,9 @@ namespace sfl {
 	  unsigned int nValidCollisions(0);
 
 	  // fill the actuator lookup table with collision times
-	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
-	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
-	      if(_dynamic_window.Forbidden(iqdl, iqdr))
+	  for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl)
+	    for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr)
+	      if(m_dynamic_window.Forbidden(iqdl, iqdr))
 		Lookup::LoadBuffer(iqdl, iqdr, - 1);
 	      else{
 		double t(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
@@ -161,7 +161,7 @@ namespace sfl {
 	      (*progress_stream) << "*";
 
 	    // allocate a lookup table for this grid cell
-	    _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
+	    _timeLookup[igx][igy].reset(new Lookup(dimension, 0, _maxTime));
 	
 	    // tell timeLookup to store the distances (compressed)
 	    _timeLookup[igx][igy]->SaveBuffer();
@@ -182,10 +182,10 @@ namespace sfl {
 	  // code here I check against zero... in short,
 	  // DistanceObjective NEEDS A GENERAL OVERHAUL!!!
 	
-	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
-	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
+	  for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl)
+	    for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr)
 	      Lookup::LoadBuffer(iqdl, iqdr, epsilon);
-	  _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
+	  _timeLookup[igx][igy].reset(new Lookup(dimension, 0, _maxTime));
 	  _timeLookup[igx][igy]->SaveBuffer();
 	
 	  if(progress_stream != 0)
@@ -212,16 +212,16 @@ namespace sfl {
     
     if(0 != os)
       (*os) << "INFO from DistanceObjective::CheckLookup():\n";
-    for(unsigned int i = 0; i < _dimension; ++i)
-      if(_qdLookup[i] != _dynamic_window.Qd(i)){
+    for(unsigned int i = 0; i < dimension; ++i)
+      if(_qdLookup[i] != m_dynamic_window.Qd(i)){
 	if(0 != os)
 	  (*os) << "  ERROR _qdLookup[" << i << "] is " << _qdLookup[i]
-		<< " but should be " << _dynamic_window.Qd(i) << "\n";
+		<< " but should be " << m_dynamic_window.Qd(i) << "\n";
 	return false;
       }
     
-    for(unsigned int i = 0; i < _dimension; ++i)
-      for(unsigned int j = 0; j < _dimension; ++j){
+    for(unsigned int i = 0; i < dimension; ++i)
+      for(unsigned int j = 0; j < dimension; ++j){
 	const double check(maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
 			   / _robot_model.QddMax());
 	if(epsilon < absval(_maxTimeLookup[i][j] - check)){
@@ -241,14 +241,14 @@ namespace sfl {
       double y(FindYlength(igy));
       for(int igx = 0; igx < _dimx; ++igx){
 	double x(FindXlength(igx));
-	for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl){
-	  for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr){
+	for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl){
+	  for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr){
 	    double wanted(-1);
 	    if(_evaluationHull->Contains(x, y))
 	      if(_paddedHull->Contains(x, y))
 		wanted = epsilon; // due to epsilon hack above...
 	      else{
-		if( ! _dynamic_window.Forbidden(iqdl, iqdr)){
+		if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
 		  const double t(PredictCollision(_qdLookup[iqdl],
 						  _qdLookup[iqdr],
 						  x, y));
@@ -311,18 +311,18 @@ namespace sfl {
 	    reinterpret_cast<void *>(this));
 	    
     // precalculate lookup tables
-    for(unsigned int i = 0; i < _dimension; ++i){
-      _qdLookup[i] = _dynamic_window.Qd(i);
+    for(unsigned int i = 0; i < dimension; ++i){
+      _qdLookup[i] = m_dynamic_window.Qd(i);
       if(paranoid)
 	fprintf(cstream, "  _qdLookup[%ud] = %f\n", i, _qdLookup[i]);
     }
     
     if(paranoid)
       fprintf(cstream, "  _maxTimeLookup:\n");
-    for(unsigned int i = 0; i < _dimension; ++i){
+    for(unsigned int i = 0; i < dimension; ++i){
       if(paranoid)
-	fprintf(cstream, "  [%u][0-%u]", i, _dimension - 1);
-      for(unsigned int j = 0; j < _dimension; ++j){
+	fprintf(cstream, "  [%u][0-%u]", i, dimension - 1);
+      for(unsigned int j = 0; j < dimension; ++j){
 	_maxTimeLookup[i][j] =
 	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
 	  _robot_model.QddMax();
@@ -345,9 +345,9 @@ namespace sfl {
 	  unsigned int nValidCollisions(0);
 
 	  // fill the actuator lookup table with collision times
-	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
-	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
-	      if(_dynamic_window.Forbidden(iqdl, iqdr))
+	  for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl)
+	    for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr)
+	      if(m_dynamic_window.Forbidden(iqdl, iqdr))
 		Lookup::LoadBuffer(iqdl, iqdr, - 1);
 	      else{
 		double t(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
@@ -365,7 +365,7 @@ namespace sfl {
 	    fprintf(cstream, "*");
 
 	    // allocate a lookup table for this grid cell
-	    _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
+	    _timeLookup[igx][igy].reset(new Lookup(dimension, 0, _maxTime));
 	
 	    // tell timeLookup to store the distances (compressed)
 	    _timeLookup[igx][igy]->SaveBuffer();
@@ -385,10 +385,10 @@ namespace sfl {
 	  // code here I chack against zero... in short,
 	  // DistanceObjective NEEDS A GENERAL OVERHAUL!!!
 	
-	  for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl)
-	    for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr)
+	  for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl)
+	    for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr)
 	      Lookup::LoadBuffer(iqdl, iqdr, epsilon);
-	  _timeLookup[igx][igy].reset(new Lookup(_dimension, 0, _maxTime));
+	  _timeLookup[igx][igy].reset(new Lookup(dimension, 0, _maxTime));
 	  _timeLookup[igx][igy]->SaveBuffer();
 	
 	  fprintf(cstream, ".");
@@ -414,15 +414,15 @@ namespace sfl {
     fprintf(cstream, "DistanceObjective::CheckLookup(): this = 0x%08X\n",
 	    reinterpret_cast<const void *>(this));
     
-    for(unsigned int i = 0; i < _dimension; ++i)
-      if(_qdLookup[i] != _dynamic_window.Qd(i)){
+    for(unsigned int i = 0; i < dimension; ++i)
+      if(_qdLookup[i] != m_dynamic_window.Qd(i)){
 	fprintf(cstream, "ERROR _qdLookup[%d] is %f but should be %f\n",
-		i, _qdLookup[i], _dynamic_window.Qd(i));
+		i, _qdLookup[i], m_dynamic_window.Qd(i));
 	return false;
       }
     
-    for(unsigned int i = 0; i < _dimension; ++i)
-      for(unsigned int j = 0; j < _dimension; ++j){
+    for(unsigned int i = 0; i < dimension; ++i)
+      for(unsigned int j = 0; j < dimension; ++j){
 	const double check(maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
 			   / _robot_model.QddMax());
 	if(epsilon < absval(_maxTimeLookup[i][j] - check)){
@@ -440,14 +440,14 @@ namespace sfl {
       double y(FindYlength(igy));
       for(int igx = 0; igx < _dimx; ++igx){
 	double x(FindXlength(igx));
-	for(unsigned int iqdl = 0; iqdl < _dimension; ++iqdl){
-	  for(unsigned int iqdr = 0; iqdr < _dimension; ++iqdr){
+	for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl){
+	  for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr){
 	    double wanted(-1);
 	    if(_evaluationHull->Contains(x, y))
 	      if(_paddedHull->Contains(x, y))
 		wanted = epsilon; // due to epsilon hack above...
 	      else{
-		if( ! _dynamic_window.Forbidden(iqdl, iqdr)){
+		if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
 		  const double t(PredictCollision(_qdLookup[iqdl],
 						  _qdLookup[iqdr],
 						  x, y));
@@ -502,15 +502,11 @@ namespace sfl {
   {
     ResetGrid();
     UpdateGrid(local_scan);
-
     for(unsigned int iqdl = qdlMin; iqdl <= qdlMax; ++iqdl)
       for(unsigned int iqdr = qdrMin; iqdr <= qdrMax; ++iqdr)      
-	if( ! _dynamic_window.Forbidden(iqdl, iqdr)){
-	  double t(MinTime(iqdl, iqdr));
-
-	  _value[iqdl][iqdr] =
-	    CalculateValue(t, _maxTimeLookup[iqdl][iqdr]);
-	}
+	if( ! m_dynamic_window.Forbidden(iqdl, iqdr))
+	  m_value[iqdl][iqdr] =
+	    CalculateValue(MinTime(iqdl, iqdr), _maxTimeLookup[iqdl][iqdr]);
   }
 
 
@@ -680,23 +676,16 @@ namespace sfl {
 
 
   double DistanceObjective::
-  CalculateValue(double measure,
-		 double floor)
+  CalculateValue(double measure, double floor)
   {
-    if(measure > _maxTime)
-      return _maxValue;
-  
-    if(measure <= floor)
-      return _minValue;
-
     return
-      _minValue +
-      (measure - floor) *
-      (_maxValue - _minValue) /
-      (_maxTime - floor);
+      boundval(minValue,
+	       minValue +
+	       (measure - floor) * (maxValue - minValue) / (_maxTime - floor),
+	       maxValue);
   }
-
-
+  
+  
   void DistanceObjective::
   GetRange(double & x0,
 	   double & y0,

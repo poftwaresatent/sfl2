@@ -131,7 +131,6 @@ int expo_factory(struct cwrap_hal_s * hal,
 		 double rear_sick_theta,		   
 		 double wheelbase,
 		 double wheelradius,
-		 double timestep,
 		 double security_distance,
 		 double qd_max,
 		 double qdd_max,
@@ -194,7 +193,7 @@ int expo_factory(struct cwrap_hal_s * hal,
   const double sdd_max(0.75 * wheelradius * qdd_max);
   const double thetadd_max(1.5 * wheelradius * qdd_max / wheelbase);
     
-  int model_handle(sfl_create_RobotModel(timestep, security_distance,
+  int model_handle(sfl_create_RobotModel(security_distance,
 					 wheelbase, wheelradius,
 					 qd_max, qdd_max,
 					 sd_max, thetad_max,
@@ -274,12 +273,12 @@ int expo_goal_reached(int handle)
 }
 
 
-int expo_update_all(int handle)
+int expo_update_all(int handle, double timestep)
 {
   shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
   if( ! mp)
     return -1;
-  const int res(mp->UpdateAll());
+  const int res(mp->UpdateAll(timestep));
   if(0 > res)
     return res - 1;
   return 0;

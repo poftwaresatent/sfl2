@@ -69,7 +69,7 @@ extern "C" {
   int sfl_create_DiffDrive(int hal_handle,
 			   double wheelbase, double wheelradius);
   
-  int sfl_create_RobotModel(double timestep, double security_distance,
+  int sfl_create_RobotModel(double security_distance,
 			    double wheelbase, double wheelradius,
 			    double qd_max, double qdd_max,
 			    double sd_max, double thetad_max,

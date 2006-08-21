@@ -55,15 +55,15 @@ namespace sfl {
        Template method for determining the next motion command. The
        speeds are set through ProposeSpeed() or
        ProposeActuators(). Applies kinodynamic limits first, then
-       calls DiffDrive::SetSpeed() with the resulting velocities.
-       
-       \note DiffDrive::SetSpeed() will pass the speed commands to the
-       HAL.
+       calls DiffDrive::SetSpeed() with the resulting velocities,
+       which will pass the speed commands to the HAL.
        
        \return The return value of the call to DiffDrive::SetSpeed(),
        ie 0 for success.
     */
-    int Update(/** if non-zero, debug messages are written to dbgos */
+    int Update(/** (estimated or fixed) delay until next invocation */
+	       double timestep,
+	       /** if non-zero, debug messages are written to dbgos */
 	       std::ostream * dbgos = 0);
     
     /**
@@ -93,10 +93,11 @@ namespace sfl {
     
   protected:
     const double _qdMax;
+    const double _qddMax;
     const double _sdMax;
     const double _thetadMax;
-    const double _deltaQdMax;
-    const double _qdStoppable;
+    //RFCTR const double _deltaQdMax;
+    //RFCTR const double _qdStoppable;
     
     const RobotModel & _robotModel;
     DiffDrive & m_drive;
