@@ -6,12 +6,22 @@ AC_CANONICAL_HOST
 
 AC_PROG_CC
 if test "x${GCC}" = "xyes"; then
-  CFLAGS="$CFLAGS -Wall -pipe"
+   if [ -z "$CFLAGS" ]; then
+     CFLAGS="-Wall -pipe"
+   else
+     CFLAGS=`echo $CFLAGS | sed 's:-O.::'`
+     CFLAGS="$CFLAGS -Wall -pipe"
+   fi
 fi
 
 AC_PROG_CXX
 if test "x${GXX}" = "xyes"; then
-  CXXFLAGS="$CXXFLAGS -Wall -pipe"
+   if [ -z "$CXXFLAGS" ]; then
+     CXXFLAGS="-Wall -pipe"
+   else
+     CXXFLAGS=`echo $CXXFLAGS | sed 's:-O.::'`
+     CXXFLAGS="$CXXFLAGS -Wall -pipe"
+   fi
 fi
 
 dnl Check for boost library.
