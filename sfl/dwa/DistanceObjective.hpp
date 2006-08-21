@@ -29,17 +29,19 @@
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Scan.hpp>
 #include <sfl/util/Hull.hpp>
+#include <sfl/util/array2d.hpp>
 #include <sfl/dwa/Objective.hpp>
-#include <sfl/dwa/Lookup.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <vector>
 
 
 namespace sfl {
-
-
+  
+  
+  class Lookup;
+  
+  
   /**
      The distance objective is what makes the dynamic window chose
      <ul>
@@ -80,10 +82,8 @@ namespace sfl {
 		      double grid_resolution);
     
     void Initialize(std::ostream * progress_stream);
-    //RFCTR    void Initialize(FILE * c_progress_stream);
     bool CheckLookup(std::ostream * os) const;
-    //RFCTR    bool CheckLookup(FILE * cstream) const;
-
+    
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
 	Multiscanner::CollectScans() and
@@ -91,32 +91,30 @@ namespace sfl {
 	Scanner::GetScanCopy() can still contain readings that are out
 	of range (represented as readings at the maximum rho
 	value). */
-    void Calculate(unsigned int qdlMin,
-		   unsigned int qdlMax,
-		   unsigned int qdrMin,
-		   unsigned int qdrMax,
+    void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
+		   size_t qdrMin, size_t qdrMax,
 		   boost::shared_ptr<const Scan> local_scan);
-    void GetRange(double & x0, double & y0, double & x1, double & y1) const;
-
-    int DimX() const { return _dimx; }
-    int DimY() const { return _dimy; }
-    bool CellOccupied(int ix, int iy) const { return _grid[ix][iy]; }
-
-    /** \return -1 if not valid */
-    double CollisionTime(int ix, int iy, int iqdl, int iqdr) const;
     
-    /** \note Expects signed int to be consistent with FindXindex(). */
-    double FindXlength(int i) const;
-
-    /** \note Expects signed int to be consistent with FindYindex(). */
-    double FindYlength(int i) const;
-
-    /** \note Returns signed int to facilitate domain detection. */
-    int FindXindex(double d) const;
-
-    /** \note Returns signed int to facilitate domain detection. */
-    int FindYindex(double d) const;
-
+    void GetRange(double & x0, double & y0, double & x1, double & y1) const;
+    size_t DimX() const;
+    size_t DimY() const;
+    bool CellOccupied(size_t ix, size_t iy) const;
+    
+    /** \return -1 if not valid */
+    double CollisionTime(size_t ix, size_t iy, size_t iqdl, size_t iqdr) const;
+    
+    /** \note Expects signed ssize_t to be consistent with FindXindex(). */
+    double FindXlength(ssize_t i) const;
+    
+    /** \note Expects signed ssize_t to be consistent with FindYindex(). */
+    double FindYlength(ssize_t i) const;
+    
+    /** \note Returns signed ssize_t to facilitate domain detection. */
+    ssize_t FindXindex(double d) const;
+    
+    /** \note Returns signed ssize_t to facilitate domain detection. */
+    ssize_t FindYindex(double d) const;
+    
     boost::shared_ptr<const Hull> GetHull() const
     { return _hull; }
     boost::shared_ptr<const Hull> GetPaddedHull() const
@@ -128,11 +126,13 @@ namespace sfl {
     
     void DumpGrid(std::ostream & os, const char * prefix) const;
     
-    double PredictCollision(double qdl, double qdr, double lx, double ly)
-      const;
+    double PredictCollision(double qdl, double qdr,
+			    double lx, double ly) const;
     
     
   protected:
+    static const double invalidTime = -1;
+    
     const double _securityDistance;
     const double _maxTime;
     const double _gridResolution;
@@ -144,15 +144,14 @@ namespace sfl {
     boost::shared_ptr<const sfl::Hull> _paddedHull;
     boost::shared_ptr<const sfl::Hull> _evaluationHull;
     
-    boost::scoped_array<boost::scoped_array<bool> > _grid;
+    boost::scoped_ptr<array2d<bool> > _grid;
     double _x0, _y0, _x1, _y1; // bounding box of grid (currently symetric)
     double _dx, _dy, _dxInv, _dyInv; // effective resolution along x and y
-    int _dimx, _dimy;		// dimensions of grid
-    boost::scoped_array<double> _qdLookup;
-    boost::scoped_array<boost::scoped_array<double> > _maxTimeLookup;
-    boost::scoped_array<boost::scoped_array<boost::scoped_ptr<Lookup> > >
-      _timeLookup;
-
+    size_t _dimx, _dimy;	// dimensions of grid
+    std::vector<double> _qdLookup;
+    array2d<double> _maxTimeLookup;
+    boost::scoped_ptr<array2d<boost::shared_ptr<Lookup> > > _timeLookup;
+    
     void ResetGrid();
     
     /** \note The Scan object should be filtered, ie contain only
@@ -163,7 +162,7 @@ namespace sfl {
 	of range (represented as readings at the maximum rho
 	value). */
     void UpdateGrid(boost::shared_ptr<const Scan> local_scan);
-    double MinTime(unsigned int iqdl, unsigned int iqdr);    
+    double MinTime(size_t iqdl, size_t iqdr);    
     double CalculateValue(double measure, double floor);
   };
 

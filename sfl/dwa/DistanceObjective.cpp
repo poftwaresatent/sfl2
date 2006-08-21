@@ -24,17 +24,15 @@
 
 #include "DistanceObjective.hpp"
 #include "DynamicWindow.hpp"
+#include "Lookup.hpp"
 #include <sfl/util/Ray.hpp>
 #include <cmath>
 #include <iostream>
 
 
 using boost::shared_ptr;
-using boost::scoped_array;
-using boost::scoped_ptr;
 using std::ostream;
 using std::vector;
-using std::cerr;		// dbg
 
 
 namespace sfl {
@@ -55,39 +53,23 @@ namespace sfl {
     _x0( - grid_width  / 2),
     _y0( - grid_height / 2),
     _x1(   grid_width  / 2),
-    _y1(   grid_height / 2)
+    _y1(   grid_height / 2),
+    _maxTimeLookup(dimension, dimension, invalidTime)
   {
-    _qdLookup.reset(new double[dimension]);
-
-    _maxTimeLookup.reset(new scoped_array<double>[dimension]);
-    for(unsigned int i = 0; i < dimension; ++i)
-      _maxTimeLookup[i].reset(new double[dimension]);
-
-    // could be a little more paranoid and absval() everything...
-
-    double delta(_x1 - _x0);
-    double dim(ceil(delta / _gridResolution));
+    double delta(absval(_x1 - _x0));
+    double dim(ceil(absval(delta / _gridResolution)));
     _dx = delta / dim;
     _dxInv = dim / delta;
-    _dimx = (int) dim;
-
-    delta = _y1 - _y0;
-    dim = ceil(delta / _gridResolution);
+    _dimx = static_cast<size_t>(dim);
+    
+    delta = absval(_y1 - _y0);
+    dim = ceil(absval(delta / _gridResolution));
     _dy = delta / dim;
     _dyInv = dim / delta;
-    _dimy = (int) dim;
-
-    // allocate _grid[][]
-    _grid.reset(new scoped_array<bool>[_dimx]);
-    for(int i = 0; i < _dimx; ++i)
-      _grid[i].reset(new bool[_dimy]);
+    _dimy = static_cast<size_t>(dim);
     
-    // allocate timeLookup[][]
-    _timeLookup.reset(new scoped_array<scoped_ptr<Lookup> >[_dimx]);
-    for(int i(0); i < _dimx; ++i){
-      // NOTE: scoped_array constructs to zero, which we rely on!
-      _timeLookup[i].reset(new scoped_ptr<Lookup>[_dimy]);
-    }
+    _grid.reset(new array2d<bool>(_dimx, _dimy, false));
+    _timeLookup.reset(new array2d<shared_ptr<Lookup> >(_dimx, _dimy));
     
     // determine padded hull
     double padding(sqrt(_dx * _dx + _dy * _dy));
@@ -110,55 +92,48 @@ namespace sfl {
   Initialize(ostream * progress_stream)
   {
     // precalculate lookup tables
-    for(unsigned int i = 0; i < dimension; ++i)
-      _qdLookup[i] = m_dynamic_window.Qd(i);
-
-    for(unsigned int i = 0; i < dimension; ++i)
-      for(unsigned int j = 0; j < dimension; ++j)
-	_maxTimeLookup[i][j] =
-	  maxval(absval(_qdLookup[i]), absval(_qdLookup[j])) /
+    _qdLookup.clear();
+    for(size_t ii(0); ii < dimension; ++ii)
+      _qdLookup.push_back(m_dynamic_window.Qd(ii));
+    
+    for(size_t ii(0); ii < dimension; ++ii)
+      for(size_t jj(0); jj < dimension; ++jj)
+	_maxTimeLookup[ii][jj] =
+	  maxval(absval(_qdLookup[ii]), absval(_qdLookup[jj])) /
 	  _robot_model.QddMax();
-
+    
     if(progress_stream != 0)
       (*progress_stream) << "DistanceObjective::Initialize()\n"
 			 << "   calculating main lookup table...\n";
     
-    for(int igy = _dimy - 1; igy >= 0; --igy){
-      double y(FindYlength(igy));
-
-      for(int igx = 0; igx < _dimx; ++igx){
-	double x(FindXlength(igx));
+    for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
+      double yy(FindYlength(igy));
       
-	if(_evaluationHull->Contains(x, y) &&
-	   ! _paddedHull->Contains(x, y)){
-	  unsigned int nValidCollisions(0);
-
-	  // fill the actuator lookup table with collision times
-	  for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl)
-	    for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr)
-	      if(m_dynamic_window.Forbidden(iqdl, iqdr))
-		Lookup::LoadBuffer(iqdl, iqdr, - 1);
-	      else{
-		double t(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
-					  x, y));
-
-		if((t > 0) && (t <= _maxTime)){
-		  ++nValidCollisions;
-		  Lookup::LoadBuffer(iqdl, iqdr, t);
-		}
-		else
-		  Lookup::LoadBuffer(iqdl, iqdr, - 1);
-	      }
+      for(size_t igx(0); igx < _dimx; ++igx){
+	double xx(FindXlength(igx));
 	
+	if(_evaluationHull->Contains(xx, yy) &&
+	   ! _paddedHull->Contains(xx, yy)){
+	  array2d<double> buffer(dimension, dimension, invalidTime);
+	  size_t nValidCollisions(0);
+	  
+	  // fill the actuator lookup table with collision times
+	  for(size_t iqdl(0); iqdl < dimension; ++iqdl)
+	    for(size_t iqdr(0); iqdr < dimension; ++iqdr)
+	      if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
+		double tt(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
+					   xx, yy));
+		if((tt > 0) && (tt <= _maxTime)){
+		  ++nValidCollisions;
+		  buffer[iqdl][iqdr] = tt;
+		}
+	      }
+	  
 	  if(nValidCollisions > 0){
 	    if(progress_stream != 0)
 	      (*progress_stream) << "*";
-
-	    // allocate a lookup table for this grid cell
-	    _timeLookup[igx][igy].reset(new Lookup(dimension, 0, _maxTime));
-	
-	    // tell timeLookup to store the distances (compressed)
-	    _timeLookup[igx][igy]->SaveBuffer();
+	    (*_timeLookup)[igx][igy].reset(new Lookup(buffer, 0, _maxTime,
+						   invalidTime));
 	  }
 	  else
 	    if(progress_stream != 0)
@@ -170,18 +145,13 @@ namespace sfl {
 	  // because the same could be achieved using a simple flag,
 	  // which wastes less ram and time... ah well)
 	  //
-	  // can't simply use -1 because then the compression code
-	  // segfaults (it's looking for a minimum over positive
-	  // values), can't simply use 0 because somewhere else in this
-	  // code here I check against zero... in short,
-	  // DistanceObjective NEEDS A GENERAL OVERHAUL!!!
-	
-	  for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl)
-	    for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr)
-	      Lookup::LoadBuffer(iqdl, iqdr, epsilon);
-	  _timeLookup[igx][igy].reset(new Lookup(dimension, 0, _maxTime));
-	  _timeLookup[igx][igy]->SaveBuffer();
-	
+	  // can't simply use invalidTime because that's treated like
+	  // "no collision", can't use 0 because somewhere else in
+	  // this code here I check against zero... we NEED A GENERAL
+	  // OVERHAUL HERE!!!
+	  array2d<double> buffer(dimension, dimension, epsilon);
+	  (*_timeLookup)[igx][igy].reset(new Lookup(buffer, 0, _maxTime,
+						 invalidTime));
 	  if(progress_stream != 0)
 	    (*progress_stream) << ".";
 	}
@@ -200,75 +170,74 @@ namespace sfl {
   {
     if(0 != os)
       (*os) << "INFO from DistanceObjective::CheckLookup():\n";
-    for(unsigned int i = 0; i < dimension; ++i)
-      if(_qdLookup[i] != m_dynamic_window.Qd(i)){
+    for(size_t ii(0); ii < dimension; ++ii)
+      if(_qdLookup[ii] != m_dynamic_window.Qd(ii)){
 	if(0 != os)
-	  (*os) << "  ERROR _qdLookup[" << i << "] is " << _qdLookup[i]
-		<< " but should be " << m_dynamic_window.Qd(i) << "\n";
+	  (*os) << "  ERROR _qdLookup[" << ii << "] is " << _qdLookup[ii]
+		<< " but should be " << m_dynamic_window.Qd(ii) << "\n";
 	return false;
       }
     
-    for(unsigned int i = 0; i < dimension; ++i)
-      for(unsigned int j = 0; j < dimension; ++j){
-	const double check(maxval(absval(_qdLookup[i]), absval(_qdLookup[j]))
+    for(size_t ii(0); ii < dimension; ++ii)
+      for(size_t jj(0); jj < dimension; ++jj){
+	const double check(maxval(absval(_qdLookup[ii]), absval(_qdLookup[jj]))
 			   / _robot_model.QddMax());
-	if(epsilon < absval(_maxTimeLookup[i][j] - check)){
+	if(epsilon < absval(_maxTimeLookup[ii][jj] - check)){
 	  if(0 != os)
-	    (*os) << "  ERROR _maxTimeLookup[" << i << "][" << j<< "] is "
-		  << _maxTimeLookup[i][j] << "but should be "
+	    (*os) << "  ERROR _maxTimeLookup[" << ii << "][" << jj << "] is "
+		  << _maxTimeLookup[ii][jj] << "but should be "
 		  << check << "\n"
-		  << "        difference = " << _maxTimeLookup[i][j] - check
+		  << "        difference = " << _maxTimeLookup[ii][jj] - check
 		  << "\n";
 	  return false;
 	}
       }
     
-    for(int igy = _dimy - 1; igy >= 0; --igy){
+    for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
       if(0 != os)
 	(*os) << "  ";
-      double y(FindYlength(igy));
-      for(int igx = 0; igx < _dimx; ++igx){
-	double x(FindXlength(igx));
-	for(unsigned int iqdl = 0; iqdl < dimension; ++iqdl){
-	  for(unsigned int iqdr = 0; iqdr < dimension; ++iqdr){
-	    double wanted(-1);
-	    if(_evaluationHull->Contains(x, y))
-	      if(_paddedHull->Contains(x, y))
+      double yy(FindYlength(igy));
+      for(size_t igx(0); igx < _dimx; ++igx){
+	double xx(FindXlength(igx));
+	for(size_t iqdl(0); iqdl < dimension; ++iqdl){
+	  for(size_t iqdr(0); iqdr < dimension; ++iqdr){
+	    double wanted(invalidTime);
+	    if(_evaluationHull->Contains(xx, yy))
+	      if(_paddedHull->Contains(xx, yy))
 		wanted = epsilon; // due to epsilon hack above...
 	      else{
 		if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
-		  const double t(PredictCollision(_qdLookup[iqdl],
-						  _qdLookup[iqdr],
-						  x, y));
-		  if((t > 0) && (t <= _maxTime))
-		    wanted = t;
+		  const double tt(PredictCollision(_qdLookup[iqdl],
+						  _qdLookup[iqdr], xx, yy));
+		  if((tt > 0) && (tt <= _maxTime))
+		    wanted = tt;
 		}
 	      }
-	    double compressed(-1);
-	    if(_timeLookup[igx][igy])
-	      compressed = _timeLookup[igx][igy]->Get(iqdl, iqdr);
+	    double compressed(invalidTime);
+	    if((*_timeLookup)[igx][igy])
+	      compressed = (*_timeLookup)[igx][igy]->Get(iqdl, iqdr);
 	    
 	    if(wanted != compressed){
-	      if(0 > wanted){
-		if(_timeLookup[igx][igy]){
+	      if(invalidTime != wanted){
+		if((*_timeLookup)[igx][igy]){
 		  if(0 != os)
-		    (*os) << "\n  ERROR _timeLookup[" << igx << "][" << igy
-			  << "] should be -1 but is " << compressed << "\n"
-			  << "  cell [" << igx << "][" << igy << "] at (" << x
-			  << ", " << y << ")\n";
+		    (*os) << "\n  ERROR (*_timeLookup)[" << igx << "][" << igy
+			  << "] should be invalidTime but is " << compressed
+			  << "\n  cell [" << igx << "][" << igy << "] at ("
+			  << xx << ", " << yy << ")\n";
 		  return false;
 		}
 		if(0 != os)
 		  (*os) << "\nBUG in check procedure?\n";
 		return false;
 	      }
-	      if(0 > compressed){
+	      if(invalidTime != compressed){
 		if(0 != os)
-		  (*os) << "\n  ERROR _timeLookup[" << igx << "][" << igy
+		  (*os) << "\n  ERROR (*_timeLookup)[" << igx << "][" << igy
 			<< "] should be " << wanted << " but is "
-			<< compressed << " (which should be -1)\n"
-			<< "  cell [" << igx << "][" << igy << "] at (" << x
-			<< ", " << y << ")\n";
+			<< compressed << " (which should be invalidTime)\n"
+			<< "  cell [" << igx << "][" << igy << "] at (" << xx
+			<< ", " << yy << ")\n";
 		return false;
 	      }
 	    }
@@ -286,28 +255,25 @@ namespace sfl {
   
   
   void DistanceObjective::
-  Calculate(unsigned int qdlMin,
-	    unsigned int qdlMax,
-	    unsigned int qdrMin,
-	    unsigned int qdrMax,
-	    boost::shared_ptr<const Scan> local_scan)
+  Calculate(double timestep, size_t qdlMin, size_t qdlMax, size_t qdrMin,
+	    size_t qdrMax, boost::shared_ptr<const Scan> local_scan)
   {
     ResetGrid();
     UpdateGrid(local_scan);
-    for(unsigned int iqdl = qdlMin; iqdl <= qdlMax; ++iqdl)
-      for(unsigned int iqdr = qdrMin; iqdr <= qdrMax; ++iqdr)      
+    for(size_t iqdl(qdlMin); iqdl <= qdlMax; ++iqdl)
+      for(size_t iqdr(qdrMin); iqdr <= qdrMax; ++iqdr)      
 	if( ! m_dynamic_window.Forbidden(iqdl, iqdr))
-	  m_value[iqdl][iqdr] =
-	    CalculateValue(MinTime(iqdl, iqdr), _maxTimeLookup[iqdl][iqdr]);
+	  m_value[iqdl][iqdr] = CalculateValue(timestep + MinTime(iqdl, iqdr),
+					       _maxTimeLookup[iqdl][iqdr]);
   }
 
 
   void DistanceObjective::
   ResetGrid()
   {
-    for(int ix = 0; ix < _dimx; ++ix)
-      for(int iy = 0; iy < _dimy; ++iy)
-	_grid[ix][iy] = false;
+    for(size_t ix(0); ix < _dimx; ++ix)
+      for(size_t iy(0); iy < _dimy; ++iy)
+	(*_grid)[ix][iy] = false;
   }
 
 
@@ -321,65 +287,56 @@ namespace sfl {
 	 (ldata.locx <= _x1) && 
 	 (ldata.locy >= _y0) &&
 	 (ldata.locy <= _y1))
-	_grid[FindXindex(ldata.locx)][FindYindex(ldata.locy)] = true;
-    }
-    
-    static const bool dump_grid(false);
-    if(dump_grid){
-      cerr << "DEBUG DistanceObjective::UpdateGrid():\n";
-      DumpGrid(cerr, "  ");
+	(*_grid)[FindXindex(ldata.locx)][FindYindex(ldata.locy)] = true;
     }
   }
   
   
+  /** \todo easy speedup: remember how many points there are, return
+      as soon as all are processed. */
   double DistanceObjective::
-  MinTime(unsigned int iqdl,
-	  unsigned int iqdr)
+  MinTime(size_t iqdl,
+	  size_t iqdr)
   {
-    // easy speedup: remember how many points there are, return as soon as
-    //    all are processed.
     double minTime(_maxTime);
-  
-    for(int ix = 0; ix < _dimx; ++ix)
-      for(int iy = 0; iy < _dimy; ++iy)
-	if(_grid[ix][iy] &&	// cell is occupied
-	   (_timeLookup[ix][iy])){ // cell is inside evaluation region
-	  double t(_timeLookup[ix][iy]->Get(iqdl, iqdr));
-	
-	  if((t > 0) && (t < minTime))
-	    minTime = t;
+    for(size_t ix(0); ix < _dimx; ++ix)
+      for(size_t iy(0); iy < _dimy; ++iy)
+	if((*_grid)[ix][iy] &&	// cell is occupied
+	   ((*_timeLookup)[ix][iy])){ // cell is inside evaluation region
+	  double tt((*_timeLookup)[ix][iy]->Get(iqdl, iqdr));
+	  if((tt != invalidTime) && (tt < minTime))
+	    minTime = tt;
 	}
-
     return minTime;
   }
-
-
-  int DistanceObjective::
+  
+  
+  ssize_t DistanceObjective::
   FindXindex(double d)
     const
   {
-    return (int) floor((d - _x0) * _dxInv);
+    return static_cast<ssize_t>(floor((d - _x0) * _dxInv));
   }
 
 
   double DistanceObjective::
-  FindXlength(int i)
+  FindXlength(ssize_t i)
     const
   {
     return (0.5 + (double) i) * _dx + _x0;
   }
 
 
-  int DistanceObjective::
+  ssize_t DistanceObjective::
   FindYindex(double d)
     const
   {
-    return (int) floor((d - _y0) * _dyInv);
+    return static_cast<ssize_t>(floor((d - _y0) * _dyInv));
   }
 
 
   double DistanceObjective::
-  FindYlength(int i)
+  FindYlength(ssize_t i)
     const
   {
     return (0.5 + (double) i) * _dy + _y0;
@@ -387,86 +344,69 @@ namespace sfl {
 
 
   double DistanceObjective::
-  PredictCollision(double qdl,
-		   double qdr,
-		   double lx,
-		   double ly)
-    const
+  PredictCollision(double qdl, double qdr, double lx, double ly) const
   {
-    double tMin(-1);
-
+    double tMin(invalidTime);
     double sd, thetad;
     _robot_model.Actuator2Global(qdl, qdr, sd, thetad);
-
+    
     if(absval(epsilon * sd) < absval(thetad / epsilon)){
       // circular equation
       double thetadInv(absval(1 / thetad));
-
       double rCur(sd / thetad);
       double rGir(      lx      *     lx
 			+ (ly - rCur) * (ly - rCur));
       rGir = sqrt(rGir);
       double phi0(atan2((ly - rCur), lx));
-
+      
       // loop over outline
       for(vector<shared_ptr<Line> >::const_iterator iline(_outline.begin());
 	  iline != _outline.end();
 	  ++iline){
 	double qx[2], qy[2];
-
-	bool v[2];
+	bool vv[2];
 	(*iline)->CircleIntersect(0, rCur, rGir,
 				  qx[0], qy[0],
 				  qx[1], qy[1],
-				  v[0], v[1]);
-
-	for(unsigned int i = 0; i < 2; ++i)
-	  if(v[i]){
-	    double phi(atan2(qy[i] - rCur, qx[i]) - phi0);
+				  vv[0], vv[1]);
+	for(size_t ii(0); ii < 2; ++ii)
+	  if(vv[ii]){
+	    double phi(atan2(qy[ii] - rCur, qx[ii]) - phi0);
 	    if(thetad >= 0)
 	      phi = mod2pi( - phi);
 	    else
 	      phi = mod2pi(   phi);
-	
-	    double t(phi * thetadInv);
-	  
-	    if((tMin < 0) || (t < tMin)){
-	      tMin = t;
-	    }
+	    const double tt(phi * thetadInv);
+	    if((tMin < 0) || (tt < tMin))
+	      tMin = tt;
 	  }
       } // end loop over local lines
     }
     else if(absval(sd) > epsilon){
       // straight line approximation
       double sdInv(absval(1 / sd));
-
       Ray *ray;
       if(sd >= 0)
 	ray = new Ray(Frame(lx, ly, M_PI));	// hax: port to npm
       else
 	ray = new Ray(Frame(lx, ly, 0));	// hax: port to npm
-    
-      // loop over local lines
+      
+      // loop over outline
       for(vector<shared_ptr<Line> >::const_iterator iline(_outline.begin());
 	  iline != _outline.end(); ++iline){
-	// calculate distance
-	double t(sdInv * ray->Intersect(**iline));
-      
-	// check for new minimum
-	if((t >= 0) &&
-	   ((tMin < 0) || (t < tMin))){
-	  tMin = t;
+	const double tt(sdInv * ray->Intersect(**iline));
+	if((tt >= 0) && ((tMin < 0) || (tt < tMin))){
+	  tMin = tt;
 	}
       }
-
       delete ray;
     }
-    // else don't touch tMin, -1 means "no collision"
-
+    // else don't touch tMin, invalidTime means "no collision"
+    
     return tMin;
   }
-
-
+  
+  
   double DistanceObjective::
   CalculateValue(double measure, double floor)
   {
@@ -496,30 +436,18 @@ namespace sfl {
   DumpGrid(std::ostream & os, const char * prefix)
     const
   {
-    for(int igy = _dimy - 1; igy >= 0; --igy){
-      double y(FindYlength(igy));
+    for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
+      const double yy(FindYlength(igy));
       os << prefix;
-      for(int igx = 0; igx < _dimx; ++igx){
-	double x(FindXlength(igx));
-	if(_paddedHull->Contains(x, y)){
-	  if(_grid[igx][igy])
-	    os << "o";
-	  else
-	    os << ".";
-	}
+      for(size_t igx(0); igx < _dimx; ++igx){
+	const double xx(FindXlength(igx));
+	if(_paddedHull->Contains(xx, yy))
+	  os << ((*_grid)[igx][igy] ? "o" : ".");
 	else{
-	  if(_grid[igx][igy]){
-	    if( ! _timeLookup[igx][igy])
-	      os << "o";
-	    else
-	      os << "x";
-	  }
-	  else{
-	    if( ! _timeLookup[igx][igy])
-	      os << ".";
-	    else
-	      os << "-";
-	  }
+	  if((*_grid)[igx][igy])
+	    os << ((*_timeLookup)[igx][igy] ? "x" : "o");
+	  else
+	    os << ((*_timeLookup)[igx][igy] ? "-" : ".");
 	}
       }
       os << "\n";
@@ -528,11 +456,32 @@ namespace sfl {
   
   
   double DistanceObjective::
-  CollisionTime(int ix, int iy, int iqdl, int iqdr) const
+  CollisionTime(size_t ix, size_t iy, size_t iqdl, size_t iqdr) const
   {
-    if(_timeLookup[ix][iy])
-      return _timeLookup[ix][iy]->Get(iqdl, iqdr);
-    return -1;
+    if((*_timeLookup)[ix][iy])
+      return (*_timeLookup)[ix][iy]->Get(iqdl, iqdr);
+    return invalidTime;
   }
   
+  
+  size_t DistanceObjective::
+  DimX() const
+  {
+    return _dimx;
+  }
+  
+  
+  size_t DistanceObjective::
+  DimY() const
+  {
+    return _dimy;
+  }
+  
+  
+  bool DistanceObjective::
+  CellOccupied(size_t ix, size_t iy) const
+  {
+    return (*_grid)[ix][iy];
+  }
+
 }

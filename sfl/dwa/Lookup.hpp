@@ -26,56 +26,68 @@
 #define SUNFLOWER_LOOKUP_HPP
 
 
+#include <sfl/util/array2d.hpp>
+#include <boost/shared_ptr.hpp>
+#include <vector>
+#include <list>
+#include <set>
+
 
 namespace sfl {
 
 
+  class Lookup
+  {
+  public:
+    Lookup(const array2d<double> & buffer,
+	   double minValue, double maxValue,
+	   /** must be outside [minValue, maxValue] (also used internally) */
+	   double invalidValue);
+    
+    double Get(size_t iqdl, size_t iqdr) const;
+    
+    void DumpStats(const array2d<double> & buffer, std::ostream & os) const;
+    
+    const double minValue;
+    const double maxValue;
+    const double invalidValue;
 
-/**
-   Compressed lookup tables, kind of hand-tailored for
-   DistanceObjective.
-
-   \note This class is a dinosaur, please refactor.
-*/
-
-class Lookup
-{
-public:
-  Lookup(int dimension,
-	 double minValidValue,
-	 double maxValidValue);
-  ~Lookup();
-
-  static void LoadBuffer(int iqdl, int iqdr, double value);
-  void SaveBuffer();
-  double Get(int iqdl, int iqdr) const;
-
-protected:
-  typedef struct { double t, r; } bin_t;
-  
-  static const int maxNbins = 200; // < 2^sizeof(short) - 1
-  static int dimension;
-  
-  static double ** buffer;
-  static double * histogram;
-  static bin_t bin[maxNbins + 1]; // attention: +1 !!!
-  static int nBins;
-
-  double minValid, maxValid;
-  bool noValid;
-  double * quantizer;
-  unsigned short ** value;
-
-  static void CreateHistogram();
-  void LloydMax();
-  void Quantize();
-  static double PartialMean(double from, double to);
-  static double PartialMeanInclusive(double from, double to);
-  static double PartialMin(double from, double to);
-  static double PartialMinInclusive(double from, double to);
-};
-
-
+  protected:
+    struct bin_s {
+      bin_s(double _bound, double _val): bound(_bound), val(_val) {}
+      double bound, val;
+    };
+    
+    typedef unsigned short key_t;
+    typedef std::multiset<double> histogram_t;
+    typedef std::list<bin_s> binlist_t;
+    typedef std::vector<double> quantizer_t;
+    
+    static const size_t maxNbins = (1 << sizeof(key_t)) - 2;
+    
+    quantizer_t m_quantizer;
+    array2d<key_t> m_key;
+    bool m_no_valid;
+    double m_actualVmin, m_actualVmax;
+    
+    /** prunes binlist in-place using Lloyd-Max algorithm */
+    bool LloydMax(const histogram_t & histogram, binlist_t & binlist) const;
+    
+    /** \return mean of values (from <= val < to) or invalidValue */
+    double PMean(const histogram_t & hist, double from, double to) const;
+    
+    /** \return mean of values (from <= val <= to) or invalidValue */
+    double PMeanInc(const histogram_t & hist, double from, double to) const;
+    
+    /** \return min of values (from <= val < to) or invalidValue */
+    double PMin(const histogram_t & hist, double from, double to) const;
+    
+    /** \return min of values (from <= val <= to) or invalidValue */
+    double PMinInc(const histogram_t & hist, double from, double to) const;
+    
+    bool Quantize(const array2d<double> & buffer,
+		  const histogram_t & histogram, const binlist_t & binlist);
+  };
 
 }
 

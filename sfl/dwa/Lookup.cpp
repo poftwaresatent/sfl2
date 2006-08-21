@@ -24,365 +24,270 @@
 
 #include "Lookup.hpp"
 #include <sfl/util/numeric.hpp>
-#include <cstdlib>
 #include <iostream>
+#include <limits>
 
 
-using std::cerr;
+using std::ostream;
+using std::numeric_limits;
 
 
 namespace sfl {
-
-
-  int Lookup::dimension(0);
-  double ** Lookup::buffer(0);
-  double * Lookup::histogram(0);
-  Lookup::bin_t Lookup::bin[maxNbins + 1]; // attention: +1 !!!
-  int Lookup::nBins(maxNbins);
-
-
-  Lookup::
-  Lookup(int _dimension,
-	 double minValidValue,
-	 double maxValidValue):
-    minValid(minValidValue),
-    maxValid(maxValidValue),
-    quantizer(0)
-  {
-    if(dimension == 0)
-      dimension = _dimension;
-    else if(dimension != _dimension){
-      cerr << "ERROR in Lookup::Lookup()\n"
-	   << "   dimension previously given as " << dimension << "\n"
-	   << "   and now given as " << _dimension << "\n"
-	   << "   future versions should become more flexible in this regard.\n";
-      abort();
-    }
   
-    if(buffer == 0){
-      buffer = new double*[dimension];
-      for(int i = 0; i < dimension; ++i)
-	buffer[i] = new double[dimension];
-    }
-
-    if(histogram == 0)
-      histogram = new double[dimension * dimension];
-
-    value = new unsigned short*[dimension];
-    for(int i = 0; i < dimension; ++i)
-      value[i] = new unsigned short[dimension];
-  }
-
-
+  
   Lookup::
-  ~Lookup()
+  Lookup(const array2d<double> & buffer,
+	 double _minValue, double _maxValue, double _invalidValue)
+    : minValue(_minValue), maxValue(_maxValue), invalidValue(_invalidValue),
+      m_key(buffer.xsize, buffer.ysize), m_no_valid(true)
   {
-    if(quantizer != 0)
-      delete[] quantizer;
-
-    if(buffer != 0){
-      for(int i = 0; i < dimension; ++i)
-	delete[] buffer[i];
-      delete[] buffer;
-      buffer = 0;
-    }
-
-    if(histogram != 0){
-      delete[] histogram;
-      histogram = 0;
-    }
-
-    for(int i = 0; i < dimension; ++i)
-      delete[] value[i];
-    delete[] value;
-  }
-
-
-  void Lookup::
-  LoadBuffer(int iqdl,
-	     int iqdr,
-	     double value)
-  {
-    buffer[iqdl][iqdr] = value;
-  }
-
-
-  void Lookup::
-  SaveBuffer()
-  {
-    CreateHistogram();
-    LloydMax();
-    Quantize();
+    // initialize histogram, but only with valid values
+    histogram_t histogram;
+    for(size_t ix(0); ix < buffer.xsize; ++ix)
+      for(size_t iy(0); iy < buffer.ysize; ++iy)
+	if((buffer[ix][iy] >= minValue) && (buffer[ix][iy] <= maxValue))
+	  histogram.insert(buffer[ix][iy]);
+    if(histogram.empty())
+      return;			// empty buffer, no valid entry
+    m_actualVmin = * histogram.begin();
+    m_actualVmax = * histogram.rbegin();
     
-    static const bool dump_whole_table(false);
-    if(dump_whole_table){
-      cerr << "INFO from Lookup::SaveBuffer():\n  table:\n";
-      for(int i(0); i < dimension; ++i){
-	cerr << "   ";
-	for(int j(0); j < dimension; ++j){
-	  const double val(Get(i, j));
-	  if(val >= 0)
-	    fprintf(stderr, " %3.1f", val);
-	  else
-	    cerr << " inv";
-	}
-	cerr << "\n";
-      }
-    }
+    // initialize binlist...  yes, there are maxNbins + 1 bins,
+    // because the last is "only" there to keep the upper (inclusive)
+    // bound for the last interval
+    const double scale((m_actualVmax - m_actualVmin) / maxNbins);
+    binlist_t binlist;
+    binlist.push_back(bin_s(m_actualVmin, invalidValue));
+    for(size_t ii(1); ii < maxNbins; ++ii)
+      binlist.push_back(bin_s(m_actualVmin + ii * scale, invalidValue));
+    binlist.push_back(bin_s(m_actualVmax, invalidValue));
     
-    static const bool dump_compression_statistics(false);
-    if(dump_compression_statistics){
-      double diffmin(std::numeric_limits<double>::max());
-      double diffmax(std::numeric_limits<double>::min());
-      double diffsum(0);
-      for(int i(0); i < dimension; ++i)
-	for(int j(0); j < dimension; ++j){
-	  const double diff(Get(i, j) - buffer[i][j]);
-	  if(diff < diffmin) diffmin = diff;
-	  if(diff > diffmax) diffmax = diff;
-	  diffsum += diff;
-	}
-      cerr << "INFO from Lookup::SaveBuffer():\n"
-	   << "  diffmin  = " << diffmin << "\n"
-	   << "  diffmax  = " << diffmax << "\n"
-	   << "  diffmean = " << diffsum / sqr(dimension) << "\n";
-    }
+    if( ! LloydMax(histogram, binlist))
+      return;			// oops, probably a bug... abort()?
+    if( ! Quantize(buffer, histogram, binlist))
+      return;			// oops, probably a bug... abort()?
+    
+    m_no_valid = false;
   }
-
-
+  
+  
   double Lookup::
-  Get(int iqdl,
-      int iqdr)
-    const
+  Get(size_t iqdl, size_t iqdr) const
   {
-    if(noValid)
-      return -1;
-    return quantizer[value[iqdl][iqdr]];
+    if(m_no_valid || (iqdl >= m_key.xsize) || (iqdr >= m_key.ysize))
+      return invalidValue;
+    const key_t key(m_key[iqdl][iqdr]);
+    if(key >= m_quantizer.size())
+      return invalidValue;      
+    return m_quantizer[key];
   }
-
-
-  void Lookup::
-  CreateHistogram()
+  
+  
+  bool Lookup::
+  LloydMax(const histogram_t & histogram, binlist_t & binlist) const
   {
-    nBins = maxNbins;
-
-    // load buffer into histogram
-    int count(0);
-    for(int i = 0; i < dimension; ++i)
-      for(int j = 0; j < dimension; ++j){
-	histogram[count] = buffer[i][j];
-	++count;
-      }
-
-    // sort histogram (insert sort, simple but slow)
-    for(int j = 1; j < dimension * dimension; ++j){
-      double key(histogram[j]);
-      int i(j - 1);
-
-      while((i >= 0) && (histogram[i] > key)){
-	histogram[i + 1] = histogram[i];
-	--i;
-      }
-
-      histogram[i + 1] = key;
-    }
-  }
-
-
-  void Lookup::
-  LloydMax()
-  {
-    // initialize bins
-    double vmax;
-    bool found(false);
-    for(int i = 0; i < dimension * dimension; ++i)
-      if(histogram[i] <= maxValid){
-	found = true;
-	vmax = histogram[i];
-      }
-      else
-	break;
-
-    if( ! found){
-      noValid = true;
-      return;
-    }
-    noValid = false;
-
-    double vmin;
-    // there will be at least one valid value, because of the previous check
-    // (if maxValid > minValid)
-    for(int i = 0; i < dimension * dimension; ++i)
-      if(histogram[i] >= minValid){
-	vmin = histogram[i];
-	break;
-      }
-
-    // okay, this could be done faster...
-    double scale((vmax - vmin) / maxNbins);
-    for(int i = 0; i < maxNbins; ++i){
-      bin[i].t = vmin + i * scale;
-      bin[i].r = -1;
-    }
-    bin[maxNbins].t = vmax;
-
-    // iterate
-    nBins = maxNbins;
     bool finished(false);
     while( ! finished){
       finished = true;
-
+      
       // calculate levels
-      double r2;
-      for(int i = 0; i < nBins - 1; ++i){
-	r2 = PartialMean(bin[i].t, bin[i + 1].t);
-	if(absval(bin[i].r - r2) > 1e-9) // hax: hardcoded epsilon
+      const binlist_t::iterator ilast(--binlist_t::iterator(binlist.end()));
+      binlist_t::iterator inext(binlist.begin());
+      if((inext == ilast) || (inext == binlist.end()))
+	return false;		// oops: empty or single-element binlist
+      binlist_t::iterator icurr(inext);
+      ++inext;
+      while(inext != binlist.end()){
+	double val;
+	if(inext == ilast)
+	  val = PMeanInc(histogram, icurr->bound, inext->bound);
+	else
+	  val = PMean(histogram, icurr->bound, inext->bound);
+	if((icurr->val == invalidValue)
+	   || (absval(icurr->val - val) > epsilon)){
 	  finished = false;
-	bin[i].r = r2;
-      }
-      r2 = PartialMeanInclusive(bin[nBins - 1].t, bin[nBins].t);
-      if(absval(bin[nBins - 1].r - r2) > 1e-9) // hax: hardcoded epsilon
-	finished = false;
-      bin[nBins - 1].r = r2;
-
-      // remove empty bins
-      for(int i = 0; i < nBins; ++i)
-	if(bin[i].r < 0){
-	  --nBins;
-	  for(int j = i; j < nBins; ++j){
-	    bin[j].t = bin[j + 1].t;
-	    bin[j].r = bin[j + 1].r;
-	  }
-	  bin[nBins].t = bin[nBins + 1].t; // one more boundary than levels
-	  --i;			// should never happen that bin[0].r < 0...
+	  icurr->val = val;
 	}
-
-      // calculate boundaries
-      for(int i = 1; i < nBins; ++i)
-	bin[i].t = 0.5 * (bin[i - 1].r + bin[i].r);
+	icurr = inext;
+	++inext;
+      }
+      
+      // remove empty bins, beware the last bin always contains
+      // invalidValue but it has to stay in place for the upper bound
+      // of the last interval, so we test against ilast, but also
+      // check binlist.end() because std::list::erase() can return
+      // std::list::end() if the last element is removed (which should
+      // never happen here, but well... at least we don't go
+      // currupting RAM elsewhere)
+      for(icurr = binlist.begin();
+	  (icurr != ilast) && (icurr != binlist.end());
+	  ++icurr)
+	if(icurr->val == invalidValue)
+	  icurr = binlist.erase(icurr);
+      
+      // adjust boundaries, keeping the first last at the actual range
+      // of the histogram
+      icurr = binlist.begin();
+      if((icurr == ilast) || (icurr == binlist.end()))
+	return false;		// oops: removed too many bins
+      icurr->bound = m_actualVmin;
+      binlist_t::iterator iprev(icurr);
+      ++icurr;
+      while(icurr != ilast){
+	icurr->bound = 0.5 * (iprev->val + icurr->val);
+	iprev = icurr;
+	++icurr;
+      }
+      icurr->bound = m_actualVmax; // should be redundant...
     } //   while(!finished)
+    return true;
+  }
+  
+  
+  bool Lookup::
+  Quantize(const array2d<double> & buffer,
+	   const histogram_t & histogram, const binlist_t & binlist)
+  {
+    if(binlist.empty())
+      return false;
+    
+    // initialize quantizer lookup
+    m_quantizer.clear();
+    const binlist_t::const_iterator
+      ilast(--binlist_t::const_iterator(binlist.end()));
+    binlist_t::const_iterator inext(binlist.begin());
+    if((inext == ilast) || (inext == binlist.end()))
+      return false;		// oops: empty or single-element binlist
+    binlist_t::const_iterator icurr(inext);
+    ++inext;
+    while(inext != binlist.end()){
+      if(inext == ilast)
+	m_quantizer.push_back(PMinInc(histogram, icurr->bound, inext->bound));
+      else
+	m_quantizer.push_back(PMin(histogram, icurr->bound, inext->bound));
+      icurr = inext;
+      ++inext;
+    }
+    
+    // quantize buffer and store it in m_key
+    for(size_t ix(0); ix < buffer.xsize; ++ix)
+      for(size_t iy(0); iy < buffer.ysize; ++iy){
+	if((buffer[ix][iy] < minValue) || (buffer[ix][iy] > maxValue))
+	  m_key[ix][iy] = m_quantizer.size(); // flag as invalidValue
+	else{
+	  m_key[ix][iy] = 0;
+	  inext = binlist.begin();
+	  ++inext;
+	  while(inext != ilast){ // no need to test for ilast->bound
+	    if(buffer[ix][iy] < inext->bound)
+	      break;
+	    ++m_key[ix][iy];
+	    ++inext;
+	  }
+	}
+      }
+    
+    return true;
   }
 
 
+  double Lookup::
+  PMean(const histogram_t & histogram, double from, double to) const
+  {
+    double sum(0);
+    size_t count(0);
+    for(histogram_t::const_iterator ih(histogram.begin());
+	ih != histogram.end(); ++ih)
+      if( * ih >= from){
+	if( * ih < to){
+	  sum += * ih;
+	  ++count;
+	}
+	else
+	  break;
+      }
+    if(count < 1)
+      return invalidValue;
+    return sum / count;
+  }
+
+
+  double Lookup::
+  PMeanInc(const histogram_t & histogram, double from, double to) const
+  {
+    double sum(0);
+    size_t count(0);
+    for(histogram_t::const_iterator ih(histogram.begin());
+	ih != histogram.end(); ++ih)
+      if( * ih >= from){
+	if( * ih <= to){
+	  sum += * ih;
+	  ++count;
+	}
+	else
+	  break;
+      }
+    if(count < 1)
+      return invalidValue;
+    return sum / count;
+  }
+  
+  
+  double Lookup::
+  PMin(const histogram_t & histogram, double from, double to) const
+  {
+    for(histogram_t::const_iterator ih(histogram.begin());
+	ih != histogram.end(); ++ih)
+      if(( * ih >= from) && ( * ih < to))
+	return * ih;
+    return invalidValue;
+  }
+  
+  
+  double Lookup::
+  PMinInc(const histogram_t & histogram, double from, double to) const
+  {
+    for(histogram_t::const_iterator ih(histogram.begin());
+	ih != histogram.end(); ++ih)
+      if(( * ih >= from) && ( * ih <= to))
+	return * ih;
+    return invalidValue;
+  }
+  
+  
   void Lookup::
-  Quantize()
+  DumpStats(const array2d<double> & buffer, ostream & os) const
   {
-    if(quantizer != 0){
-      delete[] quantizer;
-      quantizer = 0;
-    }
-
-    if(noValid)
-      return;
-
-    quantizer = new double[nBins + 1]; // one special bin for "no intersection"
-
-    // init quantizer values
-    for(int i = 0; i < nBins - 1; ++i)
-      quantizer[i] = PartialMin(bin[i].t, bin[i + 1].t);
-    quantizer[nBins - 1] = PartialMinInclusive(bin[nBins - 1].t, bin[nBins].t);
-    quantizer[nBins] = -1;
-
-    // quantize buffer and store it in value[][]
-    for(int i = 0; i < dimension; ++i){
-      for(int j = 0; j < dimension; ++j){
-	double val(buffer[i][j]);
-	int k;
-	for(k = 0; k < nBins; ++k)
-	  if((val >= bin[k].t) && (val < bin[k + 1].t)){
-	    value[i][j] = k;
-	    break;
-	  }
-	if(k == nBins){
-	  if(val == bin[nBins].t){ // last bin is "right-inclusive"
-	    value[i][j] = nBins - 1;
-	  }
+    os << "Lookup::DumpStats():\n";
+    if((buffer.xsize != m_key.xsize) || (buffer.ysize != m_key.ysize))
+      os << "  dimension mismatch\n";
+    else{
+      double diffmin(numeric_limits<double>::max());
+      double diffmax(numeric_limits<double>::min());
+      double diffsum(0);
+      size_t diffcount(0);
+      size_t invalid_mismatch(0);
+      for(size_t ix(0); ix < buffer.xsize; ++ix)
+	for(size_t iy(0); iy < buffer.ysize; ++iy){
+	  if((Get(ix, iy) == invalidValue)
+	     && (buffer[ix][iy] >= minValue)
+	     && (buffer[ix][iy] <= maxValue))
+	    ++invalid_mismatch;
 	  else{
-	    value[i][j] = nBins; // no intersection (or too far)
+	    const double diff(Get(ix, iy) - buffer[ix][iy]);
+	    if(diff < diffmin) diffmin = diff;
+	    if(diff > diffmax) diffmax = diff;
+	    diffsum += diff;
+	    ++diffcount;
 	  }
 	}
-      }
+      os << "  diffmin   = " << diffmin << "\n"
+	 << "  diffmax   = " << diffmax << "\n"
+	 << "  diffcount = " << diffcount << "\n";
+      if(diffcount > 0)
+	os << "  diffmean  = " << diffsum / diffcount << "\n";
+      os << "  invalid_mismatch = " << invalid_mismatch << "\n";
     }
   }
-
-
-  double Lookup::
-  PartialMean(double from,
-	      double to)
-  {
-    double sum(0);
-    double count(0);
-
-    for(int i = 0; i < dimension * dimension; ++i)
-      if(histogram[i] >= from){
-	if(histogram[i] < to){
-	  sum += histogram[i];
-	  count += 1;
-	}
-	else
-	  break;
-      }
   
-    if(count < 1)
-      return -1;
-
-    return sum / count;
-  }
-
-
-  double Lookup::
-  PartialMeanInclusive(double from,
-		       double to)
-  {
-    double sum(0);
-    double count(0);
-
-    for(int i = 0; i < dimension * dimension; ++i)
-      if(histogram[i] >= from){
-	if(histogram[i] <= to){
-	  sum += histogram[i];
-	  count += 1;
-	}
-	else
-	  break;
-      }
-  
-    if(count < 1)
-      return -1;
-
-    return sum / count;
-  }
-
-
-  double Lookup::
-  PartialMin(double from,
-	     double to)
-  {
-    for(int i = 0; i < dimension * dimension; ++i)
-      if((histogram[i] >= from) &&
-	 (histogram[i] < to))
-	return histogram[i];
-
-    cerr << "ERROR in Lookup::PartialMin(" << from
-	 << ", " << to << ")\n   no minimum found\n";
-    abort();
-    return 0;
-  }
-
-
-  double Lookup::
-  PartialMinInclusive(double from,
-		      double to)
-  {
-    for(int i = 0; i < dimension * dimension; ++i)
-      if((histogram[i] >= from) &&
-	 (histogram[i] <= to))
-	return histogram[i];
-
-    cerr << "ERROR in Lookup::PartialMinInclusive(" << from
-	 << ", " << to << ")\n   no minimum found\n";
-    abort();
-    return 0;
-  }
-
 }
