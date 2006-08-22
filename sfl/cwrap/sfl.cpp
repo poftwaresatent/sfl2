@@ -23,10 +23,11 @@
 #include "cwrapHAL.hpp"
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
-#include <sfl/api/DiffDrive.hpp>
+//#include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/util/fprintfos.hpp>
+#include <sfl/util/Mutex.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionController.hpp>
@@ -44,7 +45,7 @@ namespace sfl_cwrap {
   static Handlemap<HAL>           HAL_map;
   static Handlemap<Scanner>       Scanner_map;
   static Handlemap<Multiscanner>  Multiscanner_map;
-  static Handlemap<DiffDrive>     DiffDrive_map;
+  //  static Handlemap<DiffDrive>     DiffDrive_map;
   static Handlemap<RobotModel>    RobotModel_map;
   static Handlemap<DynamicWindow> DynamicWindow_map;
   static Handlemap<BubbleBand>    BubbleBand_map;
@@ -63,8 +64,8 @@ namespace sfl_cwrap {
   { return Multiscanner_map.Find(handle); }
 
   
-  shared_ptr<DiffDrive> get_DiffDrive(int handle)
-  { return DiffDrive_map.Find(handle); }
+//   shared_ptr<DiffDrive> get_DiffDrive(int handle)
+//   { return DiffDrive_map.Find(handle); }
 
   
   shared_ptr<RobotModel> get_RobotModel(int handle)
@@ -137,15 +138,15 @@ int sfl_create_BubbleBand(int RobotModel_handle,
 }
   
   
-int sfl_create_DiffDrive(int hal_handle,
-			 double wheelbase, double wheelradius)
-{
-  shared_ptr<HAL> hal(get_HAL(hal_handle));
-  if( ! hal)
-    return -1;
-  return DiffDrive_map.InsertRaw(new DiffDrive(hal.get(),
-					       wheelbase, wheelradius));
-}
+// int sfl_create_DiffDrive(int hal_handle,
+// 			 double wheelbase, double wheelradius)
+// {
+//   shared_ptr<HAL> hal(get_HAL(hal_handle));
+//   if( ! hal)
+//     return -1;
+//   return DiffDrive_map.InsertRaw(new DiffDrive(hal.get(),
+// 					       wheelbase, wheelradius));
+// }
   
   
 int sfl_create_RobotModel(double security_distance,
@@ -207,7 +208,10 @@ int sfl_create_Odometry(int HAL_handle)
   shared_ptr<HAL> hal(get_HAL(HAL_handle));
   if( ! hal)
     return -1;
-  return Odometry_map.InsertRaw(new Odometry(hal));
+  shared_ptr<Mutex> mutex(Mutex::Create());
+  if( ! mutex)
+    return -2;
+  return Odometry_map.InsertRaw(new Odometry(hal, mutex));
 }
 
 
@@ -219,8 +223,8 @@ void sfl_destroy_Scanner(int handle)
 { Scanner_map.Erase(handle); }
   
   
-void sfl_destroy_DiffDrive(int handle)
-{ DiffDrive_map.Erase(handle); }
+// void sfl_destroy_DiffDrive(int handle)
+// { DiffDrive_map.Erase(handle); }
   
   
 void sfl_destroy_RobotModel(int handle)

@@ -36,6 +36,7 @@ namespace sfl {
   
   class HAL;
   class Pose;
+  class Mutex;
   
   
   /**
@@ -56,10 +57,14 @@ namespace sfl {
   */
   class Odometry
   {
+  private:
+    /** non-copyable */
+    Odometry(const Odometry & orig);
+    
   public:
     typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
     
-    explicit Odometry(boost::shared_ptr<HAL> hal);
+    Odometry(boost::shared_ptr<HAL> hal, boost::shared_ptr<Mutex> mutex);
     
     /**
        Initialize history with a pose in world frame. This clears any
@@ -105,6 +110,7 @@ namespace sfl {
   private:
     boost::shared_ptr<HAL> m_hal;
     history_t m_history;
+    boost::shared_ptr<Mutex> m_mutex;
   };
   
 }

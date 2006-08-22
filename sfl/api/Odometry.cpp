@@ -25,6 +25,7 @@
 #include "Odometry.hpp"
 #include "HAL.hpp"
 #include "Pose.hpp"
+#include <sfl/util/Mutex.hpp>
 #include <iostream>
 
 
@@ -36,8 +37,8 @@ namespace sfl {
   
   
   Odometry::
-  Odometry(shared_ptr<HAL> hal)
-    : m_hal(hal)
+  Odometry(shared_ptr<HAL> hal, shared_ptr<Mutex> mutex)
+    : m_hal(hal), m_mutex(mutex)
   {
   }
   
@@ -63,8 +64,10 @@ namespace sfl {
 		 << "  time_get() returned " << res << "\n";
       return res;
     }
+    m_mutex->Lock();
     m_history.clear();
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
+    m_mutex->Unlock();
     return 0;
   }
   
@@ -85,7 +88,9 @@ namespace sfl {
       return res;
     }
     shared_ptr<Pose> pose(new Pose(x, y, t, sxx, syy, stt, sxy, sxt, syt));
+    m_mutex->Lock();
     m_history.insert(make_pair(timestamp, pose));    
+    m_mutex->Unlock();
     return 0;
   }
   
@@ -93,6 +98,7 @@ namespace sfl {
   shared_ptr<const Pose> Odometry::
   Get() const
   {
+    Mutex::sentry(m_mutex.get());
     if(m_history.empty())
       return shared_ptr<const Pose>(new Pose());
     return m_history.rbegin()->second;
@@ -129,7 +135,9 @@ namespace sfl {
     res = m_hal->time_get(&timestamp);
     if(res != 0)
       return res;
+    m_mutex->Lock();
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
+    m_mutex->Unlock();
     return 0;
   }
   
