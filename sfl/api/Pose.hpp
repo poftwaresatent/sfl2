@@ -35,87 +35,55 @@ namespace sfl {
   /**
      Like Frame, but with covariance information.
   */
-  class Pose:
-    public Frame
+  class Pose
+    : public Frame
   {
   public:
-    /**
-       Default position = (0, 0, 0), covariance = identity
-    */
+    /** Default position = (0, 0, 0), covariance = identity */
     Pose();
 
-    /**
-       Default covariance = identity
-    */
-    Pose(const Frame & frame);
+    /** Default covariance = identity */
+    explicit Pose(const Frame & frame);
 
-    /**
-       Default covariance = identity
-    */
+    /** Default covariance = identity */
     Pose(double x, double y, double theta);
 
-    /**
-       Construct from existing Frame instance, adding the provided
-       covariances.
-    */
+    /** Construct from existing Frame instance, adding the provided
+	covariances. */
     Pose(const Frame & frame,
 	 double sxx, double syy, double stt,
 	 double sxy, double sxt, double syt);
 
-    /**
-       Construct a Pose instance at (x, y, theta), with the provided
-       covariances.
-    */
+    /** Construct a Pose instance at (x, y, theta), with the provided
+	covariances. */
     Pose(double x, double y, double theta,
 	 double sxx, double syy, double stt,
 	 double sxy, double sxt, double syt);
-
-    /**
-       Inherit.
-       
-       \todo Why is this required?
-    */
-    Frame::Set;
     
-    /**
-       Doesn't touch the position, only the covariance.
-    */
-    void Set(double sxx, double syy, double stt,
-	     double sxy, double sxt, double syt);
+    /** Doesn't touch the position, only the covariance. */
+    void SetVar(double sxx, double syy, double stt,
+		double sxy, double sxt, double syt);
     
-    /**
-       \return The variance along the x-axis.
-    */
+    /** \return The variance along the x-axis. */
     double Sxx() const;
     
-    /**
-       \return The variance along the y-axis.
-    */
+    /** \return The variance along the y-axis. */
     double Syy() const;
     
-    /**
-       \return The variance along the theta-axis.
-    */
+    /** \return The variance along the theta-axis. */
     double Stt() const;
 
-    /**
-       \return The covariance between the x- and the y-axes.
-    */
+    /** \return The covariance between the x- and the y-axes. */
     double Sxy() const;
 
-    /**
-       \return The covariance between the x- and the theta-axes.
-    */
+    /** \return The covariance between the x- and the theta-axes. */
     double Sxt() const;
     
-    /**
-       \return The covariance between the y- and the theta-axes.
-    */
+    /** \return The covariance between the y- and the theta-axes. */
     double Syt() const;
-
-
+    
   protected:
-    double _sxx, _syy, _stt, _sxy, _sxt, _syt;
+    double m_sxx, m_syy, m_stt, m_sxy, m_sxt, m_syt;
   };
   
 }

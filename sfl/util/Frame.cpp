@@ -24,240 +24,220 @@
 
 #include "Frame.hpp"
 #include "numeric.hpp"
+#include <sfl/api/Pose.hpp>
 #include <cmath>
 #include <iostream>
 
 
 namespace sfl {
-
+  
+  
   Frame::
-  Frame():
-    _x(0),
-    _y(0),
-    _theta(0),
-    _sintheta(0),
-    _costheta(1)
+  Frame()
+    : m_x(0), m_y(0), m_theta(0), m_sintheta(0), m_costheta(1)
   {
   }
-
-
+  
+  
   Frame::
-  Frame(double x,
-	double y,
-	double theta):
-    _x(x),
-    _y(y),
-    _theta(mod2pi(theta)),
-    _sintheta(sin(theta)),
-    _costheta(cos(theta))
+  Frame(double x, double y, double theta)
+    : m_x(x), m_y(y), m_theta(mod2pi(theta)),
+      m_sintheta(sin(theta)), m_costheta(cos(theta))
   {
   }
-
-
+  
+  
   void Frame::
   Set(const Frame & f)
   {
-    _x = f._x;
-    _y = f._y;
-    _theta = f._theta;
-    _sintheta = f._sintheta;
-    _costheta = f._costheta;
+    m_x = f.m_x;
+    m_y = f.m_y;
+    m_theta = f.m_theta;
+    m_sintheta = f.m_sintheta;
+    m_costheta = f.m_costheta;
   }
-
-
+  
+  
   void Frame::
-  Set(double x,
-      double y,
-      double theta)
+  Set(double x, double y, double theta)
   {
-    _x = x;
-    _y = y;
-    _theta = mod2pi(theta);
-    _sintheta = sin(theta);
-    _costheta = cos(theta);
+    m_x = x;
+    m_y = y;
+    m_theta = mod2pi(theta);
+    m_sintheta = sin(theta);
+    m_costheta = cos(theta);
   }
-
-
+  
+  
   void Frame::
-  Get(double & x,
-      double & y,
-      double & theta)
-    const
+  Get(double & x, double & y, double & theta) const
   {
-    x = _x;
-    y = _y;
-    theta = _theta;
+    x = m_x;
+    y = m_y;
+    theta = m_theta;
   }
-
-
+  
+  
   double Frame::
-  X()
-    const
+  X() const
   {
-    return _x;
+    return m_x;
   }
-
-
+  
+  
   double Frame::
-  Y()
-    const
+  Y() const
   {
-    return _y;
+    return m_y;
   }
-
-
+  
+  
   double Frame::
-  Theta()
-    const
+  Theta() const
   {
-    return _theta;
+    return m_theta;
   }
-
-
+  
+  
   double Frame::
-  Costheta()
-    const
+  Costheta() const
   {
-    return _costheta;
+    return m_costheta;
   }
-
-
+  
+  
   double Frame::
-  Sintheta()
-    const
+  Sintheta() const
   {
-    return _sintheta;
+    return m_sintheta;
   }
-
-
+  
+  
   void Frame::
-  To(double & x,
-     double & y)
-    const
+  To(double & x, double & y) const
   {
-    double tmpx(x * _costheta - y * _sintheta);
-    double tmpy(x * _sintheta + y * _costheta);
-    x = tmpx + _x;
-    y = tmpy + _y;
+    double tmpx(x * m_costheta - y * m_sintheta);
+    double tmpy(x * m_sintheta + y * m_costheta);
+    x = tmpx + m_x;
+    y = tmpy + m_y;
   }
-
-
+  
+  
   void Frame::
-  To(Frame & frame)
-    const
+  To(Frame & frame) const
   {
-    To(frame._x, frame._y);
-    RotateTo(frame._costheta, frame._sintheta);
-    frame._theta = mod2pi(frame._theta + _theta);
+    To(frame.m_x, frame.m_y);
+    RotateTo(frame.m_costheta, frame.m_sintheta);
+    frame.m_theta = mod2pi(frame.m_theta + m_theta);
   }
-
-
+  
+  
   void Frame::
-  To(double & x,
-     double & y,
-     double & theta)
-    const
+  To(double & x, double & y, double & theta) const
   {
     To(x, y);
-    theta = mod2pi(theta + _theta);
+    theta = mod2pi(theta + m_theta);
   }
-
-
+  
+  
   void Frame::
-  RotateTo(double & x,
-	   double & y)
-    const
+  RotateTo(double & x, double & y) const
   {
-    double tmpx(x * _costheta - y * _sintheta);
-    double tmpy(x * _sintheta + y * _costheta);
+    double tmpx(x * m_costheta - y * m_sintheta);
+    double tmpy(x * m_sintheta + y * m_costheta);
     x = tmpx;
     y = tmpy;
   }
-
-
+  
+  
   void Frame::
-  RotateTo(Frame & frame)
-    const
+  RotateTo(Frame & frame) const
   {
-    RotateTo(frame._x, frame._y);
-    RotateTo(frame._costheta, frame._sintheta);
-    frame._theta = mod2pi(frame._theta + _theta);
+    RotateTo(frame.m_x, frame.m_y);
+    RotateTo(frame.m_costheta, frame.m_sintheta);
+    frame.m_theta = mod2pi(frame.m_theta + m_theta);
   }
-
-
+  
+  
   void Frame::
-  From(double & x,
-       double & y)
-    const
+  From(double & x, double & y) const
   {
-    x -= _x;
-    y -= _y;
-    double tmpx( x * _costheta + y * _sintheta);
-    double tmpy(-x * _sintheta + y * _costheta);
+    x -= m_x;
+    y -= m_y;
+    double tmpx( x * m_costheta + y * m_sintheta);
+    double tmpy(-x * m_sintheta + y * m_costheta);
     x = tmpx;
     y = tmpy;
   }
-
-
+  
+  
   void Frame::
-  From(Frame & frame)
-    const
+  From(Frame & frame) const
   {
-    From(frame._x, frame._y);
-    RotateFrom(frame._costheta, frame._sintheta);
-    frame._theta = mod2pi(frame._theta - _theta);
+    From(frame.m_x, frame.m_y);
+    RotateFrom(frame.m_costheta, frame.m_sintheta);
+    frame.m_theta = mod2pi(frame.m_theta - m_theta);
   }
-
-
+  
+  
   void Frame::
-  From(double & x,
-       double & y,
-       double & theta)
-    const
+  From(double & x, double & y, double & theta) const
   {
     From(x, y);
-    theta = mod2pi(theta - _theta);
+    theta = mod2pi(theta - m_theta);
   }
   
   
   void Frame::
-  RotateFrom(double & x,
-	     double & y)
-    const
+  RotateFrom(double & x, double & y) const
   {
-    double tmpx(   x * _costheta + y * _sintheta);
-    double tmpy( - x * _sintheta + y * _costheta);
+    double tmpx(   x * m_costheta + y * m_sintheta);
+    double tmpy( - x * m_sintheta + y * m_costheta);
     x = tmpx;
     y = tmpy;
   }
-
-
+  
+  
   void Frame::
-  RotateFrom(Frame & frame)
-    const
+  RotateFrom(Frame & frame) const
   {
-    RotateFrom(frame._x, frame._y);
-    RotateFrom(frame._costheta, frame._sintheta);
-    frame._theta = mod2pi(frame._theta - _theta);
-  }
-
-
-  void Frame::
-  Add(double dx,
-      double dy,
-      double dtheta)
-  {
-    _x += dx;
-    _y += dy;
-    _theta = mod2pi(_theta + dtheta);
-    _costheta = cos(_theta);
-    _sintheta = sin(_theta);
+    RotateFrom(frame.m_x, frame.m_y);
+    RotateFrom(frame.m_costheta, frame.m_sintheta);
+    frame.m_theta = mod2pi(frame.m_theta - m_theta);
   }
   
-
-  std::ostream & operator<<(std::ostream & os, const Frame & f) {
-    os << "(" << f._x <<  ", " <<  f._y <<  ", " <<  f._theta <<  ")";
+  
+  void Frame::
+  Add(double dx, double dy, double dtheta)
+  {
+    m_x += dx;
+    m_y += dy;
+    m_theta = mod2pi(m_theta + dtheta);
+    m_costheta = cos(m_theta);
+    m_sintheta = sin(m_theta);
+  }
+  
+  
+  std::ostream & operator << (std::ostream & os, const Frame & f)
+  {
+    os << "(" << f.m_x <<  ", " <<  f.m_y <<  ", " <<  f.m_theta <<  ")";
     return os;
+  }
+  
+  
+  Frame & Frame::
+  operator = (const Frame & orig)
+  {
+    Set(orig);
+    return * this;
+  }
+  
+  
+  Frame & Frame::
+  operator = (const Pose & orig)
+  {
+    Set(static_cast<const Frame &>(orig));
+    return * this;
   }
   
 }

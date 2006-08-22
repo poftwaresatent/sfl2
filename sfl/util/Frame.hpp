@@ -30,158 +30,110 @@
 
 
 namespace sfl {
-
-
+  
+  
+  class Pose;
+  
+  
   /**
-     Coordinate frame without covariance information.
-
-     \note If you need probabilistic coordinate frames, use a
-     sfl::Pose object.
+     Coordinate frame without covariance information. If you need
+     probabilistic coordinate frames, use a sfl::Pose object.
   */
   class Frame
   {
   public:
-    /**
-       Default Frame at (0, 0, 0).
-    */
+    /** Default Frame at (0, 0, 0). */
     Frame();
 
-    /**
-       Create a Frame at (x, y, theta).
-    */
-    Frame(double x,
-	  double y,
-	  double theta);
+    /** Create a Frame at (x, y, theta). */
+    Frame(double x, double y, double theta);
 
-    /**
-       \todo Refactor to operator=().
-    */
+    /** Make this instance equal to f. */
     void Set(const Frame & f);
 
-    /**
-       Redefine the Frame's position.
-    */
-    void Set(double x,
-	     double y,
-	     double theta);
-
-    /**
-       Retrieve the Frame's position.
-    */
-    void Get(double & x,
-	     double & y,
-	     double & theta) const;
-
-    /**
-       \return The Frame's x-coordinate.
-    */
+    /** Redefine the Frame's position. */
+    void Set(double x, double y, double theta);
+    
+    /** Retrieve the Frame's position. */
+    void Get(double & x, double & y, double & theta) const;
+    
+    /** \return The Frame's x-coordinate. */
     double X() const;
-
-    /**
-       \return The Frame's y-coordinate.
-    */
+    
+    /** \return The Frame's y-coordinate. */
     double Y() const;
-
-    /**
-       \return The Frame's orientation (angle measured from the
-       containing frame's x-axis to this frame's x-axis).
-    */
+    
+    /** \return The Frame's orientation (angle measured from the
+	containing frame's x-axis to this frame's x-axis). */
     double Theta() const;
-
-    /**
-       \return The sine of Theta().
-    */
+    
+    /** \return The sine of Theta(). */
     double Sintheta() const;
-
-    /**
-       \return The cosine of Theta().
-    */
+    
+    /** \return The cosine of Theta(). */
     double Costheta() const;
-
-    /**
-       Transform a point (x, y) given in this frame to the
-       corresponding coordinates of the enclosing frame.
-    */
+    
+    /** Transform a point (x, y) given in this frame to the
+	corresponding coordinates of the enclosing frame. */
     void To(double & x, double & y) const;
-
-    /**
-       Transform a Frame instance given in this frame to the
-       corresponding coordinates of the enclosing frame.
-    */
+    
+    /** Transform a Frame instance given in this frame to the
+	corresponding coordinates of the enclosing frame. */
     void To(Frame & frame) const;
-
-    /**
-       Like To(Frame &) but takes three references to double.
-    */
+    
+    /** Like To(Frame &) but takes three references to double. */
     void To(double & x, double & y, double & theta) const;
-
-    /**
-       Performs only the rotational part of To() for points (x,
-       y). This corresponds to rotating the provided point around the
-       frame's origin by Theta().
-    */
+    
+    /** Performs only the rotational part of To() for points (x,
+	y). This corresponds to rotating the provided point around the
+	frame's origin by Theta(). */
     void RotateTo(double & x, double & y) const;
-
-    /**
-       Performs only the rotational part of To() for Frame
-       instances. This corresponds to rotating the provided instance
-       around this frame's origin by Theta().
-    */
+    
+    /** Performs only the rotational part of To() for Frame
+	instances. This corresponds to rotating the provided instance
+	around this frame's origin by Theta(). */
     void RotateTo(Frame & frame) const;
-  
-    /**
-       The inverse of To(): Given a point (x, y) defined in the
+    
+    /** The inverse of To(): Given a point (x, y) defined in the
        enclosing frame, this method calculates the point's coordinates
-       with respect to this frame.
-    */
+       with respect to this frame. */
     void From(double & x, double & y) const;
-
-    /**
-       The inverse of To() for Frame instances.
-    */
+    
+    /** The inverse of To() for Frame instances. */
     void From(Frame & frame) const;
-
-    /**
-       Like From(Frame &) but takes three references to double.
-    */
+    
+    /** Like From(Frame &) but takes three references to double. */
     void From(double & x, double & y, double & theta) const;
-
-    /**
-       Performs only the rotational part of From() for points (x,
+    
+    /** Performs only the rotational part of From() for points (x,
        y). This corresponds to rotating the provided point around the
-       frame's origin by the <em>negated</em> Theta().
-    */
+       frame's origin by the <em>negated</em> Theta(). */
     void RotateFrom(double & x, double & y) const;
-
-    /**
-       Performs only the rotational part of From() for Frame
+    
+    /** Performs only the rotational part of From() for Frame
        instances. This corresponds to rotating the provided instance
-       around this frame's origin by the <em>negated</em> Theta().
-    */
+       around this frame's origin by the <em>negated</em> Theta(). */
     void RotateFrom(Frame & frame) const;
-
-    /**
-       Moves a Frame instance to a new position expressed in its own
+    
+    /** Moves a Frame instance to a new position expressed in its own
        frame of reference. Very useful for integrating pose
        predictions, which are expressed in the local frame (see also
-       RobotModel::LocalKinematics()).
-    */
+       RobotModel::LocalKinematics()). */
     void Add(double dx, double dy, double dtheta);
-
-    /**
-       Prints the frame in human-readable format.
-    */
-    friend std::ostream & operator<<(std::ostream & os, const Frame & f);
     
+    /** Prints the frame in human-readable format. */
+    friend std::ostream & operator << (std::ostream & os, const Frame & f);
+    
+    /** Convenience assignment operator. */
+    Frame & operator = (const Frame & orig);
+    
+    /** Convenience conversion operator. */
+    Frame & operator = (const Pose & orig);
     
   protected:
-    double _x;
-    double _y;
-    double _theta;
-    double _sintheta;
-    double _costheta;
+    double m_x, m_y, m_theta, m_sintheta, m_costheta;
   };
-
+  
 }
 
 #endif // SUNFLOWER_FRAME_HPP

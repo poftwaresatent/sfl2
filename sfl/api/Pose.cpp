@@ -29,132 +29,106 @@ namespace sfl {
 
 
   Pose::
-  Pose():
-    Frame(),
-    _sxx(1),
-    _syy(1),
-    _stt(1),
-    _sxy(0),
-    _sxt(0),
-    _syt(0)
+  Pose()
+    : Frame(),
+      m_sxx(1), m_syy(1), m_stt(1),
+      m_sxy(0), m_sxt(0), m_syt(0)
   {
   }
 
 
   Pose::
-  Pose(const Frame & frame):
-    Frame(frame),
-    _sxx(1),
-    _syy(1),
-    _stt(1),
-    _sxy(0),
-    _sxt(0),
-    _syt(0)
+  Pose(const Frame & frame)
+    : Frame(frame),
+      m_sxx(1), m_syy(1), m_stt(1),
+      m_sxy(0), m_sxt(0), m_syt(0)
   {
   }
   
   
   Pose::
-  Pose(double x, double y, double theta):
-    Frame(x, y, theta),
-    _sxx(1),
-    _syy(1),
-    _stt(1),
-    _sxy(0),
-    _sxt(0),
-    _syt(0)
+  Pose(double x, double y, double theta)
+    : Frame(x, y, theta),
+      m_sxx(1), m_syy(1), m_stt(1),
+      m_sxy(0), m_sxt(0), m_syt(0)
   {
   }
-
-
+  
+  
   Pose::
   Pose(const Frame & frame,
        double sxx, double syy, double stt,
-       double sxy, double sxt, double syt):
-    Frame(frame),
-    _sxx(sxx),
-    _syy(syy),
-    _stt(stt),
-    _sxy(sxy),
-    _sxt(sxt),
-    _syt(syt)
+       double sxy, double sxt, double syt)
+    : Frame(frame),
+      m_sxx(sxx), m_syy(syy), m_stt(stt),
+      m_sxy(sxy), m_sxt(sxt), m_syt(syt)
   {
   }
-
-
+  
+  
   Pose::
   Pose(double x, double y, double theta,
        double sxx, double syy, double stt,
-       double sxy, double sxt, double syt):
-    Frame(x, y, theta),
-    _sxx(sxx),
-    _syy(syy),
-    _stt(stt),
-    _sxy(sxy),
-    _sxt(sxt),
-    _syt(syt)
+       double sxy, double sxt, double syt)
+    : Frame(x, y, theta),
+      m_sxx(sxx), m_syy(syy), m_stt(stt),
+      m_sxy(sxy), m_sxt(sxt), m_syt(syt)
   {
   }
-
-
+  
+  
   double Pose::
-  Sxx()
-    const
+  Sxx() const
   {
-    return _sxx;
+    return m_sxx;
   }
-
-
+  
+  
   double Pose::
-  Syy()
-    const
+  Syy() const
   {
-    return _syy;
+    return m_syy;
   }
-
-
+  
+  
   double Pose::
-  Stt()
-    const
+  Stt() const
   {
-    return _stt;
+    return m_stt;
   }
-
-
+  
+  
   double Pose::
-  Sxy()
-    const
+  Sxy() const
   {
-    return _sxy;
+    return m_sxy;
   }
-
-
+  
+  
   double Pose::
-  Sxt()
-    const
+  Sxt() const
   {
-    return _sxt;
+    return m_sxt;
   }
-
-
+  
+  
   double Pose::
-  Syt()
-    const
+  Syt() const
   {
-    return _syt;
+    return m_syt;
   }
-
+  
   
   void Pose::
-  Set(double sxx, double syy, double stt,
-      double sxy, double sxt, double syt)
+  SetVar(double sxx, double syy, double stt,
+	 double sxy, double sxt, double syt)
   {
-    _sxx = sxx;
-    _syy = syy;
-    _stt = stt;
-    _sxy = sxy;
-    _sxt = sxt;
-    _syt = syt;
+    m_sxx = sxx;
+    m_syy = syy;
+    m_stt = stt;
+    m_sxy = sxy;
+    m_sxt = sxt;
+    m_syt = syt;
   }
   
 }
