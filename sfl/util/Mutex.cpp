@@ -21,6 +21,7 @@
 #include "Mutex.hpp"
 #include "pdebug.hpp"
 #include <pthread.h>
+#include <errno.h>
 
 
 #define PDEBUG PDEBUG_ERR
