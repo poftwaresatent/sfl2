@@ -26,7 +26,6 @@
 #define SUNFLOWER_ODOMETRY_HPP
 
 
-#include <sfl/api/Pose.hpp>
 #include <sfl/api/Timestamp.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
@@ -36,6 +35,7 @@ namespace sfl {
   
   
   class HAL;
+  class Pose;
   
   
   /**
@@ -50,14 +50,16 @@ namespace sfl {
        <li> Pose history, i.e. for on-the-fly localization. </li>
      </ul>
      
-     \todo Limit the size of the pose history, and use a more
-     efficient implementation (e.g. fixed-length array instead
-     of a STL map).
+     \todo (Optionally) limit the size of the pose history, and use a
+     more efficient implementation (e.g. fixed-length array instead of
+     a STL map).
   */
   class Odometry
   {
   public:
-    Odometry(HAL * hal);
+    typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
+    
+    explicit Odometry(boost::shared_ptr<HAL> hal);
     
     /**
        Initialize history with a pose in world frame. This clears any
@@ -82,21 +84,12 @@ namespace sfl {
 	       std::ostream * dbgos = 0);
     
     /**
-       \return Current (most recent) pose in world frame.
-       
-       \note Does not call Odometry::Update(), a dedicated update
-       thread should take care of that.
+       \return Copy of the current (most recent) pose in world
+       frame. In the unlikely event that no pose is in the history
+       (i.e. during initialisation), returns a default constructed
+       instance.
     */
-    const Pose & Get() const;
-    
-    /**
-       \return If available, the Pose in world frame at a given
-       time. 0 otherwise.
-
-       \todo Create a way of retrieving information about which
-       timestamps are available.
-    */
-    const Pose * Get(const Timestamp & t) const;
+    boost::shared_ptr<const Pose> Get() const;
     
     /**
        Set the current pose in world frame. This sets the HAL odometry
@@ -106,12 +99,12 @@ namespace sfl {
     */
     int Set(const Pose & pose);
     
+    /** Access to the pose history in case you want to do fancy stuff. */
+    const history_t & GetHistory() const;
     
-  protected:
-    typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
+  private:
+    boost::shared_ptr<HAL> m_hal;
     history_t m_history;
-    
-    HAL * m_hal;
   };
   
 }

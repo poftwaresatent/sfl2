@@ -26,27 +26,26 @@
 #define EXPO_MOTIONPLANNER_HPP
 
 
-#include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/MotionPlanner.hpp>
 #include <sfl/expo/MotionPlannerFields.hpp>
-#include <sfl/expo/MotionPlannerState.hpp>
+
+
+namespace sfl {
+  class Multiscanner;
+}
 
 
 namespace expo {
-
-
+  
+  
+  class MotionPlannerState;
+  
+  
   class MotionPlanner:
     public sfl::MotionPlanner
   {
   public:
-    enum state_id_t {
-      take_aim,
-      aimed,
-      adjust_goal_heading,
-      at_goal,
-      null
-    };
-    
+    enum state_id_t { take_aim, aimed, adjust_goal_heading, at_goal, null };
     
     MotionPlanner(MotionController & motion_controller,
 		  sfl::DynamicWindow & dynamic_window,
@@ -54,13 +53,15 @@ namespace expo {
 		  const sfl::RobotModel & robot_model,
 		  sfl::BubbleBand & bubble_band,
 		  const sfl::Odometry & odometry);
-
+    
     void Update(double timestep);
     void SetGoal(const sfl::Goal & goal);
     const sfl::Goal & GetGoal() const;
     bool GoalReached() const;
     state_id_t GetStateId() const;
     const char * GetStateName() const;
+    void GoForward();
+    void GoBackward();
     
     /** \note Hack for Cogniron, does ugly things like const_casts!
 	\return <ul><li>  0: success                        </li>

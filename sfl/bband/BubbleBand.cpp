@@ -290,9 +290,8 @@ namespace sfl {
   void BubbleBand::
   UpdateRobotPose()
   {
-    m_frame.Set(m_odometry.Get());
-  
-    if(m_active_blist->m_head != 0){
+    m_frame = * m_odometry.Get();
+      if(m_active_blist->m_head != 0){
       m_active_blist->m_head->_position.first = m_frame.X();
       m_active_blist->m_head->_position.second = m_frame.Y();
     }

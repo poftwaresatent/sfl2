@@ -23,18 +23,17 @@
 
 
 #include "MotionPlanner.hpp"
+#include "MotionPlannerState.hpp"
+#include <sfl/api/Multiscanner.hpp>
+#include <sfl/api/Pose.hpp>
 
 
-#define DEBUG_EXPO_MOTION_PLANNER
-#ifdef DEBUG_EXPO_MOTION_PLANNER
-# include <iostream>
-using std::cerr;
-#endif // DEBUG_EXPO_MOTION_PLANNER
+using namespace boost;
 
 
 namespace expo {
-
-
+  
+  
   MotionPlanner::
   MotionPlanner(MotionController & motion_controller,
 		sfl::DynamicWindow & dynamic_window,
@@ -51,33 +50,17 @@ namespace expo {
   {
     _internal_state = _fields.null_state;
   }
-
-
+  
+  
   void MotionPlanner::
   Update(double timestep)
   {
-#ifdef DEBUG_EXPO_MOTION_PLANNER
-    const MotionPlannerState * oldstate(_internal_state);
-    const char * oldstatename(GetStateName());
-#endif // DEBUG_EXPO_MOTION_PLANNER
-
+    shared_ptr<const sfl::Pose> pose(_fields.odometry.Get());
     _internal_state = _internal_state->NextState(timestep);
-    _internal_state->
-      Act(timestep, _multiscanner.CollectGlobalScans(_fields.odometry.Get()));
-    
-#ifdef DEBUG_EXPO_MOTION_PLANNER
-    if(oldstate != _internal_state){
-      cerr << "DEBUG expo::MotionPlanner::Update()\n"
-	   << "  state transition " << oldstatename << " => " << GetStateName()
-	   << "\n";
-      if(_internal_state == _fields.null_state)
-	cerr << "  WARNING: transition to null state!\n";
-    }
-#endif // DEBUG_EXPO_MOTION_PLANNER
+    _internal_state->Act(timestep, _multiscanner.CollectGlobalScans( * pose));
   }
-
-
-
+  
+  
   void MotionPlanner::
   SetGoal(const sfl::Goal & goal)
   {
@@ -85,18 +68,16 @@ namespace expo {
     _fields.bubbleBand.SetGoal(goal);
     _internal_state = _internal_state->GoalChangedState();
   }
-
-
-
+  
+  
   const sfl::Goal & MotionPlanner::
   GetGoal()
     const
   {
     return _fields.goal;
   }
-
-
-
+  
+  
   bool MotionPlanner::
   GoalReached()
     const
@@ -136,10 +117,6 @@ namespace expo {
       return at_goal;
     if(_internal_state == _fields.null_state)
       return null;
-
-#ifdef DEBUG_EXPO_MOTION_PLANNER
-    cerr << "WARNING in expo::MotionPlanner::GetStateId(): unhandled case\n";
-#endif // DEBUG_EXPO_MOTION_PLANNER
     return null;
   }
   
@@ -162,17 +139,19 @@ namespace expo {
   }
   
   
-  //  void MotionPlanner::
-  //  GoForward(){
-  //    _internal_state->GoForward(true);
-  //    _fields.dynamicWindow.GoForward();
-  //  }
-
-
-
-  //  void MotionPlanner::
-  //  GoBackward(){
-  //    _internal_state->GoForward(false);
-  //    _fields.dynamicWindow.GoBackward();
-  //  }
+  void MotionPlanner::
+  GoForward()
+  {
+    _internal_state->GoForward(true);
+    _fields.dynamicWindow.GoForward();
+  }
+  
+  
+  void MotionPlanner::
+  GoBackward()
+  {
+    _internal_state->GoForward(false);
+    _fields.dynamicWindow.GoBackward();
+  }
+  
 }

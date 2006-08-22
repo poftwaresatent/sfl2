@@ -26,12 +26,12 @@
 #include "BubbleList.hpp"
 #include "BubbleBand.hpp"
 #include "BubbleFactory.hpp"
+#include <sfl/api/Pose.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
 
 
-using std::pair;
-using std::make_pair;
-using std::string;
+using namespace boost;
+using namespace std;
 
 
 namespace sfl {
@@ -112,18 +112,16 @@ namespace sfl {
   bool ReplanHandler::
   GeneratePlan(boost::shared_ptr<const GlobalScan> scan)
   {
-    m_nf1->Configure(make_pair(m_odometry.Get().X(), m_odometry.Get().Y()),
+    shared_ptr<const Pose> pose(m_odometry.Get());
+    m_nf1->Configure(make_pair(pose->X(), pose->Y()),
 		     make_pair(m_bubble_band.GlobalGoal().X(),
 			       m_bubble_band.GlobalGoal().Y()),
 		     m_nf1width,
 		     m_nf1dimension);
-    
     m_nf1->Initialize(scan,
 		      m_bubble_band.robot_radius,
 		      m_bubble_band.NF1GoalRadius());
-    
     m_nf1->Calculate();
-    
     return m_nf1->ResetTrace();
   }
   
