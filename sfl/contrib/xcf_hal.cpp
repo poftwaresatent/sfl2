@@ -23,7 +23,6 @@
 
 #include <sfl/util/numeric.hpp>
 #include <sys/time.h>
-#include <iostream>
 #include <xcf/xcf.hpp>
 #include <xmltio/xmltio.hpp>
 
@@ -32,41 +31,18 @@
 #include <movementdata.h>
 #include <esvdata.h>
 
-/**
- * schema
- */
-#define MOVESCHEMA            "MoveMsgKE1.xsd"
-#define EQSCHEMA              "EventMsgKE1.xsd"
+#include <sfl/util/pdebug.hpp>
+#define PDEBUG PDEBUG_OUT
 
-/**
- * default parameter for xcf communication
- */
-#define DEFAULT_LASER_PUBLISHER_NAME "LaserData"
-
-/**
- * default parameter for xcf communication
- */
-#define DEFAULT_ODOMETRY_PUBLISHER_NAME "OdometryData"
-
-/**
- * default parameter for xcf communication
- */
-#define DEFAULT_REL_POS_PUBLISHER_NAME "NAV_RelPos_Publisher"
-
-/**
- * default parameter for xcf communication
- */
-#define DEFAULT_ESV2NAV_PUBLISHER_NAME "SS-NAV"
-
-/**
- * default parameter for xcf communication
- */
-#define DEFAULT_NAV2ESV_PUBLISHER_NAME "EQ-NAV"
+#include <boost/shared_ptr.hpp>
+#include <sstream>
 
 
-using namespace std;
+using namespace sfl;
 using namespace XCF;
 using namespace xmltio;
+using namespace boost;
+using namespace std;
 
 
 /** When != 0, don't do anything but just write messages about what
@@ -74,258 +50,210 @@ using namespace xmltio;
     xcf_hal_dryrun_off(). */
 static FILE * debugstream(0);
 
-static XCF::SubscriberPtr odo_subscriber;
-static tOdometryData odo;
-static XCF::PublisherPtr _RelPosPublisher;
-static XCF::SubscriberPtr laser_subscriber;
-static tLaserData ld;
-static XCF::SubscriberPtr status_subscriber;
-static tStatusData sd;
-static XCF::PublisherPtr _EQPublisher;
+/** Used for recording error messages from XCF exceptions. */
+static shared_ptr<ostringstream> error_os;
 
-static string SCHEMAPATH = string(getenv("BIRON")) + "/cfg/schemas/";
+static SubscriberPtr odometry_subscriber;
+static PublisherPtr  speed_publisher;
+static SubscriberPtr laser_subscriber;
+static SubscriberPtr navgoal_subscriber;
+static PublisherPtr  navresult_publisher;
+
+static string schema_dir(string(getenv("BIRON")) + "/cfg/schemas/");
+static string speed_schema_name("MoveMsgKE1.xsd");
+static string navresult_schema_name("EventMsgKE1.xsd");
+static string laser_publisher_name("LaserData");
+static string odometry_publisher_name("OdometryData");
+static string speed_publisher_name("NAV_RelPos_Publisher");
+static string navgoal_publisher_name("SS-NAV");
+static string navresult_publisher_name("EQ-NAV");
 
 
 int xcf_odometry_init()
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_odometry_init()\n");
+    fprintf(debugstream, "DEBUG xcf_odometry_init()\n");
     return 0;
   }
-  
-  // register xcf-subscriber and connect to xcf-publisher
-  try {
-    odo_subscriber =
-      XCF::Subscriber::create(DEFAULT_ODOMETRY_PUBLISHER_NAME);
-    // no message cueing
-    odo_subscriber->setOnlyReceiveLast(true);
-    cout << "Connected to StreamServer" << endl;
+  try{
+    odometry_subscriber = Subscriber::create(odometry_publisher_name);
+    odometry_subscriber->setOnlyReceiveLast(true);
+    PDEBUG("subscribed to %s\n", odometry_publisher_name.c_str());
   }
-  catch(const XCF::GenericException& ex) {
-    cerr << "Error at registering odometry-xcf-subscriber"
-	 << endl << "XCF::GenericException: " << ex.reason << endl;
+  catch(const GenericException & ex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_odometry_init(): " << ex.reason;
     return -1;
   }
   return 0;
 }
 
 
-int xcf_odometry_get(double * x, double * y, double * theta,
-		     uint64_t * timestamp_ms)
+int xcf_odometry_receive(double * x, double * y, double * theta,
+			 uint64_t * timestamp_ms)
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_odometry_get()\n");
+    fprintf(debugstream, "DEBUG xcf_odometry_receive()\n");
     *x = 0;
     *y = 0;
     *theta = 0;
     *timestamp_ms = 0;
     return 0;
   }
-  
-  string msg_odo;
-  try {
-    // get message asynchronous from server
-    msg_odo = odo_subscriber->receive(true);
+  string message;
+  try{
+    message = odometry_subscriber->receive(true);
   }
-  catch (XCF::PublisherEmptyException) {
-    //cerr << "publisher empty" << endl;
-    *x = odo.fXCoord;
-    *y = odo.fYCoord;
-    *theta = odo.fYaw;
-    *timestamp_ms = odo.lTimeStamp;
-    return 0;
+  catch(PublisherEmptyException){
+    return 1;
   }
-  odo = extract<tOdometryData>(Location(msg_odo,"/MSG"));
-  *x = odo.fXCoord;
-  *y = odo.fYCoord;
-  *theta = odo.fYaw;
-  *timestamp_ms = odo.lTimeStamp;
+  tOdometryData data(extract<tOdometryData>(Location(message, "/MSG")));
+  * x = data.fXCoord;
+  * y = data.fYCoord;
+  * theta = data.fYaw;
+  * timestamp_ms = data.lTimeStamp;
   return 0;
 }
 
 
-int xcf_odometry_end()
+void xcf_odometry_end()
 {
-  if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_odometry_end()\n");
-    return 0;
-  }
-  
-  odo_subscriber->destroy();
-  return 0;
+  if(0 != debugstream)
+    fprintf(debugstream, "DEBUG xcf_odometry_end()\n");
+  else
+    odometry_subscriber->destroy();
 }
 
 
 int xcf_speed_init()
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_speed_init()\n");
+    fprintf(debugstream, "DEBUG xcf_speed_init()\n");
     return 0;
   }
-  
-  // register new xcf-publishers
-  try {
-    _RelPosPublisher
-      = XCF::Publisher::create(DEFAULT_REL_POS_PUBLISHER_NAME);
-    _RelPosPublisher->setSchema(string(SCHEMAPATH)+MOVESCHEMA);
+  try{
+    speed_publisher = Publisher::create(speed_publisher_name);
+    speed_publisher->setSchema(schema_dir + speed_schema_name);
+    PDEBUG("publishing on %s\n", speed_publisher_name.c_str());
   }
-  catch(const XCF::GenericException& ex) {
-    cerr << "Error at registering xcf-publisher"
-	 << endl << "XCF::GenericException: " << ex.reason << endl;
+  catch(const GenericException & ex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_speed_init(): " << ex.reason;
     return -1;
   }
   return 0;
 }
 
 
-int xcf_speed_set(double v, double w)
+int xcf_speed_send(double v, double w)
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_speed_set(%f, %f)\n", v, w);
+    fprintf(debugstream, "DEBUG xcf_speed_send(%f, %f)\n", v, w);
     return 0;
   }
-  
-  t_MovementData mvd;
-  
-  // calculate recent time
-  timeval tCurTime;
-  gettimeofday(&tCurTime, NULL);
-  
-  // converting time to ms since 1.1.1970
-  uint64_t lMSecs;
-  lMSecs  = static_cast<uint64_t>(tCurTime.tv_sec  * 1000);
-  lMSecs += static_cast<uint64_t>(tCurTime.tv_usec / 1000);
-  mvd.lTimeStamp = lMSecs;
-  if(sfl::absval(v) < 1e-3)
-    mvd.dVTrans = 0;
+  t_MovementData data;
+  data.lTimeStamp = xcf_hal_timestamp();
+  if(absval(v) < 1e-3)
+    data.dVTrans = 0;
   else
-    mvd.dVTrans = v;
-  if(sfl::absval(w) < 1e-3)
-    mvd.dVRot = 0;
+    data.dVTrans = v;
+  if(absval(w) < 1e-3)
+    data.dVRot = 0;
   else
-    mvd.dVRot = w;
-  mvd.sGenerator = "NAV";  
-
-  //converting struct to xml
-  Location mvdl(sMovementData_tmpl,"/MSG");
-  mvdl = mvd;
-  
-  //sending xml string
-  try
-    {
-      _RelPosPublisher->send(mvdl.getDocumentText());
-//      cerr << "OK, sent speed\n";
-    }
-  catch(const XCF::ValidateFailedException& vex) 
-    {
-      cerr << "Error at XML Validataion"
-	   << endl << "XCF::ValidateFailedException " << vex.reason << endl;
-      cerr << mvdl.getDocumentText() << endl;
-      return -1;
-    }
+    data.dVRot = w;
+  data.sGenerator = "NAV";  
+  Location dataloc(sMovementData_tmpl, "/MSG");
+  dataloc = data;
+  try{
+    speed_publisher->send(dataloc.getDocumentText());
+  }
+  catch(const ValidateFailedException & vex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_speed_send(): " << vex.reason << "\n"
+		<< dataloc.getDocumentText();
+    return -1;
+  }
   return 0;
 }
 
 
-int xcf_speed_end()
+void xcf_speed_end()
 {
-  if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_speed_end()\n");
-    return 0;
-  }
-  
-  _RelPosPublisher->destroy();
-  return 0;
+  if(0 != debugstream)
+    fprintf(debugstream, "DEBUG xcf_speed_end()\n");
+  else
+    speed_publisher->destroy();
 }
 
 
-int xcf_scan_init(int channel)
+int xcf_scan_init()
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_scan_init(%d)\n", channel);
+    fprintf(debugstream, "DEBUG xcf_scan_init()\n");
     return 0;
   }
-  
-  // register xcf-subscriber and connect to xcf-publisher
-  try {
-    laser_subscriber = XCF::Subscriber::create(DEFAULT_LASER_PUBLISHER_NAME);
-    // no message cueing
+  try{
+    laser_subscriber = Subscriber::create(laser_publisher_name);
     laser_subscriber->setOnlyReceiveLast(true);
-    cout << "Connected to StreamServer" << endl;
+    PDEBUG("subscribed to %s\n", laser_publisher_name.c_str());
   }
-  catch(const XCF::GenericException& ex) {
-    cerr << "Error at registering laserdata-xcf-subscriber"
-	 << endl << "XCF::GenericException: " << ex.reason << endl;
+  catch(const GenericException & ex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_scan_init(): " << ex.reason;
     return -1;
   }
   return 0;
 }
 
 
-int xcf_scan_get(int channel, double * rho, int rho_len,
-		 uint64_t * timestamp_ms)
+int xcf_scan_receive(double * rho, int * rho_len, uint64_t * timestamp_ms)
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_scan_get(%d, .., %d, ..)\n",
-	    channel, rho_len);
-    for(int i(0); i < rho_len; ++i)
-      rho[i] = 0.9;
+    fprintf(debugstream, "DEBUG xcf_scan_receive(.., %d, ..)\n", * rho_len);
+    for(int ii(0); ii < * rho_len; ++ii)
+      rho[ii] = 0.9;
     return 0;
   }
-  
-  string msg_laser;
-  int i;
-  try {
-    // get message asynchronous from server
-    msg_laser = laser_subscriber->receive(true);
+  string message;
+  try{
+    message = laser_subscriber->receive(true);
   }
-  catch (XCF::PublisherEmptyException) {
-    //cerr << "publisher empty" << endl;
-    for (i = 0; i < rho_len; i++)
-      {
-	rho[i] = ld.fPoints[i];
-      }
-    *timestamp_ms = ld.lTimeStamp;
-    return 0;
+  catch(PublisherEmptyException){
+    return 1;
   }
-  ld = extract<tLaserData>(Location(msg_laser,"/MSG"));
-  for (i = 0; i < rho_len; i++)
-    {
-      rho[i] = ld.fPoints[i];
-    }
-  *timestamp_ms = ld.lTimeStamp;
+  tLaserData data(extract<tLaserData>(Location(message, "/MSG")));
+  if(data.iSize /* dunno field name */ < * rho_len)
+    * rho_len = data.iSize;
+  for(int ii(0); ii < * rho_len; ++ii)
+    rho[ii] = data.fPoints[ii];
+  * timestamp_ms = data.lTimeStamp;
   return 0;
 }
 
 
-int xcf_scan_end(int channel)
+void xcf_scan_end()
 {
-  if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_scan_end(%d)\n", channel);
-    return 0;
-  }
-  
-  laser_subscriber->destroy();
-  return 0;
+  if(0 != debugstream)
+    fprintf(debugstream, "DEBUG xcf_scan_end()\n");
+  else
+    laser_subscriber->destroy();
 }
+
 
 int xcf_navgoal_init()
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_init()\n");
+    fprintf(debugstream, "DEBUG xcf_navgoal_init()\n");
     return 0;
   }
-  
-  // register xcf-subscriber and connect to xcf-publisher
-  try {
-    status_subscriber = XCF::Subscriber::create(DEFAULT_ESV2NAV_PUBLISHER_NAME);
-    // with message cueing
-    status_subscriber->setOnlyReceiveLast(false);
-    cout << "Connected to StreamServer" << endl;
+  try{
+    navgoal_subscriber = Subscriber::create(navgoal_publisher_name);
+    navgoal_subscriber->setOnlyReceiveLast(false);
+    PDEBUG("subscribed to %s\n", navgoal_publisher_name.c_str());
   }
-  catch(const XCF::GenericException& ex) {
-    cerr << "Error at registering laserdata-xcf-subscriber"
-	 << endl << "XCF::GenericException: " << ex.reason << endl;
+  catch(const GenericException & ex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_navgoal_init(): " << ex.reason;
     return -1;
   }
   return 0;
@@ -333,147 +261,131 @@ int xcf_navgoal_init()
 
 
 int xcf_navgoal_receive(char * location, size_t location_len,
-			/** to be given back through xcf_navresult_send() */
-			int * transaction_id,
-			/** to be given back through xcf_navresult_send() */
-			char * esv_state, size_t esv_state_len)
-{
-    if(0 != debugstream)
-    {
-	fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_get()\n");
-	strncpy(location, "Kitchen", location_len);
-	*transaction_id = 1;
-	strncpy(esv_state, "GoTo", esv_state_len);
-	return 0;
-    }
-  
-    string msg_status;
-    try {
-	// get message asynchronous from server
-	msg_status = status_subscriber->receive(true);
-    }
-    catch (XCF::PublisherEmptyException) {
-	//cerr << "publisher empty" << endl;
-	return 1;
-    }
-    sd = extract<tStatusData>(Location(msg_status,"/MSG"));
-    if ((sd.sName !="GotoLabel") && (sd.sName != "StopNav"))
-	return 1;
-    strncpy(location, sd.sData.c_str(), location_len);
-    *transaction_id = sd.iOriginNum;
-
-    strncpy(esv_state, sd.sState.c_str(), esv_state_len);
-    return 0;    
-}
-
-int xcf_navgoal_end()
+			int * transaction_id, char * esv_state,
+			size_t esv_state_len)
 {
   if(0 != debugstream){
-    fprintf(debugstream, __FILE__ ": DEBUG xcf_navgoal_end()\n");
+    fprintf(debugstream, "DEBUG xcf_navgoal_receive()\n");
+    strncpy(location, "Kitchen", location_len);
+    *transaction_id = 1;
+    strncpy(esv_state, "GoTo", esv_state_len);
     return 0;
   }
-  
-  status_subscriber->destroy();
-  return 0;
+  string message;
+  try{
+    message = navgoal_subscriber->receive(true);
+  }
+  catch(PublisherEmptyException){
+    return 1;
+  }
+  tStatusData data(extract<tStatusData>(Location(message, "/MSG")));
+  if((data.sName !="GotoLabel") && (data.sName != "StopNav"))
+    return 1;
+  strncpy(location, data.sData.c_str(), location_len);
+  *transaction_id = data.iOriginNum;
+  strncpy(esv_state, data.sState.c_str(), esv_state_len);
+  return 0;    
 }
+
+
+void xcf_navgoal_end()
+{
+  if(0 != debugstream)
+    fprintf(debugstream, "DEBUG xcf_navgoal_end()\n");
+  else
+    navgoal_subscriber->destroy();
+}
+
 
 int xcf_navresult_init()
 {
-    if(0 != debugstream)
-    {
-	fprintf(debugstream, __FILE__ ": DEBUG xcf_navresult_init()\n");
-	return 0;
-    }
-  
-    // register new xcf-publishers
-    try {
-	_EQPublisher
-	    = XCF::Publisher::create(DEFAULT_NAV2ESV_PUBLISHER_NAME);
-	_EQPublisher->setSchema(string(SCHEMAPATH)+EQSCHEMA);
-    }
-    catch(const XCF::GenericException& ex) {
-	cerr << "Error at registering xcf-publisher"
-	     << endl << "XCF::GenericException: " << ex.reason << endl;
-	return -1;
-    }
+  if(0 != debugstream){
+    fprintf(debugstream, "DEBUG xcf_navresult_init()\n");
     return 0;
+  }
+  try{
+    navresult_publisher = Publisher::create(navresult_publisher_name);
+    navresult_publisher->setSchema(schema_dir + navresult_schema_name);
+    PDEBUG("publishing on %s\n", navresult_publisher_name.c_str());    
+  }
+  catch(const GenericException & ex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_navresult_init(): " << ex.reason;
+    return -1;
+  }
+  return 0;
 }
 
 
-int xcf_navresult_send(const char * result,
-		       /** from xcf_navgoal_receive() */
-		       int transaction_id,
-		       /** from xcf_navgoal_receive() */
+int xcf_navresult_send(const char * result, int transaction_id,
 		       const char * esv_state)
 {
-    if(0 != debugstream){
-	fprintf(debugstream, __FILE__ ": DEBUG xcf_navresult_set(%s, %d, %s)\n", result, transaction_id, esv_state);
-	return 0;
-    }
-    
-    tEventData evd;
-    
-    // calculate recent time
-    timeval tCurTime;
-    gettimeofday(&tCurTime, NULL);
-    
-    // converting time to ms since 1.1.1970
-    uint64_t lMSecs;
-    lMSecs  = static_cast<uint64_t>(tCurTime.tv_sec  * 1000);
-    lMSecs += static_cast<uint64_t>(tCurTime.tv_usec / 1000);
-    evd.lTimeStamp = lMSecs;
-    evd.sGenerator = "NAV"; 
-    evd.sOriginMod = "NAV";
-
-    static int inum(0);
-    ++inum;
-    evd.iOriginNum = inum;
-
-    evd.sRefMod = "DLG";
-    evd.iRefNum = transaction_id;
-    evd.sName = string(result);
-    evd.sState = string(esv_state);
-    evd.lBestBefore = lMSecs + 500;
-    
-    //converting struct to xml
-    Location evdl(sEventData_tmpl,"/MSG");
-    evdl = evd;
-
-    //sending xml string
-    try
-    {
-//	cout << "Sending XCF: " <<evdl.getDocumentText()<< endl;
-	_EQPublisher->send(evdl.getDocumentText());
-    }
-    catch(const XCF::ValidateFailedException& vex) 
-    {
-	cerr << "Error at XML Validataion"
-	     << endl << "XCF::ValidateFailedException " << vex.reason << endl;
-	cerr << evdl.getDocumentText() << endl;
-	return -1;
-    }
+  if(0 != debugstream){
+    fprintf(debugstream, "DEBUG xcf_navresult_send(%s, %d, %s)\n",
+	    result, transaction_id, esv_state);
     return 0;
+  }
+  tEventData data;
+  data.lTimeStamp = xcf_hal_timestamp();
+  data.sGenerator = "NAV"; 
+  data.sOriginMod = "NAV";
+  static int inum(0);
+  data.iOriginNum = ++inum;
+  data.sRefMod = "DLG";
+  data.iRefNum = transaction_id;
+  data.sName = string(result);
+  data.sState = string(esv_state);
+  data.lBestBefore = data.lTimeStamp + 500;
+  Location dataloc(sEventData_tmpl,"/MSG");
+  dataloc = data;
+  try{
+    navresult_publisher->send(dataloc.getDocumentText());
+  }
+  catch(const ValidateFailedException & vex){
+    error_os.reset(new ostringstream());
+    (*error_os) << "xcf_navresult_send(): " << vex.reason << "\n"
+		<< dataloc.getDocumentText();
+    return -1;
+  }
+  return 0;
 }
+
 
 int xcf_navresult_end()
 {
-    if(0 != debugstream)
-    {
-	fprintf(debugstream, __FILE__ ": DEBUG xcf_navresult_end()\n");
-	return 0;
-    }
-    _EQPublisher->destroy();
-    return 0;
+  if(0 != debugstream)
+    fprintf(debugstream, "DEBUG xcf_navresult_end()\n");
+  else
+    navresult_publisher->destroy();
 }
 
 
 void xcf_hal_dryrun_on(FILE * stream)
 {
-    debugstream = stream;
+  debugstream = stream;
 }
 
 
 void xcf_hal_dryrun_off()
 {
-    debugstream = 0;
+  debugstream = 0;
+}
+
+
+const char * xcf_hal_geterror()
+{
+  if( ! error_os)
+    return NULL;
+  return error_os->str().c_str();
+}
+
+
+uint64_t xcf_hal_timestamp()
+{
+  timeval t0;
+  gettimeofday( & t0, NULL);
+  uint64_t tms;
+  tms  = static_cast<uint64_t>(t0.tv_sec  * 1000);
+  tms += static_cast<uint64_t>(t0.tv_usec / 1000);
+  return tms;
 }

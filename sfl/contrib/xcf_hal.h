@@ -31,61 +31,72 @@ extern "C" {
 #include <stdio.h>
   
   
+  /** Turns on messages to stream instead of actually doing
+      anything. Set stream to NULL, or use xcf_hal_dryrun_off(), to
+      get back to work. */
   void xcf_hal_dryrun_on(FILE * stream);
   
+  /** see xcf_hal_dryrun_on() */
   void xcf_hal_dryrun_off();
   
+  /** \return description of last error */
+  const char * xcf_hal_geterror();
   
+  /** \return number of milliseconds since 1.1.1970 or something like that */
+  uint64_t xcf_hal_timestamp();
   
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
   int xcf_odometry_init();
   
-  int xcf_odometry_get(double * x, double * y, double * theta_rad,
-		       uint64_t * timestamp_ms);
-  
-  int xcf_odometry_end();
-  
-  
-  
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
   int xcf_speed_init();
   
-  int xcf_speed_set(double v, double w);
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
+  int xcf_scan_init();
   
-  int xcf_speed_end();
-  
-  
-  
-  int xcf_scan_init(int channel);
-  
-  int xcf_scan_get(int channel, double * rho, int rho_len,
-		   uint64_t * timestamp_ms);
-  
-  int xcf_scan_end(int channel);
-  
-  
-  //INPUT from ESV
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
   int xcf_navgoal_init();
   
-  /** \return <ul><li>  0: success, new location received </li>
-                  <li>  1: no new location (empty stream) </li>
-                  <li> <0: ERROR                          </li></ul> */
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
+  int xcf_navresult_init();
+  
+  void xcf_odometry_end();
+  void xcf_speed_end();
+  void xcf_scan_end();
+  void xcf_navgoal_end();
+  void xcf_navresult_end();
+  
+  /** \return >=0 on success (0: new data, 1 ok but empty stream), -1
+      if error (see xcf_hal_geterror()) */
+  int xcf_odometry_receive(double * x, double * y, double * theta_rad,
+			   uint64_t * timestamp_ms);
+  
+  /** \return >=0 on success (0: new data, 1 ok but empty stream), -1
+      if error (see xcf_hal_geterror()) */
+  int xcf_scan_receive(/** pointer to array to be filled with scan */
+		       double * rho,
+		       /** in: length of rho, out: number of entries */
+		       int * rho_len,
+		       /** timestamp of the data */
+		       uint64_t * timestamp_ms);
+  
+  /** \return >=0 on success (0: new data, 1 ok but empty stream), -1
+      if error (see xcf_hal_geterror()) */
   int xcf_navgoal_receive(char * location, size_t location_len,
 			  /** to be given back through xcf_navresult_send() */
 			  int * transaction_id,
 			  /** to be given back through xcf_navresult_send() */
 			  char * esv_state, size_t esv_state_len);
-  int xcf_navgoal_end();
   
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
+  int xcf_speed_send(double v, double w);
   
-  //OUTPUT to ESV
-  int xcf_navresult_init();
-
+  /** \return 0 on success, -1 if error (see xcf_hal_geterror()) */
   int xcf_navresult_send(const char * result,
 			 /** from xcf_navgoal_receive() */
 			 int transaction_id,
 			 /** from xcf_navgoal_receive() */
 			 const char * esv_state);
-
-  int xcf_navresult_end();
   
 #ifdef __cplusplus
 }
