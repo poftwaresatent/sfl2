@@ -45,6 +45,7 @@ namespace sfl_cwrap {
 			     double * sxx, double * syy, double * stt,
 			     double * sxy, double * sxt, double * syt);
     virtual int speed_set(double qdl, double qdr);
+    virtual int speed_get(double * qdl, double * qdr);
     virtual int scan_get(int channel, double * rho, int rho_len,
 			 struct ::timespec * t0, struct ::timespec * t1);
     

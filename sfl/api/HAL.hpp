@@ -74,6 +74,9 @@ namespace sfl {
     virtual int speed_set(double qdl, double qdr) = 0;
     
     /** \return 0 on success. */
+    virtual int speed_get(double * qdl, double * qdr) = 0;
+    
+    /** \return 0 on success. */
     virtual int scan_get(int channel, double * rho, int rho_len,
 			 struct ::timespec * t0, struct ::timespec * t1) = 0;
   };

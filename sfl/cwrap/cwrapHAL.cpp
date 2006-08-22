@@ -60,6 +60,11 @@ namespace sfl_cwrap {
   
   
   int cwrapHAL::
+  speed_get(double * qdl, double * qdr)
+  { return m_hal->speed_get(qdl, qdr); }
+  
+  
+  int cwrapHAL::
   scan_get(int channel, double * rho, int rho_len,
 	   struct ::timespec * t0, struct ::timespec * t1)
   { return m_hal->scan_get(channel, rho, rho_len, t0, t1); }

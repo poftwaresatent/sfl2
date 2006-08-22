@@ -23,11 +23,12 @@
 
 
 #include "MotionController.hpp"
+#include <sfl/util/Mutex.hpp>
 #include <sfl/api/RobotModel.hpp>
 
 
-using sfl::maxval;
 using sfl::minval;
+using sfl::maxval;
 using sfl::absval;
 using sfl::epsilon;
 
@@ -36,20 +37,20 @@ namespace expo {
 
 
   MotionController::
-  MotionController(const std::string & name,
-		   const sfl::RobotModel & robotModel,
-		   sfl::DiffDrive & drive):
-    sfl::MotionController(robotModel, drive)
+  MotionController(boost::shared_ptr<const sfl::RobotModel> robotModel,
+		   boost::shared_ptr<sfl::HAL> hal,
+		   boost::shared_ptr<sfl::Mutex> mutex)
+    : sfl::MotionController(robotModel, hal, mutex)
   {
   }
   
   
   bool MotionController::
-  Stoppable(double timestep)
-    const
+  Stoppable(double timestep) const
   {
-    const double qdStoppable(timestep * _robotModel.QddMax());
-    return maxval(absval(_actualQdl), absval(_actualQdr)) < qdStoppable;
+    sfl::Mutex::sentry(m_mutex.get());
+    const double qdStoppable(timestep * qddMax);
+    return maxval(absval(m_currentQdl), absval(m_currentQdr)) < qdStoppable;
   }
   
   
@@ -57,7 +58,8 @@ namespace expo {
   AlmostStraight()
     const
   {
-    return absval(_actualQdl - _actualQdr) <= epsilon;
+    sfl::Mutex::sentry(m_mutex.get());
+    return absval(m_currentQdl - m_currentQdr) <= epsilon;
   }
   
   
@@ -65,7 +67,8 @@ namespace expo {
   Moving()
     const
   {
-    return minval(absval(_actualQdl), absval(_actualQdr)) > epsilon;
+    sfl::Mutex::sentry(m_mutex.get());
+    return minval(absval(m_currentQdl), absval(m_currentQdr)) > epsilon;
   }
   
 }

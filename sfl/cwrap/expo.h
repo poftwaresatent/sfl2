@@ -48,8 +48,11 @@ extern "C" {
   };
   
   
+  /** \return >=0 on success, -1 if invalid RobotModel_handle, -2 if
+      invalid HAL_handle, -3 if could not allocate
+      sfl::Mutex. */
   int expo_create_MotionController(int RobotModel_handle,
-				   int DiffDrive_handle);
+				   int HAL_handle);
   
   int expo_create_MotionPlanner(int MotionController_handle,
 				int DynamicWindow_handle,

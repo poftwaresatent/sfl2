@@ -20,9 +20,10 @@
 #include "expo.h"
 #include "sfl.h"
 #include "Handlemap.hpp"
+#include <sfl/util/Mutex.hpp>
 #include <sfl/api/HAL.hpp>
 #include <sfl/api/Scanner.hpp>
-#include <sfl/api/DiffDrive.hpp>
+//#include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
@@ -38,13 +39,14 @@ using sfl::Hull;
 using sfl::Polygon;
 using sfl::Frame;
 using sfl::Scanner;
-using sfl::DiffDrive;
+//using sfl::DiffDrive;
 using sfl::Multiscanner;
 using sfl::RobotModel;
 using sfl::Odometry;
 using sfl::DynamicWindow;
 using sfl::BubbleBand;
 using sfl::Goal;
+using sfl::Mutex;
 using expo::MotionPlanner;
 using expo::MotionController;
 using boost::shared_ptr;
@@ -71,16 +73,19 @@ using namespace sfl_cwrap;
 
   
 int expo_create_MotionController(int RobotModel_handle,
-				 int DiffDrive_handle)
+				 int HAL_handle)
 {
   shared_ptr<RobotModel> rm(get_RobotModel(RobotModel_handle));
   if( ! rm)
     return -1;
-  shared_ptr<DiffDrive> dd(get_DiffDrive(DiffDrive_handle));
-  if( ! dd)
+  shared_ptr<HAL> hal(get_HAL(HAL_handle));
+  if( ! hal)
     return -2;
+  shared_ptr<Mutex> mutex(Mutex::Create());
+  if( ! mutex)
+    return -3;
   return
-    MotionController_map.InsertRaw(new MotionController("cwrap", *rm, *dd));
+    MotionController_map.InsertRaw(new MotionController(rm, hal, mutex));
 }
   
   
@@ -185,9 +190,9 @@ int expo_factory(struct cwrap_hal_s * hal,
   if(0 > sick_handle[1])
     return -3;
   
-  int drive_handle(sfl_create_DiffDrive(hal_handle, wheelbase, wheelradius));
-  if(0 > drive_handle)
-    return -4;
+//   int drive_handle(sfl_create_DiffDrive(hal_handle, wheelbase, wheelradius));
+//   if(0 > drive_handle)
+//     return -4;
     
     
   const double sdd_max(0.75 * wheelradius * qdd_max);
@@ -202,7 +207,7 @@ int expo_factory(struct cwrap_hal_s * hal,
   if(0 > model_handle)
     return -5;
     
-  int mc_handle(expo_create_MotionController(model_handle, drive_handle));
+  int mc_handle(expo_create_MotionController(model_handle, hal_handle));
   if(0 > mc_handle)
     return -6;
     

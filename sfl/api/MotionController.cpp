@@ -25,101 +25,152 @@
 #include "MotionController.hpp"
 #include "Timestamp.hpp"
 #include "RobotModel.hpp"
-#include "DiffDrive.hpp"
-#include <sfl/util/pdebug.hpp>
+#include "HAL.hpp"
+#include <sfl/util/Mutex.hpp>
 #include <iostream>
 
 
-#define PDEBUG PDEBUG_OFF
-#define PVDEBUG PDEBUG_OFF
+using namespace boost;
+using namespace std;
 
 
 namespace sfl {
 
 
   MotionController::
-  MotionController(const RobotModel & robotModel,
-		   DiffDrive & drive):
-    _qdMax(robotModel.QdMax()),
-    _qddMax(robotModel.QddMax()),
-    _sdMax(robotModel.SdMax()),
-    _thetadMax(robotModel.ThetadMax()),
-    _robotModel(robotModel),
-    m_drive(drive),
-    _proposedQdl(0),
-    _proposedQdr(0),
-    _actualQdl(0),
-    _actualQdr(0)
+  MotionController(shared_ptr<const RobotModel> robotModel,
+		   shared_ptr<HAL> hal,
+		   shared_ptr<Mutex> mutex)
+    : qdMax(robotModel->QdMax()), qddMax(robotModel->QddMax()),
+      sdMax(robotModel->SdMax()), thetadMax(robotModel->ThetadMax()),
+      m_robotModel(robotModel), m_hal(hal), m_mutex(mutex)
   {
   }
   
   
   int MotionController::
-  Update(double timestep, std::ostream * dbgos)
+  Update(double timestep, ostream * dbgos)
   {
-    PDEBUG("dt: %g   curr: %g   %g\n", timestep, _actualQdl, _actualQdr);
-    
+    Mutex::sentry sentry(m_mutex.get());
+    int status(m_hal->speed_get( & m_currentQdl, & m_currentQdr));
+    if(0 != status){
+      if(dbgos != 0)
+	(*dbgos) << "ERROR in MotionController::Update():\n"
+		 << "  HAL::speed_get() returned " << status << "\n";
+      return -1;
+    }
     if(dbgos != 0)
       (*dbgos) << "INFO from MotionController::Update()\n"
-	       << "  proposed: (" << _proposedQdl << ", "
-	       << _proposedQdr << ")\n";
+	       << "  timestep: " << timestep << "\n"
+	       << "  current:  (" << m_currentQdl << ", "
+	       << m_currentQdr << ")\n"
+	       << "  proposed: (" << m_proposedQdl << ", "
+	       << m_proposedQdr << ")\n";
     
-    // limit proposed actuator speeds to actuator dynamics
-    const double deltaQdMax(timestep * _qddMax);
-    const double qdlMax(boundval(- _qdMax, _actualQdl + deltaQdMax, _qdMax));
-    const double qdlMin(boundval(- _qdMax, _actualQdl - deltaQdMax, _qdMax));
-    const double qdrMax(boundval(- _qdMax, _actualQdr + deltaQdMax, _qdMax));
-    const double qdrMin(boundval(- _qdMax, _actualQdr - deltaQdMax, _qdMax));
-    PDEBUG("prop: %g   %g\n", _proposedQdl, _proposedQdr);
-    _proposedQdl = boundval(qdlMin, _proposedQdl, qdlMax);
-    _proposedQdr = boundval(qdrMin, _proposedQdr, qdrMax);
-    PDEBUG("prop: %g   %g\n", _proposedQdl, _proposedQdr);
+    // limit in actuator speed space
+    const double dqd(timestep * qddMax);
+    const double qdlMax(boundval(- qdMax, m_currentQdl + dqd, qdMax));
+    const double qdlMin(boundval(- qdMax, m_currentQdl - dqd, qdMax));
+    const double qdrMax(boundval(- qdMax, m_currentQdr + dqd, qdMax));
+    const double qdrMin(boundval(- qdMax, m_currentQdr - dqd, qdMax));
+    m_proposedQdl = boundval(qdlMin, m_proposedQdl, qdlMax);
+    m_proposedQdr = boundval(qdrMin, m_proposedQdr, qdrMax);
     
-    // limit proposed actuator speeds to global dynamics
+    // limit in global speed space
     double sd, thetad;
-    _robotModel.Actuator2Global(_proposedQdl, _proposedQdr, sd, thetad);
-    sd =     boundval( - _sdMax,     sd,     _sdMax);
-    thetad = boundval( - _thetadMax, thetad, _thetadMax);
-    _robotModel.Global2Actuator(sd, thetad, _actualQdl, _actualQdr);
-    PDEBUG("act : %g   %g\n", _proposedQdl, _proposedQdr);
+    m_robotModel->Actuator2Global(m_proposedQdl, m_proposedQdr, sd, thetad);
+    sd =     boundval( - sdMax,     sd,     sdMax);
+    thetad = boundval( - thetadMax, thetad, thetadMax);
+    m_robotModel->Global2Actuator(sd, thetad, m_wantedQdl, m_wantedQdr);
     
-    // call actual motor control
+    // send it
     if(dbgos != 0)
-      (*dbgos) << "  sending : (" << _actualQdl << ", " << _actualQdr << ")\n";
-    
-    return m_drive.SetSpeed(_actualQdl, _actualQdr);
+      (*dbgos) << "  wanted:   (" << m_wantedQdl << ", "
+	       << m_wantedQdr << ")\n";
+    status = m_hal->speed_set(m_wantedQdl, m_wantedQdr);
+    if(0 != status){
+      if(dbgos != 0)
+	(*dbgos) << "ERROR in MotionController::Update():\n"
+		 << "  HAL::speed_set() returned " << status << "\n";
+      return -2;
+    }
+    return 0;
   }
   
   
   void MotionController::
   ProposeSpeed(double sd, double thetad)
   {
-    _robotModel.Global2Actuator(sd, thetad, _proposedQdl, _proposedQdr);
-  }
-  
-  
-  void MotionController::
-  GetSpeed(double & sd, double & thetad)
-    const
-  {
-    _robotModel.Actuator2Global(_actualQdl, _actualQdr, sd, thetad);
-  }
-  
-  
-  void MotionController::
-  GetActuators(double & qdLeft, double & qdRight)
-    const
-  {
-    qdLeft = _actualQdl;
-    qdRight = _actualQdr;
+    m_mutex->Lock();
+    m_robotModel->Global2Actuator(sd, thetad, m_proposedQdl, m_proposedQdr);
+    m_mutex->Unlock();
   }
   
   
   void MotionController::
   ProposeActuators(double qdLeft, double qdRight)
   {
-    _proposedQdl = qdLeft;
-    _proposedQdr = qdRight;
+    m_mutex->Lock();
+    m_proposedQdl = qdLeft;
+    m_proposedQdr = qdRight;
+    m_mutex->Unlock();
   }
-
+  
+  
+  void MotionController::
+  GetCurrentGlob(double & sd, double & thetad) const
+  {
+    m_mutex->Lock();
+    m_robotModel->Actuator2Global(m_currentQdl, m_currentQdr, sd, thetad);
+    m_mutex->Unlock();
+  }
+  
+  
+  void MotionController::
+  GetWantedGlob(double & sd, double & thetad) const
+  {
+    m_mutex->Lock();
+    m_robotModel->Actuator2Global(m_wantedQdl, m_wantedQdr, sd, thetad);
+    m_mutex->Unlock();
+  }
+  
+  
+  void MotionController::
+  GetProposedGlob(double & sd, double & thetad) const
+  {
+    m_mutex->Lock();
+    m_robotModel->Actuator2Global(m_proposedQdl, m_proposedQdr, sd, thetad);
+    m_mutex->Unlock();
+  }
+  
+  
+  void MotionController::
+  GetCurrentAct(double & qdLeft, double & qdRight) const
+  {
+    m_mutex->Lock();
+    qdLeft = m_currentQdl;
+    qdRight = m_currentQdr;
+    m_mutex->Unlock();
+  }
+  
+  
+  void MotionController::
+  GetWantedAct(double & qdLeft, double & qdRight) const
+  {
+    m_mutex->Lock();
+    qdLeft = m_wantedQdl;
+    qdRight = m_wantedQdr;
+    m_mutex->Unlock();
+  }
+  
+  
+  void MotionController::
+  GetProposedAct(double & qdLeft, double & qdRight) const
+  {
+    m_mutex->Lock();
+    qdLeft = m_proposedQdl;
+    qdRight = m_proposedQdr;
+    m_mutex->Unlock();
+  }
+  
 }

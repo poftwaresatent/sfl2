@@ -177,7 +177,7 @@ namespace sfl {
 	 ostream * dbgos)
   {
     double qdl, qdr;
-    _motion_controller.GetActuators(qdl, qdr);
+    _motion_controller.GetCurrentAct(qdl, qdr);
     PDEBUG("dt: %g   goal: %g   %g   qd: %g   %g\n",
 	   timestep, dx, dy, qdl, qdr);
     

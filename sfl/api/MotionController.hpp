@@ -26,82 +26,85 @@
 #define SUNFLOWER_MOTIONCONTROLLER_HPP
 
 
-#include <sfl/util/Frame.hpp>
-#include <sfl/util/numeric.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 namespace sfl {
   
   
   class RobotModel;
-  class DiffDrive;
+  class HAL;
+  class Mutex;
   
   
   /**
      Encapsulates the motion controller. Used to control the robot's
      movement.
      
-     \todo Use speed_get() instead of relying on cached speed
-     values.
+     \todo hard-coded for differential-drive robots...
   */
   class MotionController
   {
   public:
-    MotionController(const RobotModel & robotModel,
-		     DiffDrive & drive);
-    
+    MotionController(boost::shared_ptr<const RobotModel> robotModel,
+		     boost::shared_ptr<HAL> hal,
+		     boost::shared_ptr<Mutex> mutex);
     
     /**
        Template method for determining the next motion command. The
        speeds are set through ProposeSpeed() or
-       ProposeActuators(). Applies kinodynamic limits first, then
-       calls DiffDrive::SetSpeed() with the resulting velocities,
-       which will pass the speed commands to the HAL.
+       ProposeActuators(). Gets current speeds from HAL, applies
+       kinodynamic limits to proposed speeds, and passes them to HAL.
        
-       \return The return value of the call to DiffDrive::SetSpeed(),
-       ie 0 for success.
+       \return 0 on success, -1 if HAL::speed_get() failed, -2 if
+       HAL::speed_set() failed.
     */
     int Update(/** (estimated or fixed) delay until next invocation */
 	       double timestep,
 	       /** if non-zero, debug messages are written to dbgos */
 	       std::ostream * dbgos = 0);
     
-    /**
-       Set the (global) speed to be applied during the next Update().
-    */
+    /** Set the (global) speed to be applied during the next Update(). */
     void ProposeSpeed(double sd, double thetad);
-
-    /**
-       Get the current (global) speed. These are the actual values
-       that resulted from the previous Update().
-    */
-    void GetSpeed(double & sd, double & thetad) const;
-
-    /**
-       Set the actuator speeds to be applied during the next
-       Update(). This is more direct than ProposeSpeed() and is used
-       by sunflower's obstacle avoidance.
-    */
-    void ProposeActuators(double qdLeft, double qdRight);
-
-    /**
-       Get the current actuator speeds. These are the actual values
-       that resulted from the previous Update().
-    */
-    void GetActuators(double & qdLeft, double & qdRight) const;
     
+    /** Set the actuator speeds for next Update(). This is more direct
+	than ProposeSpeed(). */
+    void ProposeActuators(double qdLeft, double qdRight);
+    
+    /** Get the current (global) speed, as of the previous Update(). */
+    void GetCurrentGlob(double & sd, double & thetad) const;
+    
+    /** Get the wanted (global) speed, as of the previous Update(). */
+    void GetWantedGlob(double & sd, double & thetad) const;
+    
+    /** Get the proposed speed, as of the previous ProposeActuators()
+	or ProposeSpeed(). */
+    void GetProposedGlob(double & sd, double & thetad) const;
+    
+    /** Get the current actuator speeds, as of the previous Update(). */
+    void GetCurrentAct(double & qdLeft, double & qdRight) const;
+    
+    /** Get the wanted actuator speeds, as of the previous Update(). */
+    void GetWantedAct(double & qdLeft, double & qdRight) const;
+    
+    /** Get the proposed actuator speeds, as of the previous
+	ProposeActuators() or ProposeSpeed(). */
+    void GetProposedAct(double & qdLeft, double & qdRight) const;
+    
+    const double qdMax;
+    const double qddMax;
+    const double sdMax;
+    const double thetadMax;
     
   protected:
-    const double _qdMax;
-    const double _qddMax;
-    const double _sdMax;
-    const double _thetadMax;
-    const RobotModel & _robotModel;
-    DiffDrive & m_drive;
-    double _proposedQdl, _proposedQdr;
-    double _actualQdl, _actualQdr;
+    boost::shared_ptr<const RobotModel> m_robotModel;
+    boost::shared_ptr<HAL> m_hal;
+    boost::shared_ptr<Mutex> m_mutex;
+    double m_proposedQdl, m_proposedQdr;
+    double m_currentQdl, m_currentQdr;
+    double m_wantedQdl, m_wantedQdr;
   };
-
+  
 }
 
 #endif // SUNFLOWER_MOTIONCONTROLLER_HPP

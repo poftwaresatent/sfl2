@@ -22,8 +22,8 @@ Aim: Port to OpenRobots
        initialization of threads), priorities:
          - make use of mutexes configurable
          - round-robin mutexed laser scans
-         - mutexed odometry
-         - mutexed motion controller
+         DONE - mutexed odometry
+         DONE - mutexed motion controller
          - multi-threaded mutexed nf1/bband/dwa
 
 Aim: Promote use by Cogniron partners

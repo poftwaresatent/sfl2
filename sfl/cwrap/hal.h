@@ -52,6 +52,7 @@ extern "C" {
 			double * sxx, double * syy, double * stt,
 			double * sxy, double * sxt, double * syt);
     int (*speed_set)(double qdl, double qdr);
+    int (*speed_get)(double * qdl, double * qdr);
     
     /**
        \param channel (in): scanner channel number

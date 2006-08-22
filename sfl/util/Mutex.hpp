@@ -41,7 +41,7 @@ namespace sfl {
     ~Mutex();
     
     /** Can return null if the system or process lacks resources. */
-    boost::shared_ptr<Mutex> Create();
+    static boost::shared_ptr<Mutex> Create();
     
     /** Fails if a deadlock would occur. */
     bool Lock();
@@ -51,6 +51,13 @@ namespace sfl {
     
     /** Fails if not locked. */
     bool Unlock();
+    
+    /** Convenient for turning a scope into a protected section. */
+    struct sentry {
+      explicit sentry(Mutex * mutex): m_mutex(mutex) { mutex->Lock(); }
+      ~sentry() { m_mutex->Unlock(); }
+      Mutex * m_mutex;
+    };
     
   private:
     boost::shared_ptr<pthread_mutex_t> m_mutex;
