@@ -1,7 +1,8 @@
 Aim: Less dependent on exact execution period
      - use measured timestep to predict pose in DWA
      - enable non-lookup mode that takes into account
-       the actual time since last call (see also below)
+       the actual time since last call
+       ==> actually trivial with recent refactorings, mod -1 urgency
 
 Aim: Cleanup for external use
      - Some (many) \todo comments should be \note
@@ -11,16 +12,22 @@ Aim: Cleanup for external use
        configurable behavior)
      - Make use of (compressed) lookup optional in DWA (but KEEP it,
        make it configurable behavior)
+       ==> actually trivial with recent refactorings, mod -1 urgency
 
 Aim: Port to OpenRobots
      DONE - Replace HALProxy class by C struct with function pointers
      DONE - Invent eg handle-based opaque access to objects in C wrappers
             that provide an API eg on a per-directory basis.
      - Extract multi-tasking stuff from XOberon code (ie mutexes and
-       initialization of threads)
+       initialization of threads), priorities:
+         - make use of mutexes configurable
+         - round-robin mutexed laser scans
+         - mutexed odometry
+         - mutexed motion controller
+         - multi-threaded mutexed nf1/bband/dwa
 
 Aim: Promote use by Cogniron partners
-     - Write XCF wrapper
+     DONE - Write XCF wrapper
      - Write PlayerStage wrapper
      DONE - Create autotools scripts for those who don't have SCons
      - Include boost::smart_ptr library in package (check licence first!)
