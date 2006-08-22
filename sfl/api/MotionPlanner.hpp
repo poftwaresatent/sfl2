@@ -26,40 +26,34 @@
 #define SUNFLOWER_MOTIONPLANNER_HPP
 
 
-#include <sfl/api/Goal.hpp>
-
-
 namespace sfl {
-
-
+  
+  
+  class Goal;
+  
+  
   /**
      The MotionPlanner manages path planning and obstacle
      avoidance. It is the place where clients set the goal and can
      find out if the robot has reached it.
 
-     \note This is a <em>pure abstract</em> class. An actual
-     implementation can be found in the <code>expo/</code>
-     subdirectory.
+     \note This is a <em>pure abstract</em>
+     class. expo::MotionPlanner, an actual implementation, can be
+     found in the <code>expo/</code> subdirectory.
   */
-
   class MotionPlanner
   {
   public:
-    virtual ~MotionPlanner();
+    /** empty default implementation */
+    virtual ~MotionPlanner() {}
   
-    /**
-       Define the robot's goal.
-    */
+    /**  Define the robot's goal. */
     virtual void SetGoal(const Goal & goal) = 0;
 
-    /**
-       \return The robot's current goal.
-    */
+    /** \return The robot's current goal. */
     virtual const Goal & GetGoal() const = 0;
 
-    /**
-       Query if the robot has reached its goal.
-    */
+    /** Query if the robot has reached its goal. */
     virtual bool GoalReached() const = 0;
   };
   

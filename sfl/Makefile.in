@@ -63,7 +63,6 @@ SRCS=           $(XCF_SRCS) \
                 api/Goal.cpp \
                 api/HoloDrive.cpp \
                 api/MotionController.cpp \
-                api/MotionPlanner.cpp \
                 api/Multiscanner.cpp \
                 api/Odometry.cpp \
                 api/Pose.cpp \
