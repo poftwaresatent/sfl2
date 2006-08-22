@@ -59,10 +59,8 @@ SRCS=           $(XCF_SRCS) \
                 util/Polygon.cpp \
                 util/Ray.cpp \
                 util/Mutex.cpp \
-                api/DiffDrive.cpp \
                 api/GlobalScan.cpp \
                 api/Goal.cpp \
-                api/HoloDrive.cpp \
                 api/MotionController.cpp \
                 api/Multiscanner.cpp \
                 api/Odometry.cpp \
@@ -108,12 +106,9 @@ HEADERS=        $(XCF_HEADERS) \
                 util/Polygon.hpp \
                 util/Ray.hpp \
                 util/Mutex.hpp \
-                api/DiffDrive.hpp \
-                api/Drive.hpp \
                 api/GlobalScan.hpp \
                 api/Goal.hpp \
                 api/HAL.hpp \
-                api/HoloDrive.hpp \
                 api/MotionController.hpp \
                 api/MotionPlanner.hpp \
                 api/Multiscanner.hpp \
