@@ -20,16 +20,16 @@
 
 
 #include "xcf_hal.h"
+#include "laserdata.h"
+#include "odometrydata.h"
+#include "movementdata.h"
+#include "AttTarget.h"
+#include "esvdata.h"
 
 #include <sfl/util/numeric.hpp>
 #include <sys/time.h>
 #include <xcf/xcf.hpp>
 #include <xmltio/xmltio.hpp>
-
-#include <laserdata.h>
-#include <odometrydata.h>
-#include <movementdata.h>
-#include <esvdata.h>
 
 #include <sfl/util/pdebug.hpp>
 #define PDEBUG PDEBUG_OUT
@@ -222,8 +222,8 @@ int xcf_scan_receive(double * rho, int * rho_len, uint64_t * timestamp_ms)
     return 1;
   }
   tLaserData data(extract<tLaserData>(Location(message, "/MSG")));
-  if(data.iSize /* dunno field name */ < * rho_len)
-    * rho_len = data.iSize;
+  if(data.iLaserPoints < * rho_len)
+    * rho_len = data.iLaserPoints;
   for(int ii(0); ii < * rho_len; ++ii)
     rho[ii] = data.fPoints[ii];
   * timestamp_ms = data.lTimeStamp;
@@ -351,7 +351,7 @@ int xcf_navresult_send(const char * result, int transaction_id,
 }
 
 
-int xcf_navresult_end()
+void xcf_navresult_end()
 {
   if(0 != debugstream)
     fprintf(debugstream, "DEBUG xcf_navresult_end()\n");
