@@ -41,7 +41,7 @@ extern "C" {
        hal_cb->odometry_get = odometry_get_generic;
        hal_cb->scan_get     = scan_get_generic;
      \endcode
-  */  
+  */
   struct cwrap_hal_s {
     int (*time_get)(struct timespec * stamp);
     int (*odometry_set)(double x, double y, double theta,
@@ -52,7 +52,7 @@ extern "C" {
 			double * sxx, double * syy, double * stt,
 			double * sxy, double * sxt, double * syt);
     int (*speed_set)(double qdl, double qdr);
-
+    
     /**
        \param channel (in): scanner channel number
        \param rho_len (in): length of the rho array
@@ -68,14 +68,14 @@ extern "C" {
     
     /**
        \param channel: scanner channel number
-
+       
        \return 0 on success
     */
     int (*scan_init)(int channel);
-
+    
     /**
        \param channel: scanner channel number
-
+       
        \return 0 on success
     */
     int (*scan_end)(int channel);

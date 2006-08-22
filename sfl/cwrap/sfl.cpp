@@ -207,7 +207,7 @@ int sfl_create_Odometry(int HAL_handle)
   shared_ptr<HAL> hal(get_HAL(HAL_handle));
   if( ! hal)
     return -1;
-  return Odometry_map.InsertRaw(new Odometry(hal.get()));
+  return Odometry_map.InsertRaw(new Odometry(hal));
 }
 
 
@@ -243,41 +243,25 @@ void sfl_destroy_Multiscanner(int handle)
 { Multiscanner_map.Erase(handle); }
 
 
-int sfl_dump_obstacles(int DynamicWindow_handle,
-		       FILE * stream,
+int sfl_dump_obstacles(int DynamicWindow_handle, FILE * stream,
 		       const char * prefix)
 {
   shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
   if( ! dwa)
     return -1;
-  if(stream == stdout)
-    dwa->DumpObstacles(std::cout, prefix);
-  else if(stream == stderr)
-    dwa->DumpObstacles(std::cerr, prefix);
-  else{
-    std::ostringstream os;
-    dwa->DumpObstacles(os, prefix);
-    fprintf(stream, "%s", os.str().c_str());
-  }
+  fprintfos os(stream);
+  dwa->DumpObstacles(os, prefix);
   return 0;
 }
 
 
-int sfl_dump_dwa(int DynamicWindow_handle,
-		 FILE * stream,
+int sfl_dump_dwa(int DynamicWindow_handle, FILE * stream,
 		 const char * prefix)
 {
   shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
   if( ! dwa)
     return -1;
-  if(stream == stdout)
-    dwa->DumpObjectives(std::cout, prefix);
-  else if(stream == stderr)
-    dwa->DumpObjectives(std::cerr, prefix);
-  else{
-    std::ostringstream os;
-    dwa->DumpObjectives(os, prefix);
-    fprintf(stream, "%s", os.str().c_str());
-  }
+  fprintfos os(stream);
+  dwa->DumpObjectives(os, prefix);
   return 0;
 }
