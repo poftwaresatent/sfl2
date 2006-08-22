@@ -58,6 +58,7 @@ SRCS=           $(XCF_SRCS) \
                 util/Point.cpp \
                 util/Polygon.cpp \
                 util/Ray.cpp \
+                util/Mutex.cpp \
                 api/DiffDrive.cpp \
                 api/GlobalScan.cpp \
                 api/Goal.cpp \
@@ -106,6 +107,7 @@ HEADERS=        $(XCF_HEADERS) \
                 util/Point.hpp \
                 util/Polygon.hpp \
                 util/Ray.hpp \
+                util/Mutex.hpp \
                 api/DiffDrive.hpp \
                 api/Drive.hpp \
                 api/GlobalScan.hpp \
