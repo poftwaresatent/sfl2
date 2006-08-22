@@ -209,11 +209,9 @@ AC_DEFUN([CLBS_BOOST_TEST], [
 ])
 CLBS_CHECK_BOOST()
 
-AC_ARG_WITH([xcf],
-            AC_HELP_STRING([--with-xcf],
-                           [enable XCF support]),
-	    AC_SUBST(WITH_XCF, "XCF_"),
-            AC_SUBST(WITH_XCF, "NOXCF_"))
+AC_ARG_ENABLE([xcf],
+            AC_HELP_STRING([--enable-xcf], [enable XCF (use CPPFLAGS)]),
+	    AC_SUBST(WITH_XCF, "XCF_"), AC_SUBST(WITH_XCF, "NOXCF_"))
 
 AC_PROG_LIBTOOL
 
@@ -222,5 +220,6 @@ AC_PROG_INSTALL
 AC_PROG_AWK
 
 AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(CPPFLAGS)
 
 AC_OUTPUT(Makefile sunflower.pc Doxyfile)
