@@ -101,7 +101,7 @@ int sfl_create_Scanner(int hal_handle, int hal_channel, const char * name,
   shared_ptr<HAL> hal(get_HAL(hal_handle));
   if( ! hal)
     return -1;
-  return Scanner_map.InsertRaw(new Scanner(hal.get(), hal_channel, name,
+  return Scanner_map.InsertRaw(new Scanner(hal, hal_channel, name,
 					   Frame(mount_x,
 						 mount_y,
 						 mount_theta),

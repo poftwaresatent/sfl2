@@ -28,6 +28,10 @@
 
 
 namespace sfl {
+  
+  
+  const double Goal::DEFAULTGOALDR = 0.25;
+  const double Goal::DEFAULTGOALDTHETA = M_PI;
 
 
   Goal::

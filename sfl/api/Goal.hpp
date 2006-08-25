@@ -27,7 +27,6 @@
 
 
 #include <sfl/util/Frame.hpp>
-#include <cmath>
 
 
 namespace sfl {
@@ -150,12 +149,12 @@ namespace sfl {
     /**
        Default goal disk radius.
     */
-    static const double DEFAULTGOALDR = 0.25;
+    static const double DEFAULTGOALDR;
 
     /**
        Default alignment tolerance with the goal heading.
     */
-    static const double DEFAULTGOALDTHETA = M_PI;
+    static const double DEFAULTGOALDTHETA;
     
     double _x, _y, _theta;
     double _dr, _dr2, _dtheta;

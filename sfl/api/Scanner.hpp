@@ -83,6 +83,9 @@ namespace sfl {
   */
   class Scanner
   {
+  private:
+    Scanner(const Scanner &);
+    
   public:
     /**
        Return type of several accessors.
@@ -124,7 +127,7 @@ namespace sfl {
        define the names in the HAL and be able to use them "up" here.
     */
     Scanner(/** proxy object used to retrieve actual data */
-	    HAL * hal,
+	    boost::shared_ptr<HAL> hal,
 	    /** HAL channel number */
 	    int hal_channel,
 	    /** name of the scanner */
@@ -241,12 +244,11 @@ namespace sfl {
     /** \note Not meaningfull during ACQUISITION_ERROR! */
     const Timestamp & Tlower() const { return m_scan.m_tlower; }
     
+    const int hal_channel;
     
   protected:
     typedef std::vector<double> vector_t;
     
-    HAL * m_hal;
-    const int m_hal_channel;
     const std::string m_name;
     const Frame m_mount;
     const size_t m_nscans;
@@ -254,6 +256,8 @@ namespace sfl {
     const double m_phi0;
     const double m_phirange;
     const double m_dphi;
+    
+    boost::shared_ptr<HAL> m_hal;
     Scan m_scan;
     bool m_data_ok;
     

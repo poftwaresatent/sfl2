@@ -35,16 +35,15 @@ namespace sfl {
   
   
   Scanner::
-  Scanner(HAL * hal,
-	  int hal_channel,
+  Scanner(shared_ptr<HAL> hal,
+	  int _hal_channel,
 	  const string & name,
 	  const Frame & mount,
 	  unsigned int nscans,
 	  double rhomax,
 	  double phi0,
 	  double phirange):
-    m_hal(hal),
-    m_hal_channel(hal_channel),
+    hal_channel(_hal_channel),
     m_name(name),
     m_mount(mount),
     m_nscans(nscans),
@@ -52,6 +51,7 @@ namespace sfl {
     m_phi0(phi0),
     m_phirange(phirange),
     m_dphi(phirange / nscans),
+    m_hal(hal),
     m_scan(nscans),
     m_data_ok(false),
     m_cosphi(nscans, 0.0),
@@ -75,7 +75,7 @@ namespace sfl {
     m_data_ok = true;
     double rho[m_nscans];
     struct ::timespec t0, t1;
-    const int res(m_hal->scan_get(m_hal_channel, rho, m_nscans, &t0, &t1));
+    const int res(m_hal->scan_get(hal_channel, rho, m_nscans, &t0, &t1));
     if(0 != res){
       m_data_ok = false;
       return res;
