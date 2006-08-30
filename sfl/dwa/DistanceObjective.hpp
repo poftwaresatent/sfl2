@@ -86,11 +86,9 @@ namespace sfl {
     
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
     void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 		   size_t qdrMin, size_t qdrMax,
 		   boost::shared_ptr<const Scan> local_scan);
@@ -156,11 +154,9 @@ namespace sfl {
     
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
     void UpdateGrid(boost::shared_ptr<const Scan> local_scan);
     
     /** \return The minimum predicted time until collision for a given

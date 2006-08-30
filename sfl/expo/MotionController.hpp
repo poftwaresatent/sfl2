@@ -38,9 +38,9 @@ namespace expo {
   public:
     MotionController(boost::shared_ptr<const sfl::RobotModel> robotModel,
 		     boost::shared_ptr<sfl::HAL> hal,
-		     boost::shared_ptr<sfl::Mutex> mutex);
+		     boost::shared_ptr<sfl::RWlock> rwlock);
     
-    /** \todo This is a bit of a hack that never really performed well. */
+    /** \note This is a bit of a hack that never really performed well. */
     bool AlmostStraight() const;
     bool Stoppable(double timestep) const;
     bool Moving() const;

@@ -73,8 +73,6 @@ namespace sfl {
     // allocations
     _qd = new double[_dimension];
 
-    _stopDistance = new double[_dimension];
-
     _state = new speedstate_t*[_dimension];
     for(int i = 0; i < _dimension; ++i)
       _state[i] = new speedstate_t[_dimension];
@@ -92,15 +90,8 @@ namespace sfl {
   Initialize(ostream * os,
 	     bool paranoid)
   {
-    // BEWARE code duplication with Initialize(FILE*, bool)
     for(int i = 0; i < _dimension; ++i)
       _qd[i] = FindQd(i);
-    
-    for(int i = 0; i < _dimension; ++i)
-      _stopDistance[i] =
-	0.5 * _robot_model.WheelRadius()
-	* _qd[i] * _qd[i]
-	/ _robot_model.QddMax();
     
     InitForbidden();
     
@@ -124,7 +115,6 @@ namespace sfl {
   ~DynamicWindow()
   {
     delete[] _qd;
-    delete[] _stopDistance;
 
     for(int i = 0; i < _dimension; ++i)
       delete[] _state[i];

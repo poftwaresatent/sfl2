@@ -22,51 +22,70 @@
 
 
 #include <boost/shared_ptr.hpp>
+#include <set>
 #include <map>
 
 
 namespace sfl_cwrap {
   
   
+  class IdPool
+  {
+  private:
+    IdPool();
+    IdPool(const IdPool & orig);
+    
+  public:
+    ~IdPool();
+    static boost::shared_ptr<IdPool> Instance();
+    
+    int Take();
+    void Give(int id);
+    
+  private:
+    std::set<int> m_pool;
+    int m_urandom_fd;
+  };
+  
+  
   template<class Pointee>
   class Handlemap
   {
   protected:
-    typedef std::map<int, boost::shared_ptr<Pointee> > map_t;
+    struct value {
+      value(boost::shared_ptr<Pointee> _pointee,
+	    boost::shared_ptr<IdPool> _pool)
+	: pointee(_pointee), pool(_pool) {}
+      boost::shared_ptr<Pointee> pointee;
+      boost::shared_ptr<IdPool> pool; // otherwise destroyed before me!
+    };
+    typedef std::map<int, value> map_t;
     map_t m_map;
     
   public:
-    
-    int Insert(boost::shared_ptr<Pointee> pointer)
-    {
-      if(m_map.empty())
-	m_map.insert(std::make_pair(0, pointer));
-      else
-	m_map.insert(std::make_pair(m_map.rbegin()->first + 1, pointer));
-      return m_map.rbegin()->first;
+    int Insert(boost::shared_ptr<Pointee> pointer){
+      const int uid(IdPool::Instance()->Take());
+      m_map.insert(std::make_pair(uid, value(pointer, IdPool::Instance())));
+      return uid;
     }
     
     int InsertRaw(Pointee * raw_pointer)
     { return Insert(boost::shared_ptr<Pointee>(raw_pointer)); }
     
-    
-    boost::shared_ptr<Pointee> Find(int handle)
-      const
-    {
+    boost::shared_ptr<Pointee> Find(int handle) const{
       typename map_t::const_iterator ih(m_map.find(handle));
       if(m_map.end() == ih)
 	return boost::shared_ptr<Pointee>();
-      return ih->second;
+      return ih->second.pointee;
     }
     
-    
-    void Erase(int handle)
-    {
+    void Erase(int handle){
       typename map_t::iterator ih(m_map.find(handle));
-      if(m_map.end() != ih)
+      if(m_map.end() != ih){
+	ih->second.pool->Give(handle);
 	m_map.erase(ih);
+      }
     }
-    
   };
 
 }

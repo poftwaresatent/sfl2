@@ -27,8 +27,7 @@
 
 
 #include <sfl/expo/MotionPlannerFields.hpp>
-#include <sfl/api/GlobalScan.hpp>
-#include <cmath>
+#include <sfl/api/Scan.hpp>
 #include <string>
 #include <utility>
 
@@ -48,15 +47,13 @@ namespace expo {
   public:
     virtual ~MotionPlannerState();
   
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
     virtual void Act(double timestep,
-		     boost::shared_ptr<const sfl::GlobalScan> global_scan) = 0;
+		     boost::shared_ptr<const sfl::Scan> global_scan) = 0;
     virtual MotionPlannerState * NextState(double timestep);
 
     const std::string & Name() const;
@@ -72,58 +69,18 @@ namespace expo {
     MotionPlannerFields * _fields;
     std::string _name;
 
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    virtual direction_t
-    GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan) = 0;
+    virtual direction_t GetPathDirection() = 0;
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    void
-    TurnToward(double timestep, direction_t local_direction,
-	       boost::shared_ptr<const sfl::GlobalScan> global_scan) const;
+    void TurnToward(double timestep, direction_t local_direction,
+		    boost::shared_ptr<const sfl::Scan> global_scan) const;
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    void
-    GoAlong(double timestep, direction_t local_direction,
-	    boost::shared_ptr<const sfl::GlobalScan> global_scan) const;
+    void GoAlong(double timestep, direction_t local_direction,
+		 boost::shared_ptr<const sfl::Scan> global_scan) const;
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    direction_t
-    AskBubbleBand(boost::shared_ptr<const sfl::GlobalScan> global_scan) const;
+    direction_t AskBubbleBand() const;
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    void
-    AskDynamicWindow(double timestep, direction_t local_direction,
-		     boost::shared_ptr<const sfl::GlobalScan> global_scan)
+    void AskDynamicWindow(double timestep, direction_t local_direction,
+			  boost::shared_ptr<const sfl::Scan> global_scan)
       const;
   };
   
@@ -138,16 +95,15 @@ namespace expo {
     TakeAimState(MotionPlannerFields * fields);
 
     void Act(double timestep,
-	     boost::shared_ptr<const sfl::GlobalScan> global_scan);
+	     boost::shared_ptr<const sfl::Scan> global_scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
-    direction_t
-    GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan);
+    direction_t GetPathDirection();
 
   private:
-    static const double DTHETASTARTHOMING =  10 * M_PI / 180;
-
+    static const double DTHETASTARTHOMING;// =  10 * M_PI / 180;
+    
     double dheading;
   
     bool StartHoming(double dtheta) const;
@@ -164,15 +120,14 @@ namespace expo {
     AimedState(MotionPlannerFields * fields);
 
     void Act(double timestep,
-	     boost::shared_ptr<const sfl::GlobalScan> global_scan);
+	     boost::shared_ptr<const sfl::Scan> global_scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
-    direction_t
-    GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan);
+    direction_t GetPathDirection();
 
   private:
-    static const double DTHETASTARTAIMING = 45 * M_PI / 180;
+    static const double DTHETASTARTAIMING;// = 45 * M_PI / 180;
 
     double dheading;
 
@@ -191,11 +146,10 @@ namespace expo {
     AdjustGoalHeadingState(MotionPlannerFields * fields);
 
     void Act(double timestep,
-	     boost::shared_ptr<const sfl::GlobalScan> global_scan);
+	     boost::shared_ptr<const sfl::Scan> global_scan);
 
   protected:
-    direction_t
-    GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan);
+    direction_t GetPathDirection();
   };
 
 
@@ -209,12 +163,11 @@ namespace expo {
     AtGoalState(MotionPlannerFields * fields);
 
     void Act(double timestep,
-	     boost::shared_ptr<const sfl::GlobalScan> global_scan);
+	     boost::shared_ptr<const sfl::Scan> global_scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
-    direction_t
-    GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan);
+    direction_t GetPathDirection();
   };
 
 
@@ -228,12 +181,11 @@ namespace expo {
     NullState(MotionPlannerFields * fields);
 
     void Act(double timestep,
-	     boost::shared_ptr<const sfl::GlobalScan> global_scan);
+	     boost::shared_ptr<const sfl::Scan> global_scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
-    direction_t
-    GetPathDirection(boost::shared_ptr<const sfl::GlobalScan> global_scan);
+    direction_t GetPathDirection();
   };
 
 }

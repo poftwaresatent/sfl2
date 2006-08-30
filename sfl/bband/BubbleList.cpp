@@ -83,7 +83,7 @@ namespace sfl {
   
   
   bool BubbleList::
-  Update(boost::shared_ptr<const GlobalScan> scan)
+  Update(boost::shared_ptr<const Scan> scan)
   {
     if(m_head == 0)
       return false;		// do nothing
@@ -205,7 +205,7 @@ namespace sfl {
   
   
   void BubbleList::
-  UpdateBubbles(boost::shared_ptr<const GlobalScan> scan)
+  UpdateBubbles(boost::shared_ptr<const Scan> scan)
   {
     if(m_head == 0)
       return;
@@ -294,7 +294,7 @@ namespace sfl {
   
   bool BubbleList::
   CheckAdd(Bubble *bubble,
-	   boost::shared_ptr<const GlobalScan> scan)
+	   boost::shared_ptr<const Scan> scan)
   {
     if(bubble == m_tail)
       return false;

@@ -34,6 +34,10 @@ using std::pair;
 namespace sfl {
 
 
+  const double Bubble::DEFAULTALPHAINT(0.1);
+  const double Bubble::DEFAULTALPHAEXT(0.5);
+
+
   void Bubble::
   Construct()
   {
@@ -107,17 +111,17 @@ namespace sfl {
 
 
   void Bubble::
-  UpdateExternalParameters(shared_ptr<const GlobalScan> scan,
+  UpdateExternalParameters(shared_ptr<const Scan> scan,
 			   double ignore_radius)
   {
     _radius2 = -1;
 
     int count(0);
 
-    const size_t nscans(scan->GetNScans());
+    const size_t nscans(scan->data.size());
     for(size_t is(0); is < nscans; ++is)
-      if(scan->GetData(is).rho >= ignore_radius){
-	const GlobalScan::global_data_t & gdata(scan->GetGlobalData(is));
+      if(scan->data[is].rho >= ignore_radius){
+	const scan_data & gdata(scan->data[is]);
 	double dx(gdata.globx - _position.first);
 	double dy(gdata.globy - _position.second);
 	double r2(dx * dx + dy * dy);

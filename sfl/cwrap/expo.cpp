@@ -20,10 +20,9 @@
 #include "expo.h"
 #include "sfl.h"
 #include "Handlemap.hpp"
-#include <sfl/util/Mutex.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <sfl/api/HAL.hpp>
 #include <sfl/api/Scanner.hpp>
-//#include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
@@ -39,14 +38,13 @@ using sfl::Hull;
 using sfl::Polygon;
 using sfl::Frame;
 using sfl::Scanner;
-//using sfl::DiffDrive;
 using sfl::Multiscanner;
 using sfl::RobotModel;
 using sfl::Odometry;
 using sfl::DynamicWindow;
 using sfl::BubbleBand;
 using sfl::Goal;
-using sfl::Mutex;
+using sfl::RWlock;
 using expo::MotionPlanner;
 using expo::MotionController;
 using boost::shared_ptr;
@@ -81,11 +79,11 @@ int expo_create_MotionController(int RobotModel_handle,
   shared_ptr<HAL> hal(get_HAL(HAL_handle));
   if( ! hal)
     return -2;
-  shared_ptr<Mutex> mutex(Mutex::Create());
-  if( ! mutex)
+  shared_ptr<RWlock> rwlock(RWlock::Create("cwrap-MotionController"));
+  if( ! rwlock)
     return -3;
   return
-    MotionController_map.InsertRaw(new MotionController(rm, hal, mutex));
+    MotionController_map.InsertRaw(new MotionController(rm, hal, rwlock));
 }
   
   
@@ -156,45 +154,34 @@ int expo_factory(struct cwrap_hal_s * hal,
 		 double bb_max_ignore_distance)
 {
   // TODO: avoid resource leak when returning errors
-    
+  
   int hal_handle(sfl_create_HAL(hal));
   if(0 > hal_handle)
     return -1;
-    
+  
+  int odo_handle(sfl_create_Odometry(hal_handle));
+  if(0 > odo_handle)
+    return -7;
+  
   static const int sick_nscans(361);
   static const double sick_rhomax(8);
   static const double sick_phi0(-M_PI/2);
   static const double sick_phirange(M_PI);
-    
+  
   int sick_handle[2];
-  sick_handle[0] = (sfl_create_Scanner(hal_handle, front_sick_channel,
-				       "front_sick",
-				       front_sick_x,
-				       front_sick_y,
-				       front_sick_theta,
-				       sick_nscans,
-				       sick_rhomax,
-				       sick_phi0,
-				       sick_phirange));
+  sick_handle[0] =
+    (sfl_create_Scanner(hal_handle, front_sick_channel,
+			front_sick_x, front_sick_y, front_sick_theta,
+			sick_nscans, sick_rhomax, sick_phi0, sick_phirange));
   if(0 > sick_handle[0])
     return -2;
-  sick_handle[1] = (sfl_create_Scanner(hal_handle, rear_sick_channel,
-				       "rear_sick",
-				       rear_sick_x,
-				       rear_sick_y,
-				       rear_sick_theta,
-				       sick_nscans,
-				       sick_rhomax,
-				       sick_phi0,
-				       sick_phirange));
+  sick_handle[1] =
+    (sfl_create_Scanner(hal_handle, rear_sick_channel,
+			rear_sick_x, rear_sick_y, rear_sick_theta,
+			sick_nscans, sick_rhomax, sick_phi0, sick_phirange));
   if(0 > sick_handle[1])
     return -3;
   
-//   int drive_handle(sfl_create_DiffDrive(hal_handle, wheelbase, wheelradius));
-//   if(0 > drive_handle)
-//     return -4;
-    
-    
   const double sdd_max(0.75 * wheelradius * qdd_max);
   const double thetadd_max(1.5 * wheelradius * qdd_max / wheelbase);
     
@@ -205,11 +192,11 @@ int expo_factory(struct cwrap_hal_s * hal,
 					 sdd_max, thetadd_max,
 					 hull_x, hull_y, hull_len));
   if(0 > model_handle)
-    return -5;
+    return -4;
     
   int mc_handle(expo_create_MotionController(model_handle, hal_handle));
   if(0 > mc_handle)
-    return -6;
+    return -5;
     
   int dwa_handle(sfl_create_DynamicWindow(model_handle,
 					  mc_handle,
@@ -220,26 +207,23 @@ int expo_factory(struct cwrap_hal_s * hal,
 					  dwa_alpha_distance,
 					  dwa_alpha_heading,
 					  dwa_alpha_speed,
-					  stderr));
+					  0));
   if(0 > dwa_handle)
-    return -7;
-    
-  int odo_handle(sfl_create_Odometry(hal_handle));
-  if(0 > odo_handle)
+    return -6;
+  
+  int ms_handle(sfl_create_Multiscanner(odo_handle, sick_handle, 2));
+  if(0 > ms_handle)
     return -8;
   
   int bb_handle(sfl_create_BubbleBand(model_handle,
 				      odo_handle,
+				      ms_handle,
 				      bb_shortpath,
 				      bb_longpath,
 				      bb_max_ignore_distance));
   if(0 > bb_handle)
     return -9;
-    
-  int ms_handle(sfl_create_Multiscanner(sick_handle, 2));
-  if(0 > bb_handle)
-    return -9;
-    
+  
   int mp_handle(expo_create_MotionPlanner(mc_handle,
 					  dwa_handle,
 					  ms_handle,
@@ -248,7 +232,7 @@ int expo_factory(struct cwrap_hal_s * hal,
 					  odo_handle));
   if(0 > mp_handle)
     return -10;
-    
+  
   return mp_handle;
 }
 

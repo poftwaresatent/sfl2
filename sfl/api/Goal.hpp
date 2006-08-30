@@ -67,9 +67,6 @@ namespace sfl {
 	 double dtheta,
 	 bool viaGoal = false);
     
-    /**
-       \todo Define operator=() instead.
-    */
     void Set(const Goal & goal);
 
     void Set(double x,
@@ -78,6 +75,11 @@ namespace sfl {
 	     double dr,
 	     double dtheta,
 	     bool viaGoal = false);
+    
+    Goal & operator = (const Goal & rhs) {
+      Set(rhs);
+      return *this;
+    }
     
     /**
        \return The goal's x-coordinate.

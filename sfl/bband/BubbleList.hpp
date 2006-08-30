@@ -58,14 +58,12 @@ namespace sfl {
     ~BubbleList();
     
     
-    /** \note The GlobalScan object should be filtered, ie contain only
+    /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    bool Update(boost::shared_ptr<const GlobalScan> scan);
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
+    bool Update(boost::shared_ptr<const Scan> scan);
     
     /** Appends to the list of bubbles (or initailizes if empty list). */
     void Append(Bubble * bubble);
@@ -113,15 +111,14 @@ namespace sfl {
 	and external parameters, apply forces, re-compute external
 	parameters.
 	
-	\note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho value).
+	\note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value).
 
 	\todo Remove the re-computating of external parameters! */
-    void UpdateBubbles(boost::shared_ptr<const GlobalScan> scan);
+    void UpdateBubbles(boost::shared_ptr<const Scan> scan);
     
     /** Copmutes the cumulated path length for each bubble. */
     void UpdatePathLength();
@@ -155,17 +152,16 @@ namespace sfl {
 	  in a loop "above" this method.
 	 </li>
 	 <li>
-	  The GlobalScan object should be filtered, ie contain only
+	  The Scan object should be filtered, ie contain only
 	  valid readings. This can be obtained from
-	  Multiscanner::CollectScans() and
-	  Multiscanner::CollectGlobalScans(), whereas
+	  Multiscanner::CollectScans(), whereas
 	  Scanner::GetScanCopy() can still contain readings that are
 	  out of range (represented as readings at the maximum rho
 	  value).
 	 </li>
 	</ul>
     */
-    bool CheckAdd(Bubble * bubble, boost::shared_ptr<const GlobalScan> scan);
+    bool CheckAdd(Bubble * bubble, boost::shared_ptr<const Scan> scan);
     
     /** Initializes the list of bubbles. */
     void FirstBubble(Bubble * bubble);

@@ -26,7 +26,7 @@
 #define SUNFLOWER_BUBBLE_HPP
 
 
-#include <sfl/api/GlobalScan.hpp>
+#include <sfl/api/Scan.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -43,8 +43,8 @@ namespace sfl {
       SAMECENTER
     } overlap_t;
     
-    static const double DEFAULTALPHAINT = 0.1;
-    static const double DEFAULTALPHAEXT = 0.5;
+    static const double DEFAULTALPHAINT;// = 0.1;
+    static const double DEFAULTALPHAEXT;// = 0.5;
     
     
     static bool CheckOverlap(const Bubble & bubble1,
@@ -66,15 +66,13 @@ namespace sfl {
 		   std::pair<double, double> position);
     void CopyConstruct(const Bubble & original);
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
     void
-    UpdateExternalParameters(boost::shared_ptr<const GlobalScan> scan,
+    UpdateExternalParameters(boost::shared_ptr<const Scan> scan,
 			     double ignore_radius);
     
     void ResetInternalParameters();
@@ -105,7 +103,10 @@ namespace sfl {
     double _radius, _radius2;
     double _dprevious, _dnext, _path_length;
     double _cutoff_distance;
-    double _ignore_distance, _ignore_distance2, _min_ignore_distance;
+    double _ignore_distance, _ignore_distance2;
+    /** \todo unused? */
+    double _min_ignore_distance;
+    /** \todo use a 2d-vector class */
     std::pair<double, double> _fext, _fint;
     double _alpha_int, _alpha_ext;
 

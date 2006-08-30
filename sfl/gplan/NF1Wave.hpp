@@ -37,9 +37,9 @@ namespace sfl {
   public:
     typedef GridLayer::index_t index_t;
     
-    static const double FREE     = -2;
-    static const double OBSTACLE = -1;
-    static const double GOAL     =  0;
+    static const double FREE;//     = -2;
+    static const double OBSTACLE;// = -1;
+    static const double GOAL;//     =  0;
     
     NF1Wave();
     

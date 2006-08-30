@@ -27,22 +27,47 @@
 
 
 #include <sfl/util/Frame.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/bband/BubbleList.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 namespace sfl {
 
-  class GlobalScan;
+  class Scan;
   class Odometry;
   class RobotModel;
   class BubbleFactory;
   class ReplanHandler;
+  class Multiscanner;
+  
+  /**
+     Optional update thread for BubbleBand.
+  */
+  class BubbleBandThread
+    : public SimpleThread
+  {
+  private:
+    BubbleBandThread(const BubbleBandThread &);
+    
+  public:
+    /** You still have to call BubbleBand::SetThread() and
+	BubbleBandThread::Start(). */
+    BubbleBandThread(const std::string & name);
+    virtual void Step();
+    
+  protected:
+    friend class BubbleBand;
+    BubbleBand * bubbleBand;
+  };
   
   
-  /** \todo Some of the constant fields should be moved to BubbleList
-      or the Parameters object. */
+  /**
+     \todo Some of the constant fields should be moved to BubbleList
+     or the Parameters object.
+  */
   class BubbleBand
   {
   public:
@@ -63,41 +88,37 @@ namespace sfl {
     
     BubbleBand(const RobotModel & robot_model,
 	       const Odometry & odometry,
-	       BubbleList::Parameters parameters);
+	       const Multiscanner & multiscanner,
+	       BubbleList::Parameters parameters,
+	       boost::shared_ptr<RWlock> rwlock);
     
     /** \todo Use smart pointers, AFTER figuring out all implications. */
     ~BubbleBand();
     
+    void Update();
+    
+    /** Attempt to attach an update thread. Fails if this BubbleBand
+	already has an update thread. */
+    bool SetThread(boost::shared_ptr<BubbleBandThread> thread);
     
     void SetGoal(const Goal & global_goal);
-    void SetNF1GoalRadius(double r);
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
     bool AppendGoal(const Goal & global_goal,
-		    boost::shared_ptr<const GlobalScan> scan);
+		    boost::shared_ptr<const Scan> scan);
     bool AppendTarget(const Goal & global_goal);
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    void Update(boost::shared_ptr<const GlobalScan> scan);
+    /** \note (goalx, goaly) might actually be the global goal, for
+	instance if no band exists or if no bubble lies farther than
+	carrot_distance from the root bubble */
+    void GetSubGoal(double carrot_distance,
+		    double & goalx, double & goaly) const;
     
-    /** \todo there's a hardcoded cutoff distance in here! */
-    std::pair<double, double> GetSubGoal() const;
-    
-    /** \note Used for plotting. */
     state_t GetState() const { return m_state; }
-    
     const Frame & RobotPose() const { return m_frame; }
     const Goal & GlobalGoal() const { return m_global_goal; }
     const BubbleList * ActiveBlist() const { return m_active_blist; }
@@ -112,26 +133,34 @@ namespace sfl {
     
     
   private:
+    friend class BubbleBandThread;
+    
+    /** \note The GlobalScan object should be filtered, ie contain
+	only valid readings. This can be obtained from
+	Multiscanner::CollectScans() and
+	Multiscanner::CollectGlobalScans(), whereas
+	Scanner::GetScanCopy() can still contain readings that are out
+	of range (represented as readings at the maximum rho
+	value). */
+    void DoUpdate(boost::shared_ptr<const Scan> scan);
+    
     const Odometry & m_odometry;
+    const Multiscanner & m_multiscanner;
     
     boost::scoped_ptr<BubbleFactory> m_bubble_factory;
     boost::scoped_ptr<ReplanHandler> m_replan_handler;
     Frame m_frame;
     BubbleList * m_active_blist;
-    
     const double m_reaction_radius;
-    //    const double m_ignore_radius2;
-    
     Goal m_global_goal;
-    double m_nf1_goal_radius;	// not initialized? used?
-    double m_min_ignore_distance; // not initialized? used?
-    
+    double m_nf1_goal_radius;	// used by replan handler to init NF1
+
+    /** \todo unused? (maybe when tracking moving targets...) */
+    double m_min_ignore_distance; // used by replan handler to init bubbles
     bool m_replan_request;
     state_t m_state;
-    
-    
-    void UpdateRobotPose();
-    void SetMinIgnoreDistance(double d);
+    boost::shared_ptr<RWlock> m_rwlock;
+    boost::shared_ptr<BubbleBandThread> m_thread;
   };
 
 }

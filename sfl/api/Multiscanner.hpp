@@ -26,13 +26,15 @@
 #define SUNFLOWER_MULTISCANNER_HPP
 
 
-#include <sfl/api/Scanner.hpp>
-#include <sfl/api/GlobalScan.hpp>
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 
 namespace sfl {
-
+  
+  class Odometry;
+  class Scanner;
+  class Scan;
 
   /**
      Manages several scanners that can be mounted on the robot,
@@ -46,6 +48,8 @@ namespace sfl {
   class Multiscanner
   {
   public:
+    explicit Multiscanner(boost::shared_ptr<Odometry> odometry);
+    
     /** Appends a Scanner instance to the list of registered devices. */
     void Add(boost::shared_ptr<Scanner> scanner);
 
@@ -65,21 +69,17 @@ namespace sfl {
        Timestamps of the returned Scan correspond to the minimum and
        maximum Timestamp of all registered Scanners. Even if a Scanner
        provides no data (e.g. all values are out of range), its
-       Timestamp is still taken into account.
+       Timestamp is still taken into account.  The robot pose will be
+       taken from odometry, not from the information in the scanners.
        
        \note For polar coordinates, the robot origin is used. The
        ordering of the data is inherited from the order of calls to
        Multiscanner::Add(). Thus it is not guaranteed that the angles
-       are monotonically increasing!
+       are monotonically increasing! Also, scans are collected via
+       individual calls to Scanner accessors, it is thus possible that
+       the result mixes data from more than one acquisition cycle.
     */
     boost::shared_ptr<Scan> CollectScans() const;
-    
-    /**
-       Like CollectScans() but also transforms the scan to global
-       coordinates and returns a global scan object.
-    */
-    boost::shared_ptr<GlobalScan>
-    CollectGlobalScans(const Frame & position) const;
     
     /** Mainly for debugging, returns the offset of a scanner's data
 	in the collected scan object. This is usually not needed and
@@ -87,14 +87,15 @@ namespace sfl {
 	CollectGlobalScans().*/
     size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
     
-    /** \note A bit of a hack for Cogniron: Call Update() on all
-	registered Scanner instances. */
-    int UpdateAll();
-    
+    /** Calls Scanner::Update() on all registered instances and
+	returns true if all of these calls succeeded. Does NOT take
+	the shortcut of forfeiting updates after a failure. */
+    bool UpdateAll();
     
   protected:
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
     
+    boost::shared_ptr<Odometry> m_odometry;
     size_t m_total_nscans;
     vector_t m_scanner;
   };

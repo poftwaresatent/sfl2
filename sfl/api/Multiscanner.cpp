@@ -23,35 +23,45 @@
 
 
 #include "Multiscanner.hpp"
-#include <cmath>
+#include "Scanner.hpp"
+#include "Scan.hpp"
+#include "Odometry.hpp"
+#include "Pose.hpp"
+#include <sfl/util/numeric.hpp>
 #include <iostream>		// dbg
+#include <cmath>
 
 
-using boost::shared_ptr;
+using namespace boost;
 
 
 namespace sfl {
+
+
+  Multiscanner::
+  Multiscanner(shared_ptr<Odometry> odometry)
+    : m_odometry(odometry)
+  {
+  }
   
   
   void Multiscanner::
   Add(shared_ptr<Scanner> scanner)
   {
-    m_total_nscans += scanner->Nscans();
+    m_total_nscans += scanner->nscans;
     m_scanner.push_back(scanner);
   }
   
   
   size_t Multiscanner::
-  Nscanners()
-    const
+  Nscanners() const
   {
     return m_scanner.size();
   }
 
   
   shared_ptr<Scanner> Multiscanner::
-  GetScanner(size_t i)
-    const
+  GetScanner(size_t i) const
   {
     if((i < 0) || (i >= m_scanner.size()))
       return shared_ptr<Scanner>();
@@ -60,30 +70,29 @@ namespace sfl {
   
   
   shared_ptr<Scan> Multiscanner::
-  CollectScans()
-    const
+  CollectScans() const
   {
-    // initialize to zero size, just add VALID data
-    shared_ptr<Scan> result(new Scan(0));
+    // initialize to zero size (just add VALID data) and with INVERTED
+    // timestamps to detect the min and max actual ones
+    shared_ptr<Scan>
+      result(new Scan(0, Timestamp::Last(), Timestamp::First(),
+		      *m_odometry->Get()));
     
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
       shared_ptr<Scanner> scanner(m_scanner[iScanner]);
       
-      if(scanner->Tlower() < result->m_tlower)
-	result->m_tlower = scanner->Tlower();
-      if(scanner->Tupper() > result->m_tupper)
-	result->m_tupper = scanner->Tupper();
+      if(scanner->Tlower() < result->tlower)
+	result->tlower = scanner->Tlower();
+      if(scanner->Tupper() > result->tupper)
+	result->tupper = scanner->Tupper();
       
-      for(size_t iRay(0); iRay < scanner->Nscans(); ++iRay){
-	double x, y;
+      for(size_t iRay(0); iRay < scanner->nscans; ++iRay){
+	scan_data data;
 	// note: only add valid data, not even OUT_OF_RANGE!
-	if(scanner->GetLocal(iRay, x, y) == Scanner::SUCCESS){
-	  Scan::data_t data;
-	  data.phi = atan2(y, x);
-	  data.rho = sqrt(x*x + y*y);
-	  data.locx = x;
-	  data.locy = y;
-	  result->m_data.push_back(data);
+	if(scanner->GetData(iRay, data) == Scanner::SUCCESS){
+	  data.phi = atan2(data.locy, data.locx);
+	  data.rho = sqrt(sqr(data.locx) + sqr(data.locy));
+	  result->data.push_back(data);
 	}
       }
     }
@@ -92,17 +101,8 @@ namespace sfl {
   }
   
   
-  shared_ptr<GlobalScan> Multiscanner::
-  CollectGlobalScans(const Frame & position)
-    const
-  {
-    return shared_ptr<GlobalScan>(new GlobalScan(CollectScans(), position));
-  }
-  
-  
   size_t Multiscanner::
-  ComputeOffset(boost::shared_ptr<const Scanner> scanner)
-    const
+  ComputeOffset(boost::shared_ptr<const Scanner> scanner) const
   {
     size_t off(0);
     for(vector_t::const_iterator is(m_scanner.begin());
@@ -110,23 +110,22 @@ namespace sfl {
 	++is){
       if(scanner == *is)
 	return off;
-      off += (*is)->Nscans();
+      off += (*is)->nscans;
     }
     std::cerr << "WARNING in Multiscanner::ComputeOffset():\n"
 	      << "  scanner not registered, returning 0\n";
     return 0;
   }
-  
-  
-  int Multiscanner::
+
+
+  bool Multiscanner::
   UpdateAll()
   {
-    for(vector_t::iterator is(m_scanner.begin());
-	is != m_scanner.end();
-	++is)
-      if(0 > (*is)->Update())
-	return -1;
-    return 0;
+    bool ok(true);
+    for(size_t ii(0); ii < m_scanner.size(); ++ii)
+      if(0 > m_scanner[ii]->Update())
+	ok = false;
+    return ok;
   }
-  
+
 }

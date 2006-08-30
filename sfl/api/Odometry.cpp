@@ -25,7 +25,6 @@
 #include "Odometry.hpp"
 #include "HAL.hpp"
 #include "Pose.hpp"
-#include <sfl/util/Mutex.hpp>
 #include <iostream>
 
 
@@ -36,9 +35,27 @@ using namespace std;
 namespace sfl {
   
   
+  OdometryThread::
+  OdometryThread(const string & name, ostream * _dbgos)
+    : SimpleThread(name), dbgos(_dbgos)
+  {
+  }
+  
+  
+  void OdometryThread::
+  Step()
+  {
+    if( ! odometry){
+      update_status = -42;
+      return;
+    }
+    update_status = odometry->DoUpdate(dbgos);
+  }
+  
+  
   Odometry::
-  Odometry(shared_ptr<HAL> hal, shared_ptr<Mutex> mutex)
-    : m_hal(hal), m_mutex(mutex)
+  Odometry(shared_ptr<HAL> hal, shared_ptr<RWlock> rwlock)
+    : m_hal(hal), m_rwlock(rwlock)
   {
   }
   
@@ -64,16 +81,27 @@ namespace sfl {
 		 << "  time_get() returned " << res << "\n";
       return res;
     }
-    m_mutex->Lock();
+    m_rwlock->Wrlock();
     m_history.clear();
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
-    m_mutex->Unlock();
+    m_rwlock->Unlock();
     return 0;
   }
   
   
   int Odometry::
   Update(ostream * dbgos)
+  {
+    if(m_thread){
+      m_thread->dbgos = dbgos;
+      return m_thread->update_status;
+    }
+    return DoUpdate(dbgos);
+  }
+  
+  
+  int Odometry::
+  DoUpdate(ostream * dbgos)
   {
     struct ::timespec timestamp;
     double x, y, t, sxx, syy, stt, sxy, sxt, syt;
@@ -88,9 +116,9 @@ namespace sfl {
       return res;
     }
     shared_ptr<Pose> pose(new Pose(x, y, t, sxx, syy, stt, sxy, sxt, syt));
-    m_mutex->Lock();
+    m_rwlock->Wrlock();
     m_history.insert(make_pair(timestamp, pose));    
-    m_mutex->Unlock();
+    m_rwlock->Unlock();
     return 0;
   }
   
@@ -98,7 +126,7 @@ namespace sfl {
   shared_ptr<const Pose> Odometry::
   Get() const
   {
-    Mutex::sentry(m_mutex.get());
+    RWlock::rdsentry sentry(m_rwlock);
     if(m_history.empty())
       return shared_ptr<const Pose>(new Pose());
     return m_history.rbegin()->second;
@@ -135,10 +163,22 @@ namespace sfl {
     res = m_hal->time_get(&timestamp);
     if(res != 0)
       return res;
-    m_mutex->Lock();
+    m_rwlock->Wrlock();
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
-    m_mutex->Unlock();
+    m_rwlock->Unlock();
     return 0;
+  }
+  
+  
+  bool Odometry::
+  SetThread(shared_ptr<OdometryThread> thread)
+  {
+    RWlock::wrsentry sentry(m_rwlock);
+    if(m_thread)
+      return false;
+    m_thread = thread;
+    thread->odometry = this;
+    return true;
   }
   
 }

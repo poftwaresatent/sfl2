@@ -28,17 +28,17 @@
 #include <sfl/util/Ray.hpp>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 
 
-using boost::shared_ptr;
-using std::ostream;
-using std::vector;
-
-
-const double sfl::DistanceObjective::invalidTime = -1;
+using namespace boost;
+using namespace std;
 
 
 namespace sfl {
+
+
+  const double DistanceObjective::invalidTime(-1);
   
   
   DistanceObjective::
@@ -107,7 +107,8 @@ namespace sfl {
     
     if(progress_stream != 0)
       (*progress_stream) << "DistanceObjective::Initialize()\n"
-			 << "   calculating main lookup table...\n";
+			 << "   calculating main lookup table...\n"
+			 << flush;
     
     for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
       double yy(FindYlength(igy));
@@ -134,13 +135,13 @@ namespace sfl {
 	  
 	  if(nValidCollisions > 0){
 	    if(progress_stream != 0)
-	      (*progress_stream) << "*";
+	      (*progress_stream) << "*" << flush;
 	    (*_timeLookup)[igx][igy].reset(new Lookup(buffer, 0, _maxTime,
 						   invalidTime));
 	  }
 	  else
 	    if(progress_stream != 0)
-	      (*progress_stream) << "o";
+	      (*progress_stream) << "o" << flush;
 	}
 	else{
 	  // fill it with epsilon collision time to make the robot stop if
@@ -156,14 +157,14 @@ namespace sfl {
 	  (*_timeLookup)[igx][igy].reset(new Lookup(buffer, 0, _maxTime,
 						 invalidTime));
 	  if(progress_stream != 0)
-	    (*progress_stream) << ".";
+	    (*progress_stream) << "." << flush;
 	}
       }
       if(progress_stream != 0)
-	(*progress_stream) << "\n";
+	(*progress_stream) << "\n" << flush;
     }
     if(progress_stream != 0)
-      (*progress_stream) << "   finished.\n";
+      (*progress_stream) << "   finished.\n" << flush;
   }
   
   
@@ -257,7 +258,7 @@ namespace sfl {
   
   void DistanceObjective::
   Calculate(double timestep, size_t qdlMin, size_t qdlMax, size_t qdrMin,
-	    size_t qdrMax, boost::shared_ptr<const Scan> local_scan)
+	    size_t qdrMax, shared_ptr<const Scan> local_scan)
   {
     ResetGrid();
     UpdateGrid(local_scan);
@@ -289,11 +290,11 @@ namespace sfl {
 
 
   void DistanceObjective::
-  UpdateGrid(boost::shared_ptr<const Scan> local_scan)
+  UpdateGrid(shared_ptr<const Scan> local_scan)
   {
-    const size_t nscans(local_scan->GetNScans());
+    const size_t nscans(local_scan->data.size());
     for(size_t is(0); is < nscans; ++is){
-      const Scan::data_t & ldata(local_scan->GetData(is));
+      const scan_data & ldata(local_scan->data[is]);
       if((ldata.locx >= _x0) &&
 	 (ldata.locx <= _x1) && 
 	 (ldata.locy >= _y0) &&
@@ -425,7 +426,7 @@ namespace sfl {
 
   
   void DistanceObjective::
-  DumpGrid(std::ostream & os, const char * prefix) const
+  DumpGrid(ostream & os, const char * prefix) const
   {
     for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
       const double yy(FindYlength(igy));

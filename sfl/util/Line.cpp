@@ -81,4 +81,13 @@ namespace sfl {
 			cx, cy, cr, q1x, q1y, q2x, q2y, valid1, valid2);
   }
   
+
+  Line & Line::
+  operator = (const Line & orig)
+  {
+    p0 = orig.p0;
+    p1 = orig.p1;
+    return * this;
+  }
+  
 }

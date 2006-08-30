@@ -30,6 +30,9 @@
 namespace sfl {
   
   
+  const double NF1Wave::FREE(-2);
+  const double NF1Wave::OBSTACLE(-1);
+  const double NF1Wave::GOAL(0);
   NF1Wave::indexlist_t NF1Wave::propagation_neighbor;
   NF1Wave::indexlist_t NF1Wave::gradient_neighbor;
   

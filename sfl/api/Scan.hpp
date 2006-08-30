@@ -27,73 +27,65 @@
 
 
 #include <sfl/api/Timestamp.hpp>
+#include <sfl/api/Pose.hpp>
 #include <vector>
 
 
 namespace sfl {
 
-
+  struct scan_data {
+    /** ray angles [rad] */      
+    double phi;
+    /** measured distances [m] */      
+    double rho;
+    /** x-coordinates [m] in the robot frame */      
+    double locx;
+    /** y-coordinates [m] in the robot frame */      
+    double locy;
+    /** x-coordinates [m] in the global frame */      
+    double globx;
+    /** y-coordinates [m] in the global frame */      
+    double globy;
+  };
+  
   /**
      Encapsulates the whole dataset of a scan, useful for algorithms
      that are formulated for using arrays of data. Contains timestamp
-     information in the form of an upper and a lower bound, this makes
-     it useful in settings where scans are collected from multiple
-     sensors.
+     information in the form of an upper and a lower bound, useful for
+     determining if data is still fresh, and in multisensor data
+     fusion.
   */
   class Scan
   {
   public:
-    class data_t {
-    public:
-      /** ray angles [rad] */      
-      double phi;
-      /** measured distances [m] */      
-      double rho;
-      /** x-coordinates [m] in the robot frame */      
-      double locx;
-      /** y-coordinates [m] in the robot frame */      
-      double locy;
-    };
-    
+    /** \note that Scan allows everyone to access its fields */
+    typedef std::vector<scan_data> array_t;
     
     /**
-       Constructor for empty (zeroed arrays) data sets. By default,
-       the acquisition time bounds Scan::_tlower and Scan::_tupper are
-       initialized to the minimum (Timestamp::First()) and maximum
-       (Timestamp::Last()) of all possible time values.
+       Constructor for empty (zeroed arrays) data sets.
     */
     Scan(/** number of data points */
 	 size_t nscans,
 	 /** lower bound on the acquisition timestamp */
-	 const Timestamp & tlower = Timestamp::First(),
+	 const Timestamp & tlower,
 	 /** upper bound on the acquisition timestamp */
-	 const Timestamp & tupper = Timestamp::Last());
+	 const Timestamp & tupper,
+	 /** estimated robot position at "most probable" acquisition time */
+	 const Pose & pose);
     
     Scan(const Scan & original);
     
-    
-    size_t GetNScans() const { return m_data.size(); }
-    const Timestamp & GetTLower() const { return m_tlower; }
-    const Timestamp & GetTUpper() const { return m_tupper; }
-    
-    /** \pre index < GetNScans() */
-    const data_t & GetData(size_t index) const { return m_data[index]; }
-    
-    
-  protected:
-    friend class Scanner;
-    friend class Multiscanner;
-    
-    typedef std::vector<data_t> array_t;
-    
     /** lower bound of the estimated acquisition time */
-    Timestamp m_tlower;
+    Timestamp tlower;
     
     /** upper bound of the estimated acquisition time */
-    Timestamp m_tupper;
+    Timestamp tupper;
+    
+    /** estimated robot position at "most probable" acquisition time */
+    Pose pose;
     
     /** array of scan data */
-    array_t m_data;
+    array_t data;
   };
   
 }

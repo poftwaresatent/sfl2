@@ -23,45 +23,70 @@
 
 
 #include "Scanner.hpp"
+#include "HAL.hpp"
+#include "Scan.hpp"
+#include "Timestamp.hpp"
+#include <sfl/util/Pthread.hpp>
+#include <sfl/util/Frame.hpp>
+#include <boost/scoped_array.hpp>
 #include <cmath>
 
 
-using boost::shared_ptr;
-using std::string;
-using std::ostream;
+using namespace boost;
+using namespace std;
 
 
 namespace sfl {
   
   
-  Scanner::
-  Scanner(shared_ptr<HAL> hal,
-	  int _hal_channel,
-	  const string & name,
-	  const Frame & mount,
-	  unsigned int nscans,
-	  double rhomax,
-	  double phi0,
-	  double phirange):
-    hal_channel(_hal_channel),
-    m_name(name),
-    m_mount(mount),
-    m_nscans(nscans),
-    m_rhomax(rhomax),
-    m_phi0(phi0),
-    m_phirange(phirange),
-    m_dphi(phirange / nscans),
-    m_hal(hal),
-    m_scan(nscans),
-    m_data_ok(false),
-    m_cosphi(nscans, 0.0),
-    m_sinphi(nscans, 0.0)
+  ScannerThread::
+  ScannerThread(const string & name)
+    : SimpleThread(name)
   {
-    for(size_t i(0); i < m_nscans; ++i){
-      m_scan.m_data[i].phi = m_phi0 + m_dphi * i;
-      m_cosphi[i] = cos(m_scan.m_data[i].phi);
-      m_sinphi[i] = sin(m_scan.m_data[i].phi);
-      m_scan.m_data[i].rho = m_rhomax;
+  }
+    
+  
+  void ScannerThread::
+  Step()
+  {
+    if( ! scanner){
+      update_status = -42;
+      return;
+    }
+    update_status = scanner->DoUpdate();
+  }
+  
+  
+  Scanner::
+  Scanner(shared_ptr<HAL> hal, int _hal_channel, const Frame & _mount,
+	  size_t _nscans, double _rhomax, double _phi0, double _phirange,
+	  shared_ptr<Mutex> mutex)
+    : mount(new Frame(_mount)),
+      hal_channel(_hal_channel),
+      nscans(_nscans),
+      rhomax(_rhomax),
+      phi0(_phi0),
+      phirange(_phirange),
+      dphi(_phirange / _nscans),
+      m_hal(hal),
+      m_acquisition_ok(false),
+      m_cosphi(nscans, 0.0),
+      m_sinphi(nscans, 0.0),
+      m_mutex(mutex)
+  {
+    m_buffer.push_back(shared_ptr<Scan>(new Scan(nscans, Timestamp::First(),
+						 Timestamp::Last(),
+						 Pose())));
+    m_buffer.push_back(shared_ptr<Scan>(new Scan(*m_buffer.back())));
+    m_dirty = m_buffer[0];
+    m_clean = m_buffer[1];
+    for(size_t i(0); i < nscans; ++i){
+      m_clean->data[i].phi = phi0 + dphi * i;
+      m_dirty->data[i].phi = m_clean->data[i].phi;
+      m_cosphi[i] = cos(m_clean->data[i].phi);
+      m_sinphi[i] = sin(m_clean->data[i].phi);
+      m_clean->data[i].rho = rhomax;
+      m_dirty->data[i].rho = rhomax;
     }
   }
   
@@ -69,86 +94,102 @@ namespace sfl {
   int Scanner::
   Update()
   {
-    // NOTE: It's important to set m_data_ok to true before calling
-    // m_hal->scan_get() because in nepumuk's HAL implementation, that
-    // ends up querying this Scanner instance about rho!
-    m_data_ok = true;
-    double rho[m_nscans];
+    if(m_thread)
+      return m_thread->update_status;
+    return DoUpdate();
+  }
+
+
+  bool Scanner::
+  SetThread(shared_ptr<ScannerThread> thread)
+  {
+    Mutex::sentry sentry(m_mutex);
+    if(m_thread)
+      return false;
+    m_thread = thread;
+    thread->scanner = this;
+    return true;
+  }
+  
+  
+  int Scanner::
+  DoUpdate()
+  {
+    // We work with the dirty buffer, and at the end do a quick swap
+    // protected by mutex.
+    
+    scoped_array<double> rho(new double[nscans]);
     struct ::timespec t0, t1;
-    const int res(m_hal->scan_get(hal_channel, rho, m_nscans, &t0, &t1));
-    if(0 != res){
-      m_data_ok = false;
-      return res;
+    int status(m_hal->scan_get(hal_channel, rho.get(), nscans, &t0, &t1));
+    if(0 != status){
+      m_mutex->Lock();
+      m_acquisition_ok = false;
+      m_mutex->Unlock();
+      return status;
     }
     
-    m_scan.m_tlower = t0;
-    m_scan.m_tupper = t1;
-    for(size_t i(0); i < m_nscans; ++i){
-      m_scan.m_data[i].rho = rho[i];
-      m_scan.m_data[i].locx = rho[i] * m_cosphi[i];
-      m_scan.m_data[i].locy = rho[i] * m_sinphi[i];
-      m_mount.To(m_scan.m_data[i].locx, m_scan.m_data[i].locy);
+    double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
+    struct ::timespec foo;
+    status = m_hal->odometry_get(&foo, &x, &y, &theta, &sxx, &syy, &stt,
+				 &sxy, &sxt, &syt);
+    if(0 != status){
+      m_mutex->Lock();
+      m_acquisition_ok = false;
+      m_mutex->Unlock();
+      return status;
     }
+    
+    m_dirty->tlower = t0;
+    m_dirty->tupper = t1;
+    m_dirty->pose.Set(x, y, theta);
+    m_dirty->pose.SetVar(sxx, syy, stt, sxy, sxt, syt);
+    for(size_t i(0); i < nscans; ++i){
+      m_dirty->data[i].rho = rho[i];
+      m_dirty->data[i].locx = rho[i] * m_cosphi[i];
+      m_dirty->data[i].locy = rho[i] * m_sinphi[i];
+      mount->To(m_dirty->data[i].locx, m_dirty->data[i].locy);
+      m_dirty->data[i].globx = m_dirty->data[i].locx;
+      m_dirty->data[i].globy = m_dirty->data[i].locy;
+      m_dirty->pose.To(m_dirty->data[i].globx, m_dirty->data[i].globy);
+    }
+    m_mutex->Lock();
+    m_acquisition_ok = true;
+    swap(m_dirty, m_clean);
+    m_mutex->Unlock();
+    
     return 0;
   }
   
   
   Scanner::status_t Scanner::
-  GetLocal(unsigned int index,
-	   double & x,
-	   double & y)
-    const
+  GetData(size_t index, scan_data & data) const
   {
-    if( ! m_data_ok)
-      return ACQUISITION_ERROR;
-    if(index >= m_nscans)
+    if(index >= nscans)
       return INDEX_ERROR;
     
-    x = m_scan.m_data[index].locx;
-    y = m_scan.m_data[index].locy;
-    
-    if(m_scan.m_data[index].rho >= m_rhomax)
+    Mutex::sentry sentry(m_mutex);
+    data = m_clean->data[index];
+    if(data.rho >= rhomax)
       return OUT_OF_RANGE;
     return SUCCESS;
   }
   
   
   Scanner::status_t Scanner::
-  Rho(unsigned int index,
-      double & rho)
-    const
+  Phi(size_t index, double & phi) const
   {
-    if( ! m_data_ok)
-      return ACQUISITION_ERROR;
-    if(index >= m_nscans)
+    if(index >= nscans)
       return INDEX_ERROR;
-    
-    rho = m_scan.m_data[index].rho;
-    
-    if(m_scan.m_data[index].rho >= m_rhomax)
-      return OUT_OF_RANGE;    
+    // no need for mutex because phi isn't touched by Update()
+    phi = m_clean->data[index].phi;
     return SUCCESS;
   }
   
   
   Scanner::status_t Scanner::
-  Phi(unsigned int index,
-      double & phi)
-    const
+  CosPhi(size_t index, double & cosphi) const
   {
-    if(index >= m_nscans)
-      return INDEX_ERROR;
-    phi = m_scan.m_data[index].phi;
-    return SUCCESS;
-  }
-  
-  
-  Scanner::status_t Scanner::
-  CosPhi(unsigned int index,
-	 double & cosphi)
-    const
-  {
-    if(index >= m_nscans)
+    if(index >= nscans)
       return INDEX_ERROR;
     cosphi = m_cosphi[index];
     return SUCCESS;
@@ -156,22 +197,36 @@ namespace sfl {
   
   
   Scanner::status_t Scanner::
-  SinPhi(unsigned int index,
-	 double & sinphi)
-    const
+  SinPhi(size_t index, double & sinphi) const
   {
-    if(index >= m_nscans)
+    if(index >= nscans)
       return INDEX_ERROR;
     sinphi = m_sinphi[index];
     return SUCCESS;
   }
   
-
+  
   shared_ptr<Scan> Scanner::
-  GetScanCopy()
-    const
+  GetScanCopy() const
   {
-    return shared_ptr<Scan>(new Scan(m_scan));
+    Mutex::sentry sentry(m_mutex);
+    return shared_ptr<Scan>(new Scan(*m_clean));
+  }
+  
+  
+  const Timestamp & Scanner::
+  Tupper() const
+  {
+    Mutex::sentry sentry(m_mutex);
+    return m_clean->tupper;
+  }
+  
+  
+  const Timestamp & Scanner::
+  Tlower() const
+  {
+    Mutex::sentry sentry(m_mutex);
+    return m_clean->tlower;
   }
   
 }

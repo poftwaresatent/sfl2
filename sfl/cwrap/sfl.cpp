@@ -23,20 +23,20 @@
 #include "cwrapHAL.hpp"
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
-//#include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
-#include <sfl/util/fprintfos.hpp>
-#include <sfl/util/Mutex.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionController.hpp>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 
 using namespace sfl;
-using boost::shared_ptr;
+using namespace boost;
+using namespace std;
 
 
 namespace sfl_cwrap {
@@ -45,7 +45,6 @@ namespace sfl_cwrap {
   static Handlemap<HAL>           HAL_map;
   static Handlemap<Scanner>       Scanner_map;
   static Handlemap<Multiscanner>  Multiscanner_map;
-  //  static Handlemap<DiffDrive>     DiffDrive_map;
   static Handlemap<RobotModel>    RobotModel_map;
   static Handlemap<DynamicWindow> DynamicWindow_map;
   static Handlemap<BubbleBand>    BubbleBand_map;
@@ -62,10 +61,6 @@ namespace sfl_cwrap {
   
   shared_ptr<Multiscanner> get_Multiscanner(int handle)
   { return Multiscanner_map.Find(handle); }
-
-  
-//   shared_ptr<DiffDrive> get_DiffDrive(int handle)
-//   { return DiffDrive_map.Find(handle); }
 
   
   shared_ptr<RobotModel> get_RobotModel(int handle)
@@ -93,29 +88,40 @@ int sfl_create_HAL(struct cwrap_hal_s * cwrap_hal)
 { return HAL_map.InsertRaw(new cwrapHAL(cwrap_hal)); }
   
   
-int sfl_create_Scanner(int hal_handle, int hal_channel, const char * name,
+int sfl_create_Scanner(int hal_handle, int hal_channel,
 		       double mount_x, double mount_y, double mount_theta,
 		       int nscans, double rhomax, double phi0,
 		       double phirange)
 {
+//   shared_ptr<Odometry> odo(get_Odometry(odometry_handle));
+//   if( ! odo)
+//     return -1;
   shared_ptr<HAL> hal(get_HAL(hal_handle));
   if( ! hal)
-    return -1;
-  return Scanner_map.InsertRaw(new Scanner(hal, hal_channel, name,
-					   Frame(mount_x,
-						 mount_y,
-						 mount_theta),
-					   nscans, rhomax, phi0, phirange));
+    return -2;
+  ostringstream os;
+  os << "cwrap-Scanner-" << hal_channel;
+  shared_ptr<Mutex> mutex(Mutex::Create(os.str()));
+  if( ! mutex)
+    return -3;
+  return Scanner_map.
+    InsertRaw(new Scanner(hal, hal_channel,
+			  Frame(mount_x, mount_y, mount_theta),
+			  nscans, rhomax, phi0, phirange, mutex));
 }
   
   
-int sfl_create_Multiscanner(int * Scanner_handle, int nscanners)
+int sfl_create_Multiscanner(int odometry_handle,
+			    int * scanner_handle, int nscanners)
 {
-  shared_ptr<Multiscanner> ms(new Multiscanner());
+  shared_ptr<Odometry> odo(get_Odometry(odometry_handle));
+  if( ! odo)
+    return -1;
+  shared_ptr<Multiscanner> ms(new Multiscanner(odo));
   for(int is(0); is < nscanners; ++is){
-    shared_ptr<Scanner> sc(get_Scanner(Scanner_handle[is]));
+    shared_ptr<Scanner> sc(get_Scanner(scanner_handle[is]));
     if( ! sc)
-      return -1;
+      return -2 - is;
     ms->Add(sc);
   }
   return Multiscanner_map.Insert(ms);
@@ -124,6 +130,7 @@ int sfl_create_Multiscanner(int * Scanner_handle, int nscanners)
   
 int sfl_create_BubbleBand(int RobotModel_handle,
 			  int Odometry_handle,
+			  int Multiscanner_handle,
 			  double shortpath, double longpath,
 			  double max_ignore_distance)
 {
@@ -133,20 +140,16 @@ int sfl_create_BubbleBand(int RobotModel_handle,
   shared_ptr<Odometry> odom(get_Odometry(Odometry_handle));
   if( ! odom)
     return -2;
+  shared_ptr<Multiscanner> mscan(get_Multiscanner(Multiscanner_handle));
+  if( ! mscan)
+    return -3;
+  shared_ptr<RWlock> rwlock(RWlock::Create("cwrap-BubbleBand"));
+  if( ! rwlock)
+    return -4;
   BubbleList::Parameters parms(shortpath, longpath, max_ignore_distance);
-  return BubbleBand_map.InsertRaw(new BubbleBand(*rm, *odom, parms));
+  return BubbleBand_map.InsertRaw(new BubbleBand(*rm, *odom, *mscan,
+						 parms, rwlock));
 }
-  
-  
-// int sfl_create_DiffDrive(int hal_handle,
-// 			 double wheelbase, double wheelradius)
-// {
-//   shared_ptr<HAL> hal(get_HAL(hal_handle));
-//   if( ! hal)
-//     return -1;
-//   return DiffDrive_map.InsertRaw(new DiffDrive(hal.get(),
-// 					       wheelbase, wheelradius));
-// }
   
   
 int sfl_create_RobotModel(double security_distance,
@@ -177,7 +180,7 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
 			     double alpha_distance,
 			     double alpha_heading,
 			     double alpha_speed,
-			     FILE *progress)
+			     const char * filename)
 {
   shared_ptr<RobotModel> rm(get_RobotModel(RobotModel_handle));
   if( ! rm)
@@ -196,8 +199,17 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
 						  alpha_heading,
 						  alpha_speed,
 						  false));
-  fprintfos os(progress);
-  if( ! dwa->Initialize( & os, false))
+  shared_ptr<ofstream> osf;
+  ostream * osp(0);
+  if(0 != filename){
+    if("" == string(filename))
+      osp = &cerr;
+    else{
+      osf.reset(new ofstream(filename));
+      osp = osf.get();
+    }
+  }
+  if( ! dwa->Initialize(osp, false))
     return -3;
   return DynamicWindow_map.Insert(dwa);
 }
@@ -208,10 +220,10 @@ int sfl_create_Odometry(int HAL_handle)
   shared_ptr<HAL> hal(get_HAL(HAL_handle));
   if( ! hal)
     return -1;
-  shared_ptr<Mutex> mutex(Mutex::Create());
-  if( ! mutex)
+  shared_ptr<RWlock> rwlock(RWlock::Create("cwrap-Odometry"));
+  if( ! rwlock)
     return -2;
-  return Odometry_map.InsertRaw(new Odometry(hal, mutex));
+  return Odometry_map.InsertRaw(new Odometry(hal, rwlock));
 }
 
 
@@ -221,10 +233,6 @@ void sfl_destroy_HAL(int handle)
   
 void sfl_destroy_Scanner(int handle)
 { Scanner_map.Erase(handle); }
-  
-  
-// void sfl_destroy_DiffDrive(int handle)
-// { DiffDrive_map.Erase(handle); }
   
   
 void sfl_destroy_RobotModel(int handle)
@@ -247,25 +255,35 @@ void sfl_destroy_Multiscanner(int handle)
 { Multiscanner_map.Erase(handle); }
 
 
-int sfl_dump_obstacles(int DynamicWindow_handle, FILE * stream,
+int sfl_dump_obstacles(int DynamicWindow_handle, const char * filename,
 		       const char * prefix)
 {
   shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
   if( ! dwa)
     return -1;
-  fprintfos os(stream);
-  dwa->DumpObstacles(os, prefix);
+  shared_ptr<ofstream> osf;
+  ostream * osp(&cout);
+  if((0 != filename) && ("" != string(filename))){
+    osf.reset(new ofstream(filename));
+    osp = osf.get();
+  }
+  dwa->DumpObstacles(*osp, prefix);
   return 0;
 }
 
 
-int sfl_dump_dwa(int DynamicWindow_handle, FILE * stream,
+int sfl_dump_dwa(int DynamicWindow_handle, const char * filename,
 		 const char * prefix)
 {
   shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
   if( ! dwa)
     return -1;
-  fprintfos os(stream);
-  dwa->DumpObjectives(os, prefix);
+  shared_ptr<ofstream> osf;
+  ostream * osp(&cout);
+  if((0 != filename) && ("" != string(filename))){
+    osf.reset(new ofstream(filename));
+    osp = osf.get();
+  }
+  dwa->DumpObjectives(*osp, prefix);
   return 0;
 }

@@ -32,6 +32,10 @@ using std::numeric_limits;
 
 
 namespace sfl {
+
+
+  const double Objective::minValue(0);
+  const double Objective::maxValue(1);
   
   
   Objective::

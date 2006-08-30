@@ -50,7 +50,7 @@ extern "C" {
   
   /** \return >=0 on success, -1 if invalid RobotModel_handle, -2 if
       invalid HAL_handle, -3 if could not allocate
-      sfl::Mutex. */
+      sfl::RWlock. */
   int expo_create_MotionController(int RobotModel_handle,
 				   int HAL_handle);
   

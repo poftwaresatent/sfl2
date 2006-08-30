@@ -5,9 +5,6 @@ Aim: Less dependent on exact execution period
        ==> actually trivial with recent refactorings, mod -1 urgency
 
 Aim: Cleanup for external use
-     - Some (many) \todo comments should be \note
-     DONE - Remove api/types.hpp, use std::size_t instead of sfl::index_t,
-            unsigned int, or (gasp!) int
      - Make use of BubbleFactory optional (but KEEP it, make it a
        configurable behavior)
      - Make use of (compressed) lookup optional in DWA (but KEEP it,
@@ -15,22 +12,22 @@ Aim: Cleanup for external use
        ==> actually trivial with recent refactorings, mod -1 urgency
 
 Aim: Port to OpenRobots
-     DONE - Replace HALProxy class by C struct with function pointers
-     DONE - Invent eg handle-based opaque access to objects in C wrappers
-            that provide an API eg on a per-directory basis.
      - Extract multi-tasking stuff from XOberon code (ie mutexes and
        initialization of threads), priorities:
          - make use of mutexes configurable
-         - round-robin mutexed laser scans
+         DONE - round-robin mutexed laser scans
          DONE - mutexed odometry
          DONE - mutexed motion controller
          - multi-threaded mutexed nf1/bband/dwa
-
-Aim: Promote use by Cogniron partners
-     DONE - Write XCF wrapper
-     - Write PlayerStage wrapper
-     DONE - Create autotools scripts for those who don't have SCons
-     - Include boost::smart_ptr library in package (check licence first!)
+     - Test multithreading: add update threads to
+       DONE - Scanner
+       DONE - Odometry
+       DONE - MotionController
+       DONE - BubbleBand (maybe later separate ReplanHandler and
+              BubbleFactory)
+URGENT: ugly bband/bfactory, need to liberate more ticks for readers!!!
+       - DynamicWindow and/or expo::MotionPlanner
+         ==> will stay "main push" thread for the moment...
 
 Aim: Make self-testing
      - Resurrect cppunit code in api/test

@@ -25,6 +25,7 @@
 #include "MotionPlannerState.hpp"
 #include <sfl/api/Pose.hpp>
 #include <sfl/bband/BubbleBand.hpp>
+#include <cmath>
 
 
 using namespace boost;
@@ -32,6 +33,10 @@ using namespace std;
 
 
 namespace expo {
+
+
+  const double TakeAimState::DTHETASTARTHOMING(10 * M_PI / 180);
+  const double AimedState::DTHETASTARTAIMING(45 * M_PI / 180);
 
 
   MotionPlannerState::
@@ -111,7 +116,7 @@ namespace expo {
 
   void MotionPlannerState::
   TurnToward(double timestep, direction_t direction,
-	     shared_ptr<const sfl::GlobalScan> global_scan)
+	     shared_ptr<const sfl::Scan> global_scan)
     const
   {
     _fields->dynamicWindow.GoSlow();
@@ -121,7 +126,7 @@ namespace expo {
 
   void MotionPlannerState::
   GoAlong(double timestep, direction_t direction,
-	  shared_ptr<const sfl::GlobalScan> global_scan)
+	  shared_ptr<const sfl::Scan> global_scan)
     const
   {
     _fields->dynamicWindow.GoFast();
@@ -130,24 +135,23 @@ namespace expo {
 
 
   MotionPlannerState::direction_t MotionPlannerState::
-  AskBubbleBand(shared_ptr<const sfl::GlobalScan> global_scan)
-    const
+  AskBubbleBand() const
   {
-    direction_t ret;
-    _fields->bubbleBand.Update(global_scan);
-    if(_fields->bubbleBand.GetState() == sfl::BubbleBand::NOBAND)
-      ret = make_pair(_fields->goal.X(), _fields->goal.Y());
-    else
-      ret = _fields->bubbleBand.GetSubGoal();
-    _fields->odometry.Get()->From(ret.first, ret.second);
-    return ret;
+    _fields->bubbleBand.Update();
+    double goalx(_fields->goal.X());
+    double goaly(_fields->goal.Y());
+    if(_fields->bubbleBand.GetState() != sfl::BubbleBand::NOBAND)
+      _fields->bubbleBand.GetSubGoal(_fields->bubbleBand.robot_radius,
+				     goalx, goaly);
+    _fields->odometry.Get()->From(goalx, goaly);
+    return make_pair(goalx, goaly);
   }
 
 
   void MotionPlannerState::
   AskDynamicWindow(double timestep,
 		   direction_t direction,
-		   shared_ptr<const sfl::GlobalScan> global_scan)
+		   shared_ptr<const sfl::Scan> global_scan)
     const
   {
     _fields->dynamicWindow.Update(timestep, direction.first, direction.second,
@@ -171,9 +175,9 @@ namespace expo {
 
 
   void TakeAimState::
-  Act(double timestep, shared_ptr<const sfl::GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    TurnToward(timestep, GetPathDirection(global_scan), global_scan);
+    TurnToward(timestep, GetPathDirection(), global_scan);
   }
 
 
@@ -192,9 +196,9 @@ namespace expo {
 
 
   MotionPlannerState::direction_t TakeAimState::
-  GetPathDirection(shared_ptr<const sfl::GlobalScan> global_scan)
+  GetPathDirection()
   {
-    direction_t dir = AskBubbleBand(global_scan);
+    direction_t dir(AskBubbleBand());
     dheading = atan2(dir.second, dir.first);
     if( ! _fields->goForward)
       if(dheading > 0)
@@ -221,9 +225,9 @@ namespace expo {
 
 
   void AimedState::
-  Act(double timestep, shared_ptr<const sfl::GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    GoAlong(timestep, GetPathDirection(global_scan), global_scan);
+    GoAlong(timestep, GetPathDirection(), global_scan);
   }
 
 
@@ -242,9 +246,9 @@ namespace expo {
 
 
   MotionPlannerState::direction_t AimedState::
-  GetPathDirection(shared_ptr<const sfl::GlobalScan> global_scan)
+  GetPathDirection()
   {
-    direction_t dir(AskBubbleBand(global_scan));
+    direction_t dir(AskBubbleBand());
     dheading = atan2(dir.second, dir.first);
     if( ! _fields->goForward)
       if(dheading > 0)
@@ -271,14 +275,14 @@ namespace expo {
 
 
   void AdjustGoalHeadingState::
-  Act(double timestep, shared_ptr<const sfl::GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    TurnToward(timestep, GetPathDirection(global_scan), global_scan);
+    TurnToward(timestep, GetPathDirection(), global_scan);
   }
 
 
   AdjustGoalHeadingState::direction_t AdjustGoalHeadingState::
-  GetPathDirection(shared_ptr<const sfl::GlobalScan> global_scan)
+  GetPathDirection()
   {
     shared_ptr<const sfl::Pose> pose(_fields->odometry.Get());    
     double dtheta;
@@ -295,9 +299,9 @@ namespace expo {
 
 
   void AtGoalState::
-  Act(double timestep, shared_ptr<const sfl::GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    TurnToward(timestep, GetPathDirection(global_scan), global_scan);
+    TurnToward(timestep, GetPathDirection(), global_scan);
   }
 
 
@@ -313,7 +317,7 @@ namespace expo {
 
 
   MotionPlannerState::direction_t AtGoalState::
-  GetPathDirection(shared_ptr<const sfl::GlobalScan> global_scan)
+  GetPathDirection()
   {
     return direction_t(1, 0);
   }
@@ -327,7 +331,7 @@ namespace expo {
 
 
   void NullState::
-  Act(double timestep, shared_ptr<const sfl::GlobalScan> global_scan)
+  Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
     _fields->motionController.ProposeActuators(0, 0);
   }
@@ -341,7 +345,7 @@ namespace expo {
 
 
   MotionPlannerState::direction_t NullState::
-  GetPathDirection(shared_ptr<const sfl::GlobalScan> global_scan)
+  GetPathDirection()
   {
     return direction_t(0, 0);
   }

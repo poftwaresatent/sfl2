@@ -115,8 +115,9 @@ namespace sfl {
 			 /** (return) is (q2x, q2y) a valid intersection? */
 			 bool & valid2
 			 ) const;
-  
-  
+    
+    Line & operator = (const Line & orig);
+    
   protected:
     Point p0, p1;
   };

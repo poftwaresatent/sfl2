@@ -23,24 +23,22 @@
 
 
 #include "MotionController.hpp"
-#include <sfl/util/Mutex.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <sfl/api/RobotModel.hpp>
 
 
-using sfl::minval;
-using sfl::maxval;
-using sfl::absval;
-using sfl::epsilon;
+using namespace sfl;
+using namespace boost;
 
 
 namespace expo {
 
 
   MotionController::
-  MotionController(boost::shared_ptr<const sfl::RobotModel> robotModel,
-		   boost::shared_ptr<sfl::HAL> hal,
-		   boost::shared_ptr<sfl::Mutex> mutex)
-    : sfl::MotionController(robotModel, hal, mutex)
+  MotionController(shared_ptr<const sfl::RobotModel> robotModel,
+		   shared_ptr<sfl::HAL> hal,
+		   shared_ptr<sfl::RWlock> rwlock)
+    : sfl::MotionController(robotModel, hal, rwlock)
   {
   }
   
@@ -48,26 +46,24 @@ namespace expo {
   bool MotionController::
   Stoppable(double timestep) const
   {
-    sfl::Mutex::sentry(m_mutex.get());
+    sfl::RWlock::rdsentry sentry(m_rwlock);
     const double qdStoppable(timestep * qddMax);
     return maxval(absval(m_currentQdl), absval(m_currentQdr)) < qdStoppable;
   }
   
   
   bool MotionController::
-  AlmostStraight()
-    const
+  AlmostStraight() const
   {
-    sfl::Mutex::sentry(m_mutex.get());
+    sfl::RWlock::rdsentry sentry(m_rwlock);
     return absval(m_currentQdl - m_currentQdr) <= epsilon;
   }
   
   
   bool MotionController::
-  Moving()
-    const
+  Moving() const
   {
-    sfl::Mutex::sentry(m_mutex.get());
+    sfl::RWlock::rdsentry sentry(m_rwlock);
     return minval(absval(m_currentQdl), absval(m_currentQdr)) > epsilon;
   }
   

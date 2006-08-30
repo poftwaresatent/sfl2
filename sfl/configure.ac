@@ -4,28 +4,35 @@ AC_PREREQ(2.57)
 
 AC_CANONICAL_HOST
 
+
 AC_PROG_CC
-if test "x${GCC}" = "xyes"; then
-   if [ -z "$CFLAGS" ]; then
-     CFLAGS="-Wall -pipe"
-   else
-     CFLAGS=`echo $CFLAGS | sed 's:-O.::'`
-     CFLAGS="$CFLAGS -Wall -pipe"
-   fi
-fi
+test "x${GCC}" = "xyes" && CFLAGS="-pipe"
 
 AC_PROG_CXX
-if test "x${GXX}" = "xyes"; then
-   if [ -z "$CXXFLAGS" ]; then
-     CXXFLAGS="-Wall -pipe"
-   else
-     CXXFLAGS=`echo $CXXFLAGS | sed 's:-O.::'`
-     CXXFLAGS="$CXXFLAGS -Wall -pipe"
-   fi
-fi
+test "x${GXX}" = "xyes" && CXXFLAGS="-pipe"
+
+AC_ARG_ENABLE(debug,
+  AC_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O2)]),
+  [
+    test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -g -O0"
+    test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -g -O0"
+  ],[
+    test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -O2"
+    test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -O2"
+  ])
+
+AC_ARG_ENABLE(pedantic,
+  AC_HELP_STRING([--enable-pedantic], [GCC option -pedantic (else -Wall)]),
+  [
+    test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -pedantic"
+    test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pedantic"
+  ],[
+    test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -Wall"
+    test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -Wall"
+  ])
 
 AC_ARG_WITH(boost,
-  AC_HELP_STRING([--with-boost=PATH], [specify boost install dir)]),
+  AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
   [
     if test "x$withval" = "x" ; then
       AC_SUBST(BOOST_CPPFLAGS, "")
@@ -54,20 +61,6 @@ AC_ARG_WITH(xcf,
     AC_SUBST(WITH_XCF, "NOXCF_")
     AC_SUBST(XCF_CPPFLAGS, "")
     AC_SUBST(XCF_LDFLAGS, "")])
-
-AC_ARG_WITH(sfl,
-  AC_HELP_STRING([--with-sfl=PATH], [specify sunflower install dir)]),
-  [
-    if test "x$withval" = "x" ; then
-      AC_SUBST(SFL_CPPFLAGS, "")
-      AC_SUBST(SFL_LDFLAGS, "")
-    else
-      AC_SUBST(SFL_CPPFLAGS, "-I${withval}/include")
-      AC_SUBST(SFL_LDFLAGS, "-L${withval}/lib")
-    fi
-  ],[
-    AC_SUBST(SFL_CPPFLAGS, "")
-    AC_SUBST(SFL_LDFLAGS, "")])
 
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL

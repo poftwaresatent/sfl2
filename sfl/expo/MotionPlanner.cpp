@@ -57,7 +57,7 @@ namespace expo {
   {
     shared_ptr<const sfl::Pose> pose(_fields.odometry.Get());
     _internal_state = _internal_state->NextState(timestep);
-    _internal_state->Act(timestep, _multiscanner.CollectGlobalScans( * pose));
+    _internal_state->Act(timestep, _multiscanner.CollectScans());
   }
   
   
@@ -92,7 +92,7 @@ namespace expo {
     sfl::Odometry & odo(const_cast<sfl::Odometry &>(_fields.odometry));
     if(0 > odo.Update())
       return -1;
-    if(0 > _multiscanner.UpdateAll())
+    if( ! _multiscanner.UpdateAll())
       return -2;
     Update(timestep);
     if(0 > _fields.motionController.Update(timestep))

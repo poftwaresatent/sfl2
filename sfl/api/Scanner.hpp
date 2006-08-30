@@ -26,16 +26,45 @@
 #define SUNFLOWER_SCANNER_HPP
 
 
-#include <sfl/util/Frame.hpp>
-#include <sfl/api/Scan.hpp>
-#include <sfl/api/HAL.hpp>
-#include <sfl/api/Timestamp.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
 
 
 namespace sfl {
+  
+  
+  class HAL;
+  class Scan;
+  class scan_data;
+  class Timestamp;
+  class Frame;
+  
+  
+  /**
+     Optional update thread for Scanner. If you use one of these,
+     Scanner::Update() will only return the status of the previous
+     loop of ScannerThread (which will call
+     Scanner::DoUpdate()).
+  */
+  class ScannerThread
+    : public SimpleThread
+  {
+  private:
+    ScannerThread(const ScannerThread &);
+    
+  public:
+    /** You still have to call Scanner::SetThread() and
+	ScannerThread::Start(). */
+    explicit ScannerThread(const std::string & name);
+    virtual void Step();
+    
+  protected:
+    friend class Scanner;
+    Scanner * scanner;
+    int update_status;
+  };
   
   
   /**
@@ -108,12 +137,9 @@ namespace sfl {
       /** You provided an invalid index. */
       INDEX_ERROR,
       /** The value is out of range (Scanner::Rhomax()). */
-      OUT_OF_RANGE,
-      /** An error occurred. */
-      ACQUISITION_ERROR
+      OUT_OF_RANGE
     }
     status_t;
-    
     
     /**
        The <code>name</code> parameter is useful for distinguishing
@@ -121,36 +147,26 @@ namespace sfl {
        the other parameters is explained in more detail in the general
        section (Scanner class documentation, scroll your browser
        upwards).
-       
-       \todo Note that the HAL uses channel numbers instead of names
-       for distinguishing between scanners. It would be really cool to
-       define the names in the HAL and be able to use them "up" here.
     */
     Scanner(/** proxy object used to retrieve actual data */
 	    boost::shared_ptr<HAL> hal,
 	    /** HAL channel number */
 	    int hal_channel,
-	    /** name of the scanner */
-	    const std::string & name,
 	    /** sensor origin wrt robot frame, copied over */
 	    const Frame & mount,
 	    /** number of scans per measurement */
-	    unsigned int nscans,
+	    size_t nscans,
 	    /** maximum range [m] */
 	    double rhomax,
 	    /** angle of first ray wrt sensor frame [rad] */
 	    double phi0,
 	    /** angular range swept by measurement [rad] */
-	    double phirange);
-    
-    
-    /** \return The scanner's name. */
-    const std::string & Name() const { return m_name; }
+	    double phirange,
+	    /** required read/write lock */
+	    boost::shared_ptr<Mutex> mutex);
     
     /**
-       \return The current scan as an encapsulated data set unless an
-       error occurred during the previous call to Update(), in which
-       case a "zero" pointer is returned.
+       \return copy of the most recently acquired scan
        
        \note The returned Scan object uses (phi, rho) relative to the
        sensor origin and can still contain readings that are out of
@@ -163,45 +179,46 @@ namespace sfl {
     boost::shared_ptr<Scan> GetScanCopy() const;
     
     /**
-       Refresh the scan data. This should be done from within a
-       dedicated update-thread to avoid problems when multiple clients
-       access the Scanner.
+       Refresh the scan data. This can be done from within a dedicated
+       ScannerThread, which is convenient for concurrent access
+       from several client threads.
        
-       \note This method calls HAL::scan_get() to get the actual
-       data. If that doesn't return 0, then GetLocal() and Rho() will
-       return ACQUISITION_ERROR, and GetScanCopy() will return a zero
-       pointer.
+       This method calls HAL::scan_get() to get the actual data. If
+       that doesn't return 0, then the last valid data is returned by
+       accessors. You can check the validity of the last Update() by
+       checking AcquisitionOk(), which returns true if the previous
+       attempt was successful. However, it is better to rely on Scan
+       timestamps to check for valid data, because it is conceivable
+       (depending on your application) that the acquisition status
+       change between your call to AcquisitionOk() and an accessor.
        
-       \return The result of the call to HAL::scan_get(), ie 0 on success.
+       \note Actually, this is just a switch that either calls
+       DoUpdate(), or waits until the ScannerThread has done
+       that and then returns the most recent status.
+       
+       \return 0 on success, -42 if there's an issue with running
+       ScannerThread (that would be a bug!), or the result of
+       the call to HAL::scan_get().
     */
     int Update();
     
-    /**
-       Get a data point in local coordinates (robot frame).
-       \return SUCCESS, OUT_OF_RANGE, INDEX_ERROR, or ACQUISITION_ERROR
-    */
-    status_t GetLocal(/** index: [0, Scanner::Nscans() - 1] */
-		      unsigned int index,
-		      /** (return) x-coordinate [m] */
-		      double & x,
-		      /** (return) y-coordinate [m] */
-		      double & y) const;
+    /** Attempt to attach an update thread. Fails if this Scanner
+	already has an update thread. */
+    bool SetThread(boost::shared_ptr<ScannerThread> thread);
     
     /**
-       Get the distance measurement [m] of a ray in sensor frame.
-       \return SUCCESS, OUT_OF_RANGE, INDEX_ERROR, or ACQUISITION_ERROR
+       Get a data point
+       \return SUCCESS, OUT_OF_RANGE, or INDEX_ERROR
     */
-    status_t Rho(/** index: [0, Scanner::Nscans() - 1] */
-		 unsigned int index,
-		 /** (return) distance [m] */
-		 double & rho) const;
+    status_t GetData(/** index: [0, Scanner::Nscans() - 1] */
+		     size_t index, scan_data & data) const;
     
     /**
        Get the angle [rad] of a ray in sensor frame.
        \return SUCCESS or INDEX_ERROR
     */
     status_t Phi(/** index: [0, Scanner::Nscans() - 1] */
-		 unsigned int index,
+		 size_t index,
 		 /** (return) angle [phi] */
 		 double & phi) const;
     
@@ -210,7 +227,7 @@ namespace sfl {
        \return SUCCESS or INDEX_ERROR
     */
     status_t CosPhi(/** index: [0, Scanner::Nscans() - 1] */
-		    unsigned int index,
+		    size_t index,
 		    /** (return) angle [phi] */
 		    double & cosphi) const;
     
@@ -219,61 +236,41 @@ namespace sfl {
        \return SUCCESS or INDEX_ERROR
     */
     status_t SinPhi(/** index: [0, Scanner::Nscans() - 1] */
-		    unsigned int index,
+		    size_t index,
 		    /** (return) angle [phi] */
 		    double & sinphi) const;
     
-    /** \return The number of data points per scan. */
-    size_t Nscans() const { return m_nscans; }
+    /** \return upper timestamp of the last successfully acquired scan */
+    const Timestamp & Tupper() const;
     
-    /** \return Reference to the sensor's mount point in the robot frame. */
-    const Frame & Mount() const { return m_mount; }
+    /** \return lower timestamp of the last successfully acquired scan */
+    const Timestamp & Tlower() const;
     
-    /** \return The maximum distance [m]. */
-    double Rhomax() const { return m_rhomax; }
+    bool AcquisitionOk() const;
     
-    /** \return The angle [rad] of the first ray in the sensor frame. */
-    double Phi0() const { return m_phi0; }
-    
-    /** \return The angular range [rad] swept by a scan. */
-    double PhiRange() const { return m_phirange; }
-    
-    /** \note Not meaningfull during ACQUISITION_ERROR! */
-    const Timestamp & Tupper() const { return m_scan.m_tupper; }
-    
-    /** \note Not meaningfull during ACQUISITION_ERROR! */
-    const Timestamp & Tlower() const { return m_scan.m_tlower; }
-    
+    const boost::shared_ptr<const Frame> mount;
     const int hal_channel;
+    const size_t nscans;
+    const double rhomax;
+    const double phi0;
+    const double phirange;
+    const double dphi;
     
   protected:
+    friend class ScannerThread;
+    
     typedef std::vector<double> vector_t;
     
-    const std::string m_name;
-    const Frame m_mount;
-    const size_t m_nscans;
-    const double m_rhomax;
-    const double m_phi0;
-    const double m_phirange;
-    const double m_dphi;
+    int DoUpdate();
     
     boost::shared_ptr<HAL> m_hal;
-    Scan m_scan;
-    bool m_data_ok;
-    
+    std::vector<boost::shared_ptr<Scan> > m_buffer;
+    boost::shared_ptr<Scan> m_dirty, m_clean; // mutexed
+    bool m_acquisition_ok;	// mutexed
     vector_t m_cosphi;
     vector_t m_sinphi;
-    
-    
-    /** Privileged access to subclasses, ie Lidar in nepumuk simulator. */
-    Scan::data_t & Data(size_t index) { return m_scan.m_data[index]; }
-    
-    /** For privileged const access in subclasses and their friends. */
-    const Scan::data_t & Data(size_t index) const
-    { return m_scan.m_data[index]; }
-    
-    void SetTLower(const Timestamp & t) { m_scan.m_tlower = t; }
-    void SetTUpper(const Timestamp & t) { m_scan.m_tupper = t; }
+    boost::shared_ptr<Mutex> m_mutex;
+    boost::shared_ptr<ScannerThread> m_thread;
   };
   
 }

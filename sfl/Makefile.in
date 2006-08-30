@@ -38,7 +38,6 @@ LTLD=		$(LIBTOOL) --mode=link $(CC)
 CPPFLAGS=       -I$(top_builddir) \
                 @BOOST_CPPFLAGS@ \
                 @XCF_CPPFLAGS@ \
-                @SFL_CPPFLAGS@ \
                 -I$(prefix)/include
 CFLAGS=         $(CPPFLAGS) @CFLAGS@
 CXXFLAGS=       $(CPPFLAGS) @CXXFLAGS@
@@ -62,8 +61,7 @@ SRCS=           $(XCF_SRCS) \
                 util/Point.cpp \
                 util/Polygon.cpp \
                 util/Ray.cpp \
-                util/Mutex.cpp \
-                api/GlobalScan.cpp \
+                util/Pthread.cpp \
                 api/Goal.cpp \
                 api/MotionController.cpp \
                 api/Multiscanner.cpp \
@@ -95,11 +93,11 @@ SRCS=           $(XCF_SRCS) \
                 cwrap/cwrapHAL.cpp \
                 cwrap/expo.cpp \
                 cwrap/sfl.cpp \
+                cwrap/Handlemap.cpp \
 		contrib/DummyHAL.cpp
 
 HEADERS=        $(XCF_HEADERS) \
                 util/array2d.hpp \
-                util/fprintfos.hpp \
                 util/pdebug.hpp \
                 util/Frame.hpp \
                 util/functors.hpp \
@@ -109,8 +107,7 @@ HEADERS=        $(XCF_HEADERS) \
                 util/Point.hpp \
                 util/Polygon.hpp \
                 util/Ray.hpp \
-                util/Mutex.hpp \
-                api/GlobalScan.hpp \
+                util/Pthread.hpp \
                 api/Goal.hpp \
                 api/HAL.hpp \
                 api/MotionController.hpp \
@@ -230,11 +227,5 @@ redepend:
 	'{if($$0~/^[^ ]/){sub(/o:/,"lo:"); print subdir "/" $$0} else print}' \
 	     >> Makefile.depend; \
 	done
-	echo -n "redepend:" >> Makefile.depend
-	for source in $(SRCS) $(HEADERS); \
-	  do \
-	    echo -n " $(top_srcdir)/$$source" >> Makefile.depend; \
-	done
-	echo "redepend built `date`" > redepend
 
 sinclude Makefile.depend

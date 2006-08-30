@@ -29,21 +29,17 @@ namespace sfl {
   
   
   Scan::
-  Scan(size_t nscans,
-       const Timestamp & tlower,
-       const Timestamp & tupper):
-    m_tlower(tlower),
-    m_tupper(tupper),
-    m_data(nscans)
+  Scan(size_t nscans, const Timestamp & tlower, const Timestamp & tupper,
+       const Pose & _pose)
+    : tlower(tlower), tupper(tupper), pose(_pose), data(nscans)
   {
   }
   
   
   Scan::
-  Scan(const Scan & original):
-    m_tlower(original.m_tlower),
-    m_tupper(original.m_tupper),
-    m_data(original.m_data)
+  Scan(const Scan & original)
+    : tlower(original.tlower), tupper(original.tupper),
+      pose(original.pose), data(original.data)
   {
   }
   

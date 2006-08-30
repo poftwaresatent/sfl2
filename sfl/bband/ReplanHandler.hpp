@@ -62,12 +62,11 @@ namespace sfl {
 	
 	\note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
+	Multiscanner::CollectScans(), whereas
 	Scanner::GetScanCopy() can still contain readings that are out
 	of range (represented as readings at the maximum rho
 	value). */
-    void Update(boost::shared_ptr<const GlobalScan> scan);
+    void Update(boost::shared_ptr<const Scan> scan);
     
     /** Sets up the internal state such that the next call to Update()
 	will result in a new plan, if available. */
@@ -92,18 +91,18 @@ namespace sfl {
     state_t GetState();
     static const std::string & GetStateName(state_t state);
     
-    /** \todo Only needed for plotting, should be hidden. */
+    /** \note Only needed for plotting, should be hidden. */
     const BubbleList * BufferBlist() const { return m_buffer_blist; }
     
-    /** \todo Only needed for plotting, should be hidden. */
+    /** \note Only needed for plotting, should be hidden. */
     const BubbleList * InitialBand() const { return m_initial_band.get(); }
     
-    /** \todo Only needed for plotting, should be hidden. */
+    /** \note Only needed for plotting, should be hidden. */
     const NF1 & GetNF1() const { return * m_nf1; }
     
     
   private:
-    static const double DEFAULTNF1WIDTH = 4.0;
+    static const double DEFAULTNF1WIDTH;// = 4.0;
     static const int DEFAULTNF1DIMENSION = 21;
     
     BubbleBand & m_bubble_band;
@@ -120,8 +119,8 @@ namespace sfl {
     state_t m_state;
     
     
-    bool GeneratePlan(boost::shared_ptr<const GlobalScan> scan);
-    bool GenerateBand(boost::shared_ptr<const GlobalScan> scan);
+    bool GeneratePlan(boost::shared_ptr<const Scan> scan);
+    bool GenerateBand(boost::shared_ptr<const Scan> scan);
   };
 
 }

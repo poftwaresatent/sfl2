@@ -24,7 +24,7 @@
 
 #include "NF1.hpp"
 #include "NF1Wave.hpp"
-#include <sfl/api/GlobalScan.hpp>
+#include <sfl/api/Scan.hpp>
 #include <cmath>
 
 
@@ -39,16 +39,16 @@ namespace sfl {
   
   
   void NF1::
-  Initialize(boost::shared_ptr<const GlobalScan> scan,
+  Initialize(boost::shared_ptr<const Scan> scan,
 	     double robot_radius,
 	     double goal_radius)
   {
     m_grid.Configure(m_grid_dimension, NF1Wave::FREE);
     
-    const size_t nscans(scan->GetNScans());
+    const size_t nscans(scan->data.size());
     for(size_t is(0); is < nscans; ++is)
-      if(scan->GetData(is).rho >= robot_radius){
-	const GlobalScan::global_data_t gdata(scan->GetGlobalData(is));
+      if(scan->data[is].rho >= robot_radius){
+	const scan_data gdata(scan->data[is]);
 	m_frame.SetGlobalDisk(m_grid,
 			      position_t(gdata.globx, gdata.globy),
 			      robot_radius,

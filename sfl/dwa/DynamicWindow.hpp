@@ -62,6 +62,8 @@ namespace sfl {
      Having moved the sub-objectives to their own classes makes it
      possible to more easily experiment with things such as
      look-up-tables for collision prediction.
+     
+     \todo time for code modernisation (smart ptrs and such)
   */
   class DynamicWindow
   {
@@ -193,10 +195,6 @@ namespace sfl {
     SpeedObjective _speed_objective;
 
     double * _qd;			//[dimension];
-
-    /** \todo Remove, this is never used. */
-    double * _stopDistance;	//[dimension];
-
     speedstate_t ** _state;	//[dimension][dimension];
     double ** _objective;	//[dimension][dimension];
 

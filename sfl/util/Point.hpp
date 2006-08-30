@@ -73,7 +73,9 @@ namespace sfl {
        Frame::From() for (x, y).
     */    
     void TransformFrom(const Frame & t);
-
+    
+    Point & operator = (const Point & orig);
+    
   protected:
     double _x, _y;
   };

@@ -26,7 +26,8 @@
 
 
 namespace sfl {
-
+  
+  
   Point::
   Point(double x, double y):
     _x(x),
@@ -48,4 +49,13 @@ namespace sfl {
     t.From(_x, _y);
   }
 
+
+  Point & Point::
+  operator = (const Point & orig)
+  {
+    _x = orig._x;
+    _y = orig._y;
+    return * this;
+  }
+  
 }

@@ -35,6 +35,9 @@ using namespace std;
 
 
 namespace sfl {
+  
+  
+  const double ReplanHandler::DEFAULTNF1WIDTH(4.0);
 
 
   ReplanHandler::
@@ -63,7 +66,7 @@ namespace sfl {
 
 
   void ReplanHandler::
-  Update(boost::shared_ptr<const GlobalScan> scan)
+  Update(boost::shared_ptr<const Scan> scan)
   {
     if(m_state != RUNNING)
       return;
@@ -110,7 +113,7 @@ namespace sfl {
   
   
   bool ReplanHandler::
-  GeneratePlan(boost::shared_ptr<const GlobalScan> scan)
+  GeneratePlan(boost::shared_ptr<const Scan> scan)
   {
     shared_ptr<const Pose> pose(m_odometry.Get());
     m_nf1->Configure(make_pair(pose->X(), pose->Y()),
@@ -127,7 +130,7 @@ namespace sfl {
   
   
   bool ReplanHandler::
-  GenerateBand(boost::shared_ptr<const GlobalScan> scan)
+  GenerateBand(boost::shared_ptr<const Scan> scan)
   {
     m_buffer_blist->RemoveAll();
     

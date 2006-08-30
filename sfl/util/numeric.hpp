@@ -38,7 +38,7 @@ namespace sfl {
   /**
      Evaluates to the minimum of it's two arguments.
 
-     \todo Would have liked to use const references instead of values,
+     \note Would have liked to use const references instead of values,
      but that creates problems for comparing against constants
      (e.g. things defined as "static const double"). This doesn't really
      matter for builtin-types, but comparing more complex types entails

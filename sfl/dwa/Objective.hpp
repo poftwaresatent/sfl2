@@ -63,8 +63,8 @@ namespace sfl {
     double Max(size_t qdlMin, size_t qdlMax,
 	       size_t qdrMin, size_t qdrMax) const;
 
-    static const double minValue = 0;
-    static const double maxValue = 1;
+    static const double minValue;// = 0;
+    static const double maxValue;// = 1;
     const size_t dimension;
     
   protected:

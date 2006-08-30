@@ -23,9 +23,9 @@
 
 #define CWRAP_DEBUG
 #ifdef CWRAP_DEBUG
-#define CWRAP_PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+# define CWRAP_PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
 #else
-#define CWRAP_PDEBUG(fmt, args...) /* nothing */
+# define CWRAP_PDEBUG(fmt, args...) /* nothing */
 #endif
 
 
@@ -35,7 +35,6 @@ namespace sfl {
   class HAL;
   class Scanner;
   class Multiscanner;
-  //  class DiffDrive;
   class RobotModel;
   class DynamicWindow;
   class BubbleBand;
@@ -45,7 +44,6 @@ namespace sfl_cwrap {
   boost::shared_ptr<sfl::HAL>           get_HAL(int handle);
   boost::shared_ptr<sfl::Scanner>       get_Scanner(int handle);
   boost::shared_ptr<sfl::Multiscanner>  get_Multiscanner(int handle);
-  //  boost::shared_ptr<sfl::DiffDrive>     get_DiffDrive(int handle);
   boost::shared_ptr<sfl::RobotModel>    get_RobotModel(int handle);
   boost::shared_ptr<sfl::DynamicWindow> get_DynamicWindow(int handle);
   boost::shared_ptr<sfl::BubbleBand>    get_BubbleBand(int handle);
@@ -59,15 +57,17 @@ extern "C" {
   
   int sfl_create_HAL(struct cwrap_hal_s * cwrap_hal);
   
-  int sfl_create_Scanner(int hal_handle, int hal_channel, const char * name,
+  /** \return >=0 on success, -2 if invalid hal_handle (the -1 used to
+      be taken by odometry), -3 if mutex could not be allocated. */
+  int sfl_create_Scanner(int hal_handle, int hal_channel,
 			 double mount_x, double mount_y, double mount_theta,
 			 int nscans, double rhomax, double phi0,
 			 double phirange);
   
-  int sfl_create_Multiscanner(int * Scanner_handle, int nscanners);
-  
-//   int sfl_create_DiffDrive(int hal_handle,
-// 			   double wheelbase, double wheelradius);
+  /** \return >=0 on success, -1 if invalid odometry_handle, -2 if
+      invalid scanner_handle[0], etc. */
+  int sfl_create_Multiscanner(int odometry_handle,
+			      int * scanner_handle, int nscanners);
   
   int sfl_create_RobotModel(double security_distance,
 			    double wheelbase, double wheelradius,
@@ -86,30 +86,44 @@ extern "C" {
 			       double alpha_distance,
 			       double alpha_heading,
 			       double alpha_speed,
-			       FILE *progress);
+			       /** NULL disables progress messages,
+				   empty string uses std::cerr,
+				   otherwise the provided file (hint:
+				   use "/dev/stdout") */
+			       const char * filename);
   
+  /** \return >=0 on success, -1 if invalid RobotModel_handle, -2 if
+      invalid Odometry_handle, -3 if invalid Multiscanner_handle, -4
+      if rwlock could not be allocated. */
   int sfl_create_BubbleBand(int RobotModel_handle, int Odometry_handle,
+			    int Multiscanner_handle,
 			    double shortpath, double longpath,
 			    double max_ignore_distance);
   
-  /** \return >=0 on success, -1 if invalid HAL_handle, -2 if mutex
+  /** \return >=0 on success, -1 if invalid HAL_handle, -2 if rwlock
       could not be allocated. */
   int sfl_create_Odometry(int HAL_handle);
   
   
   /** \return 0 on success, -1 if invalid handle */
-  int sfl_dump_obstacles(int DynamicWindow_handle, FILE * stream,
+  int sfl_dump_obstacles(int DynamicWindow_handle,
+			 /** NULL or empty string uses std::cout,
+			     otherwise the provided file (hint: use
+			     "/dev/stderr") */
+			 const char * filename,
 			 const char * prefix);
   
   /** \return 0 on success, -1 if invalid handle */
-  int sfl_dump_dwa(int DynamicWindow_handle, FILE * stream,
+  int sfl_dump_dwa(int DynamicWindow_handle,
+		   /** NULL or empty string uses stdout, otherwise the
+		       provided file (hint: use "/dev/stderr") */
+		   const char * filename,
 		   const char * prefix);
   
   
   void sfl_destroy_HAL(int handle);
   void sfl_destroy_Scanner(int handle);
   void sfl_destroy_Multiscanner(int handle);
-  //  void sfl_destroy_DiffDrive(int handle);
   void sfl_destroy_RobotModel(int handle);
   void sfl_destroy_DynamicWindow(int handle);
   void sfl_destroy_BubbleBand(int handle);

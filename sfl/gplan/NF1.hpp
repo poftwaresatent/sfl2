@@ -35,7 +35,7 @@
 namespace sfl {
   
   
-  class GlobalScan;
+  class Scan;
   class NF1Wave;
   
   
@@ -52,14 +52,12 @@ namespace sfl {
 		   double grid_width,
 		   int grid_width_dimension);
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    void Initialize(boost::shared_ptr<const GlobalScan> scan,
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
+    void Initialize(boost::shared_ptr<const Scan> scan,
 		    double robot_radius,
 		    double goal_radius);
     
