@@ -25,7 +25,7 @@
 #include <boost/current_function.hpp>
 
 
-#define __extension__ _FULL_ERR(fmt, arg...) fprintf(stderr, "%s:\n  " fmt, BOOST_CURRENT_FUNCTION, ## arg)
+#define PDEBUG_FULL_ERR(fmt, arg...) fprintf(stderr, "%s:\n  " fmt, BOOST_CURRENT_FUNCTION, ## arg)
 
 #define PDEBUG_FULL_OUT(fmt, arg...) fprintf(stdout, "%s:\n  " fmt, BOOST_CURRENT_FUNCTION, ## arg)
 
