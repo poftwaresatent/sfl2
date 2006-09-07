@@ -26,54 +26,45 @@
 #define SUNFLOWER_REPLANHANDLER_HPP
 
 
-#include <sfl/api/Odometry.hpp>
-#include <sfl/gplan/NF1.hpp>
-#include <sfl/bband/BubbleFactory.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 
 namespace sfl {
 
 
-  class BubbleBand;		// circular dep.
-  class BubbleList;		// circular dep.
+  class BubbleBand;
+  class BubbleList;
+  class BubbleFactory;
+  class NF1;
+  class Frame;
+  class Scan;
 
 
   class ReplanHandler
   {
   public:
-    typedef enum {
-      NOTRUNNING  = 0,
-      RUNNING,
-      EXITSUCCESS,
-      EXITFAILURE,
-      ABORTED
-    } state_t;
-    
-    
     ReplanHandler(BubbleBand & bubble_band,
-		  const Odometry & odometry,
 		  BubbleFactory & bubble_factory);
     ~ReplanHandler();
     
-    /** Update the internal state based on pending replanning requests
-	or ongoing plannings.
-	
-	\note The Scan object should be filtered, ie contain only
+    /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
-	Multiscanner::CollectScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
-    void Update(boost::shared_ptr<const Scan> scan);
-    
-    /** Sets up the internal state such that the next call to Update()
-	will result in a new plan, if available. */
-    void StartPlanning();
-    
-    void Abort();
-    
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
+    bool GeneratePlan(boost::shared_ptr<const Frame> pose,
+		      boost::shared_ptr<const Scan> scan);
+
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
+    bool GenerateBand(boost::shared_ptr<const Frame> pose,
+		      boost::shared_ptr<const Scan> scan);
+
     /** Returns the "buffer" bubble list that contains the initial
 	bubble band if called at the right moment (ie if GetState() ==
 	EXITSUCCESS). The list passed as parameters is emptied via
@@ -81,15 +72,6 @@ namespace sfl {
 	buffer. This mechanism is designed for BubbleBand
 	implementation. */
     BubbleList * SwapBubbleList(BubbleList * replace);
-    
-    /** \return The current state <b>and possibly change it</b>,
-	acting as a latch (this is designed to work with BubbleBand
-	implementation):
-	<ul><li> EXITSUCCESS ==> NOTRUNNING </li>
-	    <li> EXITFAILURE ==> NOTRUNNING </li></ul>
-    */
-    state_t GetState();
-    static const std::string & GetStateName(state_t state);
     
     /** \note Only needed for plotting, should be hidden. */
     const BubbleList * BufferBlist() const { return m_buffer_blist; }
@@ -106,7 +88,6 @@ namespace sfl {
     static const int DEFAULTNF1DIMENSION = 21;
     
     BubbleBand & m_bubble_band;
-    const Odometry & m_odometry;
     BubbleFactory & m_bubble_factory;
     boost::scoped_ptr<NF1> m_nf1;
     BubbleList * m_buffer_blist;
@@ -116,11 +97,6 @@ namespace sfl {
     
     double m_nf1width;
     int m_nf1dimension;
-    state_t m_state;
-    
-    
-    bool GeneratePlan(boost::shared_ptr<const Scan> scan);
-    bool GenerateBand(boost::shared_ptr<const Scan> scan);
   };
 
 }

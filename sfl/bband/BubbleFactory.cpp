@@ -32,17 +32,10 @@ namespace sfl {
   
   
   BubbleFactory::
-  BubbleFactory(int red,
-		int yellow,
-		int green):
-    m_top(0),
-    m_red(red),
-    m_yellow(yellow),
-    m_green(green),
-    m_level(0),
-    m_total(0)
+  BubbleFactory(int _batchsize)
+    : batchsize(_batchsize)
   {
-    Produce(m_yellow);
+    Produce(batchsize);
   }
   
   
@@ -57,31 +50,8 @@ namespace sfl {
   }
   
   
-  void BubbleFactory::
-  SetRed(int i)
-  {
-    m_red = i;
-  }
-  
-  
-  void BubbleFactory::
-  SetYellow(int i)
-  {
-    m_yellow = i;
-  }
-  
-  
-  void BubbleFactory::
-  SetGreen(int i)
-  {
-    m_green = i;
-  }
-  
-  
   Bubble * BubbleFactory::
-  New(double cutoffDistance,
-      double xpos,
-      double ypos)
+  New(double cutoffDistance, double xpos, double ypos)
   {
     Bubble *tmp = Pop();
     if(tmp)
@@ -118,55 +88,24 @@ namespace sfl {
   
   
   void BubbleFactory::
-  EmulatedThread()
-  {
-    static int entries(0);
-    
-    int skip, batch;
-    if(m_level <= m_red){
-      skip = REDSKIP;
-      batch = REDBATCH;
-    }
-    else if(m_level <= m_yellow){
-      skip = YELLOWSKIP;
-      batch = YELLOWBATCH;
-    }
-    else if(m_level <= m_green){
-      skip = GREENSKIP;
-      batch = GREENBATCH;
-    }
-    else
-      return;
-    
-    if(entries < skip){
-      entries++;
-      return;
-    }
-    
-    entries = 0;
-    Produce(batch);
-  }
-  
-  
-  void BubbleFactory::
   Push(Bubble * bubble)
   {
     if(bubble == 0)
       return;
     bubble->_previous = m_top;
     m_top = bubble;    
-    m_level++;
+    ++m_level;
   }
   
   
-  Bubble* BubbleFactory::
+  Bubble * BubbleFactory::
   Pop()
   {
-    if(m_top == 0)
-      return 0;
+    if(m_level == 0)
+      Produce(batchsize);
     Bubble * tmp = m_top;
     m_top = m_top->_previous;
-    m_level--;
+    --m_level;
     return tmp;
   }
   

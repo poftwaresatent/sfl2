@@ -73,13 +73,15 @@ namespace sfl {
       addition_diameter(1.2 * robot_diameter),
       m_odometry(odometry),
       m_multiscanner(multiscanner),
-      m_bubble_factory(new BubbleFactory()),
-      m_replan_handler(new ReplanHandler(*this, odometry, *m_bubble_factory)),
+      m_bubble_factory(new BubbleFactory(50)), // hax: hardcoded initlevel
+      m_replan_handler(new ReplanHandler(*this, *m_bubble_factory)),
+      m_frame(new Frame()),
       m_active_blist(new BubbleList(*this, *m_bubble_factory, _parameters)),
       m_reaction_radius(2.0 * robot_radius),
       m_replan_request(false),
       m_state(NOBAND),
-      m_rwlock(rwlock)
+      m_rwlock(rwlock),
+      m_planstep(IDLE)
   {
   }
   
@@ -190,59 +192,52 @@ namespace sfl {
   void BubbleBand::
   DoUpdate(shared_ptr<const Scan> scan)
   {
-    RWlock::wrsentry sentry(m_rwlock);
-    
-    m_bubble_factory->EmulatedThread();
-    
     if(m_replan_request){
-      PDEBUG("replan request\n");
-      m_replan_request = false;
-      m_replan_handler->Abort();
+      m_rwlock->Wrlock();
       m_active_blist->RemoveAll();
-      m_replan_handler->StartPlanning();
       m_state = NOBAND;
+      m_rwlock->Unlock();
+      m_replan_request = false;
+      m_planstep = CREATE_PLAN;
       return;
     }
     
-    m_frame = * m_odometry.Get();
+    m_frame = m_odometry.Get();
     if(m_active_blist->m_head != 0){
-      m_active_blist->m_head->_position.first = m_frame.X();
-      m_active_blist->m_head->_position.second = m_frame.Y();
+      m_rwlock->Wrlock();
+      m_active_blist->m_head->_position.first = m_frame->X();
+      m_active_blist->m_head->_position.second = m_frame->Y();
+      m_rwlock->Unlock();
     }
     
-    m_replan_handler->Update(scan);
-    const ReplanHandler::state_t rh_state(m_replan_handler->GetState());
-    bool newBand(false);
-    if(rh_state == ReplanHandler::EXITSUCCESS){
-      PDEBUG("replan success: use new band\n");
-      m_active_blist = m_replan_handler->SwapBubbleList(m_active_blist);
-      newBand = true;
-    }
-    else if(rh_state == ReplanHandler::EXITFAILURE){
-      PDEBUG("replan FAILURE: request new plan, keep old band\n");
-      m_replan_handler->StartPlanning();
-    }
-    else
-      PDEBUG("replan state %s: keep old band\n",
-	     ReplanHandler::GetStateName(rh_state).c_str());
+    if((CREATE_PLAN == m_planstep)
+       && m_replan_handler->GeneratePlan(m_frame, scan))
+      m_planstep = CREATE_BAND;
     
-    if(m_active_blist->Empty()){
-      PDEBUG("active band is EMPTY\n");
-      m_state = NOBAND;
-    }
-    else{
-      if(m_active_blist->Update(scan)){
-	PDEBUG("active band updated with success\n");
-	if(newBand)
-	  m_state = NEWBAND;
-	else
-	  m_state = VALIDBAND;
-      }
+    if(CREATE_BAND == m_planstep){
+      if( ! m_replan_handler->GenerateBand(m_frame, scan))
+	m_planstep = CREATE_PLAN;
       else{
-	PDEBUG("active band update FAILED: request replan\n");
-	m_state = UNSUREBAND;
-	m_replan_handler->StartPlanning();
+	m_rwlock->Wrlock();
+	m_active_blist = m_replan_handler->SwapBubbleList(m_active_blist);
+	m_rwlock->Unlock();
+	m_state = VALIDBAND;
+	m_planstep = IDLE;
+	return;
       }
+    }
+    
+    if(m_active_blist->Empty())
+      m_state = NOBAND;
+    else{
+      m_rwlock->Wrlock();
+      if(m_active_blist->Update(scan))
+	m_state = VALIDBAND;
+      else{
+	m_state = UNSUREBAND;
+	m_planstep = CREATE_PLAN;
+      }
+      m_rwlock->Unlock();
     }
   }
   
@@ -261,8 +256,8 @@ namespace sfl {
     
     carrot_distance *= carrot_distance; // avoid sqrt() calls
     for(Bubble *b(m_active_blist->m_head->_next); b != 0; b = b->_next){
-      double dx(b->_position.first - m_frame.X());
-      double dy(b->_position.second - m_frame.Y());
+      double dx(b->_position.first - m_frame->X());
+      double dy(b->_position.second - m_frame->Y());
       if(dx * dx + dy * dy >= carrot_distance){
 	goalx = b->_position.first;
 	goaly = b->_position.second;

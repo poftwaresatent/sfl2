@@ -73,17 +73,9 @@ namespace sfl {
   public:
     typedef enum {
       NOBAND,
-      NEWBAND,
       VALIDBAND,
       UNSUREBAND
     } state_t;
-    
-    const BubbleList::Parameters parameters;
-    const double robot_radius;
-    const double robot_diameter; // for BubbleList
-    const double ignore_radius; // for BubbleList
-    const double deletion_diameter; // for BubbleList
-    const double addition_diameter; // for BubbleList
     
     
     BubbleBand(const RobotModel & robot_model,
@@ -119,7 +111,7 @@ namespace sfl {
 		    double & goalx, double & goaly) const;
     
     state_t GetState() const { return m_state; }
-    const Frame & RobotPose() const { return m_frame; }
+    const Frame & RobotPose() const { return * m_frame; }
     const Goal & GlobalGoal() const { return m_global_goal; }
     const BubbleList * ActiveBlist() const { return m_active_blist; }
     
@@ -131,17 +123,29 @@ namespace sfl {
     double ReactionRadius() const { return m_reaction_radius; }
     double MinIgnoreDistance() const { return m_min_ignore_distance; }
     
+        
+    const BubbleList::Parameters parameters;
+    const double robot_radius;
+    const double robot_diameter; // for BubbleList
+    const double ignore_radius; // for BubbleList
+    const double deletion_diameter; // for BubbleList
+    const double addition_diameter; // for BubbleList
     
   private:
     friend class BubbleBandThread;
     
-    /** \note The GlobalScan object should be filtered, ie contain
-	only valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
-	Scanner::GetScanCopy() can still contain readings that are out
-	of range (represented as readings at the maximum rho
-	value). */
+    typedef enum {
+      IDLE,
+      CREATE_PLAN,
+      CREATE_BAND
+    } planstep_t;
+    
+    
+    /** \note The Scan object should be filtered, ie contain only
+	valid readings. This can be obtained from
+	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+	can still contain readings that are out of range (represented
+	as readings at the maximum rho value). */
     void DoUpdate(boost::shared_ptr<const Scan> scan);
     
     const Odometry & m_odometry;
@@ -149,7 +153,7 @@ namespace sfl {
     
     boost::scoped_ptr<BubbleFactory> m_bubble_factory;
     boost::scoped_ptr<ReplanHandler> m_replan_handler;
-    Frame m_frame;
+    boost::shared_ptr<const Frame> m_frame;
     BubbleList * m_active_blist;
     const double m_reaction_radius;
     Goal m_global_goal;
@@ -161,6 +165,7 @@ namespace sfl {
     state_t m_state;
     boost::shared_ptr<RWlock> m_rwlock;
     boost::shared_ptr<BubbleBandThread> m_thread;
+    planstep_t m_planstep;
   };
 
 }

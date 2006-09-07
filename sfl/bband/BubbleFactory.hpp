@@ -32,47 +32,28 @@
 namespace sfl {
   
   
-  /** \todo Good candidate for becoming a singleton. */
   class BubbleFactory
   {
+  private:
+    BubbleFactory(const BubbleFactory &);
+    
   public:
-    static const int DEFAULTRED    = 50;
-    static const int DEFAULTYELLOW = 100;
-    static const int DEFAULTGREEN  = 200;
-    
-    BubbleFactory(int red    = DEFAULTRED,
-		  int yellow = DEFAULTYELLOW,
-		  int green  = DEFAULTGREEN);
-    virtual ~BubbleFactory();
-    
-    void EmulatedThread();
-    
-    void SetRed(int i);
-    void SetYellow(int i);
-    void SetGreen(int i);
+    explicit BubbleFactory(int batchsize);
+    ~BubbleFactory();
     
     Bubble * New(double cutoffDistance, double xpos, double ypos);
     Bubble * Clone(Bubble * bubble);
     void Delete(Bubble * bubble);
-    
     void Produce(int batch);
     
+    const int batchsize;
     
   private:
-    static const int REDSKIP     =  0;
-    static const int YELLOWSKIP  =  1;
-    static const int GREENSKIP   = 10;
-    static const int REDBATCH    = 25;
-    static const int YELLOWBATCH =  1;
-    static const int GREENBATCH  =  1;
-    
-    Bubble * m_top;
-    
-    int m_red, m_yellow, m_green;
-    int m_level, m_total;
-    
     void Push(Bubble * bubble);
     Bubble * Pop();
+    
+    Bubble * m_top;
+    int m_level, m_total;
   };
   
 }

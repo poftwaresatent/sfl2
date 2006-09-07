@@ -27,6 +27,7 @@
 #include "BubbleBand.hpp"
 #include "BubbleFactory.hpp"
 #include <sfl/api/Pose.hpp>
+#include <sfl/gplan/NF1.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
 
 
@@ -42,80 +43,29 @@ namespace sfl {
 
   ReplanHandler::
   ReplanHandler(BubbleBand & bubble_band,
-		const Odometry & odometry,
-		BubbleFactory & bubble_factory):
-    m_bubble_band(bubble_band),
-    m_odometry(odometry),
-    m_bubble_factory(bubble_factory),
-    m_nf1(new NF1()),
-    m_buffer_blist(new BubbleList(bubble_band,
-				  bubble_factory,
-				  bubble_band.parameters)),
-    m_nf1width(DEFAULTNF1WIDTH),
-    m_nf1dimension(DEFAULTNF1DIMENSION),
-    m_state(NOTRUNNING)
+		BubbleFactory & bubble_factory)
+    : m_bubble_band(bubble_band),
+      m_bubble_factory(bubble_factory),
+      m_nf1(new NF1()),
+      m_buffer_blist(new BubbleList(bubble_band,
+				    bubble_factory,
+				    bubble_band.parameters)),
+      m_nf1width(DEFAULTNF1WIDTH),
+      m_nf1dimension(DEFAULTNF1DIMENSION)
   {
   }
-
-
+  
+  
   ReplanHandler::
   ~ReplanHandler()
   {
     delete m_buffer_blist;
   }
-
-
-  void ReplanHandler::
-  Update(boost::shared_ptr<const Scan> scan)
-  {
-    if(m_state != RUNNING)
-      return;
-    
-    if( ! GeneratePlan(scan)){
-      m_nf1width *= 2;
-      m_state = EXITFAILURE;
-      return;		  // next Update() will attempt with wider NF1
-    }
-    m_nf1width = DEFAULTNF1WIDTH; // next planning starts with default
-    
-    if( ! GenerateBand(scan)){
-      m_state = EXITFAILURE;
-      return;			// try again next Update() with new NF1
-    }
-    
-    // keep a copy for plotting
-    m_initial_band.reset(new BubbleList( * m_buffer_blist));
-    
-    if( ! m_buffer_blist->Update(scan)){
-      m_state = EXITFAILURE;
-      return;			// try again next Update() with new NF1
-    }
-    
-    m_state = EXITSUCCESS;
-  }
-  
-  
-  void ReplanHandler::
-  StartPlanning()
-  {
-    m_state = RUNNING;
-  }
-  
-  
-  void ReplanHandler::
-  Abort()
-  {
-    if(m_state == RUNNING)
-      m_state = ABORTED;
-    else
-      m_state = NOTRUNNING;
-  }
   
   
   bool ReplanHandler::
-  GeneratePlan(boost::shared_ptr<const Scan> scan)
+  GeneratePlan(shared_ptr<const Frame> pose, shared_ptr<const Scan> scan)
   {
-    shared_ptr<const Pose> pose(m_odometry.Get());
     m_nf1->Configure(make_pair(pose->X(), pose->Y()),
 		     make_pair(m_bubble_band.GlobalGoal().X(),
 			       m_bubble_band.GlobalGoal().Y()),
@@ -130,13 +80,12 @@ namespace sfl {
   
   
   bool ReplanHandler::
-  GenerateBand(boost::shared_ptr<const Scan> scan)
+  GenerateBand(shared_ptr<const Frame> pose, shared_ptr<const Scan> scan)
   {
     m_buffer_blist->RemoveAll();
     
-    Bubble *bubble(m_bubble_factory.New(m_bubble_band.ReactionRadius(),
-					m_bubble_band.RobotPose().X(),
-					m_bubble_band.RobotPose().Y()));
+    Bubble * bubble(m_bubble_factory.New(m_bubble_band.ReactionRadius(),
+					 pose->X(), pose->Y()));
     if(bubble == 0)
       return false;
     
@@ -148,8 +97,7 @@ namespace sfl {
     pair<double, double> point;
     while(m_nf1->GlobalTrace(point)){
       bubble = m_bubble_factory.New(m_bubble_band.ReactionRadius(),
-				    point.first,
-				    point.second);
+				    point.first, point.second);
       
       if(bubble == 0){
 	return false;
@@ -179,23 +127,6 @@ namespace sfl {
   }
   
   
-  const string & ReplanHandler::
-  GetStateName(state_t state)
-  {
-    static string statestr[] = {
-      "NOTRUNNING",
-      "RUNNING",
-      "EXITSUCCESS",
-      "EXITFAILURE",
-      "ABORTED",
-      "<invalid>"
-    };
-    if((0 <= state) && (ABORTED >= state))
-      return statestr[state];
-    return statestr[ABORTED + 1];
-  }
-  
-
   BubbleList * ReplanHandler::
   SwapBubbleList(BubbleList * replace)
   {
@@ -203,21 +134,6 @@ namespace sfl {
     replace->RemoveAll();
     m_buffer_blist = replace;
     return result;
-  }
-  
-
-  ReplanHandler::state_t ReplanHandler::
-  GetState()
-  {
-    if(EXITSUCCESS == m_state){
-      m_state = NOTRUNNING;
-      return EXITSUCCESS;
-    }
-    if(EXITFAILURE == m_state){
-      m_state = NOTRUNNING;
-      return EXITFAILURE;
-    }
-    return m_state;
   }
   
 }
