@@ -164,7 +164,7 @@ doc:
 	doxygen
 	echo "doc build `date`" > doc
 
-install:: $(LIB)
+install:: all
 	$(MKINSTALLDIRS) $(BINDIR) $(LIBDIR)
 	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
 
