@@ -47,28 +47,29 @@ namespace sfl {
   class Timestamp
   {
   public:
+    /** last representable moment */
+    static const Timestamp first;
+
+    /** first representable moment */
+    static const Timestamp last;
+    
     /** Default Timestamp with all zeros. */
     Timestamp();
     
+    /** in case you need complete control... */
+    Timestamp(long seconds, long nanoseconds);
+    
     /**
        Converts a HAL timestamp into a Timestamp instance. If you need
-       a Timestamp of "unspecified" time, use Last() or First().
+       a Timestamp of "unspecified" time, use last or first.
     */
     explicit Timestamp(const struct ::timespec & stamp);
     
-    /**
-       \return A (static) Timestamp of the last representable
-       moment. This is useful for initializing a Timestamp before
-       finding a minimum.
-    */
-    static const Timestamp & Last();
+    /** legacy */
+    static const Timestamp & Last() { return last; }
     
-    /**
-       \return A (static) Timestamp of the first representable
-       moment. This is useful for initializing a Timestamp before
-       finding a maximum.
-    */
-    static const Timestamp & First();
+    /** legacy */
+    static const Timestamp & First() { return first; }
     
     /** Conversion operator. */
     Timestamp & operator = (const struct ::timespec & original);

@@ -40,6 +40,7 @@ namespace sfl {
   class scan_data;
   class Timestamp;
   class Frame;
+  class Scanner;
   
   
   /**

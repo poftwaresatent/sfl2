@@ -27,7 +27,7 @@
 
 
 /** Declared in <time.h> but don't use system clock: The HAL is used
-    as centrall "wall clock" so that simulation can freeze time when
+    as central "wall clock" so that simulation can freeze time when
     needed. */
 struct timespec;
 

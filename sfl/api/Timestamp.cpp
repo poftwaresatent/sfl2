@@ -35,6 +35,13 @@ using namespace std;
 namespace sfl {
   
   
+  const Timestamp Timestamp::first(numeric_limits<long>::min(),
+				   numeric_limits<long>::min());
+  
+  const Timestamp Timestamp::last(numeric_limits<long>::max(),
+				  numeric_limits<long>::max());
+  
+  
   Timestamp::
   Timestamp()
   {
@@ -43,6 +50,14 @@ namespace sfl {
   }
   
   
+  Timestamp::
+  Timestamp(long seconds, long nanoseconds)
+  {
+    m_stamp.tv_sec = seconds;
+    m_stamp.tv_nsec = nanoseconds;
+  }
+
+
   Timestamp::
   Timestamp(const struct ::timespec & stamp)
     : m_stamp(stamp)
@@ -55,30 +70,6 @@ namespace sfl {
   {
     m_stamp = original;
     return * this;
-  }
-  
-  
-  const Timestamp & Timestamp::
-  Last()
-  {
-    static const struct ::timespec spec = {
-      tv_sec:  numeric_limits<long>::max(),
-      tv_nsec: numeric_limits<long>::max() };
-    static const Timestamp last(spec);
-    
-    return last;
-  }
-  
-  
-  const Timestamp & Timestamp::
-  First()
-  {
-    static const struct ::timespec spec = {
-      tv_sec:  numeric_limits<long>::min(),
-      tv_nsec: numeric_limits<long>::min() };
-    static const Timestamp first(spec);
-    
-    return first;
   }
   
   

@@ -35,6 +35,7 @@ namespace sfl {
   
   class RobotModel;
   class HAL;
+  class MotionController;
   
   
   /**

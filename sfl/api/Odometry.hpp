@@ -37,6 +37,7 @@ namespace sfl {
   
   class HAL;
   class Pose;
+  class Odometry;
   
   
   /**
