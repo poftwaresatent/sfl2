@@ -42,9 +42,10 @@ namespace sfl {
   BubbleFactory::
   ~BubbleFactory()
   {
-    while(m_top != 0){
+    while(m_level > 0){
       Bubble *tmp = m_top;
-      Pop();
+      m_top = m_top->_previous;
+      --m_level;
       delete tmp;
     }
   }
