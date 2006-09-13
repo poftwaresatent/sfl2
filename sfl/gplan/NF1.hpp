@@ -26,10 +26,8 @@
 #define SUNFLOWER_NF1_H
 
 
-#include <sfl/gplan/GridLayer.hpp>
-#include <sfl/gplan/GridFrame.hpp>
+#include <sfl/util/array2d.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
 
 
 namespace sfl {
@@ -37,20 +35,22 @@ namespace sfl {
   
   class Scan;
   class NF1Wave;
+  class GridFrame;
+  class Mutex;
   
   
   class NF1
   {
   public:
-    typedef GridFrame::index_t index_t;
-    typedef GridFrame::position_t position_t;
+    typedef vec2d<size_t> index_t;
+    typedef vec2d<double> position_t;
+    typedef array2d<double> grid_t;
     
-    NF1();
+    NF1(boost::shared_ptr<Mutex> mutex);
     
-    void Configure(position_t robot_position,
-		   position_t global_goal,
-		   double grid_width,
-		   int grid_width_dimension);
+    void Configure(double robot_x, double robot_y,
+		   double goal_x, double goal_y,
+		   double grid_width, size_t grid_width_dimension);
     
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
@@ -58,29 +58,29 @@ namespace sfl {
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
     void Initialize(boost::shared_ptr<const Scan> scan,
-		    double robot_radius,
-		    double goal_radius);
+		    double robot_radius, double goal_radius);
     
     void Calculate();
     bool ResetTrace();
     bool GlobalTrace(position_t & point);
     
-    /** \note Only needed for plotting. */
-    const GridLayer & GetGridLayer() const { return m_grid; }
+    /** \note for plotting. */
+    boost::shared_ptr<const grid_t> GetGridLayer() const;
     
-    /** \note Only needed for plotting. */
-    const GridFrame & GetGridFrame() const { return m_frame; }
+    /** \note for plotting. */
+    boost::shared_ptr<const GridFrame> GetGridFrame() const;
     
     
   private:
-    GridFrame m_frame;
+    boost::shared_ptr<Mutex> m_mutex;
+    boost::shared_ptr<GridFrame> m_frame;
     index_t m_grid_dimension;
-    position_t m_global_goal;
+    position_t m_goal;
     index_t m_goal_index;
-    position_t m_global_home;
+    position_t m_home;
     index_t m_home_index;
-    GridLayer m_grid;
-    boost::scoped_ptr<NF1Wave> m_wave;
+    boost::shared_ptr<grid_t> m_grid;
+    boost::shared_ptr<NF1Wave> m_wave;
     index_t m_trace;
   };
   

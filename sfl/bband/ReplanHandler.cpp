@@ -26,6 +26,7 @@
 #include "BubbleList.hpp"
 #include "BubbleBand.hpp"
 #include "BubbleFactory.hpp"
+#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Pose.hpp>
 #include <sfl/gplan/NF1.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
@@ -46,7 +47,7 @@ namespace sfl {
 		BubbleFactory & bubble_factory)
     : m_bubble_band(bubble_band),
       m_bubble_factory(bubble_factory),
-      m_nf1(new NF1()),
+      m_nf1(new NF1(Mutex::Create("nf1"))), // todo: mutex from above
       m_buffer_blist(new BubbleList(bubble_band,
 				    bubble_factory,
 				    bubble_band.parameters)),
@@ -66,9 +67,9 @@ namespace sfl {
   bool ReplanHandler::
   GeneratePlan(shared_ptr<const Frame> pose, shared_ptr<const Scan> scan)
   {
-    m_nf1->Configure(make_pair(pose->X(), pose->Y()),
-		     make_pair(m_bubble_band.GlobalGoal().X(),
-			       m_bubble_band.GlobalGoal().Y()),
+    m_nf1->Configure(pose->X(), pose->Y(),
+		     m_bubble_band.GlobalGoal().X(),
+		     m_bubble_band.GlobalGoal().Y(),
 		     m_nf1width,
 		     m_nf1dimension);
     m_nf1->Initialize(scan,
@@ -94,10 +95,10 @@ namespace sfl {
     
     m_buffer_blist->Append(bubble);
     
-    pair<double, double> point;
+    vec2d<double> point;
     while(m_nf1->GlobalTrace(point)){
       bubble = m_bubble_factory.New(m_bubble_band.ReactionRadius(),
-				    point.first, point.second);
+				    point.v0, point.v1);
       
       if(bubble == 0){
 	return false;

@@ -147,8 +147,13 @@ namespace sfl {
     explicit SimpleThread(const std::string & _name): name(_name) {}
     virtual ~SimpleThread();
     
-    /** Performs one fundamental step, to be provided by subclasses. */
-    virtual void Step() = 0;
+    /** Performs one fundamental step, to be provided by subclasses.
+
+	\note the base class provides a non-null empty implementation
+	to avoid pure virtul method calls during destruction of
+	SimpleThread instances.
+    */
+    virtual void Step() {}
     
     /** Starts a thread that periodically calls Step(), optionally
 	followed by a sleep (specify usecsleep=0 to disable

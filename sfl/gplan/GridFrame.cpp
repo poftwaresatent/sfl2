@@ -23,6 +23,7 @@
 
 
 #include "GridFrame.hpp"
+#include <sfl/util/numeric.hpp>
 #include <cmath>
 
 
@@ -30,114 +31,133 @@ namespace sfl {
   
   
   GridFrame::
-  GridFrame()
+  GridFrame(double delta)
+    : Frame(),
+      m_delta(delta),
+      m_delta_inv(1 / delta)
   {
-    Configure(0, 0, 0, 1);
+  }
+  
+  
+  GridFrame::
+  GridFrame(double x, double y, double theta, double delta)
+    : Frame(x, y, theta),
+      m_delta(delta),
+      m_delta_inv(1 / delta)
+  {
+  }
+  
+  
+  GridFrame::
+  GridFrame(const GridFrame & orig)
+    : Frame(orig),
+      m_delta(orig.m_delta),
+      m_delta_inv(orig.m_delta_inv)
+  {
   }
   
   
   void GridFrame::
-  Configure(double position_x,
-	    double position_y,
-	    double position_theta,
+  Configure(double position_x, double position_y, double position_theta,
 	    double delta)
   {
     m_delta = delta;
     m_delta_inv = 1 / delta;
-    m_frame.Set(position_x, position_y, position_theta);
+    Set(position_x, position_y, position_theta);
+  }
+  
+  
+  GridFrame::index_t GridFrame::
+  GlobalIndex(double px, double py) const
+  {
+    From(px, py);
+    return LocalIndex(px, py);
   }
   
   
   GridFrame::index_t GridFrame::
   GlobalIndex(position_t point) const
   {
-    m_frame.From(point.first, point.second);
+    From(point.v0, point.v1);
     return LocalIndex(point);
+  }
+  
+  
+  GridFrame::index_t GridFrame::
+  LocalIndex(double px, double py) const
+  {
+    return index_t(static_cast<int>(rint(px * m_delta_inv)),
+		   static_cast<int>(rint(py * m_delta_inv)));
   }
   
   
   GridFrame::index_t GridFrame::
   LocalIndex(position_t point) const
   {
-    return index_t((int) rint(point.first  * m_delta_inv),
-		   (int) rint(point.second * m_delta_inv));
+    return index_t(static_cast<int>(rint(point.v0 * m_delta_inv)),
+		   static_cast<int>(rint(point.v1 * m_delta_inv)));
+  }
+  
+  
+  GridFrame::position_t GridFrame::
+  GlobalPoint(size_t ix, size_t iy) const
+  {
+    position_t point(LocalPoint(ix, iy));
+    To(point.v0, point.v1);
+    return point;
   }
   
   
   GridFrame::position_t GridFrame::
   GlobalPoint(index_t index) const
   {
-    position_t point = LocalPoint(index);
-    m_frame.To(point.first, point.second);
+    position_t point(LocalPoint(index));
+    To(point.v0, point.v1);
     return point;
+  }
+  
+  
+  GridFrame::position_t GridFrame::
+  LocalPoint(size_t ix, size_t iy) const
+  {
+    return position_t(ix * m_delta, iy * m_delta);
   }
   
   
   GridFrame::position_t GridFrame::
   LocalPoint(index_t index) const
   {
-    return position_t(index.first * m_delta, index.second * m_delta);
+    return position_t(index.v0 * m_delta, index.v1 * m_delta);
   }
   
   
-  /**
-     \todo this implementation is a bit brute force...
-  */
+  /** \todo this implementation is a bit brute force... */
   void GridFrame::
-  SetLocalDisk(GridLayer & grid,
-	       position_t center,
-	       double radius,
-	       double value)
+  SetLocalDisk(grid_t & grid, position_t center,
+	       double radius, double value)
   {
-    index_t index = LocalIndex(center);
-    
-    if(grid.Inside(index))
-      grid.Set(index, value);
-    
-    center.first  -= radius;
-    center.second -= radius;
-    index_t index_min = LocalIndex(center);
-    
-    center.first  += 2 * radius;
-    center.second += 2 * radius;
-    index_t index_max = LocalIndex(center);
-    
-    center.first  -= radius;
-    center.second -= radius;
-    
-    const double radius2(radius * radius);
-    
-    index_t i;
-    for(i.first = index_min.first;
-	i.first < index_max.first;
-	++i.first)
-      for(i.second = index_min.second;
-	  i.second < index_max.second;
-	  ++i.second){
-	position_t point = LocalPoint(i);
-	
-	if( ! grid.Inside(i))
-	  continue;
-	
-	point.first  -= center.first;
-	point.second -= center.second;
-	double r2 = point.first * point.first + point.second * point.second;
-	
-	if(r2 > radius2)
-	  continue;
-	
-	grid.Set(i, value);
-      }
+    index_t index(LocalIndex(center));
+    if(grid.ValidIndex(index))
+      grid[index] = value;
+    const index_t minidx(LocalIndex(center.v0 - radius, center.v1 - radius));
+    const index_t maxidx(LocalIndex(center.v0 + radius, center.v1 + radius));
+    const double radius2(sqr(radius));
+    for(size_t ix(minidx.v0); ix < maxidx.v0; ++ix)
+      for(size_t iy(minidx.v1); iy < maxidx.v1; ++iy)
+	if(grid.ValidIndex(ix, iy)){
+	  const position_t point(LocalPoint(ix, iy) - center);
+	  const double r2(sqr(point.v0) + sqr(point.v1));
+	  if(r2 <= radius2)
+	    grid[ix][iy] = value;
+	}
   }
   
   
   void GridFrame::
-  SetGlobalDisk(GridLayer & grid,
-		position_t center,
-		double radius,
-		double value)
+  SetGlobalDisk(grid_t & grid, position_t center,
+		double radius, double value)
   {
-    m_frame.From(center.first, center.second);
+    From(center.v0, center.v1);
     SetLocalDisk(grid, center, radius, value);
   }
   

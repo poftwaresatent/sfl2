@@ -24,57 +24,66 @@
 
 #include "NF1.hpp"
 #include "NF1Wave.hpp"
+#include "GridFrame.hpp"
+#include <sfl/util/numeric.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Scan.hpp>
 #include <cmath>
+
+
+using namespace boost;
 
 
 namespace sfl {
   
   
   NF1::
-  NF1()
-    : m_wave(new NF1Wave())
+  NF1(shared_ptr<Mutex> mutex)
+    : m_mutex(mutex),
+      m_frame(new GridFrame(1)),
+      m_grid(new grid_t()),
+      m_wave(new NF1Wave())
   {
   }
   
   
   void NF1::
-  Initialize(boost::shared_ptr<const Scan> scan,
-	     double robot_radius,
-	     double goal_radius)
+  Initialize(shared_ptr<const Scan> scan,
+	     double robot_radius, double goal_radius)
   {
-    m_grid.Configure(m_grid_dimension, NF1Wave::FREE);
-    
+    m_mutex->Lock();
+    m_grid.reset(new grid_t(m_grid_dimension, NF1Wave::FREE));
     const size_t nscans(scan->data.size());
     for(size_t is(0); is < nscans; ++is)
       if(scan->data[is].rho >= robot_radius){
-	const scan_data gdata(scan->data[is]);
-	m_frame.SetGlobalDisk(m_grid,
-			      position_t(gdata.globx, gdata.globy),
-			      robot_radius,
-			      NF1Wave::OBSTACLE);
+	const scan_data & gdata(scan->data[is]);
+	m_frame->SetGlobalDisk(*m_grid, position_t(gdata.globx, gdata.globy),
+			       robot_radius, NF1Wave::OBSTACLE);
       }
-    
-    m_frame.SetGlobalDisk(m_grid, m_global_goal, goal_radius, NF1Wave::FREE);
-    m_grid.Set(m_goal_index, NF1Wave::GOAL);
-    m_frame.SetGlobalDisk(m_grid, m_global_home, robot_radius, NF1Wave::FREE);
+    m_frame->SetGlobalDisk(*m_grid, m_goal, goal_radius, NF1Wave::FREE);
+    (*m_grid)[m_goal_index] = NF1Wave::GOAL;
+    m_frame->SetGlobalDisk(*m_grid, m_home, robot_radius, NF1Wave::FREE);
+    m_mutex->Unlock();
   }
   
   
   void NF1::
   Calculate()
   {
+    m_mutex->Lock();
     m_wave->Reset();
-    m_wave->AddSeed(m_frame.GlobalIndex(m_global_goal));
-    m_wave->Propagate(m_grid);
+    m_wave->AddSeed(m_frame->GlobalIndex(m_goal));
+    m_wave->Propagate(*m_grid);
+    m_mutex->Unlock();
   }
   
   
   bool NF1::
   ResetTrace()
   {
+    Mutex::sentry sentry(m_mutex);
     m_trace = m_home_index;
-    if(m_grid.Get(m_trace) == NF1Wave::FREE)
+    if(NF1Wave::FREE == (*m_grid)[m_trace])
       return false;
     return true;
   }
@@ -83,49 +92,58 @@ namespace sfl {
   bool NF1::
   GlobalTrace(position_t & point)
   {
-    point = m_frame.GlobalPoint(m_trace);
-    if(m_grid.Get(m_trace) == NF1Wave::GOAL)
+    Mutex::sentry sentry(m_mutex);
+    point = m_frame->GlobalPoint(m_trace);
+    if(NF1Wave::GOAL == (*m_grid)[m_trace])
       return false;
-    m_trace = m_wave->SmallestNeighbor(m_grid, m_trace);
+    m_trace = m_wave->SmallestNeighbor(*m_grid, m_trace);
     return true;
   }
   
   
   void NF1::
-  Configure(position_t robot_position,
-	    position_t global_goal,
-	    double grid_width,
-	    int grid_width_dimension)
+  Configure(double robot_x, double robot_y,
+	    double goal_x, double goal_y,
+	    double grid_width, size_t grid_width_dimension)
   {
-    m_global_goal = global_goal;
-    m_global_home = robot_position;
-    
+    m_mutex->Lock();
+    m_goal.v0 = goal_x;
+    m_goal.v1 = goal_y;
+    m_home.v0 = robot_x;
+    m_home.v1 = robot_y;
     if(grid_width_dimension % 2 == 0)
       ++grid_width_dimension;
     
-    double dx(global_goal.first  - robot_position.first);
-    double dy(global_goal.second - robot_position.second);
-    Frame frame(robot_position.first,
-		robot_position.second,
-		atan2(dy, dx));
-    
-    double width_offset
-      = 0.5 * grid_width * (grid_width_dimension - 1)
-      / grid_width_dimension;
-    double delta = grid_width / grid_width_dimension;
-    double xm_frame = - width_offset;
-    double ym_frame = - width_offset;
+    const double dx(goal_x - robot_x);
+    const double dy(goal_y - robot_y);
+    const Frame frame(robot_x, robot_y, atan2(dy, dx));
+    const double delta(grid_width / grid_width_dimension);
+    const double width_offset(grid_width * (0.5 - 0.5 / grid_width_dimension));
+    double xm_frame(- width_offset);
+    double ym_frame(- width_offset);
     frame.To(xm_frame, ym_frame);
     
-    m_frame.Configure(xm_frame, ym_frame, frame.Theta(), delta);
+    m_frame->Configure(xm_frame, ym_frame, frame.Theta(), delta);
+    m_goal_index = m_frame->GlobalIndex(goal_x, goal_y);
+    m_home_index = m_frame->GlobalIndex(m_home);
+    m_grid_dimension.v0 =
+      static_cast<size_t>(ceil((sqrt(sqr(dx)+sqr(dy)) + grid_width) / delta));
+    m_grid_dimension.v1 = grid_width_dimension;
+    m_mutex->Unlock();
+  }
+  
+  
+  shared_ptr<const NF1::grid_t> NF1::
+  GetGridLayer() const
+  {
+    // no need for mutex, boost::shared_ptr is thread-safe
+    return m_grid;
+  }
     
-    m_goal_index = m_frame.GlobalIndex(global_goal);
-    m_home_index = m_frame.GlobalIndex(m_global_home);
-    
-    m_grid_dimension.first =
-      (int) ceil((sqrt(dx*dx+dy*dy) + grid_width) / delta);
-    
-    m_grid_dimension.second = grid_width_dimension;
+  shared_ptr<const GridFrame> NF1::
+  GetGridFrame() const
+  {
+    return m_frame;
   }
   
 }

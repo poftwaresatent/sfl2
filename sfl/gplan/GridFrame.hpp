@@ -26,50 +26,47 @@
 #define SUNFLOWER_GRIDFRAME_HPP
 
 
-#include <sfl/gplan/GridLayer.hpp>
 #include <sfl/util/Frame.hpp>
-#include <utility>
+#include <sfl/util/array2d.hpp>
 
 
 namespace sfl {
   
   
   class GridFrame
+    : public Frame
   {
   public:
-    typedef GridLayer::index_t index_t;
-    typedef std::pair<double, double> position_t;
+    typedef vec2d<size_t> index_t;
+    typedef vec2d<double> position_t;
+    typedef array2d<double> grid_t;
     
-    GridFrame();
+    explicit GridFrame(double delta);
+    GridFrame(double x, double y, double theta, double delta);
+    GridFrame(const GridFrame & orig);
     
-    void Configure(double position_x,
-		   double position_y,
-		   double position_theta,
+    void Configure(double position_x, double position_y, double position_theta,
 		   double delta);
     
+    index_t GlobalIndex(double px, double py) const;
     index_t GlobalIndex(position_t point) const;
+    index_t LocalIndex(double px, double py) const;
     index_t LocalIndex(position_t point) const;
     
+    position_t GlobalPoint(size_t ix, size_t iy) const;
     position_t GlobalPoint(index_t index) const;
+    position_t LocalPoint(size_t ix, size_t iy) const;
     position_t LocalPoint(index_t index) const;
     
-    void SetLocalDisk(GridLayer & grid,
-		      position_t center,
-		      double radius,
-		      double value);
+    void SetLocalDisk(grid_t & grid, position_t center,
+		      double radius, double value);
     
-    void SetGlobalDisk(GridLayer & grid,
-		       position_t center,
-		       double radius,
-		       double value);
+    void SetGlobalDisk(grid_t & grid, position_t center,
+		       double radius, double value);
     
-    const Frame & GetFrame() const { return m_frame; }
-    
-    
-  private:
+  protected:
     double m_delta;
     double m_delta_inv;
-    Frame m_frame;
   };
   
 }

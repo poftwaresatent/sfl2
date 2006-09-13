@@ -78,10 +78,11 @@ namespace sfl {
       fail_thread(that->name, "pthread_setcanceltype()", status);
     while(true){
       that->Step();
-      pthread_testcancel();
       const unsigned int usecsleep(that->usecsleep); // copy avoids mutex
       if(0 != usecsleep)
 	usleep(usecsleep);
+      else
+	pthread_testcancel();
     }
   }
   
@@ -265,7 +266,7 @@ namespace sfl {
   SimpleThread::
   ~SimpleThread()
   {
-    Stop();			// takes care of delete thread
+    Stop();			// also deletes thread
   }
   
   
@@ -292,6 +293,7 @@ namespace sfl {
   {
     if( ! thread)
       return;
+    usecsleep = 0;		// don't sleep during cancel
     int status(pthread_cancel(*thread));
     if(0 != status){
       fail_thread(name, "pthread_cancel()", status);
@@ -301,14 +303,14 @@ namespace sfl {
     // could be cool to join deferredly instead of waiting here...
     status = pthread_join(*thread, 0);
     for(size_t ii(0); EINVAL == status; ++ii){
-      if(ii >= 100){
+      if(ii >= 200){
 	if(IGNORE_ERRORS != thread_option)
 	  cerr << name << ": pthread_join(): timeout\n";
 	if(EXIT_ON_ERROR == thread_option)
 	  exit(EXIT_FAILURE);
 	break;
       }
-      usleep(1000);
+      usleep(5000);
       status = pthread_join(*thread, 0);
     }
     if(0 != status)

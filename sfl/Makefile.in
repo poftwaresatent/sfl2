@@ -87,7 +87,6 @@ SRCS=           $(XCF_SRCS) \
                 expo/MotionPlannerFields.cpp \
                 expo/MotionPlannerState.cpp \
                 gplan/GridFrame.cpp \
-                gplan/GridLayer.cpp \
                 gplan/NF1.cpp \
                 gplan/NF1Wave.cpp \
                 cwrap/cwrapHAL.cpp \
@@ -98,6 +97,7 @@ SRCS=           $(XCF_SRCS) \
 
 HEADERS=        $(XCF_HEADERS) \
                 util/array2d.hpp \
+                util/vec2d.hpp \
                 util/pdebug.hpp \
                 util/Frame.hpp \
                 util/functors.hpp \
@@ -135,7 +135,6 @@ HEADERS=        $(XCF_HEADERS) \
                 expo/MotionPlannerFields.hpp \
                 expo/MotionPlannerState.hpp \
                 gplan/GridFrame.hpp \
-                gplan/GridLayer.hpp \
                 gplan/NF1.hpp \
                 gplan/NF1Wave.hpp \
                 cwrap/Handlemap.hpp \

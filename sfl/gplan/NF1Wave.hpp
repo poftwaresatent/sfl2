@@ -26,6 +26,7 @@
 #define SUNFLOWER_NF1WAVE_H
 
 
+#include <sfl/util/array2d.hpp>
 #include <sfl/gplan/GridLayer.hpp>
 
 
@@ -35,7 +36,8 @@ namespace sfl {
   class NF1Wave
   {
   public:
-    typedef GridLayer::index_t index_t;
+    typedef vec2d<ssize_t> sindex_t;
+    typedef array2d<double> grid_t;
     
     static const double FREE;//     = -2;
     static const double OBSTACLE;// = -1;
@@ -44,16 +46,16 @@ namespace sfl {
     NF1Wave();
     
     void Reset();
-    void AddSeed(index_t index);
-    void Propagate(GridLayer & grid) const;
-    index_t SmallestNeighbor(GridLayer & grid, index_t index) const;
+    void AddSeed(sindex_t index);
+    void Propagate(grid_t & grid) const;
+    sindex_t SmallestNeighbor(grid_t & grid, sindex_t index) const;
     
   private:
-    typedef std::vector<index_t> indexlist_t;
+    typedef std::vector<sindex_t> sindexlist_t;
     
-    static indexlist_t propagation_neighbor;
-    static indexlist_t gradient_neighbor;
-    indexlist_t m_seed;
+    static sindexlist_t propagation_neighbor;
+    static sindexlist_t gradient_neighbor;
+    sindexlist_t m_seed;
   };
   
 }
