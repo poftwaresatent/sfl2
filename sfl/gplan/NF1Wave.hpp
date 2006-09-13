@@ -27,7 +27,7 @@
 
 
 #include <sfl/util/array2d.hpp>
-#include <sfl/gplan/GridLayer.hpp>
+#include <vector>
 
 
 namespace sfl {
