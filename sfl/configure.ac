@@ -1,4 +1,4 @@
-AC_REVISION($Id$)
+AC_REVISION($Revision$)
 AC_INIT(libsunflower,0.8pre)
 AC_PREREQ(2.57)
 
