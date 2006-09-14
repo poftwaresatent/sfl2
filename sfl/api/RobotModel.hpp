@@ -146,6 +146,11 @@ namespace sfl {
     void Actuator2Global(double qdl, double qdr,
 			 double & sd, double & thetad) const;
     
+    /** convenient if you don't want to instantiate RobotModel */
+    static void Actuator2Global(double qdl, double qdr,
+				double wheelBase, double wheelRadius,
+				double & sd, double & thetad);
+    
     /**
        Indirect kinematic model for differential drive robots. Given
        the global translational and rotational speeds, calculates the
@@ -154,6 +159,11 @@ namespace sfl {
     void Global2Actuator(double sd, double thetad,
 			 double & qdl, double & qdr) const;
     
+    /** convenient if you don't want to instantiate RobotModel */
+    static void Global2Actuator(double sd, double thetad,
+				double wheelBase, double wheelRadius,
+				double & qdl, double & qdr);
+
     /**
        Given current actuator wheel speeds, predicts the robot's
        position if it brakes along a constant-curvature path until

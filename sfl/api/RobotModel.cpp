@@ -161,10 +161,21 @@ namespace sfl {
 		  double & sd, double & thetad)
     const
   {
-    qdl *= m_params.wheelRadius;
-    qdr *= m_params.wheelRadius;
+    Actuator2Global(qdl, qdr, m_params.wheelBase, m_params.wheelRadius,
+		    sd, thetad);
+  }
+  
+  
+  
+  void RobotModel::
+  Actuator2Global(double qdl, double qdr,
+		  double wheelBase, double wheelRadius,
+		  double & sd, double & thetad)
+  {
+    qdl *= wheelRadius;
+    qdr *= wheelRadius;
     sd = 0.5 * (qdl + qdr);
-    thetad = (qdr - qdl) / m_params.wheelBase;
+    thetad = (qdr - qdl) / wheelBase;
   }
 
 
@@ -174,9 +185,20 @@ namespace sfl {
 		  double & qdl, double & qdr)
     const
   {
-    thetad *= 0.5 * m_params.wheelBase; 
-    qdr = (sd + thetad) / m_params.wheelRadius;
-    qdl = (sd - thetad) / m_params.wheelRadius;
+    Global2Actuator(sd, thetad, m_params.wheelBase, m_params.wheelRadius,
+		    qdl, qdr);
+  }
+
+
+
+  void RobotModel::
+  Global2Actuator(double sd, double thetad,
+		  double wheelBase, double wheelRadius,
+		  double & qdl, double & qdr)
+  {
+    thetad *= 0.5 * wheelBase; 
+    qdr = (sd + thetad) / wheelRadius;
+    qdl = (sd - thetad) / wheelRadius;
   }
 
 
