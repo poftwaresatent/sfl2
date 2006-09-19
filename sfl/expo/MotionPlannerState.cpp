@@ -23,9 +23,23 @@
 
 
 #include "MotionPlannerState.hpp"
+#include "MotionPlanner.hpp"
+#include "MotionController.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <sfl/api/Pose.hpp>
+#include <sfl/api/Odometry.hpp>
 #include <sfl/bband/BubbleBand.hpp>
+#include <sfl/dwa/DynamicWindow.hpp>
 #include <cmath>
+
+
+#ifdef DEBUG
+# define PDEBUG PDEBUG_ERR
+# define PVDEBUG PDEBUG_OFF
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
+# define PVDEBUG PDEBUG_OFF
+#endif // DEBUG
 
 
 using namespace boost;
@@ -40,10 +54,9 @@ namespace expo {
 
 
   MotionPlannerState::
-  MotionPlannerState(const string & name,
-		     MotionPlannerFields * fields):
-    _fields(fields),
-    _name(name)
+  MotionPlannerState(const string & name, MotionPlanner * mp)
+    : m_mp(mp),
+      m_name(name)
   {
   }
 
@@ -55,42 +68,40 @@ namespace expo {
 
 
   const string & MotionPlannerState::
-  Name()
-    const
+  Name() const
   {
-    return _name;
+    return m_name;
   }
 
 
   bool MotionPlannerState::
-  GoalReached()
-    const
+  GoalReached() const
   {
-    shared_ptr<const sfl::Pose> pose(_fields->odometry.Get());
-    return ( ! _fields->motionController.Moving())
-      && _fields->goal.Reached( * pose, true);
+    shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());
+    return ( ! m_mp->motion_controller->Moving())
+      && m_mp->goal->Reached( * pose, true);
   }
 
 
   void MotionPlannerState::
   GoForward(bool b)
   {
-    _fields->goForward = b;
+    m_mp->go_forward = b;
   }
 
 
   MotionPlannerState * MotionPlannerState::
   NextState(double timestep)
   {
-    shared_ptr<const sfl::Pose> pose(_fields->odometry.Get());
-    if(_fields->goal.DistanceReached( * pose)){
+    shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());
+    if(m_mp->goal->DistanceReached( * pose)){
       double dheading;
-      if(_fields->goal.HeadingReached( * pose, _fields->goForward, dheading)
-	 && _fields->motionController.Stoppable(timestep)){
-	return _fields->at_goal_state;
+      if(m_mp->goal->HeadingReached( * pose, m_mp->go_forward, dheading)
+	 && m_mp->motion_controller->Stoppable(timestep)){
+	return m_mp->at_goal_state.get();
       }
     
-      return _fields->adjust_goal_heading_state;      
+      return m_mp->adjust_goal_heading_state.get();      
     }
  
     return this;
@@ -100,7 +111,7 @@ namespace expo {
   MotionPlannerState * MotionPlannerState::
   FollowTargetState()
   {
-    return _fields->aimed_state;
+    return m_mp->aimed_state.get();
   }
 
 
@@ -108,28 +119,26 @@ namespace expo {
   GoalChangedState()
   {
     if(GoalReached())
-      return _fields->at_goal_state;
+      return m_mp->at_goal_state.get();
 
-    return _fields->take_aim_state;
+    return m_mp->take_aim_state.get();
   }
 
 
   void MotionPlannerState::
   TurnToward(double timestep, direction_t direction,
-	     shared_ptr<const sfl::Scan> global_scan)
-    const
+	     shared_ptr<const sfl::Scan> global_scan) const
   {
-    _fields->dynamicWindow.GoSlow();
+    m_mp->dynamic_window->GoSlow();
     AskDynamicWindow(timestep, direction, global_scan);
   }
 
 
   void MotionPlannerState::
   GoAlong(double timestep, direction_t direction,
-	  shared_ptr<const sfl::Scan> global_scan)
-    const
+	  shared_ptr<const sfl::Scan> global_scan) const
   {
-    _fields->dynamicWindow.GoFast();
+    m_mp->dynamic_window->GoFast();
     AskDynamicWindow(timestep, direction, global_scan);
   }
 
@@ -137,13 +146,25 @@ namespace expo {
   MotionPlannerState::direction_t MotionPlannerState::
   AskBubbleBand() const
   {
-    _fields->bubbleBand.Update();
-    double goalx(_fields->goal.X());
-    double goaly(_fields->goal.Y());
-    if(_fields->bubbleBand.GetState() != sfl::BubbleBand::NOBAND)
-      _fields->bubbleBand.GetSubGoal(_fields->bubbleBand.robot_radius,
-				     goalx, goaly);
-    _fields->odometry.Get()->From(goalx, goaly);
+    double goalx(m_mp->goal->X());
+    double goaly(m_mp->goal->Y());
+    if(m_mp->bubble_band){
+      m_mp->bubble_band->Update();
+      if(m_mp->bubble_band->GetState() != sfl::BubbleBand::NOBAND){
+	m_mp->bubble_band->GetSubGoal(m_mp->bubble_band->robot_radius,
+				      goalx, goaly);
+	PDEBUG("expo MPS %s: goal %05.2f %05.2f   bband %05.2f %05.2f\n",
+	       m_name.c_str(), m_mp->goal->X(), m_mp->goal->Y(),
+	       goalx, goaly);
+      }
+      else
+	PDEBUG("expo MPS %s: goal %05.2f %05.2f  NO BBAND\n",
+	       m_name.c_str(), goalx, goaly);
+    }
+    else
+      PDEBUG("expo MPS %s: goal %05.2f %05.2f  bband disabled\n",
+	     m_name.c_str(), goalx, goaly);
+    m_mp->odometry->Get()->From(goalx, goaly);
     return make_pair(goalx, goaly);
   }
 
@@ -151,25 +172,27 @@ namespace expo {
   void MotionPlannerState::
   AskDynamicWindow(double timestep,
 		   direction_t direction,
-		   shared_ptr<const sfl::Scan> global_scan)
-    const
+		   shared_ptr<const sfl::Scan> global_scan) const
   {
-    _fields->dynamicWindow.Update(timestep, direction.first, direction.second,
+    m_mp->dynamic_window->Update(timestep, direction.first, direction.second,
 				  global_scan);
     
     double qdl, qdr;
-    if( ! _fields->dynamicWindow.OptimalActuators(qdl, qdr)){
+    if( ! m_mp->dynamic_window->OptimalActuators(qdl, qdr)){
       qdl = 0;
       qdr = 0;
+      PDEBUG("expo MPS %s: DWA failed\n", m_name.c_str());
     }
-  
-    _fields->motionController.ProposeActuators(qdl, qdr);
+    else
+      PDEBUG("expo MPS %s: DWA %05.2f %05.2f\n", m_name.c_str(), qdl, qdr);
+    
+    m_mp->motion_controller->ProposeActuators(qdl, qdr);
   }
 
 
   TakeAimState::
-  TakeAimState(MotionPlannerFields * fields):
-    MotionPlannerState("take aim", fields)
+  TakeAimState(MotionPlanner * mp):
+    MotionPlannerState("take aim", mp)
   {
   }
 
@@ -189,7 +212,7 @@ namespace expo {
       return override;
 
     if(StartHoming(dheading))
-      return _fields->aimed_state;
+      return m_mp->aimed_state.get();
 
     return this;
   }
@@ -200,7 +223,7 @@ namespace expo {
   {
     direction_t dir(AskBubbleBand());
     dheading = atan2(dir.second, dir.first);
-    if( ! _fields->goForward)
+    if( ! m_mp->go_forward)
       if(dheading > 0)
 	dheading =   M_PI - dheading;
       else
@@ -210,16 +233,15 @@ namespace expo {
 
 
   bool TakeAimState::
-  StartHoming(double dtheta)
-    const
+  StartHoming(double dtheta) const
   {
     return (dtheta > 0 ? dtheta : - dtheta) <= DTHETASTARTHOMING;
   }
 
 
   AimedState::
-  AimedState(MotionPlannerFields * fields):
-    MotionPlannerState("aimed", fields)
+  AimedState(MotionPlanner * mp):
+    MotionPlannerState("aimed", mp)
   {
   }
 
@@ -239,7 +261,7 @@ namespace expo {
       return override;
   
     if(StartAiming(dheading))
-      return _fields->take_aim_state;
+      return m_mp->take_aim_state.get();
   
     return this;
   }
@@ -250,7 +272,7 @@ namespace expo {
   {
     direction_t dir(AskBubbleBand());
     dheading = atan2(dir.second, dir.first);
-    if( ! _fields->goForward)
+    if( ! m_mp->go_forward)
       if(dheading > 0)
 	dheading =   M_PI - dheading;
       else
@@ -260,16 +282,15 @@ namespace expo {
 
 
   bool AimedState::
-  StartAiming(double dtheta)
-    const
+  StartAiming(double dtheta) const
   {
     return (dtheta > 0 ? dtheta : - dtheta) >= DTHETASTARTAIMING;
   }
 
 
   AdjustGoalHeadingState::
-  AdjustGoalHeadingState(MotionPlannerFields * fields):
-    MotionPlannerState("adjust goal heading", fields)
+  AdjustGoalHeadingState(MotionPlanner * mp):
+    MotionPlannerState("adjust goal heading", mp)
   {
   }
 
@@ -284,16 +305,16 @@ namespace expo {
   AdjustGoalHeadingState::direction_t AdjustGoalHeadingState::
   GetPathDirection()
   {
-    shared_ptr<const sfl::Pose> pose(_fields->odometry.Get());    
+    shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());    
     double dtheta;
-    _fields->goal.HeadingReached( * pose, _fields->goForward, dtheta);
+    m_mp->goal->HeadingReached( * pose, m_mp->go_forward, dtheta);
     return make_pair(cos(dtheta), sin(dtheta));
   }
 
 
   AtGoalState::
-  AtGoalState(MotionPlannerFields * fields):
-    MotionPlannerState("at goal", fields)
+  AtGoalState(MotionPlanner * mp):
+    MotionPlannerState("at goal", mp)
   {
   }
 
@@ -324,8 +345,8 @@ namespace expo {
 
 
   NullState::
-  NullState(MotionPlannerFields * fields):
-    MotionPlannerState("null", fields)
+  NullState(MotionPlanner * mp):
+    MotionPlannerState("null", mp)
   {
   }
 
@@ -333,14 +354,14 @@ namespace expo {
   void NullState::
   Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    _fields->motionController.ProposeActuators(0, 0);
+    m_mp->motion_controller->ProposeActuators(0, 0);
   }
 
 
   MotionPlannerState * NullState::
   NextState(double timestep)
   {
-    return _fields->at_goal_state;
+    return m_mp->at_goal_state.get();
   }
 
 

@@ -26,23 +26,28 @@
 #define EXPO_MOTIONPLANNERSTATE_HPP
 
 
-#include <sfl/expo/MotionPlannerFields.hpp>
-#include <sfl/api/Scan.hpp>
+#include <boost/shared_ptr.hpp>
 #include <string>
-#include <utility>
+
+
+namespace sfl {
+  class Scan;
+}
 
 
 namespace expo {
-
-
+  
+  
+  class MotionPlanner;
+  
+  
   class MotionPlannerState
   {
   private:
     MotionPlannerState(const MotionPlannerState &); // non-copyable
     
   protected:
-    MotionPlannerState(const std::string & name,
-		       MotionPlannerFields * fields);
+    MotionPlannerState(const std::string & name, MotionPlanner * mp);
   
   public:
     virtual ~MotionPlannerState();
@@ -52,50 +57,48 @@ namespace expo {
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    virtual void Act(double timestep,
-		     boost::shared_ptr<const sfl::Scan> global_scan) = 0;
+    virtual
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan) = 0;
     virtual MotionPlannerState * NextState(double timestep);
-
+    
     const std::string & Name() const;
     bool GoalReached() const;
     void GoForward(bool b);
-
+    
     MotionPlannerState * GoalChangedState();
     MotionPlannerState * FollowTargetState();
 
   protected:
     typedef std::pair<double, double> direction_t;
-
-    MotionPlannerFields * _fields;
-    std::string _name;
+    
+    MotionPlanner * m_mp;
+    const std::string m_name;
 
     virtual direction_t GetPathDirection() = 0;
     
     void TurnToward(double timestep, direction_t local_direction,
-		    boost::shared_ptr<const sfl::Scan> global_scan) const;
+		    boost::shared_ptr<const sfl::Scan> scan) const;
     
     void GoAlong(double timestep, direction_t local_direction,
-		 boost::shared_ptr<const sfl::Scan> global_scan) const;
+		 boost::shared_ptr<const sfl::Scan> scan) const;
     
     direction_t AskBubbleBand() const;
     
     void AskDynamicWindow(double timestep, direction_t local_direction,
-			  boost::shared_ptr<const sfl::Scan> global_scan)
-      const;
+			  boost::shared_ptr<const sfl::Scan> scan) const;
   };
   
   
-  class TakeAimState:
-    public MotionPlannerState
+  class TakeAimState
+    : public MotionPlannerState
   {
   private:
     TakeAimState(const TakeAimState &); // non-copyable
     
   public:
-    TakeAimState(MotionPlannerFields * fields);
+    TakeAimState(MotionPlanner * mp);
 
-    void Act(double timestep,
-	     boost::shared_ptr<const sfl::Scan> global_scan);
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
@@ -110,17 +113,16 @@ namespace expo {
   };
 
 
-  class AimedState:
-    public MotionPlannerState
+  class AimedState
+    : public MotionPlannerState
   {
   private:
     AimedState(const AimedState &); // non-copyable
     
   public:
-    AimedState(MotionPlannerFields * fields);
+    AimedState(MotionPlanner * mp);
 
-    void Act(double timestep,
-	     boost::shared_ptr<const sfl::Scan> global_scan);
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
@@ -136,34 +138,32 @@ namespace expo {
   };
 
 
-  class AdjustGoalHeadingState:
-    public MotionPlannerState
+  class AdjustGoalHeadingState
+    : public MotionPlannerState
   {
   private:
     AdjustGoalHeadingState(const AdjustGoalHeadingState &); // non-copyable
     
   public:
-    AdjustGoalHeadingState(MotionPlannerFields * fields);
+    AdjustGoalHeadingState(MotionPlanner * mp);
 
-    void Act(double timestep,
-	     boost::shared_ptr<const sfl::Scan> global_scan);
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
 
   protected:
     direction_t GetPathDirection();
   };
 
 
-  class AtGoalState:
-    public MotionPlannerState
+  class AtGoalState
+    : public MotionPlannerState
   {
   private:
     AtGoalState(const AtGoalState &); // non-copyable
     
   public:
-    AtGoalState(MotionPlannerFields * fields);
+    AtGoalState(MotionPlanner * mp);
 
-    void Act(double timestep,
-	     boost::shared_ptr<const sfl::Scan> global_scan);
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
@@ -171,17 +171,16 @@ namespace expo {
   };
 
 
-  class NullState:
-    public MotionPlannerState
+  class NullState
+    : public MotionPlannerState
   {
   private:
     NullState(const NullState &); // non-copyable
     
   public:
-    NullState(MotionPlannerFields * fields);
+    NullState(MotionPlanner * mp);
 
-    void Act(double timestep,
-	     boost::shared_ptr<const sfl::Scan> global_scan);
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:

@@ -21,7 +21,13 @@
 #include <fcntl.h>
 
 
-#define PDEBUG PDEBUG_OFF
+#ifdef DEBUG
+# define PDEBUG PDEBUG_ERR
+# define PVDEBUG PDEBUG_OFF
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
+# define PVDEBUG PDEBUG_OFF
+#endif // DEBUG
 
 
 using namespace boost;
@@ -39,7 +45,7 @@ namespace sfl_cwrap {
       perror("/dev/urandom");
       abort();
     }
-    PDEBUG("ctor\n");
+    PVDEBUG("ctor\n");
   }
   
   
@@ -47,7 +53,7 @@ namespace sfl_cwrap {
   ~IdPool()
   {
     close(m_urandom_fd);
-    PDEBUG("dtor\n");
+    PVDEBUG("dtor\n");
   }
   
   
@@ -56,10 +62,10 @@ namespace sfl_cwrap {
   {
     static shared_ptr<IdPool> instance;
     if( ! instance){
-      PDEBUG("reset\n");
+      PVDEBUG("reset\n");
       instance.reset(new IdPool());
     }
-    PDEBUG("instance 0x%08X\n", instance.get());
+    PVDEBUG("instance 0x%08X\n", instance.get());
     return instance;
   }
   
@@ -79,7 +85,7 @@ namespace sfl_cwrap {
 	break;
     }
     m_pool.insert(uid);
-    PDEBUG("%d\n", uid);
+    PVDEBUG("%d\n", uid);
     return uid;
   }
   
@@ -87,12 +93,12 @@ namespace sfl_cwrap {
   void IdPool::
   Give(int id)
   {
-    PDEBUG("%d\n", id);
+    PVDEBUG("%d\n", id);
     set<int>::iterator ii(m_pool.find(id));
     if(m_pool.end() != ii)
       m_pool.erase(ii);
     else
-      PDEBUG("bizarre, not in pool...\n");
+      PVDEBUG("bizarre, not in pool...\n");
   }
 
 }

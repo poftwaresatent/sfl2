@@ -29,6 +29,7 @@
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionPlanner.hpp>
+#include <sfl/expo/MotionPlannerState.hpp>
 #include <sfl/expo/MotionController.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -87,6 +88,38 @@ int expo_create_MotionController(int RobotModel_handle,
 }
   
   
+int expo_create_MotionPlanner_nobband(int MotionController_handle,
+				      int DynamicWindow_handle,
+				      int Multiscanner_handle,
+				      int RobotModel_handle,
+				      int Odometry_handle)
+{
+  shared_ptr<MotionController>
+    mc(get_MotionController(MotionController_handle));
+  if( ! mc)
+    return -1;
+  shared_ptr<DynamicWindow>
+    dw(get_DynamicWindow(DynamicWindow_handle));
+  if( ! dw)
+    return -2;
+  shared_ptr<Multiscanner>
+    ms(get_Multiscanner(Multiscanner_handle));
+  if( ! ms)
+    return -3;
+  shared_ptr<RobotModel>
+    rm(get_RobotModel(RobotModel_handle));
+  if( ! rm)
+    return -4;
+  shared_ptr<BubbleBand> bb;
+  shared_ptr<Odometry>
+    od(get_Odometry(Odometry_handle));
+  if( ! od)
+    return -6;
+  return
+    MotionPlanner_map.InsertRaw(new MotionPlanner(mc, dw, ms, rm, bb, od));
+}
+
+
 int expo_create_MotionPlanner(int MotionController_handle,
 			      int DynamicWindow_handle,
 			      int Multiscanner_handle,
@@ -118,8 +151,8 @@ int expo_create_MotionPlanner(int MotionController_handle,
     od(get_Odometry(Odometry_handle));
   if( ! od)
     return -6;
-  return MotionPlanner_map.InsertRaw(new MotionPlanner(*mc, *dw, *ms,
-						       *rm, *bb, *od));
+  return
+    MotionPlanner_map.InsertRaw(new MotionPlanner(mc, dw, ms, rm, bb, od));
 }
   
   

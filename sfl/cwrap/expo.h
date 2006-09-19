@@ -54,6 +54,13 @@ extern "C" {
   int expo_create_MotionController(int RobotModel_handle,
 				   int HAL_handle);
   
+  /** \note without bubble band (always go straight twd goal) */
+  int expo_create_MotionPlanner_nobband(int MotionController_handle,
+					int DynamicWindow_handle,
+					int Multiscanner_handle,
+					int RobotModel_handle,
+					int Odometry_handle);
+  
   int expo_create_MotionPlanner(int MotionController_handle,
 				int DynamicWindow_handle,
 				int Multiscanner_handle,

@@ -84,7 +84,6 @@ SRCS=           $(XCF_SRCS) \
                 dwa/SpeedObjective.cpp \
                 expo/MotionController.cpp \
                 expo/MotionPlanner.cpp \
-                expo/MotionPlannerFields.cpp \
                 expo/MotionPlannerState.cpp \
                 gplan/GridFrame.cpp \
                 gplan/NF1.cpp \
@@ -132,7 +131,6 @@ HEADERS=        $(XCF_HEADERS) \
                 dwa/SpeedObjective.hpp \
                 expo/MotionController.hpp \
                 expo/MotionPlanner.hpp \
-                expo/MotionPlannerFields.hpp \
                 expo/MotionPlannerState.hpp \
                 gplan/GridFrame.hpp \
                 gplan/NF1.hpp \

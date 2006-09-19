@@ -29,8 +29,13 @@
 #include <iostream>
 
 
-#define PDEBUG PDEBUG_OFF
-#define PVDEBUG PDEBUG_OFF
+#ifdef DEBUG
+# define PDEBUG PDEBUG_ERR
+# define PVDEBUG PDEBUG_OFF
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
+# define PVDEBUG PDEBUG_OFF
+#endif // DEBUG
 
 
 using namespace std;
@@ -168,7 +173,7 @@ namespace sfl {
   {
     double qdl, qdr;
     _motion_controller.GetCurrentAct(qdl, qdr);
-    PDEBUG("dt: %g   goal: %g   %g   qd: %g   %g\n",
+    PDEBUG("DWA dt: %g   goal: %g   %g   qd: %g   %g\n",
 	   timestep, dx, dy, qdl, qdr);
     
     CalculateReachable(timestep, qdl, qdr);
@@ -348,7 +353,7 @@ namespace sfl {
 	  if(_objective[il][ir] < _objectiveMin)
 	    _objectiveMin = _objective[il][ir];
 	}
-    PDEBUG("[%d   %d]: %g\n", _qdlOpt, _qdrOpt, _objectiveMax);
+    PDEBUG("DWA [%d   %d]: %g\n", _qdlOpt, _qdrOpt, _objectiveMax);
   }
 
 

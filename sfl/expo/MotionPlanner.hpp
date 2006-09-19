@@ -27,10 +27,16 @@
 
 
 #include <sfl/api/MotionPlanner.hpp>
-#include <sfl/expo/MotionPlannerFields.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 
 namespace sfl {
+  class DynamicWindow;
+  class Multiscanner;
+  class RobotModel;
+  class BubbleBand;
+  class Odometry;
   class Multiscanner;
 }
 
@@ -39,20 +45,23 @@ namespace expo {
   
   
   class MotionPlannerState;
+  class MotionController;
   
   
+  /** \note lots of public fields for historical reasons... */
   class MotionPlanner:
     public sfl::MotionPlanner
   {
   public:
     enum state_id_t { take_aim, aimed, adjust_goal_heading, at_goal, null };
     
-    MotionPlanner(MotionController & motion_controller,
-		  sfl::DynamicWindow & dynamic_window,
-		  sfl::Multiscanner & multiscanner,
-		  const sfl::RobotModel & robot_model,
-		  sfl::BubbleBand & bubble_band,
-		  const sfl::Odometry & odometry);
+    MotionPlanner(boost::shared_ptr<MotionController> motion_controller,
+		  boost::shared_ptr<sfl::DynamicWindow> dynamic_window,
+		  boost::shared_ptr<sfl::Multiscanner> multiscanner,
+		  boost::shared_ptr<const sfl::RobotModel> robot_model,
+		  /** optional: if null then go straight towards goal */
+		  boost::shared_ptr<sfl::BubbleBand> bubble_band,
+		  boost::shared_ptr<const sfl::Odometry> odometry);
     
     void Update(double timestep);
     void SetGoal(const sfl::Goal & goal);
@@ -70,10 +79,25 @@ namespace expo {
 		    <li> -3: motion controller update error </li></ul> */
     int UpdateAll(double timestep);
     
+    boost::shared_ptr<MotionController> motion_controller;
+    boost::shared_ptr<sfl::DynamicWindow> dynamic_window;
+    boost::shared_ptr<const sfl::RobotModel> robot_model;
+    boost::shared_ptr<sfl::BubbleBand> bubble_band; // can be null!
+    boost::shared_ptr<const sfl::Odometry> odometry;
+    boost::shared_ptr<sfl::Multiscanner> multiscanner;
+    
+    boost::scoped_ptr<MotionPlannerState> null_state;
+    boost::scoped_ptr<MotionPlannerState> take_aim_state;
+    boost::scoped_ptr<MotionPlannerState> aimed_state;
+    boost::scoped_ptr<MotionPlannerState> adjust_goal_heading_state;
+    boost::scoped_ptr<MotionPlannerState> at_goal_state;
+    
+    boost::scoped_ptr<sfl::Goal> goal;
+    bool go_forward;
+    
   private:
-    MotionPlannerFields _fields;
-    MotionPlannerState * _internal_state;
-    sfl::Multiscanner & _multiscanner;
+    MotionPlannerState * m_internal_state;
+    bool m_replan_request;
   };
 
 }

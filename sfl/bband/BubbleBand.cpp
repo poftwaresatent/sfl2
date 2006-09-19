@@ -25,16 +25,12 @@
 #include "BubbleBand.hpp"
 #include "BubbleFactory.hpp"
 #include "ReplanHandler.hpp"
-#include <sfl/util/pdebug.hpp>
 #include <sfl/api/Scan.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/Pose.hpp>
 #include <iostream>
-
-
-#define PDEBUG PDEBUG_OFF
 
 
 using namespace boost;

@@ -23,9 +23,14 @@
 
 
 #include "MotionPlanner.hpp"
+#include "MotionController.hpp"
 #include "MotionPlannerState.hpp"
 #include <sfl/api/Multiscanner.hpp>
+#include <sfl/api/Goal.hpp>
 #include <sfl/api/Pose.hpp>
+#include <sfl/api/Odometry.hpp>
+#include <sfl/bband/BubbleBand.hpp>
+#include <sfl/dwa/DynamicWindow.hpp>
 
 
 using namespace boost;
@@ -35,105 +40,110 @@ namespace expo {
   
   
   MotionPlanner::
-  MotionPlanner(MotionController & motion_controller,
-		sfl::DynamicWindow & dynamic_window,
-		sfl::Multiscanner & multiscanner,
-		const sfl::RobotModel & robot_model,
-		sfl::BubbleBand & bubble_band,
-		const sfl::Odometry & odometry):
-    _fields(motion_controller,
-	    dynamic_window,
-	    robot_model,
-	    bubble_band,
-	    odometry),
-    _multiscanner(multiscanner)
+  MotionPlanner(shared_ptr<MotionController> _motion_controller,
+		shared_ptr<sfl::DynamicWindow> _dynamic_window,
+		shared_ptr<sfl::Multiscanner> _multiscanner,
+		shared_ptr<const sfl::RobotModel> _robot_model,
+		shared_ptr<sfl::BubbleBand> _bubble_band,
+		shared_ptr<const sfl::Odometry> _odometry)
+    : motion_controller(_motion_controller),
+      dynamic_window(_dynamic_window),
+      robot_model(_robot_model),
+      bubble_band(_bubble_band),
+      odometry(_odometry),
+      multiscanner(_multiscanner),
+      null_state(new NullState(this)),
+      take_aim_state(new TakeAimState(this)),
+      aimed_state(new AimedState(this)),
+      adjust_goal_heading_state(new AdjustGoalHeadingState(this)),
+      at_goal_state(new AtGoalState(this)),
+      goal(new sfl::Goal()),
+      go_forward(true),
+      m_internal_state(null_state.get()),
+      m_replan_request(false)
   {
-    _internal_state = _fields.null_state;
   }
   
   
   void MotionPlanner::
   Update(double timestep)
   {
-    shared_ptr<const sfl::Pose> pose(_fields.odometry.Get());
-    _internal_state = _internal_state->NextState(timestep);
-    _internal_state->Act(timestep, _multiscanner.CollectScans());
+    shared_ptr<const sfl::Pose> pose(odometry->Get());
+    m_internal_state = m_internal_state->NextState(timestep);
+    m_internal_state->Act(timestep, multiscanner->CollectScans());
   }
   
   
   void MotionPlanner::
-  SetGoal(const sfl::Goal & goal)
+  SetGoal(const sfl::Goal & _goal)
   {
-    _fields.goal.Set(goal);
-    _fields.bubbleBand.SetGoal(goal);
-    _internal_state = _internal_state->GoalChangedState();
+    goal->Set(_goal);
+    if(bubble_band)
+      bubble_band->SetGoal(_goal);
+    m_internal_state = m_internal_state->GoalChangedState();
   }
   
   
   const sfl::Goal & MotionPlanner::
-  GetGoal()
-    const
+  GetGoal() const
   {
-    return _fields.goal;
+    return * goal;
   }
   
   
   bool MotionPlanner::
-  GoalReached()
-    const
+  GoalReached() const
   {
-    return _internal_state->GoalReached();
+    return m_internal_state->GoalReached();
   }
   
   
   int MotionPlanner::
   UpdateAll(double timestep)
   {
-    sfl::Odometry & odo(const_cast<sfl::Odometry &>(_fields.odometry));
+    sfl::Odometry & odo(const_cast<sfl::Odometry &>(*odometry));
     if(0 > odo.Update())
       return -1;
-    if( ! _multiscanner.UpdateAll())
+    if( ! multiscanner->UpdateAll())
       return -2;
     Update(timestep);
-    if(0 > _fields.motionController.Update(timestep))
+    if(0 > motion_controller->Update(timestep))
       return -3;
     return 0;
   }
   
   
   MotionPlanner::state_id_t MotionPlanner::
-  GetStateId()
-    const
+  GetStateId() const
   {
-    if(_internal_state == _fields.take_aim_state)
+    if(m_internal_state == take_aim_state.get())
       return take_aim;
-    if(_internal_state == _fields.at_goal_state)
+    if(m_internal_state == at_goal_state.get())
       return at_goal;
-    if(_internal_state == _fields.aimed_state)
+    if(m_internal_state == aimed_state.get())
       return aimed;
-    if(_internal_state == _fields.adjust_goal_heading_state)
+    if(m_internal_state == adjust_goal_heading_state.get())
       return adjust_goal_heading;
-    if(_internal_state == _fields.at_goal_state)
+    if(m_internal_state == at_goal_state.get())
       return at_goal;
-    if(_internal_state == _fields.null_state)
+    if(m_internal_state == null_state.get())
       return null;
     return null;
   }
   
   
   const char * MotionPlanner::
-  GetStateName()
-    const
+  GetStateName() const
   {
-    if(_internal_state == _fields.null_state)
+    if(m_internal_state == null_state.get())
       return "NULL";
-    if(_internal_state == _fields.take_aim_state)
+    if(m_internal_state == take_aim_state.get())
       return "TAKE_AIM";
-    if(_internal_state == _fields.aimed_state)
+    if(m_internal_state == aimed_state.get())
       return "AIMED";
-    if(_internal_state == _fields.adjust_goal_heading_state)
+    if(m_internal_state == adjust_goal_heading_state.get())
       return "ADJUST_GOAL_HEADING";
-    if(_internal_state == _fields.at_goal_state)
+    if(m_internal_state == at_goal_state.get())
       return "AT_GOAL";
     return "<invalid>";
   }
@@ -142,16 +152,16 @@ namespace expo {
   void MotionPlanner::
   GoForward()
   {
-    _internal_state->GoForward(true);
-    _fields.dynamicWindow.GoForward();
+    m_internal_state->GoForward(true);
+    dynamic_window->GoForward();
   }
   
   
   void MotionPlanner::
   GoBackward()
   {
-    _internal_state->GoForward(false);
-    _fields.dynamicWindow.GoBackward();
+    m_internal_state->GoForward(false);
+    dynamic_window->GoBackward();
   }
   
 }

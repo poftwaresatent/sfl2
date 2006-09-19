@@ -14,8 +14,8 @@ test "x${GXX}" = "xyes" && CXXFLAGS="-pipe"
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O2)]),
   [
-    test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -g -O0"
-    test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -g -O0"
+    test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -DDEBUG -g -O0"
+    test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -DDEBUG -g -O0"
   ],[
     test "x${GCC}" = "xyes" && CFLAGS="$CFLAGS -O2"
     test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -O2"
