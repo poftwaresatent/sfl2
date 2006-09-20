@@ -42,7 +42,7 @@ namespace sfl {
   BubbleFactory::
   ~BubbleFactory()
   {
-    while(m_level > 0){
+    while((0 != m_top) && (m_level > 0)){
       Bubble *tmp = m_top;
       m_top = m_top->_previous;
       --m_level;
