@@ -114,14 +114,14 @@ Robot()
   }
 
   m_front_handle =
-    sfl_create_Scanner(m_hal_handle, front_channel, "front",
+    sfl_create_Scanner(m_hal_handle, front_channel,
 		       LIDAROFFSET, 0, 0, nscans, rhomax, phi0, phirange);
   if(0 > m_front_handle){
     cerr << "sfl_create_Scanner(front): " <<  m_front_handle << "\n";
     exit(EXIT_FAILURE);
   }
   m_rear_handle =
-    sfl_create_Scanner(m_hal_handle, rear_channel, "rear",
+    sfl_create_Scanner(m_hal_handle, rear_channel,
 		       -LIDAROFFSET, 0, M_PI, nscans, rhomax, phi0, phirange);
   if(0 > m_rear_handle){
     cerr << "sfl_create_Scanner(rear): " <<  m_rear_handle << "\n";
@@ -160,14 +160,14 @@ Robot()
   m_dynamicWindow_handle =
     sfl_create_DynamicWindow(m_robotModel_handle,
 			     m_motionController_handle,
-			     41, // dimension
+			     21, // dimension
 			     2.2, // grid width
 			     1.5, // grid height
-			     0.03, // grid resolution
+			     0.1, // grid resolution
 			     0.5, // alpha distance
 			     0.1, // alpha heading
 			     0.1, // alpha speed
-			     stderr); // progress stream
+			     "/dev/stderr"); // progress stream
   if(0 > m_dynamicWindow_handle){
     cerr << "sfl_create_DynamicWindow(): " << m_dynamicWindow_handle << "\n";
     exit(EXIT_FAILURE);
@@ -179,17 +179,19 @@ Robot()
     exit(EXIT_FAILURE);
   }
   
-  m_bubbleBand_handle =
-    sfl_create_BubbleBand(m_robotModel_handle, m_odometry_handle, 4, 8, 4);
-  if(0 > m_bubbleBand_handle){
-    cerr << "sfl_create_BubbleBand(): " << m_bubbleBand_handle << "\n";
+  int scanner[] = { m_front_handle, m_rear_handle };
+  m_multiscanner_handle =
+    sfl_create_Multiscanner(m_odometry_handle, scanner, 2);
+  if(0 > m_multiscanner_handle){
+    cerr << "sfl_create_Multiscanner(): " << m_multiscanner_handle << "\n";
     exit(EXIT_FAILURE);
   }
   
-  int scanner[] = { m_front_handle, m_rear_handle };
-  m_multiscanner_handle = sfl_create_Multiscanner(scanner, 2);
-  if(0 > m_multiscanner_handle){
-    cerr << "sfl_create_Multiscanner(): " << m_multiscanner_handle << "\n";
+  m_bubbleBand_handle =
+    sfl_create_BubbleBand(m_robotModel_handle, m_odometry_handle,
+			  m_multiscanner_handle, 4, 8, 4);
+  if(0 > m_bubbleBand_handle){
+    cerr << "sfl_create_BubbleBand(): " << m_bubbleBand_handle << "\n";
     exit(EXIT_FAILURE);
   }
   

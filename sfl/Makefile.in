@@ -144,10 +144,13 @@ HEADERS=        $(XCF_HEADERS) \
 
 OBJS=           $(SRCS:%.cpp=%.lo)
 
+BIN_CXXSRC=     cwrap/testcwrap.cpp
+BIN_CXXOBJS=    $(BIN_CXXSRC:%.cpp=%.o)
+
 VPATH=		@srcdir@
 
 
-all: depend subdirs sfl $(LIB)
+all: depend subdirs sfl $(LIB) binaries
 
 sfl:
 	ln -s $(top_srcdir) sfl
@@ -162,8 +165,14 @@ doc:
 	doxygen
 	echo "doc build `date`" > doc
 
+binaries: depend subdirs $(BIN_CXXOBJS) $(LIB)
+	for bin in $(BIN_CXXSRC:%.cpp=%); do \
+	  $(CXX) $(CXXFLAGS) -o $$bin $$bin.o -L.libs -lsunflower; \
+	done
+	echo "binaries built `date`" > binaries
+
 install:: all
-	$(MKINSTALLDIRS) $(BINDIR) $(LIBDIR)
+	$(MKINSTALLDIRS) $(LIBDIR)
 	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
 
 install:: sunflower.pc
@@ -176,6 +185,14 @@ install::
 	  $(MKINSTALLDIRS) $(INCLUDEDIR)/$$subdir; \
 	  $(INSTALL_DATA) $(srcdir)/$$header $(INCLUDEDIR)/$$subdir; \
 	done
+
+bininstall:: binaries
+	$(MKINSTALLDIRS) $(BINDIR)
+	for bin in $(BIN_CXXSRC:%.cpp=%); \
+	  do \
+	    $(LIBTOOL) --mode=install $(INSTALL) $$bin $(BINDIR); \
+	done
+	echo "installed `date`" > binaries
 
 
 
