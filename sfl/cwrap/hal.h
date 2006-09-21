@@ -43,16 +43,17 @@ extern "C" {
      \endcode
   */
   struct cwrap_hal_s {
-    int (*time_get)(struct timespec * stamp);
-    int (*odometry_set)(double x, double y, double theta,
+    int (*time_get)(struct cwrap_hal_s * self, struct timespec * stamp);
+    int (*odometry_set)(struct cwrap_hal_s * self,
+			double x, double y, double theta,
 			double sxx, double syy, double stt,
 			double sxy, double sxt, double syt);
-    int (*odometry_get)(struct timespec * stamp,
+    int (*odometry_get)(struct cwrap_hal_s * self, struct timespec * stamp,
 			double * x, double * y, double * theta,
 			double * sxx, double * syy, double * stt,
 			double * sxy, double * sxt, double * syt);
-    int (*speed_set)(double qdl, double qdr);
-    int (*speed_get)(double * qdl, double * qdr);
+    int (*speed_set)(struct cwrap_hal_s * self, double qdl, double qdr);
+    int (*speed_get)(struct cwrap_hal_s * self, double * qdl, double * qdr);
     
     /**
        \param channel (in): scanner channel number
@@ -64,7 +65,8 @@ extern "C" {
 
        \return 0 on success
     */
-    int (*scan_get)(int channel, double * rho, int rho_len,
+    int (*scan_get)(struct cwrap_hal_s * self,
+		    int channel, double * rho, int rho_len,
 		    struct timespec * t0, struct timespec * t1);
     
     /**
@@ -72,14 +74,14 @@ extern "C" {
        
        \return 0 on success
     */
-    int (*scan_init)(int channel);
+    int (*scan_init)(struct cwrap_hal_s * self, int channel);
     
     /**
        \param channel: scanner channel number
        
        \return 0 on success
     */
-    int (*scan_end)(int channel);
+    int (*scan_end)(struct cwrap_hal_s * self, int channel);
   };
   
   

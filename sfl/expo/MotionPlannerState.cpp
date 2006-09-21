@@ -47,26 +47,22 @@ using namespace std;
 
 
 namespace expo {
-
-
-  const double TakeAimState::DTHETASTARTHOMING(10 * M_PI / 180);
-  const double AimedState::DTHETASTARTAIMING(45 * M_PI / 180);
-
-
+  
+  
   MotionPlannerState::
   MotionPlannerState(const string & name, MotionPlanner * mp)
     : m_mp(mp),
       m_name(name)
   {
   }
-
-
+  
+  
   MotionPlannerState::
   ~MotionPlannerState()
   {
   }
-
-
+  
+  
   const string & MotionPlannerState::
   Name() const
   {
@@ -78,8 +74,11 @@ namespace expo {
   GoalReached() const
   {
     shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());
-    return ( ! m_mp->motion_controller->Moving())
-      && m_mp->goal->Reached( * pose, true);
+    if( ! m_mp->goal->Reached( * pose, m_mp->go_forward))
+      return false;
+    if(m_mp->goal->IsVia())
+      return true;
+    return ! m_mp->motion_controller->Moving();
   }
 
 
@@ -97,13 +96,11 @@ namespace expo {
     if(m_mp->goal->DistanceReached( * pose)){
       double dheading;
       if(m_mp->goal->HeadingReached( * pose, m_mp->go_forward, dheading)
-	 && m_mp->motion_controller->Stoppable(timestep)){
+	 && (m_mp->motion_controller->Stoppable(timestep)
+	     || m_mp->goal->IsVia()))
 	return m_mp->at_goal_state.get();
-      }
-    
       return m_mp->adjust_goal_heading_state.get();      
     }
- 
     return this;
   }
 
@@ -116,11 +113,24 @@ namespace expo {
 
 
   MotionPlannerState * MotionPlannerState::
-  GoalChangedState()
+  GoalChangedState(double timestep)
   {
-    if(GoalReached())
-      return m_mp->at_goal_state.get();
-
+    shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());
+    if(m_mp->goal->DistanceReached( * pose)){
+      double dheading;
+      if(m_mp->goal->HeadingReached( * pose, m_mp->go_forward, dheading)
+	 && (m_mp->motion_controller->Stoppable(timestep)
+	     || m_mp->goal->IsVia()))
+	return m_mp->at_goal_state.get();
+      return m_mp->adjust_goal_heading_state.get();      
+    }
+    const double dx(m_mp->goal->X() - pose->X());
+    const double dy(m_mp->goal->Y() - pose->Y());
+    double dtheta(sfl::mod2pi(atan2(dy, dx) - pose->Theta()));
+    if( ! m_mp->go_forward)
+      dtheta = M_PI - dtheta;
+    if(dtheta < m_mp->dtheta_startaiming)
+      return m_mp->aimed_state.get();
     return m_mp->take_aim_state.get();
   }
 
@@ -241,7 +251,7 @@ namespace expo {
   bool TakeAimState::
   StartHoming(double dtheta) const
   {
-    return (dtheta > 0 ? dtheta : - dtheta) <= DTHETASTARTHOMING;
+    return (dtheta > 0 ? dtheta : - dtheta) <= m_mp->dtheta_starthoming;
   }
 
 
@@ -290,7 +300,7 @@ namespace expo {
   bool AimedState::
   StartAiming(double dtheta) const
   {
-    return (dtheta > 0 ? dtheta : - dtheta) >= DTHETASTARTAIMING;
+    return (dtheta > 0 ? dtheta : - dtheta) >= m_mp->dtheta_startaiming;
   }
 
 

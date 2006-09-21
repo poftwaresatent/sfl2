@@ -106,6 +106,8 @@ extern "C" {
      \return 0 on success, -1 if invalid handle
   */
   int expo_set_goal(int MotionPlanner_handle,
+		    /** (expected/fixed) delay until the next invokation */
+		    double timestep,
 		    /** x-coordinate [m] */
 		    double x,
 		    /** y-coordinate [m] */

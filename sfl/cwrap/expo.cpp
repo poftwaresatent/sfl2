@@ -271,6 +271,7 @@ int expo_factory(struct cwrap_hal_s * hal,
 
 
 int expo_set_goal(int handle,
+		  double timestep,
 		  double x,
 		  double y,
 		  double theta,
@@ -281,7 +282,7 @@ int expo_set_goal(int handle,
   shared_ptr<MotionPlanner> mp(get_MotionPlanner(handle));
   if( ! mp)
     return -1;
-  mp->SetGoal(Goal(x, y, theta, dr, dtheta, viaGoal));
+  mp->SetGoal(timestep, Goal(x, y, theta, dr, dtheta, viaGoal));
   return 0;
 }
 

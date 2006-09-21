@@ -47,8 +47,8 @@ namespace sfl {
     /** empty default implementation */
     virtual ~MotionPlanner() {}
   
-    /**  Define the robot's goal. */
-    virtual void SetGoal(const Goal & goal) = 0;
+    /** define the robot's goal */
+    virtual void SetGoal(double timestep, const Goal & goal) = 0;
 
     /** \return The robot's current goal. */
     virtual const Goal & GetGoal() const = 0;

@@ -60,6 +60,8 @@ namespace expo {
       goal(new sfl::Goal()),
       go_forward(true),
       strict_dwa(true),
+      dtheta_starthoming(10 * M_PI / 180),
+      dtheta_startaiming(45 * M_PI / 180),
       m_internal_state(null_state.get()),
       m_replan_request(false)
   {
@@ -76,12 +78,12 @@ namespace expo {
   
   
   void MotionPlanner::
-  SetGoal(const sfl::Goal & _goal)
+  SetGoal(double timestep, const sfl::Goal & _goal)
   {
     goal->Set(_goal);
     if(bubble_band)
       bubble_band->SetGoal(_goal);
-    m_internal_state = m_internal_state->GoalChangedState();
+    m_internal_state = m_internal_state->GoalChangedState(timestep);
   }
   
   

@@ -65,7 +65,7 @@ namespace expo {
     bool GoalReached() const;
     void GoForward(bool b);
     
-    MotionPlannerState * GoalChangedState();
+    MotionPlannerState * GoalChangedState(double timestep);
     MotionPlannerState * FollowTargetState();
 
   protected:
@@ -105,8 +105,6 @@ namespace expo {
     direction_t GetPathDirection();
 
   private:
-    static const double DTHETASTARTHOMING;// =  10 * M_PI / 180;
-    
     double dheading;
   
     bool StartHoming(double dtheta) const;
@@ -129,8 +127,6 @@ namespace expo {
     direction_t GetPathDirection();
 
   private:
-    static const double DTHETASTARTAIMING;// = 45 * M_PI / 180;
-
     double dheading;
 
     bool StartAiming(double dtheta) const;

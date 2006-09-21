@@ -64,7 +64,7 @@ namespace expo {
 		  boost::shared_ptr<const sfl::Odometry> odometry);
     
     void Update(double timestep);
-    void SetGoal(const sfl::Goal & goal);
+    void SetGoal(double timestep, const sfl::Goal & goal);
     const sfl::Goal & GetGoal() const;
     bool GoalReached() const;
     state_id_t GetStateId() const;
@@ -94,6 +94,9 @@ namespace expo {
     
     boost::scoped_ptr<sfl::Goal> goal;
     bool go_forward, strict_dwa;
+    
+    double dtheta_starthoming; 	// default 10 * M_PI / 180
+    double dtheta_startaiming;	// default 45 * M_PI / 180;
     
   private:
     MotionPlannerState * m_internal_state;

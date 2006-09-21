@@ -42,17 +42,20 @@ modelparms(0.02, // safety distance
 	   );
 
 
-static int hal_time_get(struct timespec * stamp);
-static int hal_odometry_set(double x, double y, double theta,
+static int hal_time_get(struct cwrap_hal_s * self, struct timespec * stamp);
+static int hal_odometry_set(struct cwrap_hal_s * self,
+			    double x, double y, double theta,
 			    double sxx, double syy, double stt,
 			    double sxy, double sxt, double syt);
-static int hal_odometry_get(struct timespec * stamp,
+static int hal_odometry_get(struct cwrap_hal_s * self, struct timespec * stamp,
 			    double * x, double * y, double * theta,
 			    double * sxx, double * syy, double * stt,
 			    double * sxy, double * sxt, double * syt);
-static int hal_speed_set(double qdl, double qdr);
-static int hal_speed_get(double * qdl, double * qdr);
-static int hal_scan_get(int channel, double * rho, int rho_len,
+static int hal_speed_set(struct cwrap_hal_s * self, double qdl, double qdr);
+static int hal_speed_get(struct cwrap_hal_s * self,
+			 double * qdl, double * qdr);
+static int hal_scan_get(struct cwrap_hal_s * self,
+			int channel, double * rho, int rho_len,
 			struct timespec * t0, struct timespec * t1);
 
 
@@ -230,7 +233,7 @@ Robot::
 void Robot::
 SetGoal(const Goal & goal)
 {
-  const int res(expo_set_goal(m_motionPlanner_handle, goal.X(), goal.Y(),
+  const int res(expo_set_goal(m_motionPlanner_handle, 0.1, goal.X(), goal.Y(),
 			      goal.Theta(), goal.Dr(), goal.Dtheta(),
 			      goal.IsVia() ? 1 : 0));
   if(0 > res){
@@ -263,7 +266,7 @@ DumpObstacles()
 }
 
 
-int hal_time_get(struct timespec * stamp)
+int hal_time_get(struct cwrap_hal_s * self, struct timespec * stamp)
 {
   struct timeval tv;
   int res(gettimeofday(&tv, 0));
@@ -274,7 +277,8 @@ int hal_time_get(struct timespec * stamp)
 }
 
 
-int hal_odometry_set(double x, double y, double theta,
+int hal_odometry_set(struct cwrap_hal_s * self,
+		     double x, double y, double theta,
 		     double sxx, double syy, double stt,
 		     double sxy, double sxt, double syt)
 {
@@ -291,7 +295,8 @@ int hal_odometry_set(double x, double y, double theta,
 }
 
 
-int hal_odometry_get(struct timespec * stamp,
+int hal_odometry_get(struct cwrap_hal_s * self,
+		     struct timespec * stamp,
 		     double * x, double * y, double * theta,
 		     double * sxx, double * syy, double * stt,
 		     double * sxy, double * sxt, double * syt)
@@ -305,11 +310,11 @@ int hal_odometry_get(struct timespec * stamp,
   *sxy = hal.sxy;
   *sxt = hal.sxt;
   *syt = hal.syt;
-  return hal_time_get(stamp);
+  return hal_time_get(self, stamp);
 }
 
 
-int hal_speed_set(double qdl, double qdr)
+int hal_speed_set(struct cwrap_hal_s * self, double qdl, double qdr)
 {
   hal.qdl = qdl;
   hal.qdr = qdr;
@@ -317,7 +322,7 @@ int hal_speed_set(double qdl, double qdr)
 }
 
 
-int hal_speed_get(double * qdl, double * qdr)
+int hal_speed_get(struct cwrap_hal_s * self, double * qdl, double * qdr)
 {
   *qdl = hal.qdl;
   *qdr = hal.qdr;
@@ -325,12 +330,13 @@ int hal_speed_get(double * qdl, double * qdr)
 }
 
 
-int hal_scan_get(int channel, double * rho, int rho_len,
+int hal_scan_get(struct cwrap_hal_s * self,
+		 int channel, double * rho, int rho_len,
 		 struct timespec * t0, struct timespec * t1)
 {
-  if(0 > hal_time_get(t0))
+  if(0 > hal_time_get(self, t0))
     return -1;
   for(int ii(0); ii < rho_len; ++ii)
     rho[ii] = 0.5 + 0.01 * ii;
-  return hal_time_get(t1);
+  return hal_time_get(self, t1);
 }

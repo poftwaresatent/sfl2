@@ -32,16 +32,15 @@ namespace sfl_cwrap {
   
   int cwrapHAL::
   time_get(struct ::timespec * stamp)
-  { return m_hal->time_get(stamp); }
+  { return m_hal->time_get(m_hal, stamp); }
   
   
   int cwrapHAL::
   odometry_set(double x, double y, double theta,
 	       double sxx, double syy, double stt,
 	       double sxy, double sxt, double syt)
-  { return m_hal->odometry_set(x, y, theta,
-			       sxx, syy, stt,
-			       sxy, sxt, syt); }
+  { return m_hal->odometry_set(m_hal, x, y, theta,
+			       sxx, syy, stt, sxy, sxt, syt); }
   
   
   int cwrapHAL::
@@ -49,24 +48,24 @@ namespace sfl_cwrap {
 	       double * x, double * y, double * theta,
 	       double * sxx, double * syy, double * stt,
 	       double * sxy, double * sxt, double * syt)
-  { return m_hal->odometry_get(stamp, x, y, theta,
+  { return m_hal->odometry_get(m_hal, stamp, x, y, theta,
 			       sxx, syy, stt,
 			       sxy, sxt, syt); }
   
   
   int cwrapHAL::
   speed_set(double qdl, double qdr)
-  { return m_hal->speed_set(qdl, qdr); }
+  { return m_hal->speed_set(m_hal, qdl, qdr); }
   
   
   int cwrapHAL::
   speed_get(double * qdl, double * qdr)
-  { return m_hal->speed_get(qdl, qdr); }
+  { return m_hal->speed_get(m_hal, qdl, qdr); }
   
   
   int cwrapHAL::
   scan_get(int channel, double * rho, int rho_len,
 	   struct ::timespec * t0, struct ::timespec * t1)
-  { return m_hal->scan_get(channel, rho, rho_len, t0, t1); }
+  { return m_hal->scan_get(m_hal, channel, rho, rho_len, t0, t1); }
   
 }

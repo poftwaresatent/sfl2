@@ -230,6 +230,14 @@ depend:
 	'{if($$0~/^[^ ]/){sub(/o:/,"lo:"); print subdir "/" $$0} else print}' \
 	     >> Makefile.depend; \
 	done
+	for source in $(BIN_CXXSRC); \
+	  do \
+	    subdir=`dirname $$source`; \
+	    $(CC) -MM $(CPPFLAGS) $(top_srcdir)/$$source \
+	      | $(AWK) -v subdir=$$subdir \
+	        '{if($$0~/^[^ ]/){print subdir "/" $$0} else print}' \
+	     >> Makefile.depend; \
+	done
 	echo "depend built `date`" > depend
 
 redepend:
@@ -241,6 +249,14 @@ redepend:
 	    $(CC) -MM $(CPPFLAGS) $(top_srcdir)/$$source \
 	      | $(AWK) -v subdir=$$subdir \
 	'{if($$0~/^[^ ]/){sub(/o:/,"lo:"); print subdir "/" $$0} else print}' \
+	     >> Makefile.depend; \
+	done
+	for source in $(BIN_CXXSRC); \
+	  do \
+	    subdir=`dirname $$source`; \
+	    $(CC) -MM $(CPPFLAGS) $(top_srcdir)/$$source \
+	      | $(AWK) -v subdir=$$subdir \
+	        '{if($$0~/^[^ ]/){print subdir "/" $$0} else print}' \
 	     >> Makefile.depend; \
 	done
 
