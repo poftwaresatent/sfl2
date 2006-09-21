@@ -393,54 +393,40 @@ namespace sfl {
 		 const char * prefix)
     const
   {
+    static const char forbidden_char('.');
+    static const char nonforbidden_char(' ');
+    static const char optimum_char('O');
+    static const char admissible_char(':');
+    static const char collision_char('*');
+    
     for(int iqdr(_dimension - 1); iqdr > _qdrMax; --iqdr){
       os << prefix;
       for(int iqdl(0); iqdl < _dimension; ++iqdl)
-	if(_state[iqdl][iqdr] == FORBIDDEN)
-	  os << "#";
-	else
-	  os << "*";
+	if(_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
+	else                                os << nonforbidden_char;
       os << "\n";
     }
-
     for(int iqdr(_qdrMax); iqdr >= _qdrMin; --iqdr){
       os << prefix;
-
       for(int iqdl(0); iqdl < _qdlMin; ++iqdl)
-	if(_state[iqdl][iqdr] == FORBIDDEN)
-	  os << "#";
-	else
-	  os << "*";
-
+	if(_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
+	else                                os << nonforbidden_char;
       for(int iqdl(_qdlMin); iqdl <= _qdlMax; ++iqdl){
-	if((iqdl == _qdlOpt) && (iqdr == _qdrOpt)){
-	  os << ":";
-	  continue;
-	}
-	if(_state[iqdl][iqdr] == FORBIDDEN)
-	  os << "#";
-	else if(_state[iqdl][iqdr] == ADMISSIBLE)
-	  os << ".";
-	else
-	  os << "x";
+	if((iqdl == _qdlOpt) && (iqdr == _qdrOpt)) os << optimum_char;
+	else if(_state[iqdl][iqdr] == FORBIDDEN)   os << forbidden_char;
+	else if(_state[iqdl][iqdr] == ADMISSIBLE)  os << admissible_char;
+	else                                       os << collision_char;
       }
-
       for(int iqdl(_qdlMax + 1); iqdl < _dimension; ++iqdl)
-	if(_state[iqdl][iqdr] == FORBIDDEN)
-	  os << "#";
-	else
-	  os << "*";
-
+	if(_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
+	else                                os << nonforbidden_char;
       os << "\n";
     }
-    
     for(int iqdr(_qdrMin - 1); iqdr >= 0; --iqdr){
       os << prefix;
       for(int iqdl(0); iqdl < _dimension; ++iqdl)
-	if(_state[iqdl][iqdr] == FORBIDDEN)
-	  os << "#";
-	else
-	  os << "*";
+	if(_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
+	else                                os << nonforbidden_char;
       os << "\n";
     }
   }
