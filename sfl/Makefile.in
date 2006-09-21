@@ -41,6 +41,7 @@ CPPFLAGS=       -I$(top_builddir) \
                 -I$(prefix)/include
 CFLAGS=         $(CPPFLAGS) @CFLAGS@
 CXXFLAGS=       $(CPPFLAGS) @CXXFLAGS@
+LDFLAGS=        -L.libs -lsunflower -lpthread
 
 SHLIB_CURRENT=	2
 SHLIB_REVISION=	0
@@ -167,7 +168,8 @@ doc:
 
 binaries: depend subdirs $(BIN_CXXOBJS) $(LIB)
 	for bin in $(BIN_CXXSRC:%.cpp=%); do \
-	  $(CXX) $(CXXFLAGS) -o $$bin $$bin.o -L.libs -lsunflower; \
+	  echo $(CXX) $(CXXFLAGS) -o $$bin $$bin.o $(LDFLAGS); \
+	  $(CXX) $(CXXFLAGS) -o $$bin $$bin.o $(LDFLAGS); \
 	done
 	echo "binaries built `date`" > binaries
 
