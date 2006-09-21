@@ -59,6 +59,7 @@ namespace expo {
       at_goal_state(new AtGoalState(this)),
       goal(new sfl::Goal()),
       go_forward(true),
+      strict_dwa(true),
       m_internal_state(null_state.get()),
       m_replan_request(false)
   {

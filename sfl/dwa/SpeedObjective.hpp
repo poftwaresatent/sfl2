@@ -50,12 +50,15 @@ namespace sfl {
     void GoSlow();
     void GoForward();
     void GoBackward();
+    void GoStrictFast();
+    void GoStrictSlow();
     
     const double sdMax;
     
   protected:
     const RobotModel & m_robot_model;
-    array2d<double> m_forward, m_backward, m_slow;
+    array2d<double> m_forward, m_backward, m_slow, m_strict_forward,
+      m_strict_backward, m_strict_slow;
     array2d<double> * m_current;
     bool m_goForward;
   };

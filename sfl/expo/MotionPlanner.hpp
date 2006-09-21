@@ -93,7 +93,7 @@ namespace expo {
     boost::scoped_ptr<MotionPlannerState> at_goal_state;
     
     boost::scoped_ptr<sfl::Goal> goal;
-    bool go_forward;
+    bool go_forward, strict_dwa;
     
   private:
     MotionPlannerState * m_internal_state;

@@ -41,6 +41,9 @@ namespace sfl {
       m_forward(dimension, dimension),
       m_backward(dimension, dimension),
       m_slow(dimension, dimension),
+      m_strict_forward(dimension, dimension),
+      m_strict_backward(dimension, dimension),
+      m_strict_slow(dimension, dimension),
       m_current( & m_forward),
       m_goForward(true)
   {
@@ -58,6 +61,10 @@ namespace sfl {
 				      sd, thetad);
 	m_forward[0][iqdr] =
 	  minValue + (maxValue - minValue) * (sd + sdMax) / (2 * sdMax);
+	if(sd >= 0)
+	  m_strict_forward[0][iqdr] = m_forward[0][iqdr];
+	else
+	  m_strict_forward[0][iqdr] = minValue;	  
       }
       for(size_t iqdl(iqdr % 2); iqdl < dimension; iqdl += 2){
 	double sd, thetad;
@@ -67,8 +74,17 @@ namespace sfl {
 	const double
 	  val(minValue + (maxValue - minValue) * (sd + sdMax) / (2 * sdMax));
 	m_forward[iqdl][iqdr] = val;
-	if(iqdl < dimension - 1)
+	if(sd >= 0)
+	  m_strict_forward[iqdl][iqdr] = val;
+	else
+	  m_strict_forward[iqdl][iqdr] = minValue;
+	if(iqdl < dimension - 1){
 	  m_forward[iqdl + 1][iqdr] = val;
+	  if(sd >= 0)
+	    m_strict_forward[iqdl + 1][iqdr] = val;
+	  else
+	    m_strict_forward[iqdl + 1][iqdr] = minValue;
+	}
       }
     }
     
@@ -81,6 +97,11 @@ namespace sfl {
 	m_backward[dimension - 1][iqdr] =
 	  maxValue + minValue
 	  - (maxValue - minValue) * (sd + sdMax) / (2 * sdMax);
+	if(sd <= 0)
+	  m_strict_backward[dimension - 1][iqdr] =
+	    m_backward[dimension - 1][iqdr];
+	else
+	  m_strict_backward[dimension - 1][iqdr] = minValue;	  
       }
       for(size_t iqdl(iqdr % 2); iqdl < dimension; iqdl += 2){
 	double sd, thetad;
@@ -91,8 +112,17 @@ namespace sfl {
 	  val(maxValue + minValue
 	      - (maxValue - minValue) * (sd + sdMax) / (2 * sdMax));
 	m_backward[iqdl][iqdr] = val;
-	if(iqdl > 0)
+	if(sd <= 0)
+	  m_strict_backward[iqdl][iqdr] = val;
+	else
+	  m_strict_backward[iqdl][iqdr] = minValue;	  
+	if(iqdl > 0){
 	  m_backward[iqdl - 1][iqdr] = val;
+	  if(sd <= 0)
+	    m_strict_backward[iqdl - 1][iqdr] = val;
+	  else
+	    m_strict_backward[iqdl - 1][iqdr] = minValue;	  
+	}
       }
     }
     
@@ -104,6 +134,10 @@ namespace sfl {
 				      sd, thetad);
 	m_slow[iqdl][iqdr] =
 	  maxValue - (maxValue - minValue) * absval(sd) / sdMax;
+	if(dimension - 1 == iqdl + iqdr)
+	  m_strict_slow[iqdl][iqdr] = maxValue;
+	else
+	  m_strict_slow[iqdl][iqdr] = minValue;	  
       }
   }
   
@@ -131,9 +165,26 @@ namespace sfl {
 
 
   void SpeedObjective::
+  GoStrictFast()
+  {
+    if(m_goForward)
+      m_current = & m_strict_forward;
+    else
+      m_current = & m_strict_backward;
+  }
+
+
+  void SpeedObjective::
   GoSlow()
   {
     m_current = & m_slow;
+  }
+
+
+  void SpeedObjective::
+  GoStrictSlow()
+  {
+    m_current = & m_strict_slow;
   }
 
 

@@ -113,10 +113,12 @@ namespace sfl {
 
     /** Makes the SpeedObjective maximise translational speeds. */
     void GoFast();
+    void GoStrictFast();
 
 
     /** Makes the SpeedObjective attempt to keep the robot at standstill. */
     void GoSlow();
+    void GoStrictSlow();
 
 
     /** Makes the SpeedObjective use forward speeds. Influences GoFast(). */

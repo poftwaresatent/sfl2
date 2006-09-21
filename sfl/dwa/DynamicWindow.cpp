@@ -229,12 +229,26 @@ namespace sfl {
   {
     _speed_objective.GoFast();
   }
+  
+  
+  void DynamicWindow::
+  GoStrictFast()
+  {
+    _speed_objective.GoStrictFast();
+  }
 
 
   void DynamicWindow::
   GoSlow()
   {
     _speed_objective.GoSlow();
+  }
+
+
+  void DynamicWindow::
+  GoStrictSlow()
+  {
+    _speed_objective.GoStrictSlow();
   }
 
 
