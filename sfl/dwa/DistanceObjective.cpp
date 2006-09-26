@@ -384,6 +384,8 @@ namespace sfl {
 	      phi = mod2pi( - phi);
 	    else
 	      phi = mod2pi(   phi);
+	    if(phi < 0)
+	      phi += 2 * M_PI;
 	    const double tt(phi * thetadInv);
 	    if((tMin < 0) || (tt < tMin))
 	      tMin = tt;
