@@ -25,12 +25,21 @@
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
 #include "MotionPlannerState.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Pose.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
+
+
+#ifdef DEBUG
+# define PDEBUG PDEBUG_ERR
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
+#endif // DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace boost;
@@ -109,13 +118,21 @@ namespace expo {
   UpdateAll(double timestep)
   {
     sfl::Odometry & odo(const_cast<sfl::Odometry &>(*odometry));
-    if(0 > odo.Update())
+    int status(odo.Update());
+    if(0 > status){
+      PDEBUG("ERROR odo.Update(): %d\n", status);
       return -1;
-    if( ! multiscanner->UpdateAll())
+    }
+    if( ! multiscanner->UpdateAll()){
+      PDEBUG("ERROR multiscanner->UpdateAll() failed\n");
       return -2;
+    }
     Update(timestep);
-    if(0 > motion_controller->Update(timestep))
+    status = motion_controller->Update(timestep);
+    if(0 > status){
+      PDEBUG("ERROR motion_controller->Update(): %d\n", status);
       return -3;
+    }
     return 0;
   }
   
