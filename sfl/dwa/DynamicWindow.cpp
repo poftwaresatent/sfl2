@@ -52,32 +52,33 @@ namespace sfl {
 		double grid_resolution,
 		shared_ptr<const RobotModel> robot_model,
 		const MotionController & motion_controller,
-		double alpha_distance,
-		double alpha_heading,
-		double alpha_speed,
-		bool auto_init):
-    _dimension(dimension),
-    _maxindex(dimension - 1),
-    _resolution(2 * robot_model->QdMax() / dimension),
-    _alphaDistance(alpha_distance),
-    _alphaHeading(alpha_heading),
-    _alphaSpeed(alpha_speed),
-    m_robot_model(robot_model),
-    _motion_controller(motion_controller),
-    _distance_objective(*this,
-			robot_model,
-			grid_width,
-			grid_height,
-			grid_resolution),
-    _heading_objective(*this, *robot_model),
-    _speed_objective(*this, *robot_model),
-    _qdlMin(-1),
-    _qdlMax(-1),
-    _qdrMin(-1),
-    _qdrMax(-1),
-    _qdlOpt(-1),
-    _qdrOpt(-1),
-    _qddMax(robot_model->QddMax())
+		double _alpha_distance,
+		double _alpha_heading,
+		double _alpha_speed,
+		bool auto_init)
+    : alpha_distance(_alpha_distance),
+      alpha_heading(_alpha_heading),
+      alpha_speed(_alpha_speed),
+      _dimension(dimension),
+      _maxindex(dimension - 1),
+      _resolution(2 * robot_model->QdMax() / dimension),
+      m_robot_model(robot_model),
+      _motion_controller(motion_controller),
+      _distance_objective(*this,
+			  robot_model,
+			  grid_width,
+			  grid_height,
+			  grid_resolution),
+      _heading_objective(*this, *robot_model),
+      _speed_objective(*this, *robot_model),
+      _qdlMin(-1),
+      _qdlMax(-1),
+      _qdrMin(-1),
+      _qdrMax(-1),
+      _qdlOpt(-1),
+      _qdrOpt(-1),
+      _qddMax(robot_model->QddMax()),
+      m_compute_next_optimum(false)
   {
     // allocations
     _qd = new double[_dimension];
@@ -137,8 +138,7 @@ namespace sfl {
 
   bool DynamicWindow::
   Forbidden(int qdlIndex,
-	    int qdrIndex)
-    const
+	    int qdrIndex) const
   {
     return _state[qdlIndex][qdrIndex] == FORBIDDEN;
   }
@@ -146,8 +146,7 @@ namespace sfl {
 
   bool DynamicWindow::
   Admissible(int qdlIndex,
-	     int qdrIndex)
-    const
+	     int qdrIndex) const
   {
     return _state[qdlIndex][qdrIndex] == ADMISSIBLE;
   }
@@ -155,16 +154,14 @@ namespace sfl {
 
   bool DynamicWindow::
   Reachable(int qdlIndex,
-	    int qdrIndex)
-    const
+	    int qdrIndex) const
   {
     return _state[qdlIndex][qdrIndex] == REACHABLE;
   }
 
 
   double DynamicWindow::
-  Qd(int index)
-    const
+  Qd(int index) const
   {
     return _qd[index];
   }
@@ -190,7 +187,7 @@ namespace sfl {
     _heading_objective.Calculate(timestep, _qdlMin, _qdlMax, _qdrMin, _qdrMax);
     _speed_objective.Calculate(_qdlMin, _qdlMax, _qdrMin, _qdrMax);
     
-    CalculateOptimum(_alphaDistance, _alphaHeading, _alphaSpeed);
+    m_compute_next_optimum = true;
     
     if(dbgos != 0){
       (*dbgos) << "INFO from DynamicWindow::Update():\n"
@@ -205,8 +202,7 @@ namespace sfl {
   
   void DynamicWindow::
   GetSubGoal(double & local_x,
-	     double & local_y)
-    const
+	     double & local_y) const
   {
     local_x = _heading_objective.local_goal_x;
     local_y = _heading_objective.local_goal_y;
@@ -221,8 +217,7 @@ namespace sfl {
 
 
   double DynamicWindow::
-  GetHeadingOffset()
-    const
+  GetHeadingOffset() const
   {
     return _heading_objective.angle_offset;
   }
@@ -273,31 +268,29 @@ namespace sfl {
 
 
   bool DynamicWindow::
-  OptimalActuators(double & qdl,
-		   double & qdr)
-    const
+  OptimalActuators(double & qdl, double & qdr) const
   {
+    if(m_compute_next_optimum){
+      CalculateOptimum(alpha_distance, alpha_heading, alpha_speed);
+      m_compute_next_optimum = false;
+    }
     if((_qdlOpt < 0) || (_qdrOpt < 0))
       return false;
-
     qdl = _qd[_qdlOpt];
     qdr = _qd[_qdrOpt];
-
     return true;
   }
 
 
   int DynamicWindow::
-  FindIndex(double qd)
-    const
+  FindIndex(double qd) const
   {
     return (int) floor(0.5 * ((double) _dimension) + qd / _resolution);
   }
 
 
   double DynamicWindow::
-  FindQd(int index)
-    const
+  FindQd(int index) const
   {
     return _resolution * (((double) index) - 0.5 * ((double) _dimension - 1));
   }
@@ -348,7 +341,7 @@ namespace sfl {
   void DynamicWindow::
   CalculateOptimum(double alphaDistance,
 		   double alphaHeading,
-		   double alphaSpeed)
+		   double alphaSpeed) const
   {
     _qdlOpt = -1;
     _qdrOpt = -1;
@@ -376,8 +369,7 @@ namespace sfl {
 
 
   int DynamicWindow::
-  Dimension()
-    const
+  Dimension() const
   {
     return _dimension;
   }
@@ -385,8 +377,7 @@ namespace sfl {
 
   void DynamicWindow::
   DumpObstacles(ostream & os,
-		const char * prefix)
-    const
+		const char * prefix) const
   {
     _distance_objective.DumpGrid(os, prefix);
   }
@@ -394,8 +385,7 @@ namespace sfl {
 
   void DynamicWindow::
   DumpObjectives(ostream & os,
-		 const char * prefix)
-    const
+		 const char * prefix) const
   {
     static const char forbidden_char('.');
     static const char nonforbidden_char(' ');

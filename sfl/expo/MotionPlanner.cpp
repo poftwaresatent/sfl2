@@ -60,8 +60,12 @@ namespace expo {
       goal(new sfl::Goal()),
       go_forward(true),
       strict_dwa(true),
+      auto_adapt_dwa(false),
       dtheta_starthoming(10 * M_PI / 180),
       dtheta_startaiming(45 * M_PI / 180),
+      orig_alpha_distance(_dynamic_window->alpha_distance),
+      orig_alpha_heading(_dynamic_window->alpha_heading),
+      orig_alpha_speed(_dynamic_window->alpha_speed),
       m_internal_state(null_state.get()),
       m_replan_request(false)
   {

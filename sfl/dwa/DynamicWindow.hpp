@@ -157,8 +157,13 @@ namespace sfl {
 
     void DumpObstacles(std::ostream & os, const char * prefix) const;
     void DumpObjectives(std::ostream & os, const char * prefix) const;
-
-
+    
+    
+    double alpha_distance;
+    double alpha_heading;
+    double alpha_speed;
+    
+    
   protected:
     /**
        Admissible speeds are all those that lie within
@@ -185,10 +190,6 @@ namespace sfl {
     const int _maxindex;
     const double _resolution;
     
-    double _alphaDistance;
-    double _alphaHeading;
-    double _alphaSpeed;
-    
     boost::shared_ptr<const RobotModel> m_robot_model;
     const MotionController & _motion_controller;
 
@@ -201,13 +202,15 @@ namespace sfl {
     double ** _objective;	//[dimension][dimension];
 
     /** Used for colorscale when drawing internal info. */
-    double _objectiveMax;
+    mutable double _objectiveMax;
     /** Used for colorscale when drawing internal info. */
-    double _objectiveMin;
+    mutable double _objectiveMin;
 
     int _qdlMin, _qdlMax, _qdrMin, _qdrMax;
-    int _qdlOpt, _qdrOpt;
+    mutable int _qdlOpt;
+    mutable int _qdrOpt;
     const double _qddMax;
+    mutable bool m_compute_next_optimum;
     
     
     int FindIndex(double qd) const;
@@ -217,7 +220,7 @@ namespace sfl {
     void CalculateAdmissible();
     void CalculateOptimum(double alphaDistance,
 			  double alphaHeading,
-			  double alphaSpeed);
+			  double alphaSpeed) const;
   };
 
 

@@ -93,10 +93,13 @@ namespace expo {
     boost::scoped_ptr<MotionPlannerState> at_goal_state;
     
     boost::scoped_ptr<sfl::Goal> goal;
-    bool go_forward, strict_dwa;
+    bool go_forward, strict_dwa, auto_adapt_dwa;
     
     double dtheta_starthoming; 	// default 10 * M_PI / 180
     double dtheta_startaiming;	// default 45 * M_PI / 180;
+    const double orig_alpha_distance;
+    const double orig_alpha_heading;
+    const double orig_alpha_speed;
     
   private:
     MotionPlannerState * m_internal_state;
