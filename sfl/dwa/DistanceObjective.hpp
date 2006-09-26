@@ -75,8 +75,11 @@ namespace sfl {
     public Objective
   {
   public:
-    DistanceObjective(const DynamicWindow & dynamic_window,
-		      const RobotModel & robot_model,
+    typedef enum { NONE, ZONE, HULL } region_t;
+    
+    DistanceObjective(/** NOT a shared ptr because of circularity */
+		      const DynamicWindow & dynamic_window,
+		      boost::shared_ptr<const RobotModel> robot_model,
 		      double grid_width,
 		      double grid_height,
 		      double grid_resolution);
@@ -98,6 +101,9 @@ namespace sfl {
     size_t DimY() const;
     bool CellOccupied(size_t ix, size_t iy) const;
     
+    /** \return one of region_t */
+    short GetRegion(size_t ix, size_t iy) const;
+    
     /** \return invalidTime if not valid (no collision) */
     double CollisionTime(size_t ix, size_t iy, size_t iqdl, size_t iqdr) const;
     
@@ -113,42 +119,28 @@ namespace sfl {
     /** \note Returns signed ssize_t to facilitate domain detection. */
     ssize_t FindYindex(double d) const;
     
-    boost::shared_ptr<const Hull> GetHull() const
-    { return _hull; }
-    boost::shared_ptr<const Hull> GetPaddedHull() const
-    { return _paddedHull; }
-    boost::shared_ptr<const sfl::Hull> GetEvaluationHull() const
-    { return _evaluationHull; }
-    double GetDeltaX() const { return _dx; }
-    double GetDeltaY() const { return _dy; }
+    boost::shared_ptr<const Hull> GetHull() const;
+    boost::shared_ptr<const Hull> GetPaddedHull() const;
+    boost::shared_ptr<const Hull> GetEvaluationHull() const;
+    double GetDeltaX() const;
+    double GetDeltaY() const;
+    size_t GetNNear() const;
+    bool GetNear(size_t index, double & lx, double & ly) const;
     
     void DumpGrid(std::ostream & os, const char * prefix) const;
     
-    double PredictCollision(double qdl, double qdr,
+    double PredictCollision(const Hull & hull,
+			    double qdl, double qdr,
 			    double lx, double ly) const;
     
     static const double invalidTime;
     
     
   protected:
-    const double _securityDistance;
-    const double _maxTime;
-    const double _gridResolution;
-
-    const RobotModel & _robot_model;
-
-    std::vector<boost::shared_ptr<sfl::Line> > _outline;
-    boost::shared_ptr<const sfl::Hull> _hull;
-    boost::shared_ptr<const sfl::Hull> _paddedHull;
-    boost::shared_ptr<const sfl::Hull> _evaluationHull;
+    typedef array2d<boost::shared_ptr<Lookup> > lookup_t;
+    typedef vec2d<double> point_t;
+    typedef std::vector<point_t> nearpoints_t;
     
-    boost::scoped_ptr<array2d<bool> > _grid;
-    double _x0, _y0, _x1, _y1; // bounding box of grid (currently symetric)
-    double _dx, _dy, _dxInv, _dyInv; // effective resolution along x and y
-    size_t _dimx, _dimy;	// dimensions of grid
-    std::vector<double> _qdLookup;
-    array2d<double> m_base_brake_time;
-    boost::scoped_ptr<array2d<boost::shared_ptr<Lookup> > > _timeLookup;
     
     void ResetGrid();
     
@@ -163,8 +155,33 @@ namespace sfl {
 	actuator command, given the current obstacles. In case the are
 	no collisions, or if they all would appear after the maximum
 	braking time, invalidTime is returned to signal "no
-	danger". */
+	danger".
+	\todo OLD HACK returns epsilon if imminent collision, rfct pls!!!
+    */
     double MinTime(size_t iqdl, size_t iqdr);    
+    
+    
+    static const size_t nearpoints_chunksize;
+    const double m_qdd_max;
+    const double m_max_brake_time;
+    const boost::shared_ptr<const RobotModel> m_robot_model;
+    const boost::shared_ptr<const Hull> m_hull;
+    boost::shared_ptr<const Hull> m_padded_hull;
+    boost::shared_ptr<const Hull> m_evaluation_hull; // overkill, use bbox
+    
+    boost::scoped_ptr<array2d<bool> > m_grid;
+    boost::scoped_ptr<array2d<short> > m_region;
+    
+    double m_x0, m_y0, m_x1, m_y1; // bounding box of grid (currently symetric)
+    double _dx, _dy, _dxInv, _dyInv; // effective resolution along x and y
+    size_t _dimx, _dimy;	// dimensions of grid
+    size_t m_n_zone;
+    bool m_point_in_hull;
+    std::vector<double> m_qd_lookup;
+    array2d<double> m_base_brake_time;
+    boost::scoped_ptr<lookup_t> m_time_lookup;
+    nearpoints_t m_nearpoints;
+    size_t m_n_nearpoints;
   };
 
 }

@@ -25,10 +25,16 @@
 #include "DistanceObjective.hpp"
 #include "DynamicWindow.hpp"
 #include "Lookup.hpp"
-#include <sfl/util/Ray.hpp>
+#include <sfl/util/pdebug.hpp>
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+
+
+#ifdef DEBUG
+# define PDEBUG PDEBUG_ERR
+#endif // DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace boost;
@@ -39,55 +45,57 @@ namespace sfl {
 
 
   const double DistanceObjective::invalidTime(-1);
+  const size_t DistanceObjective::nearpoints_chunksize(64);
   
   
   DistanceObjective::
   DistanceObjective(const DynamicWindow & dynamic_window,
-		    const RobotModel & robot_model,
+		    boost::shared_ptr<const RobotModel> robot_model,
 		    double grid_width,
 		    double grid_height,
-		    double grid_resolution):
-    Objective(dynamic_window),
-    _securityDistance(robot_model.SecurityDistance()),
-    _maxTime(robot_model.QdMax() / robot_model.QddMax()),
-    _gridResolution(grid_resolution),
-    _robot_model(robot_model),
-    _hull(robot_model.GetHull()),
-    _x0( - grid_width  / 2),
-    _y0( - grid_height / 2),
-    _x1(   grid_width  / 2),
-    _y1(   grid_height / 2),
-    m_base_brake_time(dimension, dimension, invalidTime)
+		    double grid_resolution)
+    : Objective(dynamic_window),
+      m_qdd_max(robot_model->QdMax()),
+      m_max_brake_time(robot_model->QdMax() / m_qdd_max),
+      m_robot_model(robot_model),
+      m_hull(robot_model->GetHull()),
+      m_x0( - grid_width  / 2),
+      m_y0( - grid_height / 2),
+      m_x1(   grid_width  / 2),
+      m_y1(   grid_height / 2),
+      m_n_zone(0),
+      m_point_in_hull(true),	// start with brakes on!
+      m_base_brake_time(dimension, dimension, invalidTime),
+      m_nearpoints(nearpoints_chunksize),
+      m_n_nearpoints(0)
   {
-    double delta(absval(_x1 - _x0));
-    double dim(ceil(absval(delta / _gridResolution)));
+    double delta(absval(m_x1 - m_x0));
+    double dim(ceil(absval(delta / grid_resolution)));
     _dx = delta / dim;
     _dxInv = dim / delta;
     _dimx = static_cast<size_t>(dim);
     
-    delta = absval(_y1 - _y0);
-    dim = ceil(absval(delta / _gridResolution));
+    delta = absval(m_y1 - m_y0);
+    dim = ceil(absval(delta / grid_resolution));
     _dy = delta / dim;
     _dyInv = dim / delta;
     _dimy = static_cast<size_t>(dim);
     
-    _grid.reset(new array2d<bool>(_dimx, _dimy, false));
-    _timeLookup.reset(new array2d<shared_ptr<Lookup> >(_dimx, _dimy));
+    m_grid.reset(new array2d<bool>(_dimx, _dimy, false));
+    m_region.reset(new array2d<short>(_dimx, _dimy, NONE));
+    m_time_lookup.reset(new array2d<shared_ptr<Lookup> >(_dimx, _dimy));
     
     // determine padded hull
     double padding(sqrt(_dx * _dx + _dy * _dy));
-    _paddedHull = _hull->CreateGrownHull(padding);
-
-    for(size_t ii(0); ii < _paddedHull->GetNPoints(); ++ii)
-      _outline.push_back(_paddedHull->GetLine(ii));
+    m_padded_hull = m_hull->CreateGrownHull(padding);
     
-    // some more inter-version compatibility
+    // one day maybe this will become more than just a bbox...
     Polygon foo;
-    foo.AddPoint(_x0, _y0);
-    foo.AddPoint(_x1, _y0);
-    foo.AddPoint(_x1, _y1);
-    foo.AddPoint(_x0, _y1);
-    _evaluationHull.reset(new Hull(foo));
+    foo.AddPoint(m_x0, m_y0);
+    foo.AddPoint(m_x1, m_y0);
+    foo.AddPoint(m_x1, m_y1);
+    foo.AddPoint(m_x0, m_y1);
+    m_evaluation_hull.reset(new Hull(foo));
   }
   
   
@@ -95,15 +103,14 @@ namespace sfl {
   Initialize(ostream * progress_stream)
   {
     // precalculate lookup tables
-    _qdLookup.clear();
+    m_qd_lookup.clear();
     for(size_t ii(0); ii < dimension; ++ii)
-      _qdLookup.push_back(m_dynamic_window.Qd(ii));
+      m_qd_lookup.push_back(m_dynamic_window.Qd(ii));
     
     for(size_t ii(0); ii < dimension; ++ii)
       for(size_t jj(0); jj < dimension; ++jj)
 	m_base_brake_time[ii][jj] =
-	  maxval(absval(_qdLookup[ii]), absval(_qdLookup[jj])) /
-	  _robot_model.QddMax();
+	  maxval(absval(m_qd_lookup[ii]), absval(m_qd_lookup[jj])) / m_qdd_max;
     
     if(progress_stream != 0)
       (*progress_stream) << "DistanceObjective::Initialize()\n"
@@ -111,13 +118,16 @@ namespace sfl {
 			 << flush;
     
     for(ssize_t igy(_dimy - 1); igy >= 0; --igy){
-      double yy(FindYlength(igy));
-      
+      const double yy(FindYlength(igy));
       for(size_t igx(0); igx < _dimx; ++igx){
-	double xx(FindXlength(igx));
-	
-	if(_evaluationHull->Contains(xx, yy) &&
-	   ! _paddedHull->Contains(xx, yy)){
+	const double xx(FindXlength(igx));
+	if( ! m_evaluation_hull->Contains(xx, yy))
+	  continue;
+	if(m_padded_hull->Contains(xx, yy)){
+	  if(progress_stream != 0) (*progress_stream) << "." << flush;
+	  (*m_region)[igx][igy] = HULL;
+	}
+	else{
 	  array2d<double> buffer(dimension, dimension, invalidTime);
 	  size_t nValidCollisions(0);
 	  
@@ -125,46 +135,30 @@ namespace sfl {
 	  for(size_t iqdl(0); iqdl < dimension; ++iqdl)
 	    for(size_t iqdr(0); iqdr < dimension; ++iqdr)
 	      if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
-		double tt(PredictCollision(_qdLookup[iqdl], _qdLookup[iqdr],
-					   xx, yy));
-		if((tt > 0) && (tt <= _maxTime)){
+		const double tt(PredictCollision(*m_padded_hull,
+						 m_qd_lookup[iqdl],
+						 m_qd_lookup[iqdr],
+						 xx, yy));
+		if((tt > 0) && (tt <= m_max_brake_time)){
 		  ++nValidCollisions;
 		  buffer[iqdl][iqdr] = tt;
 		}
 	      }
-	  
 	  if(nValidCollisions > 0){
-	    if(progress_stream != 0)
-	      (*progress_stream) << "*" << flush;
-	    (*_timeLookup)[igx][igy].reset(new Lookup(buffer, 0, _maxTime,
-						   invalidTime));
+	    if(progress_stream != 0) (*progress_stream) << "*" << flush;
+	    (*m_region)[igx][igy] = ZONE;
+	    (*m_time_lookup)[igx][igy].
+	      reset(new Lookup(buffer, 0, m_max_brake_time, invalidTime));
 	  }
-	  else
-	    if(progress_stream != 0)
-	      (*progress_stream) << "o" << flush;
+	  else{
+	    if(progress_stream != 0) (*progress_stream) << "o" << flush;
+	    (*m_region)[igx][igy] = NONE;
+	  }
 	}
-	else{
-	  // fill it with epsilon collision time to make the robot stop if
-	  // there's something inside the outline (which is quite a hack
-	  // because the same could be achieved using a simple flag,
-	  // which wastes less ram and time... ah well)
-	  //
-	  // can't simply use invalidTime because that's treated like
-	  // "no collision", can't use 0 because somewhere else in
-	  // this code here I check against zero... we NEED A GENERAL
-	  // OVERHAUL HERE!!!
-	  array2d<double> buffer(dimension, dimension, epsilon);
-	  (*_timeLookup)[igx][igy].reset(new Lookup(buffer, 0, _maxTime,
-						 invalidTime));
-	  if(progress_stream != 0)
-	    (*progress_stream) << "." << flush;
-	}
-      }
-      if(progress_stream != 0)
-	(*progress_stream) << "\n" << flush;
-    }
-    if(progress_stream != 0)
-      (*progress_stream) << "   finished.\n" << flush;
+      } // for igx
+      if(progress_stream != 0) (*progress_stream) << "\n" << flush;
+    } // for igy
+    if(progress_stream != 0) (*progress_stream) << "   finished.\n" << flush;
   }
   
   
@@ -174,17 +168,18 @@ namespace sfl {
     if(0 != os)
       (*os) << "INFO from DistanceObjective::CheckLookup():\n";
     for(size_t ii(0); ii < dimension; ++ii)
-      if(_qdLookup[ii] != m_dynamic_window.Qd(ii)){
+      if(m_qd_lookup[ii] != m_dynamic_window.Qd(ii)){
 	if(0 != os)
-	  (*os) << "  ERROR _qdLookup[" << ii << "] is " << _qdLookup[ii]
+	  (*os) << "  ERROR m_qd_lookup[" << ii << "] is " << m_qd_lookup[ii]
 		<< " but should be " << m_dynamic_window.Qd(ii) << "\n";
 	return false;
       }
     
     for(size_t ii(0); ii < dimension; ++ii)
       for(size_t jj(0); jj < dimension; ++jj){
-	const double check(maxval(absval(_qdLookup[ii]), absval(_qdLookup[jj]))
-			   / _robot_model.QddMax());
+	const double check(maxval(absval(m_qd_lookup[ii]),
+				  absval(m_qd_lookup[jj]))
+			   / m_qdd_max);
 	if(epsilon < absval(m_base_brake_time[ii][jj] - check)){
 	  if(0 != os)
 	    (*os) << "  ERROR m_base_brake_time[" << ii << "][" << jj
@@ -204,26 +199,29 @@ namespace sfl {
 	for(size_t iqdl(0); iqdl < dimension; ++iqdl){
 	  for(size_t iqdr(0); iqdr < dimension; ++iqdr){
 	    double wanted(invalidTime);
-	    if(_evaluationHull->Contains(xx, yy))
-	      if(_paddedHull->Contains(xx, yy))
+	    if(m_evaluation_hull->Contains(xx, yy))
+	      if(m_padded_hull->Contains(xx, yy))
 		wanted = epsilon; // due to epsilon hack above...
 	      else{
 		if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
-		  const double tt(PredictCollision(_qdLookup[iqdl],
-						  _qdLookup[iqdr], xx, yy));
-		  if((tt > 0) && (tt <= _maxTime))
+		  const double tt(PredictCollision(*m_padded_hull,
+						   m_qd_lookup[iqdl],
+						   m_qd_lookup[iqdr],
+						   xx, yy));
+		  if((tt > 0) && (tt <= m_max_brake_time))
 		    wanted = tt;
 		}
 	      }
 	    double compressed(invalidTime);
-	    if((*_timeLookup)[igx][igy])
-	      compressed = (*_timeLookup)[igx][igy]->Get(iqdl, iqdr);
+	    if((*m_time_lookup)[igx][igy])
+	      compressed = (*m_time_lookup)[igx][igy]->Get(iqdl, iqdr);
 	    
 	    if(wanted != compressed){
 	      if(invalidTime != wanted){
-		if((*_timeLookup)[igx][igy]){
+		if((*m_time_lookup)[igx][igy]){
 		  if(0 != os)
-		    (*os) << "\n  ERROR (*_timeLookup)[" << igx << "][" << igy
+		    (*os) << "\n  ERROR (*m_time_lookup)["
+			  << igx << "][" << igy
 			  << "] should be invalidTime but is " << compressed
 			  << "\n  cell [" << igx << "][" << igy << "] at ("
 			  << xx << ", " << yy << ")\n";
@@ -235,7 +233,7 @@ namespace sfl {
 	      }
 	      if(invalidTime != compressed){
 		if(0 != os)
-		  (*os) << "\n  ERROR (*_timeLookup)[" << igx << "][" << igy
+		  (*os) << "\n  ERROR (*m_time_lookup)[" << igx << "][" << igy
 			<< "] should be " << wanted << " but is "
 			<< compressed << " (which should be invalidTime)\n"
 			<< "  cell [" << igx << "][" << igy << "] at (" << xx
@@ -266,7 +264,7 @@ namespace sfl {
       for(size_t iqdr(qdrMin); iqdr <= qdrMax; ++iqdr)      
 	if( ! m_dynamic_window.Forbidden(iqdl, iqdr)){
 	  const double ctime(MinTime(iqdl, iqdr));
-	  if((ctime == invalidTime) || (ctime >= _maxTime))
+	  if((ctime == invalidTime) || (ctime >= m_max_brake_time))
 	    m_value[iqdl][iqdr] = maxValue;
 	  else{
 	    const double btime(m_base_brake_time[iqdl][iqdr] + timestep);
@@ -274,51 +272,116 @@ namespace sfl {
 	      m_value[iqdl][iqdr] = minValue;
 	    else
 	      m_value[iqdl][iqdr] =
-		minValue + (ctime-btime)*(maxValue-minValue)/(_maxTime-btime);
+		minValue
+		+ (ctime - btime) * (maxValue - minValue)
+		/ (m_max_brake_time - btime);
 	  }
 	}
   }
-
-
+  
+  
   void DistanceObjective::
   ResetGrid()
   {
+    m_n_zone = 0;
+    m_point_in_hull = false;
+    m_n_nearpoints = 0;
     for(size_t ix(0); ix < _dimx; ++ix)
       for(size_t iy(0); iy < _dimy; ++iy)
-	(*_grid)[ix][iy] = false;
+	(*m_grid)[ix][iy] = false;
   }
-
-
+  
+  
   void DistanceObjective::
   UpdateGrid(shared_ptr<const Scan> local_scan)
   {
     const size_t nscans(local_scan->data.size());
     for(size_t is(0); is < nscans; ++is){
       const scan_data & ldata(local_scan->data[is]);
-      if((ldata.locx >= _x0) &&
-	 (ldata.locx <= _x1) && 
-	 (ldata.locy >= _y0) &&
-	 (ldata.locy <= _y1))
-	(*_grid)[FindXindex(ldata.locx)][FindYindex(ldata.locy)] = true;
+      if(m_evaluation_hull->Contains(ldata.locx, ldata.locy)){
+	const ssize_t ix(FindXindex(ldata.locx));
+	const ssize_t iy(FindYindex(ldata.locy));
+	switch((*m_region)[ix][iy]){
+	case NONE:
+	  (*m_grid)[ix][iy] = true; // really only for plotting...
+	  break;
+	case ZONE:
+	  if(false == (*m_grid)[ix][iy]){ // don't count cells more than once
+	    ++m_n_zone;
+	    (*m_grid)[ix][iy] = true;
+	  }
+	  break;
+	case HULL:
+	  if(m_hull->Contains(ldata.locx, ldata.locy))
+	    m_point_in_hull = true;
+	  else{	  // will need to precisely predict collision later...
+	    if(m_nearpoints.size() <= m_n_nearpoints)
+	      m_nearpoints.resize(m_nearpoints.size() + nearpoints_chunksize);
+	    m_nearpoints[m_n_nearpoints].v0 = ldata.locx;
+	    m_nearpoints[m_n_nearpoints].v1 = ldata.locy;
+	    ++m_n_nearpoints;
+	  }
+	  break;
+	default:
+	  PDEBUG_ERR("BUG in sfl::DistanceObjective::UpdateGrid(): "
+		     "invalid region[%l][%l]=%d\n",
+		     ix, iy, (*m_region)[ix][iy]);
+	}
+      }
     }
+    PVDEBUG("none: %d   zone: %d   padded: %d   hull: %d\n",
+	    m_n_none, m_n_zone, m_n_padded, m_n_hull);
   }
   
   
-  /** \todo easy speedup: remember how many points there are, return
-      as soon as all are processed. */
   double DistanceObjective::
   MinTime(size_t iqdl, size_t iqdr)
   {
+    if(m_point_in_hull){
+      PVDEBUG("shortcut: point in hull\n");
+      return epsilon;		// old hack epsilon...
+    }
+    
+    // precisely predict collisions with "really dangerously close" points
     double minTime(invalidTime);
+    for(size_t ii(0); ii < m_n_nearpoints; ++ii){
+      const double tt(PredictCollision(*m_hull,
+				       m_qd_lookup[iqdl],
+				       m_qd_lookup[iqdr],
+				       m_nearpoints[ii].v0,
+				       m_nearpoints[ii].v1));
+      if((tt != invalidTime)
+	 && ((tt < minTime) || (minTime == invalidTime)))
+	minTime = tt;
+    }
+    
+    // use precalculated lookup tables for points that are farther away
+    if(0 == m_n_zone){
+      PVDEBUG("shortcut: no points in zone\n");
+      return minTime;
+    }
+    size_t n_zone(0);
     for(size_t ix(0); ix < _dimx; ++ix)
       for(size_t iy(0); iy < _dimy; ++iy)
-	if((*_grid)[ix][iy] &&	// cell is occupied
-	   ((*_timeLookup)[ix][iy])){ // cell is inside evaluation region
-	  double tt((*_timeLookup)[ix][iy]->Get(iqdl, iqdr));
-	  if((tt != invalidTime)
-	     && ((tt < minTime) || (minTime == invalidTime)))
-	    minTime = tt;
+	if((*m_grid)[ix][iy]
+	   && (ZONE == (*m_region)[ix][iy])){
+	  ++n_zone;
+	  const shared_ptr<const Lookup> lkup((*m_time_lookup)[ix][iy]);
+	  if( ! lkup)
+	    PDEBUG_ERR("BUG in sfl::DistanceObjective::MinTime(): "
+		       "no lookup for zone index [%l][%l]\n", ix, iy);
+	  else{
+	    const double tt(lkup->Get(iqdl, iqdr));
+	    if((tt != invalidTime)
+	       && ((tt < minTime) || (minTime == invalidTime)))
+	      minTime = tt;
+	  }
+	  if(n_zone >= m_n_zone){
+	    PVDEBUG("shortcut: %d of %d zone cells done\n", n_zone, m_n_zone);
+	    return minTime;
+	  }
 	}
+    PDEBUG("BIZARRE: didn't expect to reach this point...\n");
     return minTime;
   }
   
@@ -326,90 +389,77 @@ namespace sfl {
   ssize_t DistanceObjective::
   FindXindex(double d) const
   {
-    return static_cast<ssize_t>(floor((d - _x0) * _dxInv));
+    return static_cast<ssize_t>(floor((d - m_x0) * _dxInv));
   }
-
-
+  
+  
   double DistanceObjective::
   FindXlength(ssize_t i) const
   {
-    return (0.5 + (double) i) * _dx + _x0;
+    return (0.5 + (double) i) * _dx + m_x0;
   }
-
-
+  
+  
   ssize_t DistanceObjective::
   FindYindex(double d) const
   {
-    return static_cast<ssize_t>(floor((d - _y0) * _dyInv));
+    return static_cast<ssize_t>(floor((d - m_y0) * _dyInv));
   }
-
-
+  
+  
   double DistanceObjective::
   FindYlength(ssize_t i) const
   {
-    return (0.5 + (double) i) * _dy + _y0;
+    return (0.5 + (double) i) * _dy + m_y0;
   }
-
-
+  
+  
   double DistanceObjective::
-  PredictCollision(double qdl, double qdr, double lx, double ly) const
+  PredictCollision(const Hull & hull,
+		   double qdl, double qdr, double lx, double ly) const
   {
     double tMin(invalidTime);
     double sd, thetad;
-    _robot_model.Actuator2Global(qdl, qdr, sd, thetad);
+    m_robot_model->Actuator2Global(qdl, qdr, sd, thetad);
     
-    if(absval(epsilon * sd) < absval(thetad / epsilon)){
-      // circular equation
-      double thetadInv(absval(1 / thetad));
-      double rCur(sd / thetad);
-      double rGir(      lx      *     lx
-			+ (ly - rCur) * (ly - rCur));
-      rGir = sqrt(rGir);
-      double phi0(atan2((ly - rCur), lx));
+    if(absval(epsilon * sd) < absval(thetad / epsilon)){ // circular equation
+      const double thetadInv(absval(1 / thetad));
+      const double rCur(sd / thetad);
+      const double rGir(sqrt(sqr(lx) + sqr(ly - rCur)));
+      const double phi0(atan2((ly - rCur), lx));
       
-      // loop over outline
-      for(vector<shared_ptr<Line> >::const_iterator iline(_outline.begin());
-	  iline != _outline.end();
-	  ++iline){
+      for(HullIterator ih(hull); ih.IsValid(); ih.Increment()){
 	double qx[2], qy[2];
 	bool vv[2];
-	(*iline)->CircleIntersect(0, rCur, rGir,
-				  qx[0], qy[0],
-				  qx[1], qy[1],
-				  vv[0], vv[1]);
-	for(size_t ii(0); ii < 2; ++ii)
+	LineCircleIntersect(ih.GetX0(), ih.GetY0(),
+			    ih.GetX1(), ih.GetY1(),
+			    0, rCur, rGir,
+			    qx[0], qy[0],
+			    qx[1], qy[1],
+			    vv[0], vv[1]);
+	for(size_t ii(0); ii < 2; ++ii){
 	  if(vv[ii]){
 	    double phi(atan2(qy[ii] - rCur, qx[ii]) - phi0);
-	    if(thetad >= 0)
-	      phi = mod2pi( - phi);
-	    else
-	      phi = mod2pi(   phi);
-	    if(phi < 0)
-	      phi += 2 * M_PI;
+	    if(thetad >= 0) phi = mod2pi( - phi);
+	    else            phi = mod2pi(   phi);
+	    if(phi < 0)     phi += 2 * M_PI;
 	    const double tt(phi * thetadInv);
 	    if((tMin < 0) || (tt < tMin))
 	      tMin = tt;
 	  }
-      } // end loop over local lines
-    }
-    else if(absval(sd) > epsilon){
-      // straight line approximation
-      double sdInv(absval(1 / sd));
-      Ray *ray;
-      if(sd >= 0)
-	ray = new Ray(Frame(lx, ly, M_PI));	// hax: port to npm
-      else
-	ray = new Ray(Frame(lx, ly, 0));	// hax: port to npm
-      
-      // loop over outline
-      for(vector<shared_ptr<Line> >::const_iterator iline(_outline.begin());
-	  iline != _outline.end(); ++iline){
-	const double tt(sdInv * ray->Intersect(**iline));
-	if((tt >= 0) && ((tMin < 0) || (tt < tMin))){
-	  tMin = tt;
 	}
       }
-      delete ray;
+    }
+    else if(absval(sd) > epsilon){ // straight line approximation
+      const double sdInv(absval(1 / sd));
+      for(HullIterator ih(hull); ih.IsValid(); ih.Increment()){
+	const double tt(sdInv * LineRayIntersect(ih.GetX0(), ih.GetY0(),
+						 ih.GetX1(), ih.GetY1(),
+						 lx, ly,
+						 sd >= 0 ? -1 : 1, 0));
+	if((tt >= 0) && ((tMin < 0) || (tt < tMin)))
+	  tMin = tt;
+      }
     }
     // else don't touch tMin, invalidTime means "no collision"
     
@@ -420,10 +470,10 @@ namespace sfl {
   void DistanceObjective::
   GetRange(double & x0, double & y0, double & x1, double & y1) const
   {
-    x0 = _x0;
-    y0 = _y0;
-    x1 = _x1;
-    y1 = _y1;
+    x0 = m_x0;
+    y0 = m_y0;
+    x1 = m_x1;
+    y1 = m_y1;
   }
 
   
@@ -435,13 +485,13 @@ namespace sfl {
       os << prefix;
       for(size_t igx(0); igx < _dimx; ++igx){
 	const double xx(FindXlength(igx));
-	if(_paddedHull->Contains(xx, yy))
-	  os << ((*_grid)[igx][igy] ? "o" : ".");
+	if(m_padded_hull->Contains(xx, yy))
+	  os << ((*m_grid)[igx][igy] ? "o" : ".");
 	else{
-	  if((*_grid)[igx][igy])
-	    os << ((*_timeLookup)[igx][igy] ? "x" : "o");
+	  if((*m_grid)[igx][igy])
+	    os << ((*m_time_lookup)[igx][igy] ? "x" : "o");
 	  else
-	    os << ((*_timeLookup)[igx][igy] ? "-" : ".");
+	    os << ((*m_time_lookup)[igx][igy] ? "-" : ".");
 	}
       }
       os << "\n";
@@ -452,8 +502,8 @@ namespace sfl {
   double DistanceObjective::
   CollisionTime(size_t ix, size_t iy, size_t iqdl, size_t iqdr) const
   {
-    if((*_timeLookup)[ix][iy])
-      return (*_timeLookup)[ix][iy]->Get(iqdl, iqdr);
+    if((*m_time_lookup)[ix][iy])
+      return (*m_time_lookup)[ix][iy]->Get(iqdl, iqdr);
     return invalidTime;
   }
   
@@ -475,7 +525,67 @@ namespace sfl {
   bool DistanceObjective::
   CellOccupied(size_t ix, size_t iy) const
   {
-    return (*_grid)[ix][iy];
+    return (*m_grid)[ix][iy];
   }
-
+  
+  
+  boost::shared_ptr<const Hull> DistanceObjective::
+  GetHull() const
+  {
+    return m_hull;
+  }
+  
+  
+  boost::shared_ptr<const Hull> DistanceObjective::
+  GetPaddedHull() const
+  {
+    return m_padded_hull;
+  }
+  
+  
+  boost::shared_ptr<const Hull> DistanceObjective::
+  GetEvaluationHull() const
+  {
+    return m_evaluation_hull;
+  }
+  
+  
+  short DistanceObjective::
+  GetRegion(size_t ix, size_t iy) const
+  {
+    return (*m_region)[ix][iy];
+  }
+  
+  
+  size_t DistanceObjective::
+  GetNNear() const
+  {
+    return m_n_nearpoints;
+  }
+  
+  
+  bool DistanceObjective::
+  GetNear(size_t index, double & lx, double & ly) const
+  {
+    if(index >= m_n_nearpoints)
+      return false;
+    lx = m_nearpoints[index].v0;
+    ly = m_nearpoints[index].v1;
+    return true;
+  }
+  
+  
+  double DistanceObjective::
+  GetDeltaX() const
+  {
+    return _dx;
+  }
+  
+  
+  double DistanceObjective::
+  GetDeltaY() const
+  {
+    return _dy;
+  }
+  
 }

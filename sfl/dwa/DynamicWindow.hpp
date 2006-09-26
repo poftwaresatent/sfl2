@@ -73,7 +73,7 @@ namespace sfl {
 		  double grid_width,
 		  double grid_height,
 		  double grid_resolution,
-		  const RobotModel & robot_model,
+		  boost::shared_ptr<const RobotModel> robot_model,
 		  const MotionController & motion_controller,
 		  double alpha_distance,
 		  double alpha_heading,
@@ -188,8 +188,8 @@ namespace sfl {
     double _alphaDistance;
     double _alphaHeading;
     double _alphaSpeed;
-
-    const RobotModel & _robot_model;
+    
+    boost::shared_ptr<const RobotModel> m_robot_model;
     const MotionController & _motion_controller;
 
     DistanceObjective _distance_objective;

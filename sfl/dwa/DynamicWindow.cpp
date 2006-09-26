@@ -38,6 +38,7 @@
 #endif // DEBUG
 
 
+using namespace boost;
 using namespace std;
 
 
@@ -49,31 +50,34 @@ namespace sfl {
 		double grid_width,
 		double grid_height,
 		double grid_resolution,
-		const RobotModel & robot_model,
+		shared_ptr<const RobotModel> robot_model,
 		const MotionController & motion_controller,
 		double alpha_distance,
 		double alpha_heading,
 		double alpha_speed,
 		bool auto_init):
-    //RFCTR _reachableQd(robot_model.Timestep() * robot_model.QddMax()),
     _dimension(dimension),
     _maxindex(dimension - 1),
-    _resolution(2 * robot_model.QdMax() / dimension),
+    _resolution(2 * robot_model->QdMax() / dimension),
     _alphaDistance(alpha_distance),
     _alphaHeading(alpha_heading),
     _alphaSpeed(alpha_speed),
-    _robot_model(robot_model),
+    m_robot_model(robot_model),
     _motion_controller(motion_controller),
     _distance_objective(*this,
 			robot_model,
 			grid_width,
 			grid_height,
 			grid_resolution),
-    _heading_objective(*this, robot_model),
-    _speed_objective(*this, robot_model),
+    _heading_objective(*this, *robot_model),
+    _speed_objective(*this, *robot_model),
+    _qdlMin(-1),
+    _qdlMax(-1),
+    _qdrMin(-1),
+    _qdrMax(-1),
     _qdlOpt(-1),
     _qdrOpt(-1),
-    _qddMax(robot_model.QddMax())
+    _qddMax(robot_model->QddMax())
   {
     // allocations
     _qd = new double[_dimension];
@@ -302,13 +306,13 @@ namespace sfl {
   void DynamicWindow::
   InitForbidden()
   {
+    const double sd_max(m_robot_model->SdMax());
+    const double thetad_max(m_robot_model->ThetadMax());
     for(int il = 0; il < _dimension; ++il)
       for(int ir = 0; ir < _dimension; ++ir){
 	double sd, thetad;
-	_robot_model.Actuator2Global(_qd[il], _qd[ir], sd, thetad);
-
-	if((absval(sd) > _robot_model.SdMax()) ||
-	   (absval(thetad) > _robot_model.ThetadMax()))
+	m_robot_model->Actuator2Global(_qd[il], _qd[ir], sd, thetad);
+	if((absval(sd) > sd_max) || (absval(thetad) > thetad_max))
 	  _state[il][ir] = FORBIDDEN;
       }
   }

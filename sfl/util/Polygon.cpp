@@ -280,7 +280,7 @@ namespace sfl {
   
   
   shared_ptr<Line> Polygon::
-  GetLine(size_t index)
+  _GetLine(size_t index)
     const
   {
     if(index >= m_point.size())

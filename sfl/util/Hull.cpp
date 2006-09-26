@@ -99,7 +99,7 @@ namespace sfl {
   
   
   shared_ptr<Line> Hull::
-  GetLine(size_t index)
+  _GetLine(size_t index)
     const
   {
     for(subhulls_t::const_iterator is(m_subhulls.begin());
@@ -107,7 +107,7 @@ namespace sfl {
 	++is){
       const size_t npoints((*is)->GetNPoints());
       if(index < npoints)
-	return (*is)->GetLine(index);
+	return (*is)->_GetLine(index);
       index -= npoints;
     }
     return shared_ptr<Line>();

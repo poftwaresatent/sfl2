@@ -57,7 +57,8 @@ namespace sfl {
     /**
        Calculate the intersection between a Line and a Ray.
        
-       Simply calls LineRayIntersect(), see there for more information.
+       Simply calls LineRayIntersect(), see util/numeric.hpp for more
+       information.
     */
     double Intersect(const Line & line) const;
 

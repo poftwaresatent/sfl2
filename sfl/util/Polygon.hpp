@@ -90,7 +90,7 @@ namespace sfl {
        \return A copy of the line between the corners (index) and
        (index + 1). The last point is connected with the first one.
     */
-    boost::shared_ptr<Line> GetLine(size_t index) const;
+    boost::shared_ptr<Line> _GetLine(size_t index) const;
     
     /** \return Pointer to the point at given index, or 0 if invalid index. */
     const Point * GetPoint(size_t index) const;

@@ -84,7 +84,7 @@ namespace sfl {
        \return A copy of one of the lines of one of the sub-hulls (iff
        0<=index<GetNPoints()).
     */
-    boost::shared_ptr<Line> GetLine(size_t index) const;
+    boost::shared_ptr<Line> _GetLine(size_t index) const;
     
     /**
        Determine whether a given point lies within any of the
@@ -109,6 +109,10 @@ namespace sfl {
      Polygon instance should be connected, and the connection from the
      first to the last point of each Polygon must be included.
      
+     Also, maybe later some lines in a polygon can be declared
+     "virtual" to designate that they only exist to cut a non-convex
+     polygon into a set of convex ones...
+
      \todo Do the same for Polygon.
   */
   class HullIterator
