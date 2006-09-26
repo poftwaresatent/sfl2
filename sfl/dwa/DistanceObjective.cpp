@@ -33,6 +33,8 @@
 
 #ifdef DEBUG
 # define PDEBUG PDEBUG_ERR
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
 #endif // DEBUG
 #define PVDEBUG PDEBUG_OFF
 

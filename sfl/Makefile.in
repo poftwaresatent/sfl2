@@ -154,7 +154,7 @@ VPATH=		@srcdir@
 all: depend subdirs sfl $(LIB) binaries
 
 sfl:
-	ln -s $(top_srcdir) sfl
+	test -L sfl || ln -s $(top_srcdir) sfl
 
 subdirs:
 	- mkdir util api bband cwrap dwa expo gplan contrib
