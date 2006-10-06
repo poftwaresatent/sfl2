@@ -32,7 +32,7 @@ namespace sfl {
   
   
   BubbleFactory::
-  BubbleFactory(int _batchsize)
+  BubbleFactory(size_t _batchsize)
     : batchsize(_batchsize)
   {
     Produce(batchsize);
@@ -42,21 +42,19 @@ namespace sfl {
   BubbleFactory::
   ~BubbleFactory()
   {
-    while((0 != m_top) && (m_level > 0)){
-      Bubble *tmp = m_top;
-      m_top = m_top->_previous;
-      --m_level;
-      delete tmp;
-    }
+    for(size_t ii(0); ii < m_stock.size(); ++ii)
+      delete m_stock[ii];
   }
   
   
   Bubble * BubbleFactory::
   New(double cutoffDistance, double xpos, double ypos)
   {
-    Bubble *tmp = Pop();
-    if(tmp)
-      tmp->Configure(cutoffDistance, make_pair(xpos, ypos));
+    if(m_stock.empty())
+      Produce(batchsize);
+    Bubble * tmp(m_stock.back());
+    m_stock.pop_back();
+    tmp->Configure(cutoffDistance, make_pair(xpos, ypos));
     return tmp;
   }
   
@@ -64,9 +62,11 @@ namespace sfl {
   Bubble* BubbleFactory::
   Clone(Bubble * bubble)
   {
-    Bubble * tmp = Pop();
-    if(tmp)
-      tmp->CopyConstruct(*bubble);
+    if(m_stock.empty())
+      Produce(batchsize);
+    Bubble * tmp(m_stock.back());
+    m_stock.pop_back();
+    tmp->CopyConstruct(*bubble);
     return tmp;
   }
   
@@ -74,40 +74,15 @@ namespace sfl {
   void BubbleFactory::
   Delete(Bubble * bubble)
   {
-    Push(bubble);
+    m_stock.push_back(bubble);
   }
   
   
   void BubbleFactory::
-  Produce(int batch)
+  Produce(size_t batch)
   {
-    for(/**/; batch > 0; --batch){
-      Push(new Bubble());
-      m_total++;
-    }
-  }
-  
-  
-  void BubbleFactory::
-  Push(Bubble * bubble)
-  {
-    if(bubble == 0)
-      return;
-    bubble->_previous = m_top;
-    m_top = bubble;    
-    ++m_level;
-  }
-  
-  
-  Bubble * BubbleFactory::
-  Pop()
-  {
-    if(m_level == 0)
-      Produce(batchsize);
-    Bubble * tmp = m_top;
-    m_top = m_top->_previous;
-    --m_level;
-    return tmp;
+    for(size_t ii(0); ii < batch; ++ii)
+      m_stock.push_back(new Bubble());
   }
   
 }

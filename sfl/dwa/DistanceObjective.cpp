@@ -590,4 +590,11 @@ namespace sfl {
     return _dy;
   }
   
+  
+  bool DistanceObjective::
+  ObstacleInHull() const
+  {
+    return m_point_in_hull;
+  }
+  
 }

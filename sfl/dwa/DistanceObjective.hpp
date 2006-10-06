@@ -126,6 +126,7 @@ namespace sfl {
     double GetDeltaY() const;
     size_t GetNNear() const;
     bool GetNear(size_t index, double & lx, double & ly) const;
+    bool ObstacleInHull() const;
     
     void DumpGrid(std::ostream & os, const char * prefix) const;
     

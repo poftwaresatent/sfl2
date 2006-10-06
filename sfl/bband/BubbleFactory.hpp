@@ -38,22 +38,19 @@ namespace sfl {
     BubbleFactory(const BubbleFactory &);
     
   public:
-    explicit BubbleFactory(int batchsize);
+    explicit BubbleFactory(size_t batchsize);
     ~BubbleFactory();
     
     Bubble * New(double cutoffDistance, double xpos, double ypos);
     Bubble * Clone(Bubble * bubble);
     void Delete(Bubble * bubble);
-    void Produce(int batch);
+    void Produce(size_t batch);
     
-    const int batchsize;
+    const size_t batchsize;
     
   private:
-    void Push(Bubble * bubble);
-    Bubble * Pop();
-    
-    Bubble * m_top;
-    int m_level, m_total;
+    typedef std::vector<Bubble *> stock_t;
+    stock_t m_stock;
   };
   
 }

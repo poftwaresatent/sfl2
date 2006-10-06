@@ -86,6 +86,7 @@ SRCS=           $(XCF_SRCS) \
                 expo/MotionController.cpp \
                 expo/MotionPlanner.cpp \
                 expo/MotionPlannerState.cpp \
+                expo/expo_parameters.cpp \
                 gplan/GridFrame.cpp \
                 gplan/NF1.cpp \
                 gplan/NF1Wave.cpp \
@@ -133,6 +134,7 @@ HEADERS=        $(XCF_HEADERS) \
                 expo/MotionController.hpp \
                 expo/MotionPlanner.hpp \
                 expo/MotionPlannerState.hpp \
+                expo/expo_parameters.h \
                 gplan/GridFrame.hpp \
                 gplan/NF1.hpp \
                 gplan/NF1Wave.hpp \
