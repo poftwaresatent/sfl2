@@ -1,0 +1,17 @@
+Import('env')
+lib = env.PrevLib('npmtheater',
+                  ['TheaterRobot.cpp',
+                   'TheaterRobotParameters.cpp',
+                   'TheaterRobotProxy.cpp',
+                   'TheaterMotionManager.cpp',
+                   'BSplineObjective.cpp',
+                   'SequencerDrawing.cpp'])
+env.StageLibrary(lib)
+
+env.StageHeader('npm/theater',
+                ['TheaterRobot.hpp',
+                 'TheaterRobotParameters.hpp',
+                 'TheaterRobotProxy.hpp',
+                 'TheaterMotionManager.hpp',
+                 'BSplineObjective.hpp',
+                 'SequencerDrawing.hpp'])

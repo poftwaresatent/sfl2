@@ -1,0 +1,36 @@
+README for nepumuk mobile robot simulator
+
+-------------------------------------------------------------------
+Copyright (C) 2004, Autonomous Systems Lab,
+                    Ecole Polytechnique Federale de Lausanne
+		    (Swiss Federal Institute of Technology).
+		    All rights reserved.
+
+Author: Roland Philippsen <roland dot philippsen at gmx dot net>
+
+This software is released under the GNU General Public License, see
+the file GPL.txt for more details.
+-------------------------------------------------------------------
+
+Nepumuk is a simple two-dimensional mobile robot simulator. At the
+time of writing, it compiles under Linux and Mac OS X, provided you
+have the following things installed on your computer:
+
+* The scons build system <http://www.scons.org>, a powerful
+  source configuration and build tool.
+* The development packages for OpenGL / Mesa3D and GLUT (the OpenGL
+  Utility Toolkit). Check your OS documentation to find out how to
+  install these.
+* The API and utilities of ASL's mobile robot software architecture
+  project: sunflower-light-0.1
+  <http://asl.epfl.ch/~rolo/sunflower-light.html>
+* The ASL's path planning and obstacle avoidance components for
+  sunflower: sunflower-oa-1.0
+  <http://asl.epfl.ch/~rolo/sunflower-oa.html>
+
+If all these things are installed, compiling nepumuk should be
+straightforward: Just type "scons" from the project root on the
+command line. The executable called 'nepumuk' will then be in the
+simul/ and bin/ subdirectories. Documentation can be found in the doc/
+subdirectory. It is far from complete, don't hesitate to contact the
+author if you have questions.

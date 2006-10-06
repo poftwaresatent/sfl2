@@ -1,0 +1,5 @@
+Import('env')
+sources = ['Biron.cpp']
+headers = ['Biron.hpp']
+env.StageLibrary(env.PrevLib('npmbiron', sources))
+env.StageHeader('npm/biron', headers)
