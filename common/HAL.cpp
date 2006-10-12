@@ -26,6 +26,7 @@
 #include "RobotServer.hpp"
 #include "Lidar.hpp"
 #include <sfl/util/Frame.hpp>
+#include <sfl/util/numeric.hpp>
 #include <iostream>
 #include <sys/time.h>
 
@@ -113,17 +114,14 @@ namespace npm {
 
 
   int HAL::
-  scan_get(int channel, double * rho, int rho_len,
+  scan_get(int channel, double * rho, size_t * rho_len,
 	   struct ::timespec * t0, struct ::timespec * t1)
   {
     boost::shared_ptr<const Lidar> lidar(m_owner->GetLidar(channel));
     if( ! lidar)
       return -42;
-    if(rho_len != static_cast<int>(lidar->nscans)){
-      std::cerr << "BUG in npm::HAL::scan_get(): rho_len != lidar->Nscans()\n";
-      exit(EXIT_FAILURE);
-    }
-    for(size_t is(0); is < lidar->nscans; ++is)
+    *rho_len = minval(*rho_len, lidar->nscans);
+    for(size_t is(0); is < *rho_len; ++is)
       rho[is] = lidar->GetRho(is);
     *t0 = lidar->GetT0();
     *t1 = lidar->GetT1();

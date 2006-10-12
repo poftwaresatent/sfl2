@@ -81,7 +81,7 @@ static int cwrap_laas_speed_set(struct cwrap_hal_s * self,
 static int cwrap_laas_speed_get(struct cwrap_hal_s * self,
 				double * qdl, double * qdr);
 static int cwrap_laas_scan_get(struct cwrap_hal_s * self,
-			       int channel, double * rho, int rho_len,
+			       int channel, double * rho, size_t * rho_len,
 			       struct timespec * t0, struct timespec * t1);
 
 
@@ -572,7 +572,7 @@ int cwrap_laas_speed_get(struct cwrap_hal_s * self, double * qdl, double * qdr)
 
 
 int cwrap_laas_scan_get(struct cwrap_hal_s * self,
-			int channel, double * rho, int rho_len,
+			int channel, double * rho, size_t * rho_len,
 			struct timespec * t0, struct timespec * t1)
 {
   if(halmap.find(self) == halmap.end())
