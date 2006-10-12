@@ -55,7 +55,7 @@ static int hal_speed_set(struct cwrap_hal_s * self, double qdl, double qdr);
 static int hal_speed_get(struct cwrap_hal_s * self,
 			 double * qdl, double * qdr);
 static int hal_scan_get(struct cwrap_hal_s * self,
-			int channel, double * rho, int rho_len,
+			int channel, double * rho, size_t * rho_len,
 			struct timespec * t0, struct timespec * t1);
 
 
@@ -331,12 +331,12 @@ int hal_speed_get(struct cwrap_hal_s * self, double * qdl, double * qdr)
 
 
 int hal_scan_get(struct cwrap_hal_s * self,
-		 int channel, double * rho, int rho_len,
+		 int channel, double * rho, size_t * rho_len,
 		 struct timespec * t0, struct timespec * t1)
 {
   if(0 > hal_time_get(self, t0))
     return -1;
-  for(int ii(0); ii < rho_len; ++ii)
+  for(size_t ii(0); ii < *rho_len; ++ii)
     rho[ii] = 0.5 + 0.01 * ii;
   return hal_time_get(self, t1);
 }

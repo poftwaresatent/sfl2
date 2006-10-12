@@ -94,7 +94,8 @@ SRCS=           $(XCF_SRCS) \
                 cwrap/expo.cpp \
                 cwrap/sfl.cpp \
                 cwrap/Handlemap.cpp \
-		contrib/DummyHAL.cpp
+		contrib/DummyHAL.cpp \
+		contrib/asl_hal.cpp
 
 HEADERS=        $(XCF_HEADERS) \
                 util/array2d.hpp \
@@ -143,7 +144,8 @@ HEADERS=        $(XCF_HEADERS) \
                 cwrap/expo.h \
                 cwrap/hal.h \
                 cwrap/sfl.h \
-		contrib/DummyHAL.cpp
+		contrib/DummyHAL.cpp \
+		contrib/asl_hal.cpp
 
 OBJS=           $(SRCS:%.cpp=%.lo)
 

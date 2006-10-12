@@ -120,13 +120,18 @@ namespace sfl {
     
     scoped_array<double> rho(new double[nscans]);
     struct ::timespec t0, t1;
-    int status(m_hal->scan_get(hal_channel, rho.get(), nscans, &t0, &t1));
+    size_t actual_nscans(nscans);
+    int status(m_hal->scan_get(hal_channel, rho.get(), &actual_nscans,
+			       &t0, &t1));
     if(0 != status){
       m_mutex->Lock();
       m_acquisition_ok = false;
       m_mutex->Unlock();
       return status;
     }
+    // this probably never happens, but fill in slack with rhomax
+    for(size_t ii(actual_nscans); ii < nscans; ++ii)
+      rho[ii] = rhomax;
     
     double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
     struct ::timespec foo;
@@ -143,14 +148,14 @@ namespace sfl {
     m_dirty->tupper = t1;
     m_dirty->pose.Set(x, y, theta);
     m_dirty->pose.SetVar(sxx, syy, stt, sxy, sxt, syt);
-    for(size_t i(0); i < nscans; ++i){
-      m_dirty->data[i].rho = rho[i];
-      m_dirty->data[i].locx = rho[i] * m_cosphi[i];
-      m_dirty->data[i].locy = rho[i] * m_sinphi[i];
-      mount->To(m_dirty->data[i].locx, m_dirty->data[i].locy);
-      m_dirty->data[i].globx = m_dirty->data[i].locx;
-      m_dirty->data[i].globy = m_dirty->data[i].locy;
-      m_dirty->pose.To(m_dirty->data[i].globx, m_dirty->data[i].globy);
+    for(size_t ii(0); ii < nscans; ++ii){
+      m_dirty->data[ii].rho = rho[ii];
+      m_dirty->data[ii].locx = rho[ii] * m_cosphi[ii];
+      m_dirty->data[ii].locy = rho[ii] * m_sinphi[ii];
+      mount->To(m_dirty->data[ii].locx, m_dirty->data[ii].locy);
+      m_dirty->data[ii].globx = m_dirty->data[ii].locx;
+      m_dirty->data[ii].globy = m_dirty->data[ii].locy;
+      m_dirty->pose.To(m_dirty->data[ii].globx, m_dirty->data[ii].globy);
     }
     m_mutex->Lock();
     m_acquisition_ok = true;

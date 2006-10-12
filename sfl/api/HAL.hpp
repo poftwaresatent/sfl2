@@ -26,6 +26,9 @@
 #define SUNFLOWER_HAL_HPP
 
 
+#include <cstddef>
+
+
 /** Declared in <time.h> but don't use system clock: The HAL is used
     as central "wall clock" so that simulation can freeze time when
     needed. */
@@ -76,8 +79,17 @@ namespace sfl {
     /** \return 0 on success. */
     virtual int speed_get(double * qdl, double * qdr) = 0;
     
-    /** \return 0 on success. */
-    virtual int scan_get(int channel, double * rho, int rho_len,
+    /** \note rho_len is input AND output: If there are fewer scan
+	points than (in) rho_len available, this is reflected by the
+	(out) value of rho_len. rho[ii] at ii >= (in) rho_len ARE NOT
+	UPDATED, it is up to the caller to do something sensible such
+	as setting them to max range or ignoring them. If there are
+	MORE than (in) rho_len data points, the scan data is simply
+	truncated.
+	\return 0 on success. */
+    virtual int scan_get(int channel, double * rho,
+			 /** IN: size of rho[], OUT: scan length */
+			 size_t * rho_len,
 			 struct ::timespec * t0, struct ::timespec * t1) = 0;
   };
   

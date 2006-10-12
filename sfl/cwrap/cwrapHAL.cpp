@@ -64,7 +64,7 @@ namespace sfl_cwrap {
   
   
   int cwrapHAL::
-  scan_get(int channel, double * rho, int rho_len,
+  scan_get(int channel, double * rho, size_t * rho_len,
 	   struct ::timespec * t0, struct ::timespec * t1)
   { return m_hal->scan_get(m_hal, channel, rho, rho_len, t0, t1); }
   

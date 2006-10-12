@@ -24,6 +24,9 @@
 extern "C" {
 #endif // __cplusplus
   
+
+#include <stddef.h>
+
   
   /**
      Collection of HAL function pointers.
@@ -66,7 +69,7 @@ extern "C" {
        \return 0 on success
     */
     int (*scan_get)(struct cwrap_hal_s * self,
-		    int channel, double * rho, int rho_len,
+		    int channel, double * rho, size_t * rho_len,
 		    struct timespec * t0, struct timespec * t1);
     
     /**
