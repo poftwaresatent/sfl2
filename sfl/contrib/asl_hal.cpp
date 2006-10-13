@@ -23,7 +23,8 @@
 
 
 #include "asl_hal.hpp"
-#include "/Users/rolo/soft/asl/robox-linux-hal/include/hal.h"
+// this depends on --with-robox=/path/to/robox when configuring
+#include "hal.h"
 #include <sfl/util/numeric.hpp>
 
 

@@ -38,6 +38,7 @@ LTLD=		$(LIBTOOL) --mode=link $(CC)
 CPPFLAGS=       -I$(top_builddir) \
                 @BOOST_CPPFLAGS@ \
                 @XCF_CPPFLAGS@ \
+                @ROBOX_CPPFLAGS@ \
                 -I$(prefix)/include
 CFLAGS=         $(CPPFLAGS) @CFLAGS@
 CXXFLAGS=       $(CPPFLAGS) @CXXFLAGS@
@@ -54,7 +55,12 @@ LIB=            libsunflower.la
 @WITH_XCF@SRCS=    contrib/xcf_hal.cpp
 @WITH_XCF@HEADERS= contrib/xcf_hal.h
 
+# Same for Robox:
+@WITH_ROBOX@SRCS=    contrib/asl_hal.cpp
+@WITH_ROBOX@HEADERS= contrib/asl_hal.h
+
 SRCS=           $(XCF_SRCS) \
+                $(ROBOX_SRCS) \
                 util/Frame.cpp \
                 util/Hull.cpp \
                 util/Line.cpp \
@@ -94,10 +100,10 @@ SRCS=           $(XCF_SRCS) \
                 cwrap/expo.cpp \
                 cwrap/sfl.cpp \
                 cwrap/Handlemap.cpp \
-		contrib/DummyHAL.cpp \
-		contrib/asl_hal.cpp
+		contrib/DummyHAL.cpp
 
 HEADERS=        $(XCF_HEADERS) \
+                $(ROBOX_HEADERS) \
                 util/array2d.hpp \
                 util/vec2d.hpp \
                 util/pdebug.hpp \
@@ -144,8 +150,7 @@ HEADERS=        $(XCF_HEADERS) \
                 cwrap/expo.h \
                 cwrap/hal.h \
                 cwrap/sfl.h \
-		contrib/DummyHAL.cpp \
-		contrib/asl_hal.cpp
+		contrib/DummyHAL.cpp
 
 OBJS=           $(SRCS:%.cpp=%.lo)
 

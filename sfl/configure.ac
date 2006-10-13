@@ -62,6 +62,22 @@ AC_ARG_WITH(xcf,
     AC_SUBST(XCF_CPPFLAGS, "")
     AC_SUBST(XCF_LDFLAGS, "")])
 
+AC_ARG_WITH(robox,
+  AC_HELP_STRING([--with-robox=PATH], [Robox (installed in PATH)]),
+  [
+    AC_SUBST(WITH_ROBOX, "ROBOX_")
+    if test "x$withval" = "x" ; then
+      AC_SUBST(ROBOX_CPPFLAGS, "")
+      AC_SUBST(ROBOX_LDFLAGS, "")
+    else
+      AC_SUBST(ROBOX_CPPFLAGS, "-I${withval}/include")
+      AC_SUBST(ROBOX_LDFLAGS, "-L${withval}/lib")
+    fi
+  ],[
+    AC_SUBST(WITH_ROBOX, "NOROBOX_")
+    AC_SUBST(ROBOX_CPPFLAGS, "")
+    AC_SUBST(ROBOX_LDFLAGS, "")])
+
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_AWK
