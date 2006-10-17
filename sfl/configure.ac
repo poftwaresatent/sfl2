@@ -45,6 +45,14 @@ AC_ARG_WITH(boost,
     AC_SUBST(BOOST_CPPFLAGS, "")
     AC_SUBST(BOOST_LDFLAGS, "")])
 
+AC_LANG_PUSH([C++])
+oldCPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+$AC_CHECK_HEADER([boost/shared_ptr.hpp], [],
+  [AC_MSG_ERROR([can't compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+CPPFLAGS="$oldCPPFLAGS"
+AC_LANG_POP
+
 AC_ARG_WITH(xcf,
   AC_HELP_STRING([--with-xcf=PATH], [enable XCF (installed in PATH)]),
   [
