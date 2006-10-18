@@ -3340,7 +3340,7 @@ fi
 
           ac_config_headers="$ac_config_headers config.h"
 
-                              ac_config_files="$ac_config_files Makefile common/Makefile simul/Makefile"
+                                                            ac_config_files="$ac_config_files Makefile common/Makefile robox/Makefile visitor/Makefile laas/Makefile simul/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -3892,6 +3892,9 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "common/Makefile" ) CONFIG_FILES="$CONFIG_FILES common/Makefile" ;;
+  "robox/Makefile" ) CONFIG_FILES="$CONFIG_FILES robox/Makefile" ;;
+  "visitor/Makefile" ) CONFIG_FILES="$CONFIG_FILES visitor/Makefile" ;;
+  "laas/Makefile" ) CONFIG_FILES="$CONFIG_FILES laas/Makefile" ;;
   "simul/Makefile" ) CONFIG_FILES="$CONFIG_FILES simul/Makefile" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;

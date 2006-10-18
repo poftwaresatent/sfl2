@@ -80,7 +80,6 @@ dnl AC_PROG_AWK
 
 AC_SUBST(PACKAGE_VERSION)
 
-dnl AC_OUTPUT(Makefile nepumuk.pc Doxyfile)
-dnl AC_CONFIG_FILES([Makefile simul/Makefile])
 AC_CONFIG_HEADERS(config.h)
-AC_OUTPUT([Makefile common/Makefile simul/Makefile])
+AC_OUTPUT([Makefile common/Makefile robox/Makefile visitor/Makefile
+           laas/Makefile simul/Makefile])
