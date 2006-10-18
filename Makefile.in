@@ -156,7 +156,9 @@ target_alias = @target_alias@
 
 #SUBDIRS=       common robox visitor laas simul
 SUBDIRS = simul
-all: config.h
+#dist_doc_DATA= LICENSE.GPL README
+BUILT_SOURCES = npm
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
@@ -486,11 +488,13 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile config.h
 installdirs: installdirs-recursive
 installdirs-am:
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -514,6 +518,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-generic mostlyclean-am
@@ -580,7 +585,9 @@ uninstall-info: uninstall-info-recursive
 	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
 	uninstall-info-am
 
-#dist_doc_DATA= LICENSE.GPL README
+
+npm:
+	test -L npm || ln -s $(top_srcdir) npm
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
