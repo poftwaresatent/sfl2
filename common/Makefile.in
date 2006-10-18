@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(dumpworld_SOURCES) $(nepumuk_SOURCES)
+SOURCES = $(libcommon_a_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -38,8 +38,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = nepumuk$(EXEEXT) dumpworld$(EXEEXT)
-subdir = simul
+subdir = common
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -48,16 +47,26 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS)
-am_dumpworld_OBJECTS = dumpworld.$(OBJEXT) Interlock.$(OBJEXT)
-dumpworld_OBJECTS = $(am_dumpworld_OBJECTS)
-dumpworld_LDADD = $(LDADD)
-am_nepumuk_OBJECTS = nepumuk.$(OBJEXT) RobotFactory.$(OBJEXT) \
-	Interlock.$(OBJEXT) Simulator.$(OBJEXT)
-nepumuk_OBJECTS = $(am_nepumuk_OBJECTS)
-nepumuk_DEPENDENCIES = common/libcommon.a
+LIBRARIES = $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+libcommon_a_AR = $(AR) $(ARFLAGS)
+libcommon_a_LIBADD =
+am_libcommon_a_OBJECTS = WorldCamera.$(OBJEXT) Globals.$(OBJEXT) \
+	CheatSheet.$(OBJEXT) GoalInstanceDrawing.$(OBJEXT) \
+	OdometryDrawing.$(OBJEXT) BBox.$(OBJEXT) \
+	WorldDrawing.$(OBJEXT) Manageable.$(OBJEXT) Sharp.$(OBJEXT) \
+	TrajectoryDrawing.$(OBJEXT) HoloDriveDrawing.$(OBJEXT) \
+	Object.$(OBJEXT) wrap_glu.$(OBJEXT) ScannerDrawing.$(OBJEXT) \
+	RobotZoomCamera.$(OBJEXT) RobotDrawing.$(OBJEXT) \
+	View.$(OBJEXT) StillCamera.$(OBJEXT) SimpleImage.$(OBJEXT) \
+	Sensor.$(OBJEXT) DiffDriveDrawing.$(OBJEXT) \
+	SharpDrawing.$(OBJEXT) Camera.$(OBJEXT) Drawing.$(OBJEXT) \
+	RobotServer.$(OBJEXT) RobotClient.$(OBJEXT) \
+	RobotDescriptor.$(OBJEXT) Lidar.$(OBJEXT) Manager.$(OBJEXT) \
+	World.$(OBJEXT) HAL.$(OBJEXT) Drive.$(OBJEXT) \
+	DiffDrive.$(OBJEXT) HoloDrive.$(OBJEXT) util.$(OBJEXT)
+libcommon_a_OBJECTS = $(am_libcommon_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -66,8 +75,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(dumpworld_SOURCES) $(nepumuk_SOURCES)
-DIST_SOURCES = $(dumpworld_SOURCES) $(nepumuk_SOURCES)
+SOURCES = $(libcommon_a_SOURCES)
+DIST_SOURCES = $(libcommon_a_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -156,9 +165,19 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-nepumuk_SOURCES = nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp
-nepumuk_LDADD = common/libcommon.a
-dumpworld_SOURCES = dumpworld.cpp Interlock.cpp
+noinst_LIBRARIES = libcommon.a
+libcommon_a_SOURCES = WorldCamera.cpp Globals.cpp CheatSheet.cpp \
+                     GoalInstanceDrawing.cpp OdometryDrawing.cpp \
+                     BBox.cpp WorldDrawing.cpp Manageable.cpp Sharp.cpp \
+                     TrajectoryDrawing.cpp HoloDriveDrawing.cpp Object.cpp \
+                     wrap_glu.cpp ScannerDrawing.cpp RobotZoomCamera.cpp \
+                     RobotDrawing.cpp View.cpp StillCamera.cpp \
+                     SimpleImage.cpp Sensor.cpp DiffDriveDrawing.cpp \
+                     SharpDrawing.cpp Camera.cpp Drawing.cpp \
+                     RobotServer.cpp RobotClient.cpp RobotDescriptor.cpp \
+                     Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
+                     DiffDrive.cpp HoloDrive.cpp util.cpp
+
 all: all-am
 
 .SUFFIXES:
@@ -172,9 +191,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  simul/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  common/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  simul/Makefile
+	  $(AUTOMAKE) --foreign  common/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -192,35 +211,13 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
-	  else :; fi; \
-	done
 
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
-	done
-
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-dumpworld$(EXEEXT): $(dumpworld_OBJECTS) $(dumpworld_DEPENDENCIES) 
-	@rm -f dumpworld$(EXEEXT)
-	$(CXXLINK) $(dumpworld_LDFLAGS) $(dumpworld_OBJECTS) $(dumpworld_LDADD) $(LIBS)
-nepumuk$(EXEEXT): $(nepumuk_OBJECTS) $(nepumuk_DEPENDENCIES) 
-	@rm -f nepumuk$(EXEEXT)
-	$(CXXLINK) $(nepumuk_LDFLAGS) $(nepumuk_OBJECTS) $(nepumuk_LDADD) $(LIBS)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+libcommon.a: $(libcommon_a_OBJECTS) $(libcommon_a_DEPENDENCIES) 
+	-rm -f libcommon.a
+	$(libcommon_a_AR) libcommon.a $(libcommon_a_OBJECTS) $(libcommon_a_LIBADD)
+	$(RANLIB) libcommon.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -228,11 +225,41 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Interlock.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RobotFactory.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Simulator.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dumpworld.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nepumuk.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BBox.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Camera.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CheatSheet.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DiffDrive.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DiffDriveDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Drawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Drive.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Globals.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GoalInstanceDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HAL.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HoloDrive.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HoloDriveDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lidar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Manageable.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Object.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OdometryDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RobotClient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RobotDescriptor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RobotDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RobotServer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RobotZoomCamera.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ScannerDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sensor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sharp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SharpDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SimpleImage.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/StillCamera.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TrajectoryDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/View.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/World.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorldCamera.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorldDrawing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wrap_glu.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -326,11 +353,8 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -357,7 +381,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -377,7 +401,7 @@ info-am:
 
 install-data-am:
 
-install-exec-am: install-binPROGRAMS
+install-exec-am:
 
 install-info: install-info-am
 
@@ -402,23 +426,19 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-info-am
+uninstall-am: uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic ctags distclean distclean-compile \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-noinstLIBRARIES ctags distclean distclean-compile \
 	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-info-am
+	uninstall-am uninstall-info-am
 
-#dumpworld_LDADD=   ../common/libcommon.a
-
-#common/libcommon.a:
-#	$(MAKE) -C ../common
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

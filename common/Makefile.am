@@ -1,0 +1,12 @@
+noinst_LIBRARIES=    libcommon.a
+libcommon_a_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
+                     GoalInstanceDrawing.cpp OdometryDrawing.cpp \
+                     BBox.cpp WorldDrawing.cpp Manageable.cpp Sharp.cpp \
+                     TrajectoryDrawing.cpp HoloDriveDrawing.cpp Object.cpp \
+                     wrap_glu.cpp ScannerDrawing.cpp RobotZoomCamera.cpp \
+                     RobotDrawing.cpp View.cpp StillCamera.cpp \
+                     SimpleImage.cpp Sensor.cpp DiffDriveDrawing.cpp \
+                     SharpDrawing.cpp Camera.cpp Drawing.cpp \
+                     RobotServer.cpp RobotClient.cpp RobotDescriptor.cpp \
+                     Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
+                     DiffDrive.cpp HoloDrive.cpp util.cpp

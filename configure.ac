@@ -1,7 +1,7 @@
 AC_REVISION($Id$)
 AC_INIT(nepumuk, 0.0pre, libsunflower-devel AT lists DOT sourceforge DOT net)
 AC_PREREQ(2.57)
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_CANONICAL_HOST
 case $host_os in
@@ -72,12 +72,14 @@ AC_ARG_WITH(xcf,
 
 dnl TO DO: test for an XCF header (at least)
 
+AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
 dnl AC_PROG_INSTALL
 dnl AC_PROG_AWK
+
 AC_SUBST(PACKAGE_VERSION)
 
 dnl AC_OUTPUT(Makefile nepumuk.pc Doxyfile)
 dnl AC_CONFIG_FILES([Makefile simul/Makefile])
 AC_CONFIG_HEADERS(config.h)
-AC_OUTPUT([Makefile simul/Makefile])
+AC_OUTPUT([Makefile common/Makefile simul/Makefile])
