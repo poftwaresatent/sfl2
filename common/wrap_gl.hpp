@@ -23,18 +23,14 @@
 
 
 #ifndef WRAP_GL_HPP
-# define WRAP_GL_HPP
+#define WRAP_GL_HPP
 
-# ifdef LINUX
-#  include <GL/gl.h>
-# endif // LINUX
-
-# ifdef MACOSX
-#  include <OpenGL/gl.h>
-# endif // MACOSX
-
-# ifdef OSX
-#  include <OpenGL/gl.h>
-# endif // OSX
+#if defined(LINUX)
+# include <GL/gl.h>
+#elif defined(OSX)
+# include <OpenGL/gl.h>
+#else
+# warning "no OS selected, cannot include GL header"
+#endif
 
 #endif // WRAP_GL_HPP

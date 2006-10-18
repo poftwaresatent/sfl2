@@ -23,18 +23,14 @@
 
 
 #ifndef WRAP_GLUT_HPP
-# define WRAP_GLUT_HPP
+#define WRAP_GLUT_HPP
 
-# ifdef LINUX
-#  include <GL/glut.h>
-# endif // LINUX
-
-# ifdef MACOSX
-#  include <GLUT/glut.h>
-# endif // MACOSX
-
-# ifdef OSX
-#  include <GLUT/glut.h>
-# endif // OSX
+#if defined(LINUX)
+# include <GL/glut.h>
+#elif defined(OSX)
+# include <GLUT/glut.h>
+#else
+# warning "no OS selected, cannot include GLUT header"
+#endif
 
 #endif // WRAP_GLUT_HPP

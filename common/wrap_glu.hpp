@@ -23,22 +23,16 @@
 
 
 #ifndef WRAP_GLU_HPP
-# define WRAP_GLU_HPP
+#define WRAP_GLU_HPP
 
-# ifdef LINUX
-#  include <GL/glu.h>
-# endif // LINUX
-
-# ifdef MACOSX
-#  include <OpenGL/glu.h>
-# endif // MACOSX
-
-# ifdef OSX
-#  include <OpenGL/glu.h>
-# endif // OSX
-
+#if defined(LINUX)
+# include <GL/glu.h>
+#elif defined(OSX)
+# include <OpenGL/glu.h>
+#else
+# warning "no OS selected, cannot include GLU header"
+#endif
 
 GLUquadricObj * wrap_glu_quadric_instance();
-
 
 #endif // WRAP_GLU_HPP

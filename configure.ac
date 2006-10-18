@@ -2,11 +2,24 @@ AC_REVISION($Id$)
 AC_INIT(nepumuk, 0.0pre, libsunflower-devel AT lists DOT sourceforge DOT net)
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
 AC_CANONICAL_HOST
+case $host_os in
+  linux*)  OSCPPFLAGS="-DLINUX"
+	   AC_SUBST(GLUTFLAGS, "-lglut -lGLU -lGL -lXi -lXmu");;
+  darwin*) OSCPPFFLAGS="-DDARWIN"
+           OSCXXFLAGS="-Wno-long-double"
+           OSLDFLAGS="-dynamiclib -undefined suppress -Wl,-flat_namespace"
+	   AC_SUBST(GLUTFLAGS, "-framework OpenGL -framework GLUT");;
+  *)       echo "WARNING unknown host_os $host_os, update configure.ac";;
+esac
+CPPFLAGS="$CPPFLAGS $OSCPPFLAGS"
+CXXFLAGS="$CXXFLAGS $OSCXXFLAGS"
+LDFLAGS="$LDFLAGS $OSLDFLAGS"
 
 AC_LANG(C++)
 AC_PROG_CXX
-test "x${GXX}" = "xyes" && CXXFLAGS="-pipe"
+test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pipe"
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O2)]),
