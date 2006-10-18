@@ -34,8 +34,17 @@
  */
 
 
+// well, config.h shouldn't be distributed, so we shouldn't include it...
+#include "config.h"
+#ifdef HAVE_PNG_H
+# include <png.h>
+#else
+# include <stdint.h>
+typedef uint32_t png_uint_32;
+typedef int8_t png_byte;
+typedef int8_t * png_bytep;
+#endif
 
-#include <png.h>
 
 #include <string>
 using std::string;

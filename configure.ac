@@ -71,6 +71,8 @@ AC_ARG_WITH(xcf,
 
 dnl TO DO: test for an XCF header (at least)
 
+AC_CHECK_HEADERS([png.h])
+
 dnl AC_PROG_LIBTOOL
 dnl AC_PROG_INSTALL
 dnl AC_PROG_AWK
