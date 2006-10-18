@@ -6,11 +6,12 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CANONICAL_HOST
 case $host_os in
   linux*)  OSCPPFLAGS="-DLINUX"
-	   AC_SUBST(GLUTFLAGS, "-lglut -lGLU -lGL -lXi -lXmu");;
+dnl	   AC_SUBST(GLUTLIBS, "-lglut -lGLU -lGL -lXi -lXmu");;
+	   AC_SUBST(GLUTLIBS, "-lglut -lGLU -lGL");;
   darwin*) OSCPPFFLAGS="-DDARWIN"
            OSCXXFLAGS="-Wno-long-double"
 dnl        OSLDFLAGS="-dynamiclib -undefined suppress -Wl,-flat_namespace"
-	   AC_SUBST(GLUTFLAGS, "-framework OpenGL -framework GLUT");;
+	   AC_SUBST(GLUTLIBS, "-framework OpenGL -framework GLUT");;
   *)       echo "WARNING unknown host_os $host_os, update configure.ac";;
 esac
 CPPFLAGS="$CPPFLAGS $OSCPPFLAGS"

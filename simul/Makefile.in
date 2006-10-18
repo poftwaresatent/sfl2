@@ -53,11 +53,12 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_dumpworld_OBJECTS = dumpworld.$(OBJEXT) Interlock.$(OBJEXT)
 dumpworld_OBJECTS = $(am_dumpworld_OBJECTS)
-dumpworld_LDADD = $(LDADD)
+dumpworld_DEPENDENCIES = ../common/libcommon.a
 am_nepumuk_OBJECTS = nepumuk.$(OBJEXT) RobotFactory.$(OBJEXT) \
 	Interlock.$(OBJEXT) Simulator.$(OBJEXT)
 nepumuk_OBJECTS = $(am_nepumuk_OBJECTS)
-nepumuk_DEPENDENCIES = common/libcommon.a
+am__DEPENDENCIES_1 =
+nepumuk_DEPENDENCIES = ../common/libcommon.a $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -92,7 +93,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-GLUTFLAGS = @GLUTFLAGS@
+GLUTLIBS = @GLUTLIBS@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -157,8 +158,9 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 nepumuk_SOURCES = nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp
-nepumuk_LDADD = common/libcommon.a
+nepumuk_LDADD = ../common/libcommon.a $(GLUTLIBS) -lsunflower
 dumpworld_SOURCES = dumpworld.cpp Interlock.cpp
+dumpworld_LDADD = ../common/libcommon.a -lsunflower
 all: all-am
 
 .SUFFIXES:
@@ -415,10 +417,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am uninstall-binPROGRAMS uninstall-info-am
 
-#dumpworld_LDADD=   ../common/libcommon.a
 
-#common/libcommon.a:
-#	$(MAKE) -C ../common
+../common/common/libcommon.a:
+	$(MAKE) -C ../common
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
