@@ -1,7 +1,7 @@
 AC_REVISION($Id$)
 AC_INIT(nepumuk, 0.0pre, libsunflower-devel AT lists DOT sourceforge DOT net)
 AC_PREREQ(2.57)
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([foreign])
 
 AC_CANONICAL_HOST
 case $host_os in
@@ -9,13 +9,14 @@ case $host_os in
 	   AC_SUBST(GLUTFLAGS, "-lglut -lGLU -lGL -lXi -lXmu");;
   darwin*) OSCPPFFLAGS="-DDARWIN"
            OSCXXFLAGS="-Wno-long-double"
-           OSLDFLAGS="-dynamiclib -undefined suppress -Wl,-flat_namespace"
+dnl        OSLDFLAGS="-dynamiclib -undefined suppress -Wl,-flat_namespace"
 	   AC_SUBST(GLUTFLAGS, "-framework OpenGL -framework GLUT");;
   *)       echo "WARNING unknown host_os $host_os, update configure.ac";;
 esac
 CPPFLAGS="$CPPFLAGS $OSCPPFLAGS"
 CXXFLAGS="$CXXFLAGS $OSCXXFLAGS"
-LDFLAGS="$LDFLAGS $OSLDFLAGS"
+dnl TO DO: only for dynamic libraries...
+dnl LDFLAGS="$LDFLAGS $OSLDFLAGS"
 
 AC_LANG(C++)
 AC_PROG_CXX
@@ -31,17 +32,17 @@ AC_ARG_ENABLE(pedantic,
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pedantic" ],
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -Wall" ])
 
-AC_ARG_WITH(boost,
-  AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
-  [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -I${withval}/include"
-      LDFLAGS="$LDFLAGS -L${withval}/lib"
-    fi ], [])
-oldCXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS $CPPFLAGS"
-AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
-  AC_MSG_ERROR([can't compile boost/shared_ptr.hpp (CXXFLAGS=$CXXFLAGS)])], [])
-CXXFLAGS="$oldCXXFLAGS"
+dnl TO-DO   AC_ARG_WITH(boost,
+dnl TO-DO     AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
+dnl TO-DO     [ if test "x$withval" != "x" ; then
+dnl TO-DO         CPPFLAGS="$CPPFLAGS -I${withval}/include"
+dnl TO-DO         LDFLAGS="$LDFLAGS -L${withval}/lib"
+dnl TO-DO       fi ], [])
+dnl TO-DO   oldCXXFLAGS="$CXXFLAGS"
+dnl TO-DO   CXXFLAGS="$CXXFLAGS $CPPFLAGS -I$prefix/include"
+dnl TO-DO   AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
+dnl TO-DO     AC_MSG_ERROR([can't compile boost/shared_ptr.hpp (CXXFLAGS=$CXXFLAGS)])], [])
+dnl TO-DO   CXXFLAGS="$oldCXXFLAGS"
 
 AC_ARG_WITH(sfl,
   AC_HELP_STRING([--with-sfl=PATH], [specify libsunflower install dir]),
@@ -49,11 +50,11 @@ AC_ARG_WITH(sfl,
       CPPFLAGS="$CPPFLAGS -I${withval}/include"
       LDFLAGS="$LDFLAGS -L${withval}/lib"
     fi ], [])
-oldCXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS $CPPFLAGS"
+oldCPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS -I$prefix/include"
 AC_CHECK_HEADER([sfl/util/numeric.hpp], [], [
-  AC_MSG_ERROR([can't compile sfl/util/numeric.hpp (CXXFLAGS=$CXXFLAGS)])], [])
-CXXFLAGS="$oldCXXFLAGS"
+  AC_MSG_ERROR([can't compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(xcf,
   AC_HELP_STRING([--with-xcf=PATH], [enable XCF (installed in PATH)]),
@@ -71,8 +72,6 @@ AC_ARG_WITH(xcf,
 
 dnl TO DO: test for an XCF header (at least)
 
-AC_CHECK_HEADERS([png.h])
-
 dnl AC_PROG_LIBTOOL
 dnl AC_PROG_INSTALL
 dnl AC_PROG_AWK
@@ -80,5 +79,5 @@ AC_SUBST(PACKAGE_VERSION)
 
 dnl AC_OUTPUT(Makefile nepumuk.pc Doxyfile)
 dnl AC_CONFIG_FILES([Makefile simul/Makefile])
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS(config.h)
 AC_OUTPUT([Makefile simul/Makefile])
