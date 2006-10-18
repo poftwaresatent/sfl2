@@ -1,3 +1,4 @@
+CPPFLAGS=            @CPPFLAGS@ -I@prefix@/include
 noinst_LIBRARIES=    libcommon.a
 libcommon_a_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      GoalInstanceDrawing.cpp OdometryDrawing.cpp \

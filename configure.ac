@@ -35,17 +35,17 @@ AC_ARG_ENABLE(pedantic,
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pedantic" ],
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -Wall" ])
 
-dnl TO-DO   AC_ARG_WITH(boost,
-dnl TO-DO     AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
-dnl TO-DO     [ if test "x$withval" != "x" ; then
-dnl TO-DO         CPPFLAGS="$CPPFLAGS -I${withval}/include"
-dnl TO-DO         LDFLAGS="$LDFLAGS -L${withval}/lib"
-dnl TO-DO       fi ], [])
-dnl TO-DO   oldCXXFLAGS="$CXXFLAGS"
-dnl TO-DO   CXXFLAGS="$CXXFLAGS $CPPFLAGS -I$prefix/include"
-dnl TO-DO   AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
-dnl TO-DO     AC_MSG_ERROR([can't compile boost/shared_ptr.hpp (CXXFLAGS=$CXXFLAGS)])], [])
-dnl TO-DO   CXXFLAGS="$oldCXXFLAGS"
+AC_ARG_WITH(boost,
+  AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
+  [ if test "x$withval" != "x" ; then
+      CPPFLAGS="$CPPFLAGS -I${withval}/include"
+      LDFLAGS="$LDFLAGS -L${withval}/lib"
+    fi ], [])
+oldCPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS -I$prefix/include"
+AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
+  AC_MSG_ERROR([can't compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(sfl,
   AC_HELP_STRING([--with-sfl=PATH], [specify libsunflower install dir]),
