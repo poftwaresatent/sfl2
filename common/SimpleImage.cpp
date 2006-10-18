@@ -83,6 +83,11 @@ SimpleImage::
 bool SimpleImage::
 write_png(const string &filename)
 {
+#ifndef HAVE_PNG_H
+  cerr << "SimpleImage::write_png(\"" << filename
+       << "\"): PNG support not built\n";
+  return false;
+#else // HAVE_PNG_H
   FILE *fp;
   png_structp png_ptr;
   png_infop info_ptr;
@@ -138,6 +143,7 @@ write_png(const string &filename)
   fclose(fp);
   
   return true;
+#endif // ! HAVE_PNG_H
 }
 
 

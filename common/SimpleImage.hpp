@@ -35,15 +35,19 @@
 
 
 // well, config.h shouldn't be distributed, so we shouldn't include it...
-#include "config.h"
-#ifdef HAVE_PNG_H
-# include <png.h>
-#else
-# include <stdint.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+# ifdef HAVE_PNG_H
+#  include <png.h>
+# else // ! HAVE_PNG_H
+#  include <stdint.h>
 typedef uint32_t png_uint_32;
 typedef int8_t png_byte;
 typedef int8_t * png_bytep;
-#endif
+# endif // HAVE_PNG_H
+#else  // ! HAVE_CONFIG_H
+# include <png.h>		// figure out how to treat this correctly!
+#endif // HAVE_CONFIG_H
 
 
 #include <string>
