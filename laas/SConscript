@@ -1,5 +1,0 @@
-Import('env')
-sources = ['LAAS.cpp']
-headers = ['LAAS.hpp']
-env.StageLibrary(env.PrevLib('npmlaas', sources))
-env.StageHeader('npm/laas', headers)
