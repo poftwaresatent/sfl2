@@ -302,7 +302,11 @@ namespace sfl {
       const scan_data & ldata(local_scan->data[is]);
       if(m_evaluation_hull->Contains(ldata.locx, ldata.locy)){
 	const ssize_t ix(FindXindex(ldata.locx));
+	if((0 > ix) || (_dimx <= static_cast<size_t>(ix)))
+	  continue;
 	const ssize_t iy(FindYindex(ldata.locy));
+	if((0 > iy) || (_dimy <= static_cast<size_t>(iy)))
+	  continue;
 	switch((*m_region)[ix][iy]){
 	case NONE:
 	  (*m_grid)[ix][iy] = true; // really only for plotting...
