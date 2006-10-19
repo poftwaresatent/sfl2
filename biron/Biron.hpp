@@ -40,7 +40,7 @@ public:
   virtual void InitPose(double x, double y, double theta);
   virtual void SetPose(double x, double y, double theta);
   virtual void GetPose(double & x, double & y, double & theta);
-  virtual void SetGoal(const sfl::Goal & goal);
+  virtual void SetGoal(double timestep, const sfl::Goal & goal);
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   virtual bool GoalReached();
   

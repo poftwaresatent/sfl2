@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar build build_cpu build_vendor build_os host host_cpu host_vendor host_os GLUTLIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP WITH_XCF XCF_CPPFLAGS XCF_LDFLAGS RANLIB ac_ct_RANLIB LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar FOOLIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os GLUTLIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP WITH_XCF XCF_CPPFLAGS XCF_LDFLAGS BUILD_BIRON_TRUE BUILD_BIRON_FALSE RANLIB ac_ct_RANLIB LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -864,6 +864,7 @@ Optional Packages:
   --with-boost=PATH       specify boost install dir
   --with-sfl=PATH         specify libsunflower install dir
   --with-xcf=PATH         enable XCF (installed in PATH)
+  --with-xcfglue=PATH     special XCFGLUE install PATH
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1762,6 +1763,9 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
+FOOLIBS="-lsunflower"
+
+
 # Make sure we can run config.sub.
 $ac_config_sub sun4 >/dev/null 2>&1 ||
   { { echo "$as_me:$LINENO: error: cannot run $ac_config_sub" >&5
@@ -1820,6 +1824,7 @@ case $host_os in
   linux*)  echo "$as_me:$LINENO: result: detected Linux" >&5
 echo "${ECHO_T}detected Linux" >&6
            OSCPPFLAGS="-DLINUX"
+	   FOOLIBS="$FOOLIBS -lpthread"
 	   GLUTLIBS="-lglut -lGLU -lGL"
 ;;
   darwin*) echo "$as_me:$LINENO: result: detected Darwin (OS X)" >&5
@@ -3398,28 +3403,363 @@ CPPFLAGS="$oldCPPFLAGS"
 # Check whether --with-xcf or --without-xcf was given.
 if test "${with_xcf+set}" = set; then
   withval="$with_xcf"
-   WITH_XCF="XCF_"
+
+    WITH_XCF="XCF_"
 
     if test "x$withval" = "x" ; then
-      XCF_CPPFLAGS=""
+      XCF_CPPFLAGS="-I${PREFIX}/include/sigc++-1.2 -I${PREFIX}/lib/sigc++-1.2/include"
 
-      XCF_LDFLAGS=""
+      XCF_LDFLAGS="-lsigc-1.2 -lxcf -lxmltio"
 
     else
       XCF_CPPFLAGS="-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include"
 
-      XCF_LDFLAGS="-L${withval}/lib"
+      XCF_LDFLAGS="-lsigc-1.2 -lxcf -lxmltio -L${withval}/lib"
 
     fi
+    CPPFLAGS="$CPPFLAGS -DBUILD_BIRON"
+    oldCPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
+    if test "${ac_cv_header_xcf_Subscriber_hpp+set}" = set; then
+  echo "$as_me:$LINENO: checking for xcf/Subscriber.hpp" >&5
+echo $ECHO_N "checking for xcf/Subscriber.hpp... $ECHO_C" >&6
+if test "${ac_cv_header_xcf_Subscriber_hpp+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_xcf_Subscriber_hpp" >&5
+echo "${ECHO_T}$ac_cv_header_xcf_Subscriber_hpp" >&6
 else
-   WITH_XCF="NOXCF_"
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking xcf/Subscriber.hpp usability" >&5
+echo $ECHO_N "checking xcf/Subscriber.hpp usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <xcf/Subscriber.hpp>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking xcf/Subscriber.hpp presence" >&5
+echo $ECHO_N "checking xcf/Subscriber.hpp presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <xcf/Subscriber.hpp>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp: present but cannot be compiled" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcf/Subscriber.hpp: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: xcf/Subscriber.hpp: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------------------------------ ##
+## Report this to libsunflower-devel AT lists DOT sourceforge DOT net ##
+## ------------------------------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for xcf/Subscriber.hpp" >&5
+echo $ECHO_N "checking for xcf/Subscriber.hpp... $ECHO_C" >&6
+if test "${ac_cv_header_xcf_Subscriber_hpp+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_xcf_Subscriber_hpp=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_xcf_Subscriber_hpp" >&5
+echo "${ECHO_T}$ac_cv_header_xcf_Subscriber_hpp" >&6
+
+fi
+if test $ac_cv_header_xcf_Subscriber_hpp = yes; then
+  :
+else
+
+      { { echo "$as_me:$LINENO: error: can't compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)" >&5
+echo "$as_me: error: can't compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+    CPPFLAGS="$oldCPPFLAGS"
+
+
+if true; then
+  BUILD_BIRON_TRUE=
+  BUILD_BIRON_FALSE='#'
+else
+  BUILD_BIRON_TRUE='#'
+  BUILD_BIRON_FALSE=
+fi
+
+
+else
+
+    WITH_XCF="NOXCF_"
 
     XCF_CPPFLAGS=""
 
     XCF_LDFLAGS=""
 
+
+
+if false; then
+  BUILD_BIRON_TRUE=
+  BUILD_BIRON_FALSE='#'
+else
+  BUILD_BIRON_TRUE='#'
+  BUILD_BIRON_FALSE=
+fi
+
 fi;
 
+
+# Check whether --with-xcfglue or --without-xcfglue was given.
+if test "${with_xcfglue+set}" = set; then
+  withval="$with_xcfglue"
+   if test "x$withval" != "x" ; then
+      XCF_CPPFLAGS="$XCF_CPPFLAGS -I${withval}/include"
+      XCF_LDFLAGS="-lxcfglue $XCF_LDFLAGS -L${withval}/lib"
+    fi
+fi;
+if test "$WITH_XCF" = "XCF_"; then
+  oldCPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
+  if test "${ac_cv_header_xcfwrap_xcfglue_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for xcfwrap/xcfglue.h" >&5
+echo $ECHO_N "checking for xcfwrap/xcfglue.h... $ECHO_C" >&6
+if test "${ac_cv_header_xcfwrap_xcfglue_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_xcfwrap_xcfglue_h" >&5
+echo "${ECHO_T}$ac_cv_header_xcfwrap_xcfglue_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking xcfwrap/xcfglue.h usability" >&5
+echo $ECHO_N "checking xcfwrap/xcfglue.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <xcfwrap/xcfglue.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking xcfwrap/xcfglue.h presence" >&5
+echo $ECHO_N "checking xcfwrap/xcfglue.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <xcfwrap/xcfglue.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: xcfwrap/xcfglue.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: xcfwrap/xcfglue.h: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------------------------------ ##
+## Report this to libsunflower-devel AT lists DOT sourceforge DOT net ##
+## ------------------------------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for xcfwrap/xcfglue.h" >&5
+echo $ECHO_N "checking for xcfwrap/xcfglue.h... $ECHO_C" >&6
+if test "${ac_cv_header_xcfwrap_xcfglue_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_xcfwrap_xcfglue_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_xcfwrap_xcfglue_h" >&5
+echo "${ECHO_T}$ac_cv_header_xcfwrap_xcfglue_h" >&6
+
+fi
+if test $ac_cv_header_xcfwrap_xcfglue_h = yes; then
+  :
+else
+
+  { { echo "$as_me:$LINENO: error: can't compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)" >&5
+echo "$as_me: error: can't compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+  CPPFLAGS="$oldCPPFLAGS"
+fi
 
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
@@ -3502,11 +3842,161 @@ else
 fi
 
 
+for ac_header in png.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------------------------------ ##
+## Report this to libsunflower-devel AT lists DOT sourceforge DOT net ##
+## ------------------------------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+ FOOLIBS="$FOOLIBS -lpng"
+fi
+
+done
+
 
 
           ac_config_headers="$ac_config_headers config.h"
 
-                                                            ac_config_files="$ac_config_files Makefile common/Makefile robox/Makefile visitor/Makefile laas/Makefile simul/Makefile"
+                                                                      ac_config_files="$ac_config_files Makefile common/Makefile robox/Makefile visitor/Makefile laas/Makefile biron/Makefile simul/Makefile"
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -3609,6 +4099,20 @@ if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"am__fastdepCXX\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${BUILD_BIRON_TRUE}" && test -z "${BUILD_BIRON_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BUILD_BIRON\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BUILD_BIRON\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${BUILD_BIRON_TRUE}" && test -z "${BUILD_BIRON_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BUILD_BIRON\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BUILD_BIRON\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -4061,6 +4565,7 @@ do
   "robox/Makefile" ) CONFIG_FILES="$CONFIG_FILES robox/Makefile" ;;
   "visitor/Makefile" ) CONFIG_FILES="$CONFIG_FILES visitor/Makefile" ;;
   "laas/Makefile" ) CONFIG_FILES="$CONFIG_FILES laas/Makefile" ;;
+  "biron/Makefile" ) CONFIG_FILES="$CONFIG_FILES biron/Makefile" ;;
   "simul/Makefile" ) CONFIG_FILES="$CONFIG_FILES simul/Makefile" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
@@ -4171,6 +4676,7 @@ s,@am__leading_dot@,$am__leading_dot,;t t
 s,@AMTAR@,$AMTAR,;t t
 s,@am__tar@,$am__tar,;t t
 s,@am__untar@,$am__untar,;t t
+s,@FOOLIBS@,$FOOLIBS,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
 s,@build_vendor@,$build_vendor,;t t
@@ -4201,6 +4707,8 @@ s,@EGREP@,$EGREP,;t t
 s,@WITH_XCF@,$WITH_XCF,;t t
 s,@XCF_CPPFLAGS@,$XCF_CPPFLAGS,;t t
 s,@XCF_LDFLAGS@,$XCF_LDFLAGS,;t t
+s,@BUILD_BIRON_TRUE@,$BUILD_BIRON_TRUE,;t t
+s,@BUILD_BIRON_FALSE@,$BUILD_BIRON_FALSE,;t t
 s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t

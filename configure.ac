@@ -61,31 +61,32 @@ CPPFLAGS="$oldCPPFLAGS"
 AC_ARG_WITH(xcf,
   AC_HELP_STRING([--with-xcf=PATH], [enable XCF (installed in PATH)]),
   [
-  AC_SUBST(WITH_XCF, "XCF_")
-  if test "x$withval" = "x" ; then
-    AC_SUBST(XCF_CPPFLAGS, "-I${PREFIX}/include/sigc++-1.2 -I${PREFIX}/lib/sigc++-1.2/include")
-    AC_SUBST(XCF_LDFLAGS, "")
-  else
-    AC_SUBST(XCF_CPPFLAGS, "-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include")
-    AC_SUBST(XCF_LDFLAGS, "-L${withval}/lib")
-  fi
-  oldCPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
-  AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
-    AC_MSG_ERROR([can't compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-  CPPFLAGS="$oldCPPFLAGS"
-  AM_CONDITIONAL([BUILD_BIRON], [true])
+    AC_SUBST(WITH_XCF, "XCF_")
+    if test "x$withval" = "x" ; then
+      AC_SUBST(XCF_CPPFLAGS, "-I${PREFIX}/include/sigc++-1.2 -I${PREFIX}/lib/sigc++-1.2/include")
+      AC_SUBST(XCF_LDFLAGS, "-lsigc-1.2 -lxcf -lxmltio")
+    else
+      AC_SUBST(XCF_CPPFLAGS, "-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include")
+      AC_SUBST(XCF_LDFLAGS, "-lsigc-1.2 -lxcf -lxmltio -L${withval}/lib")
+    fi
+    CPPFLAGS="$CPPFLAGS -DBUILD_BIRON"
+    oldCPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
+    AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
+      AC_MSG_ERROR([can't compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+    CPPFLAGS="$oldCPPFLAGS"
+    AM_CONDITIONAL([BUILD_BIRON], [true])
   ], [
-  AC_SUBST(WITH_XCF, "NOXCF_")
-  AC_SUBST(XCF_CPPFLAGS, "")
-  AC_SUBST(XCF_LDFLAGS, "")
-  AM_CONDITIONAL([BUILD_BIRON], [false]) ])
+    AC_SUBST(WITH_XCF, "NOXCF_")
+    AC_SUBST(XCF_CPPFLAGS, "")
+    AC_SUBST(XCF_LDFLAGS, "")
+    AM_CONDITIONAL([BUILD_BIRON], [false]) ])
 
 AC_ARG_WITH(xcfglue,
   AC_HELP_STRING([--with-xcfglue=PATH], [special XCFGLUE install PATH]),
   [ if test "x$withval" != "x" ; then
       XCF_CPPFLAGS="$XCF_CPPFLAGS -I${withval}/include"
-      XCF_LDFLAGS="$XCF_LDFLAGS -L${withval}/lib"
+      XCF_LDFLAGS="-lxcfglue $XCF_LDFLAGS -L${withval}/lib"
     fi ], [])
 if test "$WITH_XCF" = "XCF_"; then
   oldCPPFLAGS="$CPPFLAGS"

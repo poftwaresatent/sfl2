@@ -204,7 +204,7 @@ GetPose(double &x, double &y, double &theta)
 
 
 void Biron::
-SetGoal(const Goal & goal)
+SetGoal(double timestep, const Goal & goal)
 {
   m_goal_changed = true;
   *m_goal = goal;
