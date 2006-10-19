@@ -265,13 +265,15 @@ PrepareAction(double timestep)
     m_sick->Update();		// for plotting, actually
     double rho[nscans];
     struct ::timespec t0, t1;
-    int status(m_hal->scan_get(sick_channel, rho, nscans, &t0, &t1));
+    size_t real_nscans(nscans);
+    int status(m_hal->scan_get(sick_channel, rho, &real_nscans, &t0, &t1));
     if(0 != status){
       cerr << "npm::HAL::scan_get() failed: " << status << "\n";
       exit(EXIT_FAILURE);
     }
     PVDEBUG("scan...\n");
-    status = xcfglue_scan_send(rho, nscans, xcfglue_system_timestamp(), "NAV");
+    status =
+      xcfglue_scan_send(rho, real_nscans, xcfglue_system_timestamp(), "NAV");
     if(0 != status){
       cerr << "xcfglue_scan_send() failed: " << status << "\n";
       exit(EXIT_FAILURE);

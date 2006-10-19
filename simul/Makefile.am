@@ -1,19 +1,20 @@
 CPPFLAGS=          @CPPFLAGS@ -I@prefix@/include
 LDFLAGS=           @LDFLAGS@ -L@prefix@/lib
 GLUTLIBS=          @GLUTLIBS@
+FOOLIBS=           @FOOLIBS@
 bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp
 nepumuk_LDADD=     ../robox/librobox.a \
                    ../visitor/libvisitor.a \
                    ../laas/liblaas.a \
                    ../common/libcommon.a \
-                   $(GLUTLIBS) -lsunflower -lpthread
+                   $(GLUTLIBS) $(FOOLIBS)
 dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
 dumpworld_LDADD=   ../robox/librobox.a \
                    ../visitor/libvisitor.a \
                    ../laas/liblaas.a \
                    ../common/libcommon.a \
-                   $(GLUTLIBS) -lsunflower -lpthread
+                   $(GLUTLIBS) $(FOOLIBS)
 
 ../common/libcommon.a:
 	$(MAKE) -C ../common

@@ -3,23 +3,22 @@ AC_INIT(nepumuk, 0.0pre, libsunflower-devel AT lists DOT sourceforge DOT net)
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
+AC_SUBST(FOOLIBS, "-lsunflower")
+
 AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_RESULT([detected Linux])
            OSCPPFLAGS="-DLINUX"
-dnl	   AC_SUBST(GLUTLIBS, "-lglut -lGLU -lGL -lXi -lXmu");;
+	   FOOLIBS="$FOOLIBS -lpthread"
 	   AC_SUBST(GLUTLIBS, "-lglut -lGLU -lGL");;
   darwin*) AC_MSG_RESULT([detected Darwin (OS X)])
            OSCPPFLAGS="-DOSX"
            OSCXXFLAGS="-Wno-long-double"
-dnl        OSLDFLAGS="-dynamiclib -undefined suppress -Wl,-flat_namespace"
 	   AC_SUBST(GLUTLIBS, "-framework OpenGL -framework GLUT");;
   *)       AC_MSG_ERROR([unknown host_os $host_os, update configure.ac]);;
 esac
 CPPFLAGS="$CPPFLAGS $OSCPPFLAGS"
 CXXFLAGS="$CXXFLAGS $OSCXXFLAGS"
-dnl TO DO: only for dynamic libraries...
-dnl LDFLAGS="$LDFLAGS $OSLDFLAGS"
 
 AC_LANG(C++)
 AC_PROG_CXX
@@ -100,7 +99,7 @@ AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
 dnl AC_PROG_INSTALL
 dnl AC_PROG_AWK
-AC_CHECK_HEADERS([png.h])
+AC_CHECK_HEADERS([png.h], [FOOLIBS="$FOOLIBS -lpng"])
 
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
