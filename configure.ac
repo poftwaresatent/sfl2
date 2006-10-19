@@ -61,23 +61,26 @@ CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(xcf,
   AC_HELP_STRING([--with-xcf=PATH], [enable XCF (installed in PATH)]),
-  [ AC_SUBST(WITH_XCF, "XCF_")
-    if test "x$withval" = "x" ; then
-      AC_SUBST(XCF_CPPFLAGS, "-I${PREFIX}/include/sigc++-1.2 -I${PREFIX}/lib/sigc++-1.2/include")
-      AC_SUBST(XCF_LDFLAGS, "")
-    else
-      AC_SUBST(XCF_CPPFLAGS, "-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include")
-      AC_SUBST(XCF_LDFLAGS, "-L${withval}/lib")
-    fi
+  [
+  AC_SUBST(WITH_XCF, "XCF_")
+  if test "x$withval" = "x" ; then
+    AC_SUBST(XCF_CPPFLAGS, "-I${PREFIX}/include/sigc++-1.2 -I${PREFIX}/lib/sigc++-1.2/include")
+    AC_SUBST(XCF_LDFLAGS, "")
+  else
+    AC_SUBST(XCF_CPPFLAGS, "-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include")
+    AC_SUBST(XCF_LDFLAGS, "-L${withval}/lib")
+  fi
   oldCPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
   AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
     AC_MSG_ERROR([can't compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
   CPPFLAGS="$oldCPPFLAGS"
-  ],
-  [ AC_SUBST(WITH_XCF, "NOXCF_")
-    AC_SUBST(XCF_CPPFLAGS, "")
-    AC_SUBST(XCF_LDFLAGS, "")])
+  AM_CONDITIONAL([BUILD_BIRON], [true])
+  ], [
+  AC_SUBST(WITH_XCF, "NOXCF_")
+  AC_SUBST(XCF_CPPFLAGS, "")
+  AC_SUBST(XCF_LDFLAGS, "")
+  AM_CONDITIONAL([BUILD_BIRON], [false]) ])
 
 AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
@@ -87,5 +90,6 @@ dnl AC_PROG_AWK
 AC_SUBST(PACKAGE_VERSION)
 
 AC_CONFIG_HEADERS(config.h)
-AC_OUTPUT([Makefile common/Makefile robox/Makefile visitor/Makefile
-           laas/Makefile simul/Makefile])
+AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
+                laas/Makefile biron/Makefile simul/Makefile])
+AC_OUTPUT
