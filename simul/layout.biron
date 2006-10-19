@@ -1,0 +1,49 @@
+View ground-truth
+     Camera  expo
+     Drawing expo
+     Drawing Biron_true_drawing
+     Drawing visitor0_true_drawing
+     Drawing visitor1_true_drawing
+     Drawing visitor2_true_drawing
+     Drawing visitor3_true_drawing
+     Drawing visitor4_true_drawing
+     Drawing visitor5_true_drawing
+     Drawing visitor6_true_drawing
+     Drawing visitor7_true_drawing
+     Drawing visitor8_true_drawing
+     Drawing visitor9_true_drawing
+     Drawing visitor10_true_drawing
+     Drawing visitor11_true_drawing
+     Drawing visitor12_true_drawing
+     Drawing visitor13_true_drawing
+     Drawing visitor14_true_drawing
+     Drawing Biron_drive
+     Drawing Biron_trajectory
+     Drawing Biron_lidar_0
+     Window  0.0  0.0  0.55  1.0
+     Border  2
+
+View biron
+     Camera  Biron_true_zoom_camera
+     Drawing expo
+     Drawing Biron_true_drawing
+     Drawing Biron_drive
+     Drawing Biron_trajectory
+     Drawing visitor0_true_drawing
+     Drawing visitor1_true_drawing
+     Drawing visitor2_true_drawing
+     Drawing visitor3_true_drawing
+     Drawing visitor4_true_drawing
+     Drawing visitor5_true_drawing
+     Drawing visitor6_true_drawing
+     Drawing visitor7_true_drawing
+     Drawing visitor8_true_drawing
+     Drawing visitor9_true_drawing
+     Drawing visitor10_true_drawing
+     Drawing visitor11_true_drawing
+     Drawing visitor12_true_drawing
+     Drawing visitor13_true_drawing
+     Drawing visitor14_true_drawing
+     Drawing Biron_lidar_0
+     Window  0.55  0.0  1.0  1.0
+     Border  2

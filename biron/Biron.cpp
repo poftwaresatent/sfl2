@@ -107,6 +107,12 @@ static void init_xcfglue(shared_ptr<RobotDescriptor> descriptor)
     name = "NAV_RelPos_Publisher";
   PDEBUG("speedref: %s\n", name.c_str());
   status = xcfglue_speedref_subscribe(name.c_str());
+  while(-2 == status){		// HACK! TODO! XXX! hardcoded magic retval
+    PDEBUG("no publisher called %s, will sleep a bit and retry\n",
+	   name.c_str());
+    usleep(2000000);
+    status = xcfglue_speedref_subscribe(name.c_str());
+  }
   if(0 != status){
     cerr << "xcfglue_speedref_subscribe() failed: " << status << "\n";
     exit(EXIT_FAILURE);
