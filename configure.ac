@@ -82,13 +82,27 @@ AC_ARG_WITH(xcf,
   AC_SUBST(XCF_LDFLAGS, "")
   AM_CONDITIONAL([BUILD_BIRON], [false]) ])
 
+AC_ARG_WITH(xcfglue,
+  AC_HELP_STRING([--with-xcfglue=PATH], [special XCFGLUE install PATH]),
+  [ if test "x$withval" != "x" ; then
+      XCF_CPPFLAGS="$XCF_CPPFLAGS -I${withval}/include"
+      XCF_LDFLAGS="$XCF_LDFLAGS -L${withval}/lib"
+    fi ], [])
+if test "$WITH_XCF" = "XCF_"; then
+  oldCPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
+  AC_CHECK_HEADER([xcfwrap/xcfglue.h], [], [
+  AC_MSG_ERROR([can't compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
+  CPPFLAGS="$oldCPPFLAGS"
+fi
+
 AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
 dnl AC_PROG_INSTALL
 dnl AC_PROG_AWK
+AC_CHECK_HEADERS([png.h])
 
 AC_SUBST(PACKAGE_VERSION)
-
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
                 laas/Makefile biron/Makefile simul/Makefile])
