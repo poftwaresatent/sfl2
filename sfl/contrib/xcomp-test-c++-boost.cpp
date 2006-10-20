@@ -17,5 +17,5 @@ int main(int argc, char ** argv)
   cout << "Hello, my name is " << argv[0] << " and I have " << argc
        << " arguments:\n";
   for(size_t ii(0); ii < line.size(); ++ii)
-    cout << line[ii];
+    cout << *line[ii];
 }
