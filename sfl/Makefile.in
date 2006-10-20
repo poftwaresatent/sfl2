@@ -205,6 +205,12 @@ bininstall:: binaries
 	done
 	echo "installed `date`" > binaries
 
+xcomptest: contrib/xcomp-test-c.o \
+           contrib/xcomp-test-c++-iostream.o \
+           contrib/xcomp-test-c++-boost.o
+	$(CC) $(CFLAGS) -o contrib/xcomp-test-c contrib/xcomp-test-c.o
+	$(CXX) $(CXXFLAGS) -o contrib/xcomp-test-c++-iostream contrib/xcomp-test-c++-iostream.o
+	$(CXX) $(CXXFLAGS) -o contrib/xcomp-test-c++-boost contrib/xcomp-test-c++-boost.o
 
 
 $(LIB): $(OBJS)
