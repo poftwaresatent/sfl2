@@ -68,6 +68,7 @@ namespace sfl {
       phi0(_phi0),
       phirange(_phirange),
       dphi(_phirange / _nscans),
+      strict_nscans_check(true),
       m_hal(hal),
       m_acquisition_ok(false),
       m_cosphi(nscans, 0.0),
@@ -129,9 +130,17 @@ namespace sfl {
       m_mutex->Unlock();
       return status;
     }
-    // this probably never happens, but fill in slack with rhomax
-    for(size_t ii(actual_nscans); ii < nscans; ++ii)
-      rho[ii] = rhomax;
+    if(actual_nscans != nscans){
+      if(strict_nscans_check){
+	m_mutex->Lock();
+	m_acquisition_ok = false;
+	m_mutex->Unlock();
+	return -42;
+      }
+      else
+	for(size_t ii(actual_nscans); ii < nscans; ++ii)
+	  rho[ii] = rhomax;
+    }
     
     double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
     struct ::timespec foo;

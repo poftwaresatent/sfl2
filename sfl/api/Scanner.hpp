@@ -257,6 +257,14 @@ namespace sfl {
     const double phirange;
     const double dphi;
     
+    /** true by default, leads to acquisition errors if
+	HAL::scan_get() results in fewer points than expected. If set
+	to false, then the "slack" will simply be filled with
+	rhomax. Beware, a mismatch between expected and actual number
+	of scans means that your system is probably not configured
+	correctly. */
+    bool strict_nscans_check;
+    
   protected:
     friend class ScannerThread;
     
