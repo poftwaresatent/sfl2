@@ -1,0 +1,13 @@
+Import('env')
+sources = ['Esbot.cpp',
+           'PNF.cpp',
+           'PNFDrawing.cpp',
+           'PNFCamera.cpp',
+           'CarrotDrawing.cpp']
+headers = ['Esbot.hpp',
+           'PNF.hpp',
+           'PNFDrawing.hpp',
+           'PNFCamera.hpp',
+           'CarrotDrawing.hpp']
+env.StageLibrary(env.PrevLib('npmestar', sources))
+env.StageHeader('npm/estar', headers)

@@ -1,0 +1,5 @@
+Import('env')
+sources = ['Visitor.cpp']
+headers = ['Visitor.hpp']
+env.StageLibrary(env.PrevLib('npmvisitor', sources))
+env.StageHeader('npm/visitor', headers)
