@@ -24,6 +24,7 @@
 #include <npm/common/RobotDescriptor.hpp>
 #include <npm/common/RobotServer.hpp>
 #include <npm/common/HAL.hpp>
+#include <npm/robox/expoparams.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/api/Goal.hpp>
@@ -43,18 +44,6 @@ using namespace npm;
 using namespace sfl;
 using namespace boost;
 using namespace std;
-
-
-static const double sick_x          = 0;
-static const double sick_y          = 0;
-static const double sick_theta      = 0;
-static const int sick_channel       = 0;
-static const size_t nscans          = 361;
-static const double rhomax          = 8;
-static const double phi0            = -M_PI/2;
-static const double phirange        = M_PI;
-static const double wheelbase       = 0.365;
-static const double wheelradius     = 0.095;
 
 
 static void init_xcfglue(shared_ptr<RobotDescriptor> descriptor)
@@ -147,9 +136,21 @@ Biron(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
     m_goal(new Goal()), m_goal_changed(false), m_xcfglue_initialized(false)
 {
-  m_sick = DefineLidar(Frame(sick_x, sick_y, sick_theta), nscans, rhomax,
-		       phi0, phirange, sick_channel)->GetScanner();
-  DefineDiffDrive(wheelbase, wheelradius);
+  expoparams params(descriptor);
+  m_nscans = params.front_nscans;
+  m_sick_channel = params.front_channel;
+  m_wheelbase = params.model_wheelbase;
+  m_wheelradius = params.model_wheelradius;
+
+  m_sick = DefineLidar(Frame(params.front_mount_x,
+			     params.front_mount_y,
+			     params.front_mount_theta),
+		       params.front_nscans,
+		       params.front_rhomax,
+		       params.front_phi0,
+		       params.front_phirange,
+		       params.front_channel)->GetScanner();
+  DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   m_hal = GetHAL();
   
   static const double xa = 0.1;
@@ -269,12 +270,17 @@ PrepareAction(double timestep)
 
   {
     m_sick->Update();		// for plotting, actually
-    double rho[nscans];
+    double rho[m_nscans];
     struct ::timespec t0, t1;
-    size_t npm_nscans(nscans);
-    int status(m_hal->scan_get(sick_channel, rho, &npm_nscans, &t0, &t1));
+    size_t npm_nscans(m_nscans);
+    int status(m_hal->scan_get(m_sick_channel, rho, &npm_nscans, &t0, &t1));
     if(0 != status){
       cerr << "npm::HAL::scan_get() failed: " << status << "\n";
+      exit(EXIT_FAILURE);
+    }
+    if(static_cast<size_t>(m_nscans) != npm_nscans){
+      cerr << "nscans mismatch (me: " << m_nscans << " but npm: "
+	   << npm_nscans << ")\n";
       exit(EXIT_FAILURE);
     }
     PVDEBUG("scan...\n");
@@ -300,7 +306,8 @@ PrepareAction(double timestep)
       exit(EXIT_FAILURE);
     }
     double sd, thetad;
-    RobotModel::Actuator2Global(qdl, qdr, wheelbase, wheelradius, sd, thetad);
+    RobotModel::Actuator2Global(qdl, qdr, m_wheelbase, m_wheelradius,
+				sd, thetad);
     PVDEBUG("curspeed %05.2f %05.2f\n", sd, thetad);
     status =
       xcfglue_curspeed_send(sd, thetad, xcfglue_system_timestamp(), "NAV");
@@ -320,7 +327,8 @@ PrepareAction(double timestep)
     }
     PVDEBUG("speedref %05.2f %05.2f\n", sd, thetad);
     double qdl, qdr;
-    RobotModel::Global2Actuator(sd, thetad, wheelbase, wheelradius, qdl, qdr);
+    RobotModel::Global2Actuator(sd, thetad, m_wheelbase, m_wheelradius,
+				qdl, qdr);
     m_hal->speed_set(qdl, qdr);    
   }
   

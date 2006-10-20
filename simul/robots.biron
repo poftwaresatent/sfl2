@@ -9,6 +9,8 @@ Robot biron Biron
 	Option camera_zoom 4
         Option front_mount_x        0.2
         Option front_nscans       181
+        Option model_wheelbase      0.365
+        Option model_wheelradius    0.095
 	Option goalPublisher      goal
 	Option odometryPublisher  odometry
 	Option scanPublisher      scan

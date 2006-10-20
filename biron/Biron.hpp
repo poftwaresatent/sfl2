@@ -49,6 +49,8 @@ protected:
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Goal> m_goal;
   bool m_goal_changed, m_xcfglue_initialized;
+  int m_nscans, m_sick_channel;
+  double m_wheelbase, m_wheelradius;
 };
 
 #endif // BIRON_HPP
