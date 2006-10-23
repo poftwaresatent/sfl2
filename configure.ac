@@ -43,7 +43,7 @@ AC_ARG_WITH(boost,
 oldCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS -I$prefix/include"
 AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
-  AC_MSG_ERROR([can't compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+  AC_MSG_ERROR([cannot compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])], [])
 CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(sfl,
@@ -55,7 +55,7 @@ AC_ARG_WITH(sfl,
 oldCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS -I$prefix/include"
 AC_CHECK_HEADER([sfl/util/numeric.hpp], [], [
-  AC_MSG_ERROR([can't compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+  AC_MSG_ERROR([cannot compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])], [])
 CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(xcf,
@@ -73,7 +73,7 @@ AC_ARG_WITH(xcf,
     oldCPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
     AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
-      AC_MSG_ERROR([can't compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+      AC_MSG_ERROR([cannot compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
     CPPFLAGS="$oldCPPFLAGS"
     AM_CONDITIONAL([BUILD_BIRON], [true])
   ], [
@@ -84,7 +84,10 @@ AC_ARG_WITH(xcf,
 
 AC_ARG_WITH(xcfglue,
   AC_HELP_STRING([--with-xcfglue=PATH], [special XCFGLUE install PATH]),
-  [ if test "x$withval" != "x" ; then
+  [ if test "$WITH_XCF" = "NOXCF_"; then
+      AC_MSG_ERROR([--with-xcfglue requires --with-xcf])
+    fi
+    if test "x$withval" != "x" ; then
       XCF_CPPFLAGS="$XCF_CPPFLAGS -I${withval}/include"
       XCF_LDFLAGS="-lxcfglue $XCF_LDFLAGS -L${withval}/lib"
     fi ], [])
@@ -92,7 +95,7 @@ if test "$WITH_XCF" = "XCF_"; then
   oldCPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
   AC_CHECK_HEADER([xcfwrap/xcfglue.h], [], [
-  AC_MSG_ERROR([can't compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
+  AC_MSG_ERROR([cannot compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
   CPPFLAGS="$oldCPPFLAGS"
 fi
 
