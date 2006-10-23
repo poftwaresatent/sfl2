@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./nepumuk -w expo -l layout.biron -r robots.biron
+./nepumuk -w mini -l layout.biron -r robots.biron

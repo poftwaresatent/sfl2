@@ -37,7 +37,7 @@
 
 
 #define PDEBUG PDEBUG_ERR
-#define PVDEBUG PDEBUG_ERR
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace npm;
@@ -46,95 +46,12 @@ using namespace boost;
 using namespace std;
 
 
-static void init_xcfglue(shared_ptr<RobotDescriptor> descriptor)
-{
-  string name;
-  int status;
-  
-  name = descriptor->GetOption("goalPublisher");
-  if("" == name)
-    name = "NavgoalData";
-  PDEBUG("goal: %s\n", name.c_str());
-  status = xcfglue_goal_publish(name.c_str());
-  if(0 != status){
-    cerr << "xcfglue_goal_publish() failed: " << status << "\n";
-    exit(EXIT_FAILURE);
-  }
-  
-  name = descriptor->GetOption("odometryPublisher");
-  if("" == name)
-    name = "OdometryData";
-  PDEBUG("odometry: %s\n", name.c_str());
-  status = xcfglue_odometry_publish(name.c_str());
-  if(0 != status){
-    cerr << "xcfglue_odometry_publish() failed: " << status << "\n";
-    exit(EXIT_FAILURE);
-  }
-  
-  name = descriptor->GetOption("scanPublisher");
-  if("" == name)
-    name = "LaserData";
-  PDEBUG("scan: %s\n", name.c_str());
-  status = xcfglue_scan_publish(name.c_str());
-  if(0 != status){
-    cerr << "xcfglue_scan_publish() failed: " << status << "\n";
-    exit(EXIT_FAILURE);
-  }
-  
-  name = descriptor->GetOption("curspeedPublisher");
-  if("" == name)
-    name = "SpeedData";
-  PDEBUG("curspeed: %s\n", name.c_str());
-  status = xcfglue_curspeed_publish(name.c_str());
-  if(0 != status){
-    cerr << "xcfglue_curspeed_publish() failed: " << status << "\n";
-    exit(EXIT_FAILURE);
-  }
-  
-  name = descriptor->GetOption("speedrefPublisher");
-  if("" == name)
-    name = "NAV_RelPos_Publisher";
-  PDEBUG("speedref: %s\n", name.c_str());
-  status = xcfglue_speedref_subscribe(name.c_str());
-  while(-2 == status){		// HACK! TODO! XXX! hardcoded magic retval
-    PDEBUG("no publisher called %s, will sleep a bit and retry\n",
-	   name.c_str());
-    usleep(2000000);
-    status = xcfglue_speedref_subscribe(name.c_str());
-  }
-  if(0 != status){
-    cerr << "xcfglue_speedref_subscribe() failed: " << status << "\n";
-    exit(EXIT_FAILURE);
-  }
-  
-  // DON'T FORGET DTOR IF YOU UNCOMMENT THIS!
-  //   name = descriptor->GetOption("positionPublisher");
-  //   if("" == name)
-  //     name = "SlamPos";
-  //   PDEBUG("position: %s\n", name.c_str());
-  //   status = xcfglue_position_subscribe(name.c_str());
-  //   if(0 != status){
-  //     cerr << "xcfglue_position_subscribe() failed: " << status << "\n";
-  //     exit(EXIT_FAILURE);
-  //   }
-}
-
-
-static void cleanup_xcfglue()
-{
-  xcfglue_speedref_endsubscribe();
-  //  xcfglue_position_endsubscribe();
-  xcfglue_goal_endpublish();
-  xcfglue_odometry_endpublish();
-  xcfglue_scan_endpublish();
-  xcfglue_curspeed_endpublish();
-}
-
-
 Biron::
 Biron(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
-    m_goal(new Goal()), m_goal_changed(false), m_xcfglue_initialized(false)
+    m_goal(new Goal()), m_goal_changed(false),
+    m_speedref_status(-42), m_position_status(-42), m_goal_status(-42),
+    m_odometry_status(-42), m_scan_status(-42), m_curspeed_status(-42)
 {
   expoparams params(descriptor);
   m_nscans = params.front_nscans;
@@ -170,8 +87,7 @@ Biron(shared_ptr<RobotDescriptor> descriptor, const World & world)
 Biron::
 ~Biron()
 {
-  if(m_xcfglue_initialized)
-    cleanup_xcfglue();
+  LazyXCFCleanup();
 }
 
 
@@ -235,70 +151,68 @@ GoalReached()
 void Biron::
 PrepareAction(double timestep)
 {
-  if( ! m_xcfglue_initialized){
-    PDEBUG("calling init_xcfglue()\n");
-    init_xcfglue(GetDescriptor());
-    m_xcfglue_initialized = true;
-  }
+  LazyXCFInit();
   
   if(m_goal_changed){
     m_goal_changed = false;
     PDEBUG("new goal %05.2f %05.2f %05.2f %05.2f %05.2f\n", m_goal->X(),
 	   m_goal->Y(), m_goal->Theta(), m_goal->Dr(), m_goal->Dtheta());
-    const int
-      status(xcfglue_goal_send(m_goal->X(), m_goal->Y(), m_goal->Theta(),
-			       m_goal->Dr(), m_goal->Dtheta(),
-			       xcfglue_system_timestamp(), "NAV"));
-    if(0 != status){
-      cerr << "xcfglue_goal_send() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
+    if(0 == m_goal_status){
+      const int
+	status(xcfglue_goal_send(m_goal->X(), m_goal->Y(), m_goal->Theta(),
+				 m_goal->Dr(), m_goal->Dtheta(),
+				 xcfglue_system_timestamp(), "NAV"));
+      if(0 != status)
+	PDEBUG("xcfglue_goal_send() failed: %d\n", status);
     }
+    else
+      PDEBUG("m_goal_status: %d\n", m_goal_status);
   }
   
-  {
-    const Frame & pose(GetServer().GetTruePose());
-    SetPose(pose.X(), pose.Y(), pose.Theta());
+  if(0 == m_odometry_status){
+    const Frame & pose(GetServer().GetTruePose()); // HAX!
     PVDEBUG("odometry %05.2f %05.2f %05.2f\n",
 	    pose.X(), pose.Y(), pose.Theta());
-    const int status(xcfglue_odometry_send(pose.X(), pose.Y(), pose.Theta(),
-					   xcfglue_system_timestamp(), "NAV"));
-    if(0 != status){
-      cerr << "xcfglue_odometry_send() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
-    }
+    const int
+      status(xcfglue_odometry_send(pose.X(), pose.Y(), pose.Theta(),
+				   xcfglue_system_timestamp(), "NAV"));
+    if(0 != status)
+      PDEBUG("xcfglue_odometry_send() failed: %d\n", status);
   }
-
-  {
-    m_sick->Update();		// for plotting, actually
-    double rho[m_nscans];
-    struct ::timespec t0, t1;
-    size_t npm_nscans(m_nscans);
-    int status(m_hal->scan_get(m_sick_channel, rho, &npm_nscans, &t0, &t1));
-    if(0 != status){
-      cerr << "npm::HAL::scan_get() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
-    }
-    if(static_cast<size_t>(m_nscans) != npm_nscans){
-      cerr << "nscans mismatch (me: " << m_nscans << " but npm: "
-	   << npm_nscans << ")\n";
-      exit(EXIT_FAILURE);
-    }
+  else
+    PDEBUG("m_odometry_status: %d\n", m_odometry_status);
+  
+  m_sick->Update();		// for plotting, actually
+  double rho[m_nscans];
+  struct ::timespec t0, t1;
+  size_t npm_nscans(m_nscans);
+  int status(m_hal->scan_get(m_sick_channel, rho, &npm_nscans, &t0, &t1));
+  if(0 != status){
+    cerr << "npm::HAL::scan_get() failed: " << status << "\n";
+    exit(EXIT_FAILURE);
+  }
+  if(static_cast<size_t>(m_nscans) != npm_nscans){
+    cerr << "nscans mismatch (me: " << m_nscans << " but npm: "
+	 << npm_nscans << ")\n";
+    exit(EXIT_FAILURE);
+  }
+  if(0 == m_scan_status){
     PVDEBUG("scan...\n");
     int xcf_nscans(npm_nscans);
     status =
       xcfglue_scan_send(rho, &xcf_nscans, xcfglue_system_timestamp(), "NAV");
-    if(0 != status){
-      cerr << "xcfglue_scan_send() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
-    }
-    if(static_cast<size_t>(xcf_nscans) != npm_nscans){
+    if(0 != status)
+      PDEBUG("xcfglue_scan_send() failed: %d\n", status);
+    else if(static_cast<size_t>(xcf_nscans) != npm_nscans){
       cerr << "nscans mismatch (xcf: " << xcf_nscans << " but npm: "
 	   << npm_nscans << ")\n";
       exit(EXIT_FAILURE);
     }
   }
+  else
+    PDEBUG("m_scan_status: %d\n", m_scan_status);
   
-  {
+  if(0 == m_curspeed_status){
     double qdl, qdr;
     int status(m_hal->speed_get(&qdl, &qdr));
     if(0 != status){
@@ -311,39 +225,148 @@ PrepareAction(double timestep)
     PVDEBUG("curspeed %05.2f %05.2f\n", sd, thetad);
     status =
       xcfglue_curspeed_send(sd, thetad, xcfglue_system_timestamp(), "NAV");
-    if(0 != status){
-      cerr << "xcfglue_curspeed_send() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
-    }
+    if(0 != status)
+      PDEBUG("xcfglue_curspeed_send() failed: %d\n", status);
   }
+  else
+    PDEBUG("m_curspeed_status: %d\n", m_curspeed_status);      
   
-  {
+  if(0 == m_speedref_status){
     double sd, thetad;
     unsigned long long tstamp;
     const int status(xcfglue_speedref_receive(&sd, &thetad, &tstamp));
     if(0 != status){
-      cerr << "xcfglue_speedref_receive() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
+      PDEBUG("xcfglue_speedref_receive() failed: %d\n", status);
+      m_hal->speed_set(0, 0);
     }
-    PVDEBUG("speedref %05.2f %05.2f\n", sd, thetad);
-    double qdl, qdr;
-    RobotModel::Global2Actuator(sd, thetad, m_wheelbase, m_wheelradius,
-				qdl, qdr);
-    m_hal->speed_set(qdl, qdr);    
+    else{
+      PVDEBUG("speedref %05.2f %05.2f\n", sd, thetad);
+      double qdl, qdr;
+      RobotModel::Global2Actuator(sd, thetad, m_wheelbase, m_wheelradius,
+				  qdl, qdr);
+      m_hal->speed_set(qdl, qdr);
+    }
+  }
+  else{
+    PVDEBUG("m_speedref_status: %d\n", m_speedref_status);
+    m_hal->speed_set(0, 0);
   }
   
-  //   {
-  //     double x, y, theta;
-  //     unsigned long long tstamp;
-  //     const int status(xcfglue_position_receive(&x, &y, &theta, &tstamp));
-  //     if(0 != status){
-  //       cerr << "xcfglue_position_receive() failed: " << status << "\n";
-  //       exit(EXIT_FAILURE);
-  //     }
-  //     const int status(m_hal->odometry_set(x, y, theta, 1, 1, 1, 0, 0, 0));
-  //     if(0 != status){
-  //       cerr << "npm::HAL::odometry_set() failed: " << status << "\n";
-  //       exit(EXIT_FAILURE);
-  //     }
-  //   }
+  if(0 == m_position_status){
+    double x, y, theta;
+    unsigned long long tstamp;
+    int status(xcfglue_position_receive(&x, &y, &theta, &tstamp));
+    if(0 != status){
+      cerr << "xcfglue_position_receive() failed: " << status << "\n";
+      exit(EXIT_FAILURE);
+    }
+    status = m_hal->odometry_set(x, y, theta, 1, 1, 1, 0, 0, 0);
+    if(0 != status){
+      cerr << "npm::HAL::odometry_set() failed: " << status << "\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+  else
+    PVDEBUG("m_position_status: %d\n", m_position_status);      
+}
+
+
+void Biron::
+LazyXCFInit()
+{
+  if(0 != m_goal_status){
+    string name;
+    name = GetDescriptor()->GetOption("goalPublisher");
+    if("" == name)
+      name = "NavgoalData";
+    m_goal_status = xcfglue_goal_publish(name.c_str());
+    if(0 != m_goal_status)
+      PDEBUG("xcfglue_goal_publish() on %s failed with %d\n",
+	     name.c_str(), m_goal_status);
+    else
+      PDEBUG("goal: %s\n", name.c_str());
+  }
+  
+  if(0 != m_odometry_status){
+    string name;
+    name = GetDescriptor()->GetOption("odometryPublisher");
+    if("" == name)
+      name = "OdometryData";
+    m_odometry_status = xcfglue_odometry_publish(name.c_str());
+    if(0 != m_odometry_status)
+      PDEBUG("xcfglue_odometry_publish() on %s failed with %d\n",
+	     name.c_str(), m_odometry_status);
+    else
+      PDEBUG("odometry: %s\n", name.c_str());
+  }
+  
+  if(0 != m_scan_status){
+    string name;
+    name = GetDescriptor()->GetOption("scanPublisher");
+    if("" == name)
+      name = "LaserData";
+    m_scan_status = xcfglue_scan_publish(name.c_str());
+    if(0 != m_scan_status)
+      PDEBUG("xcfglue_scan_publish() on %s failed with %d\n",
+	     name.c_str(), m_scan_status);
+    else
+      PDEBUG("scan: %s\n", name.c_str());
+  }
+  
+  if(0 != m_curspeed_status){
+    string name;
+    name = GetDescriptor()->GetOption("curspeedPublisher");
+    if("" == name)
+      name = "SpeedData";
+    m_curspeed_status = xcfglue_curspeed_publish(name.c_str());
+    if(0 != m_curspeed_status)
+      PDEBUG("xcfglue_curspeed_publish() on %s failed with %d\n",
+	     name.c_str(), m_curspeed_status);
+    else
+      PDEBUG("curspeed: %s\n", name.c_str());
+  }
+  
+  if(0 != m_speedref_status){
+    string name;
+    name = GetDescriptor()->GetOption("speedrefPublisher");
+    if("" == name)
+      name = "NAV_RelPos_Publisher";
+    m_speedref_status = xcfglue_speedref_subscribe(name.c_str());
+    if(0 != m_speedref_status)
+      PDEBUG("xcfglue_speedref_subscribe() on %s failed with %d\n",
+	     name.c_str(), m_speedref_status);
+    else
+      PDEBUG("speedref: %s\n", name.c_str());
+//     while(-2 == status){
+//       PDEBUG("no publisher called %s, will sleep a bit and retry\n",
+// 	     name.c_str());
+//       usleep(2000000);
+//       status = xcfglue_speedref_subscribe(name.c_str());
+//     }
+  }
+  
+  if(0 != m_position_status){
+    string name;
+    name = GetDescriptor()->GetOption("positionPublisher");
+    if("" == name)
+      name = "SlamPos";
+    m_position_status = xcfglue_position_subscribe(name.c_str());
+    if(0 != m_position_status)
+      PDEBUG("xcfglue_position_subscribe() on %s failed with %d\n",
+	     name.c_str(), m_position_status);
+    else
+      PDEBUG("position: %s\n", name.c_str());
+  }
+}
+
+
+void Biron::
+LazyXCFCleanup()
+{
+  if(0 == m_speedref_status) xcfglue_speedref_endsubscribe();
+  if(0 == m_position_status) xcfglue_position_endsubscribe();
+  if(0 == m_goal_status)     xcfglue_goal_endpublish();
+  if(0 == m_odometry_status) xcfglue_odometry_endpublish();
+  if(0 == m_scan_status)     xcfglue_scan_endpublish();
+  if(0 == m_curspeed_status) xcfglue_curspeed_endpublish();
 }

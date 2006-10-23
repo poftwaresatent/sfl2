@@ -45,12 +45,17 @@ public:
   virtual bool GoalReached();
   
 protected:
+  void LazyXCFInit();
+  void LazyXCFCleanup();
+  
   boost::shared_ptr<npm::HAL> m_hal;
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Goal> m_goal;
-  bool m_goal_changed, m_xcfglue_initialized;
+  bool m_goal_changed;
   int m_nscans, m_sick_channel;
   double m_wheelbase, m_wheelradius;
+  int m_speedref_status, m_position_status, m_goal_status,
+    m_odometry_status, m_scan_status, m_curspeed_status;
 };
 
 #endif // BIRON_HPP
