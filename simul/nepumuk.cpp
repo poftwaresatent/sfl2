@@ -29,6 +29,7 @@
 #include <npm/common/wrap_glut.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <iostream>
+#include <signal.h>
 
 
 using namespace npm;
@@ -44,14 +45,16 @@ public:
     robot_config_filename("robots.config"),
     layout_config_filename("layout.config"),
     world_name("stage"),
-    threaded(false)
+    //    threaded(false),
+    no_glut(false)
   {
   }
   
   string robot_config_filename;
   string layout_config_filename;
   string world_name;
-  bool threaded;
+  //  bool threaded;
+  bool no_glut;
 };
 
 
@@ -69,13 +72,27 @@ static void draw();
 static void keyboard(unsigned char key, int x, int y);
 static void timer(int handle);
 static void cleanup();
+static void sighandle(int signum);
 
 
 int main(int argc, char ** argv)
 {
-  ////  atexit(cleanup);
+  atexit(cleanup);
+  if(signal(SIGINT, sighandle) == SIG_ERR){
+    perror("signal(SIGINT) failed");
+    exit(EXIT_FAILURE);
+  }
+  if(signal(SIGHUP, sighandle) == SIG_ERR){
+    perror("signal(SIGHUP) failed");
+    exit(EXIT_FAILURE);
+  }
+  if(signal(SIGTERM, sighandle) == SIG_ERR){
+    perror("signal(SIGTERM) failed");
+    exit(EXIT_FAILURE);
+  }
+  
   parse_options(argc, argv);
-
+  
   shared_ptr<World> world(World::Create(params.world_name));
   if( ! world){
     cerr << "Invalid World \"" << params.world_name << "\"\n";
@@ -88,13 +105,22 @@ int main(int argc, char ** argv)
   simulator->InitLayout(params.layout_config_filename);
   simulator->Init();
   
-  if(params.threaded){
-    update_thread.reset(new SimulatorUpdateThread("nepumuk", simulator));
-    update_thread->Start(timestep_usec);
-  }
+//   if(params.threaded){
+//     update_thread.reset(new SimulatorUpdateThread("nepumuk", simulator));
+//     update_thread->Start(timestep_usec);
+//   }
   
-  init_glut(argc, argv, 700, 500);
-  glutMainLoop();
+  if(params.no_glut){
+    simulator->SetContinuous();
+    while(true){
+      simulator->Idle();
+      usleep(timestep_usec);
+    }
+  }
+  else{
+    init_glut(argc, argv, 700, 500);
+    glutMainLoop();
+  }
 }
 
 
@@ -166,9 +192,12 @@ void parse_options(int argc,
 			 'r', "robot", "Name of the robot config file."));
   ilock.Add(new StringCB(params.world_name,
 			 'w', "world", "Name of the world (expo|mini|tta)."));
+//   ilock.
+//     Add(new Interlock::BoolCallback(params.threaded, 't', "threaded",
+// 				    "Use separate GLUT thread."));
   ilock.
-    Add(new Interlock::BoolCallback(params.threaded, 't', "threaded",
-				    "Use separate GLUT thread."));
+    Add(new Interlock::BoolCallback(params.no_glut, 'n', "no-glut",
+				    "Disable graphic output."));
   
   ilock.UsageMessage(cerr, string(argv[0]) + " <options>");
   try {
@@ -187,4 +216,11 @@ void cleanup()
   update_thread.reset();
   cerr << "cleanup: resetting simulator\n";
   simulator.reset();
+}
+
+
+void sighandle(int signum)
+{
+  cerr << "signal " << signum << ": exit\n";
+  exit(EXIT_SUCCESS);
 }

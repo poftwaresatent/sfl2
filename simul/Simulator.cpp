@@ -38,6 +38,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include <sfl/util/pdebug.hpp>
+#define PDEBUG PDEBUG_ERR
+#define PVDEBUG PDEBUG_OFF
+
 
 using namespace npm;
 using namespace sfl;
@@ -329,6 +333,7 @@ Draw()
 bool Simulator::
 Idle()
 {
+  PVDEBUG("Hello!\n");
   bool retval(false);
   m_mutex->Lock();
   if(m_step || m_continuous){
@@ -355,6 +360,8 @@ UpdateAllSensors()
 void Simulator::
 UpdateRobots()
 {
+  PVDEBUG("updating robots...\n");
+  
   Mutex::sentry sentry(m_mutex);
 
   UpdateAllSensors();
@@ -412,6 +419,17 @@ Keyboard(unsigned char key,
     cout << "\nthanks, see you!\n";
     exit(EXIT_SUCCESS);
   }
+}
+
+
+void Simulator::
+SetContinuous(bool printscreen)
+{
+  m_mutex->Lock();
+  m_step = false;
+  m_continuous = true;
+  m_printscreen = printscreen;
+  m_mutex->Unlock();
 }
 
 

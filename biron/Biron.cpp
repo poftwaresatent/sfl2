@@ -37,7 +37,7 @@
 
 
 #define PDEBUG PDEBUG_ERR
-#define PVDEBUG PDEBUG_OFF
+#define PVDEBUG PDEBUG_ERR
 
 
 using namespace npm;

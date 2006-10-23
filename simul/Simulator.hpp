@@ -53,6 +53,9 @@ public:
   void Draw();
   void Keyboard(unsigned char key, int x, int y);
   
+  void SetContinuous(bool printscreen = false);
+  
+  
 private:
   friend class SimulatorUpdateThread;
   
