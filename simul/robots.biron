@@ -11,12 +11,12 @@ Robot biron Biron
         Option front_nscans       181
         Option model_wheelbase      0.365
         Option model_wheelradius    0.095
-	Option goalPublisher      goal
-	Option odometryPublisher  odometry
-	Option scanPublisher      scan
-	Option curspeedPublisher  curspeed 
-	Option speedrefPublisher  speedref
-	Option positionPublisher  position
+	Option goalPublisher      GOTO_POS
+	Option odometryPublisher  OdometryData
+	Option scanPublisher      LaserData
+	Option curspeedPublisher  SpeedData 
+	Option speedrefPublisher  NAV_RelPos_Publisher
+	Option positionPublisher  SlamPos
 
 ## Robot visitor visitor0
 ## 	Pose  7  5.5  0

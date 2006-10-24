@@ -260,11 +260,12 @@ PrepareAction(double timestep)
       cerr << "xcfglue_position_receive() failed: " << status << "\n";
       exit(EXIT_FAILURE);
     }
-    status = m_hal->odometry_set(x, y, theta, 1, 1, 1, 0, 0, 0);
-    if(0 != status){
-      cerr << "npm::HAL::odometry_set() failed: " << status << "\n";
-      exit(EXIT_FAILURE);
-    }
+    PDEBUG("got slam pos: %05.2f %05.2f %05.2f\n", x, y, theta);
+// //     status = m_hal->odometry_set(x, y, theta, 1, 1, 1, 0, 0, 0);
+// //     if(0 != status){
+// //       cerr << "npm::HAL::odometry_set() failed: " << status << "\n";
+// //       exit(EXIT_FAILURE);
+// //     }
   }
   else
     PVDEBUG("m_position_status: %d\n", m_position_status);      
