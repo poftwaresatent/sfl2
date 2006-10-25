@@ -26,10 +26,19 @@
 #include "HAL.hpp"
 #include "Scan.hpp"
 #include "Timestamp.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/Frame.hpp>
 #include <boost/scoped_array.hpp>
 #include <cmath>
+
+
+#ifdef DEBUG
+# define PDEBUG PDEBUG_ERR
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
+#endif // DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace boost;
@@ -125,6 +134,8 @@ namespace sfl {
     int status(m_hal->scan_get(hal_channel, rho.get(), &actual_nscans,
 			       &t0, &t1));
     if(0 != status){
+      PDEBUG("m_hal->scan_get() failed with status %d on channel %d\n",
+	     status, hal_channel);
       m_mutex->Lock();
       m_acquisition_ok = false;
       m_mutex->Unlock();
@@ -132,14 +143,19 @@ namespace sfl {
     }
     if(actual_nscans != nscans){
       if(strict_nscans_check){
+	PDEBUG("nscans mismatch: wanted %zd but got %zd on channel %d\n",
+	       nscans, actual_nscans, hal_channel);
 	m_mutex->Lock();
 	m_acquisition_ok = false;
 	m_mutex->Unlock();
 	return -42;
       }
-      else
+      else{
+	PVDEBUG("padding with rhomax from %zd to %zd on channel %d\n",
+		actual_nscans, nscans, hal_channel);
 	for(size_t ii(actual_nscans); ii < nscans; ++ii)
 	  rho[ii] = rhomax;
+      }
     }
     
     double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
@@ -147,6 +163,7 @@ namespace sfl {
     status = m_hal->odometry_get(&foo, &x, &y, &theta, &sxx, &syy, &stt,
 				 &sxy, &sxt, &syt);
     if(0 != status){
+      PDEBUG("m_hal->odometry_get() failed with status %d\n", status);
       m_mutex->Lock();
       m_acquisition_ok = false;
       m_mutex->Unlock();

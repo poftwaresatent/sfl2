@@ -29,8 +29,13 @@
 #endif
 
 
+//////////////////////////////////////////////////
+// privileged access for C++ code
+
 #ifdef __cplusplus
+
 # include <boost/shared_ptr.hpp>
+
 namespace sfl {
   class HAL;
   class Scanner;
@@ -40,6 +45,7 @@ namespace sfl {
   class BubbleBand;
   class Odometry;
 }
+
 namespace sfl_cwrap {
   boost::shared_ptr<sfl::HAL>           get_HAL(int handle);
   boost::shared_ptr<sfl::Scanner>       get_Scanner(int handle);
@@ -49,6 +55,14 @@ namespace sfl_cwrap {
   boost::shared_ptr<sfl::BubbleBand>    get_BubbleBand(int handle);
   boost::shared_ptr<sfl::Odometry>      get_Odometry(int handle);
 }
+
+#endif // __cplusplus
+
+
+//////////////////////////////////////////////////
+// opaque-handle access for C (and C++) code
+
+#ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
   

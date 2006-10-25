@@ -29,6 +29,11 @@
 namespace sfl_cwrap {
   
   
+  /**
+     \note Totally exaggerated to use random IDs, but it was fun to
+     implement. If this ever becomes a portability problem, just use
+     monotonically incrementing IDs.
+  */
   class IdPool
   {
   private:

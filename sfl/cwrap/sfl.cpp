@@ -40,7 +40,7 @@ using namespace std;
 
 
 namespace sfl_cwrap {
-  
+
 
   static Handlemap<HAL>           HAL_map;
   static Handlemap<Scanner>       Scanner_map;
@@ -50,31 +50,31 @@ namespace sfl_cwrap {
   static Handlemap<BubbleBand>    BubbleBand_map;
   static Handlemap<Odometry>      Odometry_map;
 
-  
+
   shared_ptr<HAL> get_HAL(int handle)
   { return HAL_map.Find(handle); }
-  
-  
+
+
   shared_ptr<Scanner> get_Scanner(int handle)
   { return Scanner_map.Find(handle); }
-  
-  
+
+
   shared_ptr<Multiscanner> get_Multiscanner(int handle)
   { return Multiscanner_map.Find(handle); }
 
-  
+
   shared_ptr<RobotModel> get_RobotModel(int handle)
   { return RobotModel_map.Find(handle); }
 
-  
+
   shared_ptr<DynamicWindow> get_DynamicWindow(int handle)
   { return DynamicWindow_map.Find(handle); }
 
-  
+
   shared_ptr<BubbleBand> get_BubbleBand(int handle)
   { return BubbleBand_map.Find(handle); }
 
-  
+
   shared_ptr<Odometry> get_Odometry(int handle)
   { return Odometry_map.Find(handle); }
 
@@ -83,11 +83,11 @@ namespace sfl_cwrap {
 
 using namespace sfl_cwrap;
 
-  
+
 int sfl_create_HAL(struct cwrap_hal_s * cwrap_hal)
 { return HAL_map.InsertRaw(new cwrapHAL(cwrap_hal)); }
-  
-  
+
+
 int sfl_create_Scanner(int hal_handle, int hal_channel,
 		       double mount_x, double mount_y, double mount_theta,
 		       int nscans, double rhomax, double phi0,
@@ -109,8 +109,8 @@ int sfl_create_Scanner(int hal_handle, int hal_channel,
 			  Frame(mount_x, mount_y, mount_theta),
 			  nscans, rhomax, phi0, phirange, mutex));
 }
-  
-  
+
+
 int sfl_create_Multiscanner(int odometry_handle,
 			    int * scanner_handle, int nscanners)
 {
@@ -126,8 +126,8 @@ int sfl_create_Multiscanner(int odometry_handle,
   }
   return Multiscanner_map.Insert(ms);
 }
-  
-  
+
+
 int sfl_create_BubbleBand(int RobotModel_handle,
 			  int Odometry_handle,
 			  int Multiscanner_handle,
@@ -150,8 +150,8 @@ int sfl_create_BubbleBand(int RobotModel_handle,
   return BubbleBand_map.InsertRaw(new BubbleBand(*rm, *odom, *mscan,
 						 parms, rwlock));
 }
-  
-  
+
+
 int sfl_create_RobotModel(double security_distance,
 			  double wheelbase, double wheelradius,
 			  double qd_max, double qdd_max,
@@ -169,8 +169,8 @@ int sfl_create_RobotModel(double security_distance,
   hull->AddPolygon(poly);
   return RobotModel_map.InsertRaw(new RobotModel(parms, hull));
 }
-  
-  
+
+
 int sfl_create_DynamicWindow(int RobotModel_handle,
 			     int MotionController_handle,
 			     int dimension,
@@ -229,28 +229,28 @@ int sfl_create_Odometry(int HAL_handle)
 
 void sfl_destroy_HAL(int handle)
 { HAL_map.Erase(handle); }
-  
-  
+
+
 void sfl_destroy_Scanner(int handle)
 { Scanner_map.Erase(handle); }
-  
-  
+
+
 void sfl_destroy_RobotModel(int handle)
 { RobotModel_map.Erase(handle); }
-  
-  
+
+
 void sfl_destroy_DynamicWindow(int handle)
 { DynamicWindow_map.Erase(handle); }
-  
-  
+
+
 void sfl_destroy_BubbleBand(int handle)
 { BubbleBand_map.Erase(handle); }
-  
-  
+
+
 void sfl_destroy_Odometry(int handle)
 { Odometry_map.Erase(handle); }
-  
-  
+
+
 void sfl_destroy_Multiscanner(int handle)
 { Multiscanner_map.Erase(handle); }
 
