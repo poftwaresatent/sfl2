@@ -2,7 +2,6 @@ README for sunflower
 
 
 For the impatient:
- optional:      $ ./autogen.sh
                 $ mkdir build
                 $ cd build
                 $ ../configure
@@ -10,8 +9,8 @@ For the impatient:
  maybe as root: $ make install
 
 Documentation (if not included):
- in build dir:  $ doxygen Doxyfile
-                $ firefox doc/html/index.html &
+ in build dir:  $ make doc
+                open doc/html/index.html in your favorite browser
 
 
 ------------------------------------------------------------
@@ -25,9 +24,9 @@ The C-wrapper code and autotools build files are
 Copyright (C) 2005, LAAS/CNRS. All rights reserved.
 
 Maintainer: Roland Philippsen <roland dot philippsen at gmx dot net>
-Authors:    Viet Nguyen <viet dot nguyen at epfl ch>
-            Frederic Pont <frederic dot pont at epfl dot ch>
-            Agostino Martinelli <agostino dot martinelli at epfl dot ch>
+Authors:    Viet Nguyen <viet dot nguyen at mavt dot ethz dot ch>
+            Frederic Pont <frederic dot pont at mavt dot ethz dot ch>
+            Agostino Martinelli <agostino dot martinelli at inrialpes dot fr>
 
 The sunflower library is released under the GNU General Public
 License. The C-wrapper and autotools files are released under the new
@@ -61,16 +60,23 @@ way of building is in a separate directory:
 
  $ mkdir build
  $ cd build
- $ ../configure --prefix=YOUR_PREFERRED_INSTALLATION_PATH
+ $ ../configure --prefix=/install/path
  $ make
  $ make install
 
-Note that the last command might require root privileges depending on
-the permissions of YOUR_PREFERRED_INSTALLATION_PATH.
+Note that the last command might require root privileges.
 
-If you have XCF [4] installed on your system, you probably want to
-pass the "--with-xcf" argument to the configure script as well. This
-will include the optional XCF HAL from the contrib/ directory.
+Several custom configure options exist:
+  --enable-debug       switches on debug options when you use GCC
+  --enable-pedantic    switches on pedantic warnings when you use GCC
+  --with-boost=PATH    lets you specify a non-standard location of the
+                       required boost library
+  --with-xcf[=PATH]    enables building of optional XCF [4] support (and
+                       you can specify the XCF installation
+                       directory)... however, this is outdated
+  --with-robox[=PATH]  enables building of optional ASL-specific
+                       support for our mobile robots of the Robox
+		       family (typically used when crosscompiling)
 
 
 3. DOCUMENTATION
@@ -104,8 +110,9 @@ bband/
 
 gplan/
  An early attempt at generalized grid-based path planners, only useful
- for it's implementation of the NF1 planner. (The E-Star project
- provides a more powerful approach but has not been released yet.)
+ for it's implementation of the NF1 planner. (The E-Star [5] project
+ provides a more powerful approach but has not been integrated with
+ libsunflower yet.)
 
 expo/
  The integrated path planning and obstacle avoidance system used
@@ -115,11 +122,10 @@ expo/
 cwrap/
  A C-wrapper for the sunflower library that allows to integrate it's
  obstacle avoidance capavilities in non-C++ code.
- THIS PART OF THE PROJECT IS EXPERIMENTAL!
 
 contrib/
  Code that is useful in specific settings, such as on the Biron robot
- at Bielefeld University.
+ at Bielefeld University or on Robox at the Autonomous Systems Lab.
 
 
 5. REFERENCES
@@ -139,3 +145,5 @@ contrib/
     <http://www.doxygen.org>
 
 [4] XCF Integration Architecture <http://xcf.sourceforge.net/>
+
+[5] E-Star Interpolated Graph Replanner <http://estar.sourceforge.net/>

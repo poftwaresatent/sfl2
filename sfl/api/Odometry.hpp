@@ -79,8 +79,8 @@ namespace sfl {
      </ul>
      
      \todo (Optionally) limit the size of the pose history, and use a
-     more efficient implementation (e.g. fixed-length array instead of
-     a STL map).
+     more efficient implementation (eg fixed-length array instead of
+     STL map).
   */
   class Odometry
   {

@@ -47,9 +47,6 @@ namespace sfl {
   }
   
   
-  /**
-     \todo hacked m_bubble_factory.Produce()
-  */
   BubbleList::
   BubbleList(BubbleList & original):
     m_shortpath(original.m_shortpath),

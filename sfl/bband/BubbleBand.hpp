@@ -65,8 +65,9 @@ namespace sfl {
   
   
   /**
-     \todo Some of the constant fields should be moved to BubbleList
-     or the Parameters object.
+     High-level interface to the (quite simplified) "elastic band", a
+     path representation that smoothes the plan and adapts it to
+     changes in the environment.
   */
   class BubbleBand
   {
@@ -84,7 +85,6 @@ namespace sfl {
 	       BubbleList::Parameters parameters,
 	       boost::shared_ptr<RWlock> rwlock);
     
-    /** \todo Use smart pointers, AFTER figuring out all implications. */
     ~BubbleBand();
     
     void Update();
@@ -126,10 +126,14 @@ namespace sfl {
         
     const BubbleList::Parameters parameters;
     const double robot_radius;
-    const double robot_diameter; // for BubbleList
-    const double ignore_radius; // for BubbleList
-    const double deletion_diameter; // for BubbleList
-    const double addition_diameter; // for BubbleList
+    /** \note for BubbleList */
+    const double robot_diameter;
+    /** \note for BubbleList */
+    const double ignore_radius;
+    /** \note for BubbleList */
+    const double deletion_diameter;
+    /** \note for BubbleList */
+    const double addition_diameter;
     
   private:
     friend class BubbleBandThread;
@@ -157,10 +161,13 @@ namespace sfl {
     BubbleList * m_active_blist;
     const double m_reaction_radius;
     Goal m_global_goal;
-    double m_nf1_goal_radius;	// used by replan handler to init NF1
+    
+    /** \note used by ReplanHandler to init NF1 */
+    double m_nf1_goal_radius;
 
-    /** \todo unused? (maybe when tracking moving targets...) */
-    double m_min_ignore_distance; // used by replan handler to init bubbles
+    /** \note used by ReplanHandler to init bubbles */
+    double m_min_ignore_distance;
+    
     bool m_replan_request;
     state_t m_state;
     boost::shared_ptr<RWlock> m_rwlock;

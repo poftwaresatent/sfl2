@@ -80,7 +80,7 @@ namespace sfl {
     /** \return true if the list is empty. */
     bool Empty() const;
     
-    /** \todo Used for plotting only. */
+    /** \note Used for plotting only. */
     const Bubble * Head() const { return m_head; }
     
     
