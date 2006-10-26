@@ -1,6 +1,7 @@
 Aim: Release 0.9
      - update email: viet, fred, ago (code and homepage)
      - mention nepumuk (README and homepage)
+     - add some people to the user (and devel?) mailing list
 
 Aim: Release 1.0
      - use Automake/libtool
@@ -14,3 +15,7 @@ Aim: Tweaks, cleanups, features
      - add update threads to separate ReplanHandler and BubbleFactory
      - UGLY BBAND/BFACTORY, NEED TO LIBERATE MORE TICKS FOR READERS
      - resurrect cppunit code in api/test
+     - plugin support for interfaces in api/ (and elsewhere), turn
+       them into pure abstract classes
+     - think about shared memory features (maybe via plugin
+       mechanism?)
