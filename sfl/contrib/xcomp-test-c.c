@@ -7,4 +7,5 @@ int main(int argc, char ** argv)
 	  argv[0], argc);
   for(ii = 0; ii < argc; ++ii)
     fprintf(stdout, "  %d is %s\n", ii, argv[ii]);
+  return 0;
 }
