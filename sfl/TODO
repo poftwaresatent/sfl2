@@ -1,8 +1,3 @@
-Aim: Release 0.9
-     - update email: viet, fred, ago (homepage)
-     - mention nepumuk (homepage)
-     - add some people to the user (and devel?) mailing list
-
 Aim: Release 1.0
      - use Automake/libtool
 
