@@ -1,33 +1,16 @@
-Aim: Less dependent on exact execution period
+Aim: Release 0.9
+     - update email: viet, fred, ago (code and homepage)
+     - mention nepumuk (README and homepage)
+
+Aim: Release 1.0
+     - use Automake/libtool
+
+Aim: Tweaks, cleanups, features
      - use measured timestep to predict pose in DWA
-     - enable non-lookup mode that takes into account
-       the actual time since last call
-       ==> actually trivial with recent refactorings, mod -1 urgency
-
-Aim: Cleanup for external use
-     - Make use of BubbleFactory optional (but KEEP it, make it a
-       configurable behavior)
-     - Make use of (compressed) lookup optional in DWA (but KEEP it,
+     - make use of (compressed) lookup optional in DWA (but KEEP it,
        make it configurable behavior)
-       ==> actually trivial with recent refactorings, mod -1 urgency
-
-Aim: Port to OpenRobots
-     - Extract multi-tasking stuff from XOberon code (ie mutexes and
-       initialization of threads), priorities:
-         - make use of mutexes configurable
-         DONE - round-robin mutexed laser scans
-         DONE - mutexed odometry
-         DONE - mutexed motion controller
-         - multi-threaded mutexed nf1/bband/dwa
-     - Test multithreading: add update threads to
-       DONE - Scanner
-       DONE - Odometry
-       DONE - MotionController
-       DONE - BubbleBand (maybe later separate ReplanHandler and
-              BubbleFactory)
-URGENT: ugly bband/bfactory, need to liberate more ticks for readers!!!
-       - DynamicWindow and/or expo::MotionPlanner
-         ==> will stay "main push" thread for the moment...
-
-Aim: Make self-testing
-     - Resurrect cppunit code in api/test
+     - make use of mutexes configurable
+     - multi-threaded mutexed nf1/bband/dwa
+     - add update threads to separate ReplanHandler and BubbleFactory
+     - UGLY BBAND/BFACTORY, NEED TO LIBERATE MORE TICKS FOR READERS
+     - resurrect cppunit code in api/test
