@@ -20,7 +20,7 @@ Copyright (C) 2004, Autonomous Systems Lab,
 		    (Swiss Federal Institute of Technology).
 		    All rights reserved.
 
-The C-wrapper code and autotools build files are
+Some stuff (mostly the C-wrapper code) is
 Copyright (C) 2005, LAAS/CNRS. All rights reserved.
 
 Maintainer: Roland Philippsen <roland dot philippsen at gmx dot net>
@@ -29,8 +29,8 @@ Authors:    Viet Nguyen <viet dot nguyen at mavt dot ethz dot ch>
             Agostino Martinelli <agostino dot martinelli at inrialpes dot fr>
 
 The sunflower library is released under the GNU General Public
-License. The C-wrapper and autotools files are released under the new
-BSD license. See the COPYRIGHT, LICENSE.GPL, and LICENSE.BSD files for
+License. The C-wrapper and some other files are released under the new
+BSD license. See the COPYRIGHT, COPYING, and LICENSE.BSD files for
 more information.
 ------------------------------------------------------------
 
