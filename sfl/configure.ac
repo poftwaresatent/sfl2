@@ -60,7 +60,10 @@ dnl any libs??? LDFLAGS="$LDFLAGS -L${withval}/lib -lWHATEVER"
     CPPFLAGS="$oldCPPFLAGS" ],
   [ AM_CONDITIONAL([ROBOX], [false]) ])
 
-AC_DISABLE_STATIC
+case $host_os in
+  darwin*) AC_DISABLE_SHARED;;
+  *)       AC_DISABLE_STATIC;;
+esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
