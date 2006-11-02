@@ -1,3 +1,2 @@
-CPPFLAGS=          @CPPFLAGS@ -I@prefix@/include
-noinst_LIBRARIES=  liblaas.a
-liblaas_a_SOURCES= LAAS.cpp
+noinst_LTLIBRARIES=  liblaas.la
+liblaas_la_SOURCES= LAAS.cpp

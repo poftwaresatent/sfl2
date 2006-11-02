@@ -1,6 +1,5 @@
-CPPFLAGS=            @CPPFLAGS@ -I@prefix@/include
-noinst_LIBRARIES=    libcommon.a
-libcommon_a_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
+noinst_LTLIBRARIES=    libcommon.la
+libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      GoalInstanceDrawing.cpp OdometryDrawing.cpp \
                      BBox.cpp WorldDrawing.cpp Manageable.cpp Sharp.cpp \
                      TrajectoryDrawing.cpp HoloDriveDrawing.cpp Object.cpp \

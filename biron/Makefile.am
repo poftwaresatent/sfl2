@@ -1,9 +1,9 @@
 if ! BUILD_BIRON
   BUILT_SOURCES=xcf_config_error
 endif
-CPPFLAGS=          @CPPFLAGS@ @XCF_CPPFLAGS@ -I@prefix@/include
-noinst_LIBRARIES=  libbiron.a
-libbiron_a_SOURCES= Biron.cpp
+CPPFLAGS+= @XCF_CPPFLAGS@
+noinst_LTLIBRARIES=  libbiron.la
+libbiron_la_SOURCES= Biron.cpp
 
 xcf_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"
