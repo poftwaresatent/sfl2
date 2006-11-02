@@ -6,3 +6,6 @@ includedir=          @includedir@/cwrap
 check_PROGRAMS=      testcwrap
 testcwrap_SOURCES=   testcwrap.cpp
 testcwrap_LDADD=     ../libsunflower.la
+
+../libsunflower.la:
+	$(MAKE) -C ..

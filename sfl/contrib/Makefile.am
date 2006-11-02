@@ -16,3 +16,6 @@ tpthread_SOURCES=                tpthread.cpp
 xcomp_test_c___boost_SOURCES=    xcomp-test-c++-boost.cpp
 LDADD=                           ../libsunflower.la
 xcomp_test_c_LDADD=              -lstdc++
+
+../libsunflower.la:
+	$(MAKE) -C ..
