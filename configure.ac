@@ -14,7 +14,7 @@ case $host_os in
   darwin*) AC_MSG_RESULT([detected Darwin (OS X)])
            OSCPPFLAGS="-DOSX"
            OSCXXFLAGS="-Wno-long-double"
-	   AC_SUBST(GLUTLIBS, "-framework OpenGL -framework GLUT");;
+	   AC_SUBST(GLUTLIBS, "-framework OpenGL -framework GLUT -lobjc");;
   *)       AC_MSG_ERROR([unknown host_os $host_os, update configure.ac]);;
 esac
 CPPFLAGS="$CPPFLAGS $OSCPPFLAGS"
