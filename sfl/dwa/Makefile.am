@@ -5,4 +5,4 @@ libdwa_la_SOURCES=  SpeedObjective.cpp Objective.cpp Lookup.cpp \
 include_HEADERS=    SpeedObjective.hpp Lookup.hpp Objective.hpp \
                     HeadingObjective.hpp DistanceObjective.hpp \
                     DynamicWindow.hpp
-includedir=         @includedir@/dwa
+includedir=         @includedir@/sfl/dwa

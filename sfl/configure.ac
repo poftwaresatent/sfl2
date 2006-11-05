@@ -68,7 +68,6 @@ AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
 CPPFLAGS="$CPPFLAGS -I${prefix}/include"
-includedir="${includedir}/sfl"
 
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)

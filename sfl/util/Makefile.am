@@ -4,4 +4,4 @@ libutil_la_SOURCES= Point.cpp Ray.cpp Frame.cpp Line.cpp Pthread.cpp \
 include_HEADERS=    Point.hpp array2d.hpp functors.hpp Frame.hpp \
                     vec2d.hpp Pthread.hpp Ray.hpp Line.hpp pdebug.hpp \
                     Polygon.hpp Hull.hpp numeric.hpp
-includedir=         @includedir@/util
+includedir=         @includedir@/sfl/util

@@ -1,7 +1,7 @@
 noinst_LTLIBRARIES=    libcontrib.la
 libcontrib_la_SOURCES= DummyHAL.cpp
 include_HEADERS=       DummyHAL.hpp
-includedir=            @includedir@/contrib
+includedir=            @includedir@/sfl/contrib
 
 if ROBOX
 libcontrib_la_SOURCES+= asl_hal.cpp
