@@ -29,7 +29,7 @@ class Esbot;
 
 
 class PNFDrawing
-  : public Drawing
+  : public npm::Drawing
 {
 public:
   typedef enum { GLOBAL, LOCAL, GFRAME } mode_t;

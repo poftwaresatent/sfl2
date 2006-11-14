@@ -71,20 +71,19 @@ static const double WHEELBASE = 0.521;
 static const double WHEELRADIUS = 0.088;
 
 
-static sfl::RobotModel::Parameters
-CreateRobotParameters(shared_ptr<const npm::DiffDrive> dd)
+static RobotModel::Parameters
+CreateRobotParameters(expoparams & params)
 {
   return RobotModel::
-    Parameters(0.02, // safety distance
-	       dd->wheelbase, // wheel base
-	       dd->wheelradius, // wheel radius
-	       6.5, // qd max
-	       6.5, // qdd max
-	       0.5, // sd max
-	       2.0, // thetad max
-	       0.75 * dd->wheelradius * 6.5, // sdd max
-	       1.5 * dd->wheelradius * 6.5 / dd->wheelbase // thetadd max
-	       );
+    Parameters(params.model_security_distance,
+	       params.model_wheelbase,
+	       params.model_wheelradius,
+	       params.model_qd_max,
+	       params.model_qdd_max,
+	       params.model_sd_max,
+	       params.model_thetad_max,
+	       params.model_sdd_max,
+	       params.model_thetadd_max);
 }
 
 
@@ -118,7 +117,7 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		       params.rear_channel)->GetScanner();
 
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
-  const RobotModel::Parameters modelParms(CreateRobotParameters(m_drive));
+  const RobotModel::Parameters modelParms(CreateRobotParameters(params));
   m_robotModel.reset(new RobotModel(modelParms, m_hull));
   m_motionController.
     reset(new expo::MotionController(m_robotModel, GetHAL(),

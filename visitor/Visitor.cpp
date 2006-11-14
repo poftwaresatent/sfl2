@@ -61,7 +61,7 @@ PrepareAction(double timestep)
   static const double thetadmax(0.8 * M_PI);
   static const double sdmax(0.4);
   
-  const Frame & pose(GetServer().GetTruePose());
+  const Frame & pose(GetServer()->GetTruePose());
   double dx(m_goal->X() - pose.X());
   double dy(m_goal->Y() - pose.Y());
   pose.RotateFrom(dx, dy);
@@ -96,7 +96,7 @@ SetPose(double x, double y, double theta)
 void Visitor::
 GetPose(double &x, double &y, double &theta)
 {
-  const Frame & pose(GetServer().GetTruePose());
+  const Frame & pose(GetServer()->GetTruePose());
   x = pose.X();
   y = pose.Y();
   theta = pose.Theta();
@@ -120,5 +120,5 @@ GetGoal()
 bool Visitor::
 GoalReached()
 {
-  return m_goal->DistanceReached(GetServer().GetTruePose());
+  return m_goal->DistanceReached(GetServer()->GetTruePose());
 }

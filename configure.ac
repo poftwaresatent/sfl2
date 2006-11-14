@@ -107,6 +107,30 @@ if test -z "$BUILD_BIRON_TRUE"; then
   CPPFLAGS="$oldCPPFLAGS"
 fi
 
+AC_ARG_WITH(estar,
+  AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
+  [ if test "x$withval" = "x" ; then
+      AC_SUBST(ESTAR_CPPFLAGS, "")
+      AC_SUBST(ESTAR_LDFLAGS, "-lestar")
+    else
+      AC_SUBST(ESTAR_CPPFLAGS, "-I${withval}/include")
+      AC_SUBST(ESTAR_LDFLAGS, "-lestar -L${withval}/lib")
+    fi
+    CPPFLAGS="$CPPFLAGS -DBUILD_ESTAR"
+    oldCPPFLAGS="$CPPFLAGS"
+    if test "$prefix" != "NONE"; then
+      CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS -I$prefix/include"
+    else
+      CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS"
+    fi
+    AC_CHECK_HEADER([estar/Facade.hpp], [], [
+      AC_MSG_ERROR([cannot compile estar/Facade.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+    CPPFLAGS="$oldCPPFLAGS"
+    AM_CONDITIONAL([BUILD_ESTAR], [true]) ],
+  [ AC_SUBST(ESTAR_CPPFLAGS, "")
+    AC_SUBST(ESTAR_LDFLAGS, "")
+    AM_CONDITIONAL([BUILD_ESTAR], [false]) ])
+
 case $host_os in
   darwin*) AC_DISABLE_SHARED;;
   *)       AC_DISABLE_STATIC;;
@@ -121,5 +145,5 @@ test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                laas/Makefile biron/Makefile simul/Makefile])
+                laas/Makefile biron/Makefile estar/Makefile simul/Makefile])
 AC_OUTPUT

@@ -23,6 +23,16 @@
 #include "PNF.hpp"
 #include <npm/common/wrap_gl.hpp>
 #include <sfl/gplan/GridFrame.hpp>
+#include <math.h>
+
+// debugging
+#include <estar/util.hpp>
+#define PDEBUG PDEBUG_ERR
+#define PVDEBUG PDEBUG_OFF
+
+
+using namespace sfl;
+using namespace boost;
 
 
 CarrotDrawing::
@@ -42,26 +52,34 @@ void CarrotDrawing::
 Draw()
 {
   boost::shared_ptr<PNF> pnf(m_bot->GetPNF());
-  if( ! pnf)
+  if( ! pnf){
+    PDEBUG("carrot: no PNF in bot\n");
     return;
+  }
   
   boost::shared_ptr<Esbot::carrot_trace_t> trace;
-  if(full_trace)
+  if(full_trace){
+    PDEBUG("carrot: full trace\n");
     trace = m_bot->ComputeFullCarrot();
-  else
+  }
+  else{
+    PDEBUG("carrot: partial trace\n");    
     trace = m_bot->GetCarrotTrace();
-  if((!trace) || (trace->empty()))
+  }
+  if((!trace) || (trace->empty())){
+    PDEBUG("carrot: invalid or empty trace\n");    
     return;
+  }
   
-  const sfl::Frame & gframe(pnf->GetGridFrame()->GetFrame());
-  sfl::Frame lframe(m_bot->GetPose());
-  gframe.From(lframe);
+  shared_ptr<const GridFrame> gframe(pnf->GetGridFrame());
+  Frame lframe(m_bot->GetPose());
+  gframe->From(lframe);
   
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   if(global_mode){
-    glTranslated(gframe.X(), gframe.Y(), 0);
-    glRotated(180 * gframe.Theta() / M_PI, 0, 0, 1);
+    glTranslated(gframe->X(), gframe->Y(), 0);
+    glRotated(180 * gframe->Theta() / M_PI, 0, 0, 1);
   }
   else{
     glTranslated(lframe.X(), lframe.Y(), 0);

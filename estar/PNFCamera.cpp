@@ -21,7 +21,11 @@
 #include "PNFCamera.hpp"
 #include "Esbot.hpp"
 #include "PNF.hpp"
+#include <npm/common/View.hpp>
 #include <pnf/Flow.hpp>
+
+
+using namespace npm;
 
 
 PNFCamera::

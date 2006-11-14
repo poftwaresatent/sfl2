@@ -115,8 +115,7 @@ PNF(double _robot_x, double _robot_y,
     goal_r(_goal_r),
     grid_width(_grid_width),
     grid_wdim(_grid_wdim),
-    resolution(grid_width / grid_wdim),
-    m_frame(new GridFrame())
+    resolution(grid_width / grid_wdim)
 {
   const double dx(goal_x - robot_x);
   const double dy(goal_y - robot_y);
@@ -126,14 +125,17 @@ PNF(double _robot_x, double _robot_y,
   const Frame frame(robot_x, robot_y, atan2(dy, dx));
   frame.To(xm_frame, ym_frame);
   
-  m_frame->Configure(xm_frame, ym_frame, frame.Theta(), resolution);
+  m_frame.reset(new GridFrame(xm_frame, ym_frame, frame.Theta(), resolution));
   
   const size_t
     xdim(static_cast<size_t>(ceil((sqrt(dx*dx+dy*dy)+grid_width)/resolution)));
-  m_flow.reset(Flow::Create(xdim, grid_wdim, resolution));
+  const bool perform_convolution(false);
+  const bool alternate_worst_case(false);
+  m_flow.reset(Flow::Create(xdim, grid_wdim, resolution,
+			    perform_convolution, alternate_worst_case));
   
   // very important to use LOCAL grid coordinates
-  m_frame->GetFrame().From(_robot_x, _robot_y);
+  m_frame->From(_robot_x, _robot_y);
   if( ! m_flow->SetRobot(_robot_x, _robot_y, robot_r, robot_v)){
     cerr << "m_flow->SetRobot(" << _robot_x << ", " << _robot_y << ", "
 	 << robot_r << ", " << robot_v << ") failed\n";
@@ -142,7 +144,7 @@ PNF(double _robot_x, double _robot_y,
   PVDEBUG("SetRobot(%g   %g   %g   %g) on flow %lu\n",
 	  _robot_x, _robot_y, robot_r, robot_v, m_flow.get());
 
-  m_frame->GetFrame().From(_goal_x, _goal_y);
+  m_frame->From(_goal_x, _goal_y);
   if( ! m_flow->SetGoal(_goal_x, _goal_y, goal_r)){
     cerr << "m_flow->SetGoal(" << _goal_x << ", " << _goal_y << ", "
 	 << goal_r << ") failed\n";
@@ -162,12 +164,12 @@ AddStaticObject(double globx, double globy)
   Wait();
   const GridFrame::index_t
     idx(m_frame->GlobalIndex(GridFrame::position_t(globx, globy)));
-  if((idx.first < 0) || (idx.second < 0)
-     || (static_cast<size_t>(idx.first) >= m_flow->xsize)
-     || (static_cast<size_t>(idx.second) >= m_flow->ysize))
+  if((idx.v0 < 0) || (idx.v1 < 0)
+     || (static_cast<size_t>(idx.v0) >= m_flow->xsize)
+     || (static_cast<size_t>(idx.v1) >= m_flow->ysize))
     return false;
-  m_flow->AddStaticObject(static_cast<size_t>(idx.first),
-			  static_cast<size_t>(idx.second));
+  m_flow->AddStaticObject(static_cast<size_t>(idx.v0),
+			  static_cast<size_t>(idx.v1));
   return true;
 }
 
@@ -178,7 +180,7 @@ SetDynamicObject(size_t id, double globx, double globy,
 {
   PVDEBUG("%lu   %g   %g   %g   %g\n", id, globx, globy, r, v);
   Wait();
-  m_frame->GetFrame().From(globx, globy);
+  m_frame->From(globx, globy);
   return m_flow->SetDynamicObject(id, globx, globy, r, v);
 }
 
@@ -190,12 +192,12 @@ RemoveStaticObject(double globx, double globy)
   Wait();  
   const GridFrame::index_t
     idx(m_frame->GlobalIndex(GridFrame::position_t(globx, globy)));
-  if((idx.first < 0) || (idx.second < 0)
-     || (static_cast<size_t>(idx.first) >= m_flow->xsize)
-     || (static_cast<size_t>(idx.second) >= m_flow->ysize))
+  if((idx.v0 < 0) || (idx.v1 < 0)
+     || (static_cast<size_t>(idx.v0) >= m_flow->xsize)
+     || (static_cast<size_t>(idx.v1) >= m_flow->ysize))
     return false;
-  m_flow->RemoveStaticObject(static_cast<size_t>(idx.first),
-			     static_cast<size_t>(idx.second));
+  m_flow->RemoveStaticObject(static_cast<size_t>(idx.v0),
+			     static_cast<size_t>(idx.v1));
   return true;
 }
 
@@ -323,9 +325,11 @@ void * run(void * arg)
 	}
 	else{
 	  PDEBUG("PropagateRobdist() succeeded\n");
-	  poster->flow->ComputeAllCooc();
-	  const BufferZone buffer(0, poster->robot_r, 2);
-	  poster->flow->ComputeRisk(riskmap, buffer);
+	  const double static_buffer_factor(1);	// multiplies robot_radius (?)
+	  const double static_buffer_degree(2);
+	  poster->flow->ComputeAllCooc(static_buffer_factor,
+				       static_buffer_degree);
+	  poster->flow->ComputeRisk(riskmap);
 	  poster->step = PNF::ROBDIST;
 	}
       }
@@ -383,9 +387,8 @@ AddStaticLine(double x0, double y0,
   PVDEBUG("global: %g   %g   %g   %g\n", x0, y0, x1, y1);
   Wait();
   
-  const Frame & frame(m_frame->GetFrame());
-  frame.From(x0, y0);
-  frame.From(x1, y1);
+  m_frame->From(x0, y0);
+  m_frame->From(x1, y1);
   x0 /= resolution;
   y0 /= resolution;
   x1 /= resolution;

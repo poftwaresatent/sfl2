@@ -200,7 +200,7 @@ InitRobots(const string & filename)
 
 
 void Simulator::
-InitLayout(const string &filename)
+InitLayout(const string &filename, bool fatal_warnings)
 {
   ifstream config(filename.c_str());
   string token;
@@ -300,6 +300,8 @@ InitLayout(const string &filename)
 	 << warnings.str();
     Instance<UniqueManager<Drawing> >()->PrintCatalog(cerr);
     Instance<UniqueManager<Camera> >()->PrintCatalog(cerr);
+    if(fatal_warnings)
+      exit(EXIT_FAILURE);
   }
 }
 

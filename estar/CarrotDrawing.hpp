@@ -29,7 +29,7 @@ class Esbot;
 
 
 class CarrotDrawing
-  : public Drawing
+  : public npm::Drawing
 {
 public:
   bool global_mode;

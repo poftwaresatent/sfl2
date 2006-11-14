@@ -32,7 +32,10 @@
 # include <npm/biron/Biron.hpp>
 #endif // BUILD_BIRON
 
-//#include <npm/estar/Esbot.hpp>
+#ifdef BUILD_ESTAR
+# include <npm/estar/Esbot.hpp>
+#endif // BUILD_ESTAR
+
 //#include <npm/theater/TheaterRobot.hpp>
 ////#include <npm/braitenberg/Braitenberg.hpp>
 
@@ -53,6 +56,10 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
   else if(descriptor->model == "biron")
     rob = new Biron(descriptor, world);
 #endif // BUILD_BIRON
+#ifdef BUILD_ESTAR
+  else if(descriptor->model == "esbot")
+    rob = new Esbot(descriptor, world);
+#endif // BUILD_ESTAR
   else if(descriptor->model == "jido")
     rob = new Jido(descriptor, world);
   else if(descriptor->model == "rackham")

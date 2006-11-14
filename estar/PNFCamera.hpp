@@ -29,13 +29,13 @@ class Esbot;
 
 
 class PNFCamera
-  : public Camera
+  : public npm::Camera
 {
 public:
   PNFCamera(const std::string & name,
 	    Esbot * bot);
   
-  virtual void ConfigureView(View & view);
+  virtual void ConfigureView(npm::View & view);
   
 private:
   Esbot * m_bot;

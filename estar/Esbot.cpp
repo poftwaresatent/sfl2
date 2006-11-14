@@ -27,15 +27,17 @@
 #include <npm/robox/ODrawing.hpp>
 #include <npm/robox/DODrawing.hpp>
 #include <npm/robox/DWDrawing.hpp>
+#include <npm/robox/expoparams.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/OdometryDrawing.hpp>
 #include <npm/common/StillCamera.hpp>
-#include <npm/common/HALProxy.hpp>
+#include <npm/common/HAL.hpp>
 #include <npm/common/CheatSheet.hpp>
+#include <npm/common/DiffDrive.hpp>
 #include <sfl/api/Odometry.hpp>
+#include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
-#include <sfl/api/DiffDrive.hpp>
 #include <sfl/api/MotionController.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/gplan/GridFrame.hpp>
@@ -49,119 +51,109 @@
 // debugging
 #include <estar/util.hpp>
 #define PDEBUG PDEBUG_ERR
-#define PVDEBUG PDEBUG_OFF
+//#define PVDEBUG PDEBUG_OFF
+#define PVDEBUG PDEBUG_ERR
 
+
+using namespace npm;
 
 using sfl::Frame;
 using sfl::Hull;
+using sfl::HullIterator;
+using sfl::Line;
 using sfl::Polygon;
 using sfl::Pose;
 using sfl::Goal;
 using sfl::RobotModel;
-using sfl::DiffDrive;
 using sfl::DynamicWindow;
 using sfl::Odometry;
 using sfl::Multiscanner;
 using sfl::MotionController;
 using sfl::GridFrame;
-using sfl::GlobalScan;
+using sfl::Scan;
 using sfl::sqr;
 using sfl::absval;
+using sfl::RWlock;
 using estar::Grid;
 using estar::GridNode;
 using estar::vertex_t;
 using estar::minval;
 using estar::dump_grid_range_highlight;
 using pnf::Flow;
-using boost::shared_ptr;
-using std::string;
-using std::cerr;
-using std::set;
-using std::make_pair;
+
+using namespace boost;
+using namespace std;
 
 
-static RobotModel::Parameters
-CreateRobotParameters(shared_ptr<const DiffDrive> dd);
-
+static RobotModel::Parameters CreateRobotParameters(expoparams & params);
 static shared_ptr<Hull> CreateHull();  
 
 
 Esbot::
 Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
-      const World & world,
-      double timestep)
-  : Robot(descriptor, world, timestep, true),
+      const World & world)
+  : RobotClient(descriptor, world, true),
     m_grid_width(8),		// TO DO: no magic numbers
     m_grid_wdim(30),		// TO DO: no magic numbers
-    m_cheat(new CheatSheet(&world, this)),
-    m_carrot_trace(new carrot_trace_t)
+    m_goal(new Goal()),
+    m_cheat(new CheatSheet(&world, GetServer())),
+    m_carrot_trace(new carrot_trace_t),
+    m_pose(new Frame()),
+    m_replan_request(false)
 {
   shared_ptr<Hull> hull(CreateHull());
-  for(size_t ip(0); ip < hull->GetNPolygons(); ++ip){
-    shared_ptr<const Polygon> poly(hull->GetPolygon(ip));
-    for(size_t il(0); il < poly->GetNPoints(); ++il)
-      AddLine(*poly->GetLine(il));
-  }
+  for(HullIterator ih(*hull); ih.IsValid(); ih.Increment())
+    AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
   const_cast<double &>(m_radius) = hull->CalculateRadius();
-  
-  static const double LIDAROFFSET = 0.15;
-  m_front = DefineLidar(Frame(LIDAROFFSET, 0, 0),    "front");
-  m_rear = DefineLidar(Frame(-LIDAROFFSET, 0, M_PI), "rear");
 
-  static const double WHEELBASE = 0.521;
-  static const double WHEELRADIUS = 0.088;
-  m_drive = DefineDiffDrive(WHEELBASE, WHEELRADIUS);
+  expoparams params(descriptor);
+  
+  m_front = DefineLidar(Frame(params.front_mount_x,
+			      params.front_mount_y,
+			      params.front_mount_theta),
+			params.front_nscans,
+			params.front_rhomax,
+			params.front_phi0,
+			params.front_phirange,
+			params.front_channel)->GetScanner();
+  m_rear = DefineLidar(Frame(params.rear_mount_x,
+			     params.rear_mount_y,
+			     params.rear_mount_theta),
+		       params.rear_nscans,
+		       params.rear_rhomax,
+		       params.rear_phi0,
+		       params.rear_phirange,
+		       params.rear_channel)->GetScanner();
 
-  const RobotModel::Parameters modelParms(CreateRobotParameters(m_drive));
-  m_robotModel.reset(new RobotModel(timestep, modelParms, hull));
-  const_cast<double &>(m_speed) = m_robotModel->SdMax();
-  
-  m_motionController.reset(new MotionController(*m_robotModel,
-						*m_drive));
-  m_odometry.reset(new Odometry(GetHALProxy()));
-  m_multiscanner.reset(new Multiscanner());
-  
-  const string dwa_mode(descriptor->GetOption("dwa_mode"));
-  if(dwa_mode == "full")
-    m_dynamicWindow.reset(new DynamicWindow(41,	// dwa dimension
-					    2.2, // dwa grid width
-					    1.5, // dwa grid height
-					    0.03, // dwa grid resolution
-					    *m_robotModel,
-					    *m_motionController,
-					    0.5, // dwa alpha distance
-					    0.1, // dwa alpha heading
-					    0.1, // dwa alpha speed
-					    true)); // auto_init
-  else if(dwa_mode == "light")
-    m_dynamicWindow.reset(new DynamicWindow(21,	// dwa dimension
-					    2.2, // dwa grid width
-					    1.5, // dwa grid height
-					    0.1, // dwa grid resolution
-					    *m_robotModel,
-					    *m_motionController,
-					    0.5, // dwa alpha distance
-					    0.1, // dwa alpha heading
-					    0.1, // dwa alpha speed
-					    true)); // auto_init
-  else{
-    cerr << "ERROR in Esbot ctor, invalid option dwa_mode=\""
-	 << dwa_mode << "\"\n"
-	 << "  use \"full\" or \"light\"\n";
-    exit(EXIT_FAILURE);
-  }
+  m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
+  const RobotModel::Parameters modelParms(CreateRobotParameters(params));
+  m_robotModel.reset(new RobotModel(modelParms, hull));
+  m_motionController.reset(new MotionController(m_robotModel, GetHAL(),
+						RWlock::Create("motor")));
+  m_odometry.reset(new Odometry(GetHAL(), RWlock::Create("odometry")));
+  m_multiscanner.reset(new Multiscanner(m_odometry));
+  m_dynamicWindow.reset(new DynamicWindow(params.dwa_dimension,
+					  params.dwa_grid_width,
+					  params.dwa_grid_height,
+					  params.dwa_grid_resolution,
+					  m_robotModel,
+					  *m_motionController,
+					  params.dwa_alpha_distance,
+					  params.dwa_alpha_heading,
+					  params.dwa_alpha_speed,
+					  true));
   
   m_multiscanner->Add(m_front);
   m_multiscanner->Add(m_rear);
   
-  CreateGfxStuff(descriptor->GetName());
+  CreateGfxStuff(descriptor->name);
 }
 
 
 void Esbot::
 CreateGfxStuff(const std::string & name)
 {
-  AddDrawing(new GoalInstanceDrawing(name + "_goaldrawing", m_goal));
+  AddDrawing(new GoalInstanceDrawing(name + "_goaldrawing", *m_goal));
   AddDrawing(new DWDrawing(name + "_dwdrawing", *m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_dodrawing",
 			  m_dynamicWindow->GetDistanceObjective(),
@@ -233,13 +225,13 @@ GetPose(double & x,
 	double & y,
 	double & theta)
 {
-  x = m_odometry->Get().X();
-  y = m_odometry->Get().Y();
-  theta = m_odometry->Get().Theta();
+  x = m_pose->X();
+  y = m_pose->Y();
+  theta = m_pose->Theta();
 }
 
 
-const Goal & Esbot::
+shared_ptr<const Goal> Esbot::
 GetGoal()
 {
   return m_goal;
@@ -249,55 +241,61 @@ GetGoal()
 bool Esbot::
 GoalReached()
 {
-  return m_goal.Reached(m_odometry->Get(), true);
+  return m_goal->Reached(*m_pose, true);
 }
 
 
 void Esbot::
-SetGoal(const Goal & goal)
+SetGoal(double timestep, const Goal & goal)
 {
   PDEBUG("%g   %g   %g   %g   %g\n", goal.X(), goal.Y(), goal.Theta(),
 	 goal.Dr(), 180 * goal.Dtheta() / M_PI);
-  m_goal.Set(goal);
-  const Pose pose(m_odometry->Get());
-  m_pnf.reset();
-  m_pnf.reset(new PNF(pose.X(), pose.Y(), m_radius, m_speed,
-		      goal.X(), goal.Y(), goal.Dr(),
-		      m_grid_width, m_grid_wdim));
-  PDEBUG("static lines...\n");
-  m_cheat->UpdateLines();
-  bool ok(false);
-  for(size_t il(0); il < m_cheat->line.size(); ++il)
-    if(m_pnf->AddStaticLine(m_cheat->line[il].x0, m_cheat->line[il].y0,
-			    m_cheat->line[il].x1, m_cheat->line[il].y1))
-      ok = true;
-  if( ! ok){
-    cerr << __func__ << "(): oops AddStaticLine [not able to do without]\n";
-    exit(EXIT_FAILURE);
-  }
-  PDEBUG("dynamic objects...\n");
-  m_cheat->UpdateDynobjs();
-  ok = false;
-  for(size_t ir(0); ir < m_cheat->dynobj.size(); ++ir)
-    if(m_pnf->SetDynamicObject(ir, m_cheat->dynobj[ir].x,
-			       m_cheat->dynobj[ir].y,
-			       m_cheat->dynobj[ir].r, m_speed))
-      ok = true;
-  if( ! ok){
-    cerr << __func__ << "(): oops SetDynamicObject [not able to do without]\n";
-    exit(EXIT_FAILURE);
-  }
-  m_pnf->StartPlanning();
-  m_dynamicWindow->GoSlow();
-  PDEBUG("DONE\n");
+  m_goal->Set(goal);
+  m_replan_request = true;
 }
 
 
 void Esbot::
-PrepareAction()
+PrepareAction(double timestep)
 {
+  m_pose->Set(*m_odometry->Get());
   m_front->Update();
   m_rear->Update();
+
+  if(m_replan_request){
+    m_replan_request = false;
+    
+    m_pnf.reset();
+    m_pnf.reset(new PNF(m_pose->X(), m_pose->Y(), m_radius, m_speed,
+			m_goal->X(), m_goal->Y(), m_goal->Dr(),
+			m_grid_width, m_grid_wdim));
+    PDEBUG("static lines...\n");
+    m_cheat->UpdateLines();
+    bool ok(false);
+    for(size_t il(0); il < m_cheat->line.size(); ++il)
+      if(m_pnf->AddStaticLine(m_cheat->line[il].x0, m_cheat->line[il].y0,
+			      m_cheat->line[il].x1, m_cheat->line[il].y1))
+	ok = true;
+    if( ! ok){
+      cerr << __func__ << "(): oops AddStaticLine [not able to do without]\n";
+      exit(EXIT_FAILURE);
+    }
+    PDEBUG("dynamic objects...\n");
+    m_cheat->UpdateDynobjs();
+    ok = false;
+    for(size_t ir(0); ir < m_cheat->dynobj.size(); ++ir)
+      if(m_pnf->SetDynamicObject(ir, m_cheat->dynobj[ir].x,
+				 m_cheat->dynobj[ir].y,
+				 m_cheat->dynobj[ir].r, m_speed))
+	ok = true;
+    if( ! ok){
+      cerr << __func__ << "(): oops SetDynamicObject [cannot do without]\n";
+      exit(EXIT_FAILURE);
+    }
+    m_pnf->StartPlanning();
+    m_dynamicWindow->GoSlow();
+    PDEBUG("DONE\n");
+  }
   
   static PNF::step_t prevstep(static_cast<PNF::step_t>(PNF::DONE + 1));
   
@@ -308,24 +306,24 @@ PrepareAction()
   prevstep = step;
   
   m_carrot_trace->clear();
-  m_pose.Set(m_odometry->Get());
-  const double goaldist(sqrt(sqr(m_pose.X() - m_goal.X())
-			     + sqr(m_pose.X() - m_goal.X())));
+  const double goaldist(sqrt(sqr(m_pose->X() - m_goal->X())
+			     + sqr(m_pose->X() - m_goal->X())));
   // TO DO: the smell of magic numbers...
   const double carrot_distance(minval(goaldist, 1.5));
   
   // default: go straight for goal
-  double carx(m_goal.X() - m_pose.X());
-  double cary(m_goal.Y() - m_pose.Y());
+  double carx(m_goal->X() - m_pose->X());
+  double cary(m_goal->Y() - m_pose->Y());
   if(goaldist <= carrot_distance)
-    PVDEBUG("(goaldist <= carrot_distance)\n");
+    PVDEBUG("(goaldist = %g <= carrot_distance = %g)\n",
+	    goaldist, carrot_distance);
   else if(PNF::DONE == step){
     PVDEBUG("(PNF::DONE == step)\n");
-    const sfl::Frame & gframe(m_pnf->GetGridFrame()->GetFrame());
-    double robx(m_pose.X());
-    double roby(m_pose.Y());
+    shared_ptr<const GridFrame> gframe(m_pnf->GetGridFrame());
+    double robx(m_pose->X());
+    double roby(m_pose->Y());
     PVDEBUG("global robot            : %g   %g\n", robx, roby);
-    gframe.From(robx, roby);
+    gframe->From(robx, roby);
     PVDEBUG("grid local robot        : %g   %g\n", robx, roby);
     const double carrot_stepsize(0.3);
     const size_t carrot_maxnsteps(30);
@@ -338,22 +336,22 @@ PrepareAction()
       if(1 == result)
 	PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
       PVDEBUG("grid local carrot       : %g   %g\n", carx, cary);
-      gframe.To(carx, cary);
+      gframe->To(carx, cary);
       PVDEBUG("global carrot           : %g   %g\n", carx, cary);
-      carx -= m_pose.X();
-      cary -= m_pose.Y();
+      carx -= m_pose->X();
+      cary -= m_pose->Y();
       PVDEBUG("global delta carrot     : %g   %g\n", carx, cary);
     }
     else{
       PDEBUG("FAILED compute_carrot()\n");
       // paranoia in case carx, cary got modified anyways
-      carx = m_goal.X() - m_pose.X();
-      cary = m_goal.Y() - m_pose.Y();    
+      carx = m_goal->X() - m_pose->X();
+      cary = m_goal->Y() - m_pose->Y();    
     }
   }
   else
     PVDEBUG("no local goal can be determined\n");    
-  m_pose.RotateFrom(carx, cary);
+  m_pose->RotateFrom(carx, cary);
   PVDEBUG("robot local delta carrot: %g   %g\n", carx, cary);
   
   // pure rotation hysteresis
@@ -365,9 +363,8 @@ PrepareAction()
   else if(absval(dhead) > start_aiming)
     m_dynamicWindow->GoSlow();
   
-  shared_ptr<const GlobalScan>
-    global_scan(m_multiscanner->CollectGlobalScans(m_pose));
-  m_dynamicWindow->Update(carx, cary, global_scan);
+  shared_ptr<const Scan> scan(m_multiscanner->CollectScans());
+  m_dynamicWindow->Update(timestep, carx, cary, scan);
   double qdl, qdr;
   if( ! m_dynamicWindow->OptimalActuators(qdl, qdr)){
     qdl = 0;
@@ -375,25 +372,24 @@ PrepareAction()
   }
   
   m_motionController->ProposeActuators(qdl, qdr);
-  m_motionController->Update();
+  m_motionController->Update(timestep);
   m_odometry->Update();
 }
 
 
 RobotModel::Parameters
-CreateRobotParameters(shared_ptr<const DiffDrive> dd)
+CreateRobotParameters(expoparams & params)
 {
   return RobotModel::
-    Parameters(0.02, // safety distance
-	       dd->WheelBase(), // wheel base
-	       dd->WheelRadius(), // wheel radius
-	       6.5, // qd max
-	       6.5, // qdd max
-	       0.5, // sd max
-	       2.0, // thetad max
-	       0.75*dd->WheelRadius()*6.5, // sdd max
-	       1.5*dd->WheelRadius()*6.5/dd->WheelBase() // thetadd max
-	       );
+    Parameters(params.model_security_distance,
+	       params.model_wheelbase,
+	       params.model_wheelradius,
+	       params.model_qd_max,
+	       params.model_qdd_max,
+	       params.model_sd_max,
+	       params.model_thetad_max,
+	       params.model_sdd_max,
+	       params.model_thetadd_max);
 }
 
 
@@ -428,13 +424,13 @@ ComputeFullCarrot() const
     return shared_ptr<carrot_trace_t>();
   }
   
-  const sfl::Frame & gframe(m_pnf->GetGridFrame()->GetFrame());
-  double robx(m_pose.X());
-  double roby(m_pose.Y());
-  gframe.From(robx, roby);
-  const double distance(sqrt(sqr(m_goal.X() - m_pose.X())
-			     + sqr(m_goal.Y() - m_pose.Y()))
-			- 0.5 * m_goal.Dr());
+  shared_ptr<const GridFrame> gframe(m_pnf->GetGridFrame());
+  double robx(m_pose->X());
+  double roby(m_pose->Y());
+  gframe->From(robx, roby);
+  const double distance(sqrt(sqr(m_goal->X() - m_pose->X())
+			     + sqr(m_goal->Y() - m_pose->Y()))
+			- 0.5 * m_goal->Dr());
   const double stepsize(0.2);	// magic numbers stink
   const size_t maxnsteps(static_cast<size_t>(ceil(2 * distance / stepsize)));
   double carx, cary;

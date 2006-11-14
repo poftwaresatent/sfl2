@@ -94,7 +94,7 @@ namespace npm {
     boost::shared_ptr<RobotDescriptor> GetDescriptor();
     
     /** using this means you're cheating... */
-    RobotServer & GetServer() { return * m_server; }
+    boost::shared_ptr<RobotServer> GetServer() { return m_server; }
     
   protected:
     /** Add a line to the robot's body. */

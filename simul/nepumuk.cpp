@@ -46,7 +46,8 @@ public:
     layout_config_filename("layout.config"),
     world_name("stage"),
     //    threaded(false),
-    no_glut(false)
+    no_glut(false),
+    fatal_warnings(false)
   {
   }
   
@@ -55,6 +56,7 @@ public:
   string world_name;
   //  bool threaded;
   bool no_glut;
+  bool fatal_warnings;
 };
 
 
@@ -102,7 +104,7 @@ int main(int argc, char ** argv)
   simulator.
     reset(new Simulator(world, 0.000001 * timestep_usec, SimulatorMutex()));
   simulator->InitRobots(params.robot_config_filename);
-  simulator->InitLayout(params.layout_config_filename);
+  simulator->InitLayout(params.layout_config_filename, params.fatal_warnings);
   simulator->Init();
   
 //   if(params.threaded){
@@ -198,6 +200,9 @@ void parse_options(int argc,
   ilock.
     Add(new Interlock::BoolCallback(params.no_glut, 'n', "no-glut",
 				    "Disable graphic output."));
+  ilock.
+    Add(new Interlock::BoolCallback(params.fatal_warnings, 'f', "fwarn",
+				    "Fatal warnings."));
   
   ilock.UsageMessage(cerr, string(argv[0]) + " <options>");
   try {

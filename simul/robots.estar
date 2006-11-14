@@ -1,14 +1,14 @@
 Robot esbot Zillian
-	Pose 15  12  3.2
-	Goal 13  12  3.2  0.5  3.2
+	Pose 12  13  3.2
 	Goal  9  15  3.2  0.5  3.2
 	Goal 10  18  3.2  0.5  3.2
 	Goal 18  21  3.2  0.5  3.2
 	Goal 12  21  3.2  0.5  3.2
 	Goal  6  15  3.2  0.5  3.2
 	Goal 15  10  3.2  0.5  3.2
-	Option dwa_mode light
-#	Option dwa_mode full
+	Option camera_zoom 4
+        Option dwa_dimension       21
+        Option dwa_grid_resolution 0.1
 
 Robot visitor visitor0
 	Pose  7  5.5  0

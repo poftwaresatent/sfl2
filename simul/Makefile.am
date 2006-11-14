@@ -1,4 +1,4 @@
-LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@
+LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
 
 bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp

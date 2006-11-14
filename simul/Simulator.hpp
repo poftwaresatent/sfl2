@@ -46,7 +46,7 @@ public:
   ~Simulator();
   
   void InitRobots(const std::string & filename);
-  void InitLayout(const std::string & filename);
+  void InitLayout(const std::string & filename, bool fatal_warnings);
   void Init();
   bool Idle();
   void Reshape(int width, int height);

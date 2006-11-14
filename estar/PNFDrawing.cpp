@@ -40,6 +40,7 @@
 
 
 using sfl::sqr;
+using namespace boost;
 
 
 PNFDrawing::
@@ -68,16 +69,16 @@ Draw()
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     if(GLOBAL == mm){
-      const sfl::Frame & frame(pnf->GetGridFrame()->GetFrame());
-      glTranslated(frame.X(), frame.Y(), 0);
-      glRotated(180 * frame.Theta() / M_PI, 0, 0, 1);
+      shared_ptr<const sfl::Frame> frame(pnf->GetGridFrame());
+      glTranslated(frame->X(), frame->Y(), 0);
+      glRotated(180 * frame->Theta() / M_PI, 0, 0, 1);
     }
     glScaled(pnf->resolution, pnf->resolution, 1);
   }
   
   const PNF::step_t step(pnf->GetStep());
   boost::shared_ptr<pnf::Flow> flow(pnf->GetFlow());
-  const estar::Facade * facade;
+  const estar::Facade * facade(0);
   const gfx::ColorScheme * cs(gfx::ColorScheme::Get(gfx::GREY_WITH_SPECIAL));
   
   if(RISK == what){
@@ -146,13 +147,13 @@ Draw()
   }
   
   if(draw_trace && (PNF::DONE == step)){
-    const sfl::Frame & frame(pnf->GetGridFrame()->GetFrame());
+    shared_ptr<const sfl::Frame> frame(pnf->GetGridFrame());
     double goalx(pnf->goal_x);
     double goaly(pnf->goal_y);
-    frame.From(goalx, goaly);
+    frame->From(goalx, goaly);
     double robx(pnf->robot_x);
     double roby(pnf->robot_y);
-    frame.From(robx, roby);
+    frame->From(robx, roby);
     glColor3d(1, 0, 0);
     glLineWidth(2);
     glBegin(GL_LINE_STRIP);
@@ -168,7 +169,7 @@ Draw()
       }
       double xx(robx);
       double yy(roby);
-      frame.To(xx, yy);
+      frame->To(xx, yy);
       glVertex2d(xx, yy);
       if((sqr(goalx - robx) + sqr(goaly - roby)) < 0.1)
 	break;

@@ -22,8 +22,9 @@
 #define ESBOT_HPP
 
 
-#include <npm/common/Robot.hpp>
+#include <npm/common/RobotClient.hpp>
 #include <sfl/api/Goal.hpp>
+#include <vector>
 
 
 namespace sfl {
@@ -49,17 +50,16 @@ class PNF;
    conjunction with libsunflower's DWA implementation.
 */
 class Esbot
-  : public npm::Robot
+  : public npm::RobotClient
 {
 public:
   typedef std::vector<std::pair<double, double> > carrot_trace_t;
 
   Esbot(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	const npm::World & world,
-	double timestep);
+	const npm::World & world);
   
-  virtual void PrepareAction();
-  virtual void SetGoal(const sfl::Goal & goal);
+  virtual void PrepareAction(double timestep);
+  virtual void SetGoal(double timestep, const sfl::Goal & goal);
   virtual bool GoalReached();
 
   virtual void InitPose(double x, double y, double theta);
@@ -71,7 +71,7 @@ public:
   boost::shared_ptr<carrot_trace_t> GetCarrotTrace() const
   { return m_carrot_trace; }
   boost::shared_ptr<carrot_trace_t> ComputeFullCarrot() const;
-  const sfl::Frame & GetPose() const { return m_pose; }
+  const sfl::Frame & GetPose() const { return *m_pose; }
   
 protected:
   const double m_radius;
@@ -80,8 +80,8 @@ protected:
   const size_t m_grid_wdim;
   
   boost::shared_ptr<sfl::Goal> m_goal;
-  boost::shared_ptr<npm::Lidar> m_front;
-  boost::shared_ptr<npm::Lidar> m_rear;
+  boost::shared_ptr<sfl::Scanner> m_front;
+  boost::shared_ptr<sfl::Scanner> m_rear;
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<sfl::RobotModel> m_robotModel;
   boost::shared_ptr<sfl::MotionController> m_motionController;
@@ -91,7 +91,9 @@ protected:
   boost::shared_ptr<PNF> m_pnf;
   boost::shared_ptr<npm::CheatSheet> m_cheat;
   boost::shared_ptr<carrot_trace_t> m_carrot_trace;
-  sfl::Frame m_pose;
+  boost::shared_ptr<sfl::Frame> m_pose;
+  
+  bool m_replan_request;
   
   void CreateGfxStuff(const std::string & name);
 };
