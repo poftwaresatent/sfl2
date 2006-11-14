@@ -27,7 +27,7 @@
 
 // debugging
 #include <estar/util.hpp>
-#define PDEBUG PDEBUG_ERR
+#define PDEBUG PDEBUG_OFF
 #define PVDEBUG PDEBUG_OFF
 
 

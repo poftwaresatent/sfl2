@@ -51,8 +51,8 @@
 // debugging
 #include <estar/util.hpp>
 #define PDEBUG PDEBUG_ERR
-//#define PVDEBUG PDEBUG_OFF
-#define PVDEBUG PDEBUG_ERR
+#define PVDEBUG PDEBUG_OFF
+//#define PVDEBUG PDEBUG_ERR
 
 
 using namespace npm;
@@ -248,7 +248,7 @@ GoalReached()
 void Esbot::
 SetGoal(double timestep, const Goal & goal)
 {
-  PDEBUG("%g   %g   %g   %g   %g\n", goal.X(), goal.Y(), goal.Theta(),
+  PVDEBUG("%g   %g   %g   %g   %g\n", goal.X(), goal.Y(), goal.Theta(),
 	 goal.Dr(), 180 * goal.Dtheta() / M_PI);
   m_goal->Set(goal);
   m_replan_request = true;
@@ -269,7 +269,7 @@ PrepareAction(double timestep)
     m_pnf.reset(new PNF(m_pose->X(), m_pose->Y(), m_radius, m_speed,
 			m_goal->X(), m_goal->Y(), m_goal->Dr(),
 			m_grid_width, m_grid_wdim));
-    PDEBUG("static lines...\n");
+    PVDEBUG("static lines...\n");
     m_cheat->UpdateLines();
     bool ok(false);
     for(size_t il(0); il < m_cheat->line.size(); ++il)
@@ -280,21 +280,27 @@ PrepareAction(double timestep)
       cerr << __func__ << "(): oops AddStaticLine [not able to do without]\n";
       exit(EXIT_FAILURE);
     }
-    PDEBUG("dynamic objects...\n");
     m_cheat->UpdateDynobjs();
+    PVDEBUG("%zu dynamic objects...\n", m_cheat->dynobj.size());
     ok = false;
     for(size_t ir(0); ir < m_cheat->dynobj.size(); ++ir)
       if(m_pnf->SetDynamicObject(ir, m_cheat->dynobj[ir].x,
 				 m_cheat->dynobj[ir].y,
-				 m_cheat->dynobj[ir].r, m_speed))
+				 m_cheat->dynobj[ir].r, m_speed)){
+	PVDEBUG("OK: [%zu] %g  %g  %g\n", ir, m_cheat->dynobj[ir].x,
+	       m_cheat->dynobj[ir].y, m_cheat->dynobj[ir].r);
 	ok = true;
+      }
+      else
+	PVDEBUG("fail: [%zu] %g  %g  %g\n", ir, m_cheat->dynobj[ir].x,
+	       m_cheat->dynobj[ir].y, m_cheat->dynobj[ir].r);
     if( ! ok){
       cerr << __func__ << "(): oops SetDynamicObject [cannot do without]\n";
       exit(EXIT_FAILURE);
     }
     m_pnf->StartPlanning();
     m_dynamicWindow->GoSlow();
-    PDEBUG("DONE\n");
+    PVDEBUG("DONE\n");
   }
   
   static PNF::step_t prevstep(static_cast<PNF::step_t>(PNF::DONE + 1));
@@ -343,7 +349,7 @@ PrepareAction(double timestep)
       PVDEBUG("global delta carrot     : %g   %g\n", carx, cary);
     }
     else{
-      PDEBUG("FAILED compute_carrot()\n");
+      PVDEBUG("FAILED compute_carrot()\n");
       // paranoia in case carx, cary got modified anyways
       carx = m_goal->X() - m_pose->X();
       cary = m_goal->Y() - m_pose->Y();    
