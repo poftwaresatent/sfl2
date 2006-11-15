@@ -1,0 +1,7 @@
+* make it installable
+* disable automake reconfig stuff by default
+  (the --enable-maintainer-mode thing)
+* add 'make doc' target, add Doxygen to configure output and
+  disable things that are not available (ie --with-estar etc)
+* provide basic usage info
+* add to libsunflower home page
