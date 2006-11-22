@@ -145,5 +145,12 @@ namespace npm {
   {
     return m_server->DefineHoloDrive(axislength);
   }
+
+
+  shared_ptr<BicycleDrive> RobotClient::
+  DefineBicycleDrive(double wheelbase, double wheelradius)
+  {
+    return m_server->DefineBicycleDrive(wheelbase, wheelradius);
+  }
   
 }

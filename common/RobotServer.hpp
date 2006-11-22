@@ -48,6 +48,7 @@ namespace npm {
   class Drive;
   class DiffDrive;
   class HoloDrive;
+  class BicycleDrive;
   
   class RobotServer
   {
@@ -98,6 +99,9 @@ namespace npm {
     
     boost::shared_ptr<HoloDrive>
     DefineHoloDrive(double axislength);
+
+    boost::shared_ptr<BicycleDrive>
+    DefineBicycleDrive(double wheelbase, double wheelradius);
     
   private:    
     static size_t next_identifier;

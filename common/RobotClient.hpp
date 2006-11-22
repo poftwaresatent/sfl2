@@ -43,6 +43,7 @@ namespace npm {
   class Camera;
   class DiffDrive;
   class HoloDrive;
+  class BicycleDrive;
   class RobotServer;
   class World;
   
@@ -132,8 +133,13 @@ namespace npm {
     /** Factory method for creating a holonomic drive actuator. */
     boost::shared_ptr<HoloDrive>
     DefineHoloDrive(double axislength);
+
+    /** Factory method for creating a holonomic drive actuator. */
+    boost::shared_ptr<BicycleDrive>
+    DefineBicycleDrive(double wheelbase, double wheelradius);
     
-  private:
+      //  private:
+  public:
     friend class Simulator;
     boost::shared_ptr<RobotServer> m_server;
   };

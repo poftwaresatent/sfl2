@@ -33,6 +33,7 @@
 #include "Lidar.hpp"
 #include "DiffDrive.hpp"
 #include "HoloDrive.hpp"
+#include "BicycleDrive.hpp"
 #include "DiffDriveDrawing.hpp"
 #include "HoloDriveDrawing.hpp"
 #include <sfl/util/Frame.hpp>
@@ -146,6 +147,17 @@ namespace npm {
     shared_ptr<HoloDrive> hd(new HoloDrive(GetHAL(), axislength));
     m_drive = hd;
     AddDrawing(new HoloDriveDrawing(m_descriptor->name + "_drive", hd));
+    return hd;
+  }
+
+  shared_ptr<BicycleDrive> RobotServer::
+  DefineBicycleDrive(double wheelbase, double wheelradius)
+  {
+    if(m_drive)
+      return shared_ptr<BicycleDrive>();
+    shared_ptr<BicycleDrive> hd(new BicycleDrive(GetHAL(), wheelbase, wheelradius));
+    m_drive = hd;
+    //AddDrawing(new BicycleDriveDrawing(m_descriptor->name + "_drive", hd));
     return hd;
   }
   
