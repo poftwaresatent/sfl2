@@ -12,25 +12,61 @@ This software is released under the GNU General Public License, see
 the file GPL.txt for more details.
 -------------------------------------------------------------------
 
+
+PREREQUISITES
+
 Nepumuk is a simple two-dimensional mobile robot simulator. At the
 time of writing, it compiles under Linux and Mac OS X, provided you
 have the following things installed on your computer:
 
-* The scons build system <http://www.scons.org>, a powerful
-  source configuration and build tool.
+* The Automake build system <http://www.gnu.org/software/automake/>
+* The libtool suite <http://www.gnu.org/software/libtool/>
 * The development packages for OpenGL / Mesa3D and GLUT (the OpenGL
   Utility Toolkit). Check your OS documentation to find out how to
   install these.
-* The API and utilities of ASL's mobile robot software architecture
-  project: sunflower-light-0.1
-  <http://asl.epfl.ch/~rolo/sunflower-light.html>
-* The ASL's path planning and obstacle avoidance components for
-  sunflower: sunflower-oa-1.0
-  <http://asl.epfl.ch/~rolo/sunflower-oa.html>
+* The Sunflower Mobile Robot Library <http://libsunflower.sourceforge.net>
 
-If all these things are installed, compiling nepumuk should be
-straightforward: Just type "scons" from the project root on the
-command line. The executable called 'nepumuk' will then be in the
-simul/ and bin/ subdirectories. Documentation can be found in the doc/
-subdirectory. It is far from complete, don't hesitate to contact the
-author if you have questions.
+
+BUILDING
+
+If all these things are installed, nepumuk can be built like this:
+
+$ ./bootstrap-buildsystem.sh
+$ mkdir build
+$ cd build
+$ ../configure
+$ make
+
+
+INSTALLING
+
+At the moment, make install won't really give you a neat install, so
+hand-craft something in the meantime:
+
+$ cd ../simul
+$ ln -s ../build/simul/nepumuk
+
+
+RUNNING
+
+Now you can run e.g. a demo of what ran during Expo.02 in Switzerland:
+
+$ ./expodemo.sh
+
+In the GL window, use 'c' for continuous mode, 'space' for
+step-by-step mode, and 'q' to exit the program. Some more keybindings
+exist, check the simul/Simulator.cpp code.
+
+
+OPTIONAL STUFF
+
+If you install the E* planner <http://estar.sourceforge.net/> then you
+can run nepumuk's configure script passing a '--with-estar' argument,
+which will add the code to run simul/estardemo.sh (beware though, E*
+is currently a fast moving target).
+
+The same goes for (Uni Bielefeld) people who work on Biron with XCF
+<http://xcf.sourceforge.net/>: You can use the '--with-xcf'
+parameter. If on top of that you have GenoM installed
+<http://softs.laas.fr/openrobots/> you can use '--with-xcfglue' for
+some really experimental stuff.
