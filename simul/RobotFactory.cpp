@@ -39,6 +39,7 @@
 //#include <npm/theater/TheaterRobot.hpp>
 ////#include <npm/braitenberg/Braitenberg.hpp>
 
+#include <npm/smart/Smart.hpp>
 
 using namespace npm;
 using namespace boost;
@@ -64,5 +65,8 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
     rob = new Jido(descriptor, world);
   else if(descriptor->model == "rackham")
     rob = new Rackham(descriptor, world);
+  else if (descriptor->model == "smart")
+      rob = new Smart(descriptor, world);
+
   return shared_ptr<RobotClient>(rob);
 }

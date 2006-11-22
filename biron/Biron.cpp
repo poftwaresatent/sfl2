@@ -67,7 +67,9 @@ Biron(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		       params.front_phi0,
 		       params.front_phirange,
 		       params.front_channel)->GetScanner();
+
   DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
+
   m_hal = GetHAL();
   
   static const double xa = 0.1;

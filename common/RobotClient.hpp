@@ -134,9 +134,9 @@ namespace npm {
     boost::shared_ptr<HoloDrive>
     DefineHoloDrive(double axislength);
 
-    /** Factory method for creating a holonomic drive actuator. */
+    /** Factory method for creating a bicycle drive actuator. */
     boost::shared_ptr<BicycleDrive>
-    DefineBicycleDrive(double wheelbase, double wheelradius);
+    DefineBicycleDrive(double wheelbase, double axlewidth);
     
       //  private:
   public:

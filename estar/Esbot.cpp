@@ -99,7 +99,9 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
     m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_trace(new carrot_trace_t),
     m_pose(new Frame()),
-    m_replan_request(false)
+    m_replan_request(false),
+    m_radius(0.0),
+    m_speed(0.0)
 {
   shared_ptr<Hull> hull(CreateHull());
   for(HullIterator ih(*hull); ih.IsValid(); ih.Increment())

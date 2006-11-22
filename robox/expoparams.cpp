@@ -33,6 +33,7 @@ expoparams(shared_ptr<RobotDescriptor> descriptor)
 	    model_security_distance);
   string_to(descriptor->GetOption("model_wheelbase"), model_wheelbase);
   string_to(descriptor->GetOption("model_wheelradius"), model_wheelradius);
+  string_to(descriptor->GetOption("model_axlewidth"), model_wheelradius);
   string_to(descriptor->GetOption("model_qd_max"), model_qd_max);
   string_to(descriptor->GetOption("model_qdd_max"), model_qdd_max);
   string_to(descriptor->GetOption("model_sd_max"), model_sd_max);

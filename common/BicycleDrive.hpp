@@ -30,17 +30,29 @@ namespace npm {
   
   /**
      Bicycle drive actuator.
+ 
+      /       /
+     /---+---/
+    /    |  /
+         |
+         |wheelbase
+         |
+     |   |   |
+     |---+---|
+     |       |
+     axlewidth
   */
+
   class BicycleDrive
     : public Drive
   {
   public:
       BicycleDrive(boost::shared_ptr<HAL> hal, 
                    double wheelbase, 
-                   double wheelradius);
+                   double axlewidth);
     
       const double wheelbase;
-      const double wheelradius;
+      const double axlewidth;
  
   protected:
     virtual boost::shared_ptr<sfl::Frame>

@@ -9,4 +9,5 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      SharpDrawing.cpp Camera.cpp Drawing.cpp \
                      RobotServer.cpp RobotClient.cpp RobotDescriptor.cpp \
                      Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
-                     DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp util.cpp
+                     DiffDrive.cpp HoloDrive.cpp BicycleDriveDrawing.cpp \
+					 BicycleDrive.cpp util.cpp

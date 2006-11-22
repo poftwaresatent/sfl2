@@ -27,6 +27,9 @@
 #include <iostream>
 #include <cmath>
 
+#include <pthread.h>
+#include <errno.h>
+
 // for deletion of smart pointers containing forwardly declared types:
 #include <estar/Algorithm.hpp>
 #include <estar/Facade.hpp>

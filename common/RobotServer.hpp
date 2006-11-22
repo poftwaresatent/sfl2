@@ -101,7 +101,7 @@ namespace npm {
     DefineHoloDrive(double axislength);
 
     boost::shared_ptr<BicycleDrive>
-    DefineBicycleDrive(double wheelbase, double wheelradius);
+    DefineBicycleDrive(double wheelbase, double axlewidth);
     
   private:    
     static size_t next_identifier;

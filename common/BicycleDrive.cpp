@@ -35,8 +35,8 @@ namespace npm {
 
 
   BicycleDrive::
-  BicycleDrive(shared_ptr<HAL> hal, double _wheelbase, double _wheelradius)
-    : Drive(hal), wheelbase(_wheelbase), wheelradius(_wheelradius)
+  BicycleDrive(shared_ptr<HAL> hal, double _wheelbase, double _axlewidth)
+    : Drive(hal), wheelbase(_wheelbase), axlewidth(_axlewidth)
   {
   }
 
@@ -45,12 +45,10 @@ namespace npm {
   {
       double v_trans, steer;
 
-      //if I understood right HAL can manage whatever we get/set as the "speed"
       m_hal->speed_get(&v_trans, &steer);
     
       double dtheta = (v_trans / wheelbase) * tan(steer) * timestep;
  
-      //it seems the robot drives along the y axis in nepumuk
       double dx = sin(dtheta) * v_trans * timestep;
       double dy = cos(dtheta) * v_trans * timestep;
       
