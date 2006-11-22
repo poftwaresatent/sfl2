@@ -57,7 +57,7 @@ am_libcommon_la_OBJECTS = WorldCamera.lo Globals.lo CheatSheet.lo \
 	SimpleImage.lo Sensor.lo DiffDriveDrawing.lo SharpDrawing.lo \
 	Camera.lo Drawing.lo RobotServer.lo RobotClient.lo \
 	RobotDescriptor.lo Lidar.lo Manager.lo World.lo HAL.lo \
-	Drive.lo DiffDrive.lo HoloDrive.lo util.lo
+	Drive.lo DiffDrive.lo HoloDrive.lo BicycleDrive.lo util.lo
 libcommon_la_OBJECTS = $(am_libcommon_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -196,7 +196,7 @@ libcommon_la_SOURCES = WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      SharpDrawing.cpp Camera.cpp Drawing.cpp \
                      RobotServer.cpp RobotClient.cpp RobotDescriptor.cpp \
                      Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
-                     DiffDrive.cpp HoloDrive.cpp util.cpp
+                     DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp util.cpp
 
 all: all-am
 
@@ -250,6 +250,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BBox.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BicycleDrive.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Camera.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CheatSheet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DiffDrive.Plo@am__quote@
