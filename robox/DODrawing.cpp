@@ -77,7 +77,7 @@ Draw()
 	  case DistanceObjective::ZONE:   glColor3d(1, 1, 0); break;
 	  case DistanceObjective::HULL:   glColor3d(1, 0, 0); break;
 	  default:
-	    PDEBUG_ERR("BUG in DODrawing::Draw(): invalid region[%zu][%zu]=%d\n",
+	    PDEBUG_ERR("BUG in DODrawing::Draw(): invalid region[%l][%l]=%d\n",
 		       ix, iy, m_distobj.GetRegion(ix, iy));
 	    exit(EXIT_FAILURE);
 	  }
@@ -88,7 +88,7 @@ Draw()
 	  case DistanceObjective::ZONE:   glColor3d(0.5, 0.5 , 0); break;
 	  case DistanceObjective::HULL:   glColor3d(0.5, 0   , 0); break;
 	  default:
-	    PDEBUG_ERR("BUG in DODrawing::Draw(): invalid region[%zu][%zu]=%d\n",
+	    PDEBUG_ERR("BUG in DODrawing::Draw(): invalid region[%l][%l]=%d\n",
 		       ix, iy, m_distobj.GetRegion(ix, iy));
 	    exit(EXIT_FAILURE);
 	  }
