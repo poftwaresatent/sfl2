@@ -145,5 +145,5 @@ test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                laas/Makefile biron/Makefile estar/Makefile smart/Makefile simul/Makefile])
+                laas/Makefile biron/Makefile estar/Makefile simul/Makefile])
 AC_OUTPUT
