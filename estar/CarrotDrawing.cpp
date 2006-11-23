@@ -23,6 +23,7 @@
 #include "PNF.hpp"
 #include <npm/common/wrap_gl.hpp>
 #include <sfl/gplan/GridFrame.hpp>
+#include <estar/util.hpp>
 #include <math.h>
 
 // debugging
@@ -32,6 +33,7 @@
 
 
 using namespace sfl;
+using namespace estar;
 using namespace boost;
 
 
@@ -57,7 +59,7 @@ Draw()
     return;
   }
   
-  boost::shared_ptr<Esbot::carrot_trace_t> trace;
+  shared_ptr<carrot_trace> trace;
   if(full_trace){
     PDEBUG("carrot: full trace\n");
     trace = m_bot->ComputeFullCarrot();
@@ -91,7 +93,7 @@ Draw()
   glBegin(GL_LINE_STRIP);
   glVertex2d(lframe.X(), lframe.Y());
   for(size_t ii(0); ii < trace->size(); ++ii)
-    glVertex2d((*trace)[ii].first, (*trace)[ii].second);
+    glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
   glEnd();
   glLineWidth(1);
   

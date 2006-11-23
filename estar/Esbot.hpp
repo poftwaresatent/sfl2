@@ -36,6 +36,12 @@ namespace sfl {
 }
 
 
+namespace estar {
+  struct carrot_item;
+  typedef std::vector<carrot_item> carrot_trace;
+}
+
+
 namespace npm {
   class CheatSheet;
   class Lidar;
@@ -53,8 +59,6 @@ class Esbot
   : public npm::RobotClient
 {
 public:
-  typedef std::vector<std::pair<double, double> > carrot_trace_t;
-
   Esbot(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	const npm::World & world);
   
@@ -68,9 +72,9 @@ public:
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
   boost::shared_ptr<PNF> GetPNF() { return m_pnf; }
-  boost::shared_ptr<carrot_trace_t> GetCarrotTrace() const
+  boost::shared_ptr<estar::carrot_trace> GetCarrotTrace() const
   { return m_carrot_trace; }
-  boost::shared_ptr<carrot_trace_t> ComputeFullCarrot() const;
+  boost::shared_ptr<estar::carrot_trace> ComputeFullCarrot() const;
   const sfl::Frame & GetPose() const { return *m_pose; }
   
 protected:
@@ -90,7 +94,7 @@ protected:
   boost::shared_ptr<sfl::Multiscanner> m_multiscanner;
   boost::shared_ptr<PNF> m_pnf;
   boost::shared_ptr<npm::CheatSheet> m_cheat;
-  boost::shared_ptr<carrot_trace_t> m_carrot_trace;
+  boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
   boost::shared_ptr<sfl::Frame> m_pose;
   
   bool m_replan_request;

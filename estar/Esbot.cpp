@@ -74,13 +74,8 @@ using sfl::Scan;
 using sfl::sqr;
 using sfl::absval;
 using sfl::RWlock;
-using estar::Grid;
-using estar::GridNode;
-using estar::vertex_t;
-using estar::minval;
-using estar::dump_grid_range_highlight;
-using pnf::Flow;
 
+using namespace estar;
 using namespace boost;
 using namespace std;
 
@@ -99,7 +94,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
     m_grid_wdim(30),		// TO DO: no magic numbers
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
-    m_carrot_trace(new carrot_trace_t),
+    m_carrot_trace(new carrot_trace()),
     m_pose(new Frame()),
     m_replan_request(false)
 {
@@ -335,14 +330,14 @@ PrepareAction(double timestep)
     PVDEBUG("grid local robot        : %g   %g\n", robx, roby);
     const double carrot_stepsize(0.3);
     const size_t carrot_maxnsteps(30);
-    const int
-      result(estar::compute_carrot(m_pnf->GetFlow()->GetPNF(), robx, roby,
-				   carrot_distance, carrot_stepsize,
-				   carrot_maxnsteps, carx, cary,
-				   m_carrot_trace.get()));
+    const int result(trace_carrot(m_pnf->GetFlow()->GetPNF(), robx, roby,
+				  carrot_distance, carrot_stepsize,
+				  carrot_maxnsteps, *m_carrot_trace));
     if(0 <= result){
       if(1 == result)
 	PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
+      carx = m_carrot_trace->back().cx;
+      cary = m_carrot_trace->back().cy;
       PVDEBUG("grid local carrot       : %g   %g\n", carx, cary);
       gframe->To(carx, cary);
       PVDEBUG("global carrot           : %g   %g\n", carx, cary);
@@ -350,12 +345,8 @@ PrepareAction(double timestep)
       cary -= m_pose->Y();
       PVDEBUG("global delta carrot     : %g   %g\n", carx, cary);
     }
-    else{
+    else
       PVDEBUG("FAILED compute_carrot()\n");
-      // paranoia in case carx, cary got modified anyways
-      carx = m_goal->X() - m_pose->X();
-      cary = m_goal->Y() - m_pose->Y();    
-    }
   }
   else
     PVDEBUG("no local goal can be determined\n");    
@@ -366,9 +357,9 @@ PrepareAction(double timestep)
   static const double start_aiming(10 * M_PI / 180); // to do: magic numbers
   static const double start_homing(2 * M_PI / 180); // to do: magic numbers
   const double dhead(atan2(cary, carx));
-  if(absval(dhead) < start_homing)
+  if(sfl::absval(dhead) < start_homing)
     m_dynamicWindow->GoFast();
-  else if(absval(dhead) > start_aiming)
+  else if(sfl::absval(dhead) > start_aiming)
     m_dynamicWindow->GoSlow();
   
   shared_ptr<const Scan> scan(m_multiscanner->CollectScans());
@@ -423,13 +414,13 @@ CreateHull()
 }
 
 
-boost::shared_ptr<Esbot::carrot_trace_t> Esbot::
+boost::shared_ptr<carrot_trace> Esbot::
 ComputeFullCarrot() const
 {
   // can only compute full carrot if the partial one exists...
   if((!m_carrot_trace) || m_carrot_trace->empty()){
     PVDEBUG("m_carrot_trace.empty()\n");
-    return shared_ptr<carrot_trace_t>();
+    return shared_ptr<carrot_trace>();
   }
   
   shared_ptr<const GridFrame> gframe(m_pnf->GetGridFrame());
@@ -441,18 +432,14 @@ ComputeFullCarrot() const
 			- 0.5 * m_goal->Dr());
   const double stepsize(0.2);	// magic numbers stink
   const size_t maxnsteps(static_cast<size_t>(ceil(2 * distance / stepsize)));
-  double carx, cary;
-  shared_ptr<carrot_trace_t> trace(new carrot_trace_t);
-  const int
-    result(estar::compute_carrot(m_pnf->GetFlow()->GetPNF(),
-				 robx, roby,
-				 distance, stepsize, maxnsteps,
-				 carx, cary, trace.get()));
+  shared_ptr<carrot_trace> trace(new carrot_trace);
+  const int result(trace_carrot(m_pnf->GetFlow()->GetPNF(), robx, roby,
+				distance, stepsize, maxnsteps, *trace));
   PVDEBUG("d: %g   s: %g   n: %lu   result: %d\n",
 	  distance, stepsize, maxnsteps, result);
   
   if(0 <= result)
     return trace;
   
-  return shared_ptr<carrot_trace_t>();
+  return shared_ptr<carrot_trace>();
 }
