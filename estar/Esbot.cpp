@@ -334,6 +334,18 @@ PrepareAction(double timestep)
     if(0 <= result){
       if(1 == result)
 	PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
+      PDEBUG("carrot.value = %g\n", m_carrot_trace->back().value);
+      if(m_carrot_trace->back().value <= 3 * carrot_stepsize){
+	// could just as well simply keep (carx, cary) untouched, but
+	// we want to see this adaption in the CarrotDrawing... his is
+	// really "dumb" because we undo the same trasformations right
+	// afterwards, but well.
+	PVDEBUG("carrot on goal border, appending goal point to carrot");
+	double foox(m_goal->X());
+	double fooy(m_goal->Y());
+	gframe->From(foox, fooy);
+	m_carrot_trace->push_back(carrot_item(foox, fooy, 0, 0, 0, true));
+      }
       carx = m_carrot_trace->back().cx;
       cary = m_carrot_trace->back().cy;
       PVDEBUG("grid local carrot       : %g   %g\n", carx, cary);
