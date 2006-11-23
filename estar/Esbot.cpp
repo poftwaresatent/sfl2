@@ -180,10 +180,14 @@ CreateGfxStuff(const std::string & name)
 			    this, PNFDrawing::GLOBAL, PNFDrawing::VALUE));
   AddDrawing(new PNFDrawing(name + "_gframe_value",
 			    this, PNFDrawing::GFRAME, PNFDrawing::VALUE));
-  AddDrawing(new CarrotDrawing(name + "_carrotdrawing", this, true, false));
-  AddDrawing(new CarrotDrawing(name + "_fullcarrotdrawing", this, true, true));
+
+  // XXX to do: magic numbers!!!
+  AddDrawing(new CarrotDrawing(name + "_carrotdrawing",
+			       this, true, false, 0));
+  AddDrawing(new CarrotDrawing(name + "_fullcarrotdrawing",
+			       this, true, true, 5));
   AddDrawing(new CarrotDrawing(name + "_localcarrotdrawing",
-			       this, false, false));
+			       this, false, false, 5));
   
   AddCamera(new StillCamera(name + "_dwcamera",
 			    0,

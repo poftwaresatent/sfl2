@@ -34,11 +34,14 @@ class CarrotDrawing
 public:
   bool global_mode;
   bool full_trace;
+  size_t gradplot_frequency;
   
   CarrotDrawing(const std::string & name,
 		Esbot * bot,
 		bool global_mode,
-		bool full_trace);
+		bool full_trace,
+		/** plot gradient every X steps (0: don't plot gradient) */
+		size_t gradplot_frequency);
   
   virtual void Draw();
   

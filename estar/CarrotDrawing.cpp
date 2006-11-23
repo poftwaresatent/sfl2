@@ -41,10 +41,12 @@ CarrotDrawing::
 CarrotDrawing(const std::string & name,
 	      Esbot * bot,
 	      bool _global_mode,
-	      bool _full_trace)
+	      bool _full_trace,
+	      size_t _gradplot_frequency)
   : Drawing(name),
     global_mode(_global_mode),
     full_trace(_full_trace),
+    gradplot_frequency(_gradplot_frequency),
     m_bot(bot)
 {
 }
@@ -88,14 +90,43 @@ Draw()
     glRotated(180 * lframe.Theta() / M_PI, 0, 0, 1);    
   }
   
-  glColor3d(0.5, 1, 0);
-  glLineWidth(3);
-  glBegin(GL_LINE_STRIP);
-  glVertex2d(lframe.X(), lframe.Y());
-  for(size_t ii(0); ii < trace->size(); ++ii)
-    glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
-  glEnd();
-  glLineWidth(1);
+  if(0 == gradplot_frequency){
+    glLineWidth(3);
+    glBegin(GL_LINE_STRIP);
+    for(size_t ii(0); ii < trace->size(); ++ii){
+      if((*trace)[ii].degenerate)
+	glColor3d(1, 0.5, 0);
+      else
+	glColor3d(0.5, 1, 0);
+      glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
+    }
+    glEnd();
+    glLineWidth(1);
+  }
+  else{
+    glPointSize(3);
+    glBegin(GL_POINTS);
+    for(size_t ii(0); ii < trace->size(); ii += gradplot_frequency){
+      if((*trace)[ii].degenerate)
+	glColor3d(1, 0.5, 0);
+      else
+	glColor3d(0.5, 1, 0);
+      glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
+    }
+    glEnd();
+    glPointSize(1);
+    glBegin(GL_LINES);
+    for(size_t ii(0); ii < trace->size(); ii += gradplot_frequency){
+      if((*trace)[ii].degenerate)
+	glColor3d(1, 0.5, 0);
+      else
+	glColor3d(0.5, 1, 0);
+      glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
+      glVertex2d((*trace)[ii].cx + (*trace)[ii].gradx,
+		 (*trace)[ii].cy + (*trace)[ii].grady);
+    }
+    glEnd();
+  }
   
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
