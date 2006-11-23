@@ -313,18 +313,11 @@ PrepareAction(double timestep)
   prevstep = step;
   
   m_carrot_trace->clear();
-  const double goaldist(sqrt(sqr(m_pose->X() - m_goal->X())
-			     + sqr(m_pose->X() - m_goal->X())));
-  // TO DO: the smell of magic numbers...
-  const double carrot_distance(minval(goaldist, 1.5));
   
   // default: go straight for goal
   double carx(m_goal->X() - m_pose->X());
   double cary(m_goal->Y() - m_pose->Y());
-  if(goaldist <= carrot_distance)
-    PVDEBUG("(goaldist = %g <= carrot_distance = %g)\n",
-	    goaldist, carrot_distance);
-  else if(PNF::DONE == step){
+  if(PNF::DONE == step){
     PVDEBUG("(PNF::DONE == step)\n");
     shared_ptr<const GridFrame> gframe(m_pnf->GetGridFrame());
     double robx(m_pose->X());
@@ -332,6 +325,7 @@ PrepareAction(double timestep)
     PVDEBUG("global robot            : %g   %g\n", robx, roby);
     gframe->From(robx, roby);
     PVDEBUG("grid local robot        : %g   %g\n", robx, roby);
+    const double carrot_distance(1.2); // XXX to do: magic numbers...
     const double carrot_stepsize(0.3);
     const size_t carrot_maxnsteps(30);
     const int result(trace_carrot(m_pnf->GetFlow()->GetPNF(), robx, roby,

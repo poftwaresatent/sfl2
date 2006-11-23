@@ -22,6 +22,8 @@
 #include "Esbot.hpp"
 #include "PNF.hpp"
 #include <npm/common/wrap_gl.hpp>
+#include <npm/common/wrap_glu.hpp>
+#include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/util.hpp>
 #include <math.h>
@@ -74,6 +76,17 @@ Draw()
     PDEBUG("carrot: invalid or empty trace\n");    
     return;
   }
+
+  double carx, cary;
+  if(full_trace){
+    const carrot_item ci(m_bot->GetCarrotTrace()->back());
+    carx = ci.cx;
+    cary = ci.cy;
+  }
+  else{
+    carx = trace->back().cx;
+    cary = trace->back().cy;
+  }
   
   shared_ptr<const GridFrame> gframe(pnf->GetGridFrame());
   Frame lframe(m_bot->GetPose());
@@ -90,43 +103,54 @@ Draw()
     glRotated(180 * lframe.Theta() / M_PI, 0, 0, 1);    
   }
   
+  const double startval(trace->front().value);
+  double deltav(absval(startval - trace->back().value));
+  if(deltav <= epsilon)
+    deltav = startval;
   if(0 == gradplot_frequency){
-    glLineWidth(3);
     glBegin(GL_LINE_STRIP);
     for(size_t ii(0); ii < trace->size(); ++ii){
+      const double blue((startval - (*trace)[ii].value) / deltav);
       if((*trace)[ii].degenerate)
-	glColor3d(1, 0.5, 0);
+	glColor3d(1, 0.5, blue);
       else
-	glColor3d(0.5, 1, 0);
+	glColor3d(0.5, 1, blue);
       glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
     }
     glEnd();
-    glLineWidth(1);
   }
   else{
     glPointSize(3);
     glBegin(GL_POINTS);
     for(size_t ii(0); ii < trace->size(); ii += gradplot_frequency){
+      const double blue((startval - (*trace)[ii].value) / deltav);
       if((*trace)[ii].degenerate)
-	glColor3d(1, 0.5, 0);
+	glColor3d(1, 0.5, blue);
       else
-	glColor3d(0.5, 1, 0);
+	glColor3d(0.5, 1, blue);
       glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
     }
     glEnd();
     glPointSize(1);
     glBegin(GL_LINES);
     for(size_t ii(0); ii < trace->size(); ii += gradplot_frequency){
+      const double blue((startval - (*trace)[ii].value) / deltav);
       if((*trace)[ii].degenerate)
-	glColor3d(1, 0.5, 0);
+	glColor3d(1, 0.5, blue);
       else
-	glColor3d(0.5, 1, 0);
+	glColor3d(0.5, 1, blue);
       glVertex2d((*trace)[ii].cx, (*trace)[ii].cy);
       glVertex2d((*trace)[ii].cx + (*trace)[ii].gradx,
 		 (*trace)[ii].cy + (*trace)[ii].grady);
     }
     glEnd();
   }
+  
+  glColor3d(1, 1, 0);
+  glPushMatrix();
+  glTranslated(carx, cary, 0);
+  gluDisk(wrap_glu_quadric_instance(), 0.2, 0.2, 36, 1);
+  glPopMatrix();
   
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
