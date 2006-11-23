@@ -91,7 +91,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
     m_radius(0.0),
     m_speed(0.0),
     m_grid_width(8),		// TO DO: no magic numbers
-    m_grid_wdim(30),		// TO DO: no magic numbers
+    m_grid_wdim(60),		// TO DO: no magic numbers
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_trace(new carrot_trace()),
@@ -334,7 +334,7 @@ PrepareAction(double timestep)
     if(0 <= result){
       if(1 == result)
 	PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
-      PDEBUG("carrot.value = %g\n", m_carrot_trace->back().value);
+      PVDEBUG("carrot.value = %g\n", m_carrot_trace->back().value);
       if(m_carrot_trace->back().value <= 3 * carrot_stepsize){
 	// could just as well simply keep (carx, cary) untouched, but
 	// we want to see this adaption in the CarrotDrawing... his is

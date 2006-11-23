@@ -26,6 +26,7 @@
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
 #include <estar/util.hpp>
+#include <estar/Facade.hpp>
 #include <pnf/Flow.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
@@ -39,8 +40,41 @@
 #define PVDEBUG PDEBUG_OFF
 
 
-using sfl::sqr;
+using namespace sfl;
 using namespace boost;
+
+
+namespace local {
+  
+  class ValueColorScheme
+    : public gfx::ColorScheme {
+  public:
+    ValueColorScheme(double _vmax): vmax(_vmax) {
+      PVDEBUG("vmax = %g\n", vmax);
+    }
+    
+    virtual void Set(double value) const {
+      double red, green, blue;
+      if(absval(value - vmax) < 0.3)
+	red = 0.6;
+      else
+	red = boundval(0.0, 0.5 * (value / vmax), 0.5);
+      if(absval(value) < 0.3)
+	green = 0.6;
+      else
+	green = boundval(0.0, 0.5 * ((vmax - value) / vmax), 0.5);
+      if(absval(value - vmax / 2) < 0.3)
+	blue = 0.6;
+      else
+	blue = 0;
+      glColor3d(red, green, blue);
+    }
+    const double vmax;
+  };
+  
+}
+
+using namespace local;
 
 
 PNFDrawing::
@@ -94,7 +128,18 @@ Draw()
   else if(VALUE == what){
     if(PNF::DONE == step){
       facade = &flow->GetPNF();
-      gfx::draw_grid_value(*facade, cs);
+      shared_ptr<const GridFrame> gframe(pnf->GetGridFrame());
+      double x, y, theta;
+      m_bot->GetPose(x, y, theta);
+      gframe->From(x, y);
+      const size_t ix(static_cast<size_t>(rint(x / facade->scale)));
+      const size_t iy(static_cast<size_t>(rint(y / facade->scale)));
+      if((ix >= facade->xsize) || (iy >= facade->ysize)){
+	PDEBUG("FAIL (ix >= facade.xsize) || (iy >= facade.ysize)\n");
+	return;
+      }
+      const ValueColorScheme vcs(facade->GetValue(ix, iy));
+      gfx::draw_grid_value(*facade, &vcs, false);
     }
   }
   else if(META == what){
@@ -111,12 +156,12 @@ Draw()
     case PNF::ENVDIST:
     case PNF::OBJDIST:
       facade = &flow->GetEnvdist();
-      gfx::draw_grid_value(*facade, cs);
+      gfx::draw_grid_value(*facade, cs, true); // should use custom cs
       break;
     case PNF::ROBDIST:
       facade = flow->GetRobdist(); // could be 0
       if(0 != facade)
-	gfx::draw_grid_value(*facade, cs);
+	gfx::draw_grid_value(*facade, cs, true); // should use custom cs
       break;
     case PNF::DONE:
       facade = &flow->GetPNF();
