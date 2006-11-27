@@ -103,33 +103,47 @@ if test -z "$BUILD_BIRON_TRUE"; then
     CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS"
   fi
   AC_CHECK_HEADER([xcfwrap/xcfglue.h], [], [
-  AC_MSG_ERROR([cannot compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_MSG_ERROR([cannot compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
   CPPFLAGS="$oldCPPFLAGS"
 fi
 
 AC_ARG_WITH(estar,
   AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
   [ if test "x$withval" = "x" ; then
-      AC_SUBST(ESTAR_CPPFLAGS, "")
+      AC_SUBST(ESTAR_CPPFLAGS, "-DBUILD_ESTAR")
       AC_SUBST(ESTAR_LDFLAGS, "-lestar")
     else
-      AC_SUBST(ESTAR_CPPFLAGS, "-I${withval}/include")
-      AC_SUBST(ESTAR_LDFLAGS, "-lestar -L${withval}/lib")
+      AC_SUBST(ESTAR_CPPFLAGS, "-DBUILD_ESTAR -I${withval}/include")
+      AC_SUBST(ESTAR_LDFLAGS, "-lasl-mcontrol -lestar -L${withval}/lib")
     fi
-    CPPFLAGS="$CPPFLAGS -DBUILD_ESTAR"
-    oldCPPFLAGS="$CPPFLAGS"
-    if test "$prefix" != "NONE"; then
-      CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS -I$prefix/include"
-    else
-      CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS"
-    fi
-    AC_CHECK_HEADER([estar/Facade.hpp], [], [
-      AC_MSG_ERROR([cannot compile estar/Facade.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-    CPPFLAGS="$oldCPPFLAGS"
     AM_CONDITIONAL([BUILD_ESTAR], [true]) ],
   [ AC_SUBST(ESTAR_CPPFLAGS, "")
     AC_SUBST(ESTAR_LDFLAGS, "")
     AM_CONDITIONAL([BUILD_ESTAR], [false]) ])
+
+AC_ARG_WITH(asl,
+  AC_HELP_STRING([--with-asl=PATH], [ASL 'standard software' install PATH]),
+  [ if test ! -z "$BUILD_ESTAR_TRUE"; then
+      AC_MSG_ERROR([--with-asl makes no sense without --with-estar])
+    fi
+    if test "x$withval" != "x" ; then
+      ESTAR_CPPFLAGS="$ESTAR_CPPFLAGS -I${withval}/include"
+      ESTAR_LDFLAGS="-L${withval}/lib $ESTAR_LDFLAGS"
+    fi ], [])
+
+if test -z "$BUILD_ESTAR_TRUE"; then
+  oldCPPFLAGS="$CPPFLAGS"
+  if test "$prefix" != "NONE"; then
+    CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS -I$prefix/include"
+  else
+    CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS"
+  fi
+  AC_CHECK_HEADER([estar/Facade.hpp], [], [
+    AC_MSG_ERROR([cannot compile estar/Facade.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+  AC_CHECK_HEADER([asl/path_tracking.hpp], [], [
+    AC_MSG_ERROR([cannot compile asl/path_tracking.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+  CPPFLAGS="$oldCPPFLAGS"
+fi
 
 case $host_os in
   darwin*) AC_DISABLE_SHARED;;
