@@ -38,11 +38,11 @@ namespace sfl {
   TraversabilityMap::
   TraversabilityMap()
     : gframe(0, 0, 0, 1), freespace(0), obstacle(127), name("world")
-  {}
+  {
+  }
   
   
-  shared_ptr<TraversabilityMap>
-  TraversabilityMap::
+  shared_ptr<TraversabilityMap> TraversabilityMap::
   Parse(istream & is, ostream * os)
   {
     shared_ptr<TraversabilityMap> result(new TraversabilityMap());
@@ -121,8 +121,7 @@ namespace sfl {
 	continue;
       }
       
-      data.push_back(vector<int>());
-      vector<int> & line(*data.rbegin());
+      vector<int> line;
       int value;
       while(tls >> value){
 	line.push_back(value);
@@ -131,8 +130,11 @@ namespace sfl {
 	if(value < mindata)
 	  mindata = value;
       }
-      if(line.size() > grid_xsize)
-	grid_xsize = line.size();
+      if( ! line.empty()){
+	data.push_back(line);
+	if(line.size() > grid_xsize)
+	  grid_xsize = line.size();
+      }
     }
     const size_t grid_ysize(data.size());
     
