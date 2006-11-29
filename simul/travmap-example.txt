@@ -1,0 +1,14 @@
+# resolution 1.5
+# origin 0 0 0
+# obstacle 127
+# freespace 0
+# default 50
+# name expo
+
+# note that all lines get expanded by default value to the longest
+# line in order to get a rectangular grid
+
+0   0   15
+255 129 0   0   12
+127 125 19  0
+60  50  0   0   99
