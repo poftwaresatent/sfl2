@@ -27,6 +27,7 @@
 #include <npm/common/Globals.hpp>
 #include <npm/common/World.hpp>
 #include <npm/common/wrap_glut.hpp>
+#include <npm/common/TraversabilityDrawing.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/array2d.hpp>
 #include <sfl/util/Line.hpp>
@@ -73,6 +74,7 @@ static const unsigned int timestep_usec(100000);
 static int handle;
 static shared_ptr<Simulator> simulator;
 static shared_ptr<SimulatorUpdateThread> update_thread;
+static shared_ptr<TraversabilityDrawing> travdrawing;
 
 static void parse_options(int argc, char ** argv);
 static void init_glut(int argc, char** argv, int width, int height);
@@ -130,6 +132,7 @@ int main(int argc, char ** argv)
     }
     world.reset(new World(traversability->name));
     world->ApplyTraversability(*traversability);
+    travdrawing.reset(new TraversabilityDrawing("travmap", traversability));
   }
   else{
     cerr << "ERROR: Specify either a world or a traversability file.\n";

@@ -394,6 +394,30 @@ namespace npm {
 	    AddLine(line);
 	  }
 	}
+    // lower left
+    GridFrame::position_t corner(gframe.LocalPoint(0, 0));
+    corner.v0 -= offset;
+    corner.v1 -= offset;
+    gframe.To(corner.v0, corner.v1);
+    m_bbox->Update(corner.v0, corner.v1);
+    // upper left
+    corner = gframe.LocalPoint(0, ysize - 1);
+    corner.v0 -= offset;
+    corner.v1 += offset;
+    gframe.To(corner.v0, corner.v1);
+    m_bbox->Update(corner.v0, corner.v1);
+    // lower right
+    corner = gframe.LocalPoint(xsize - 1, 0);
+    corner.v0 += offset;
+    corner.v1 -= offset;
+    gframe.To(corner.v0, corner.v1);
+    m_bbox->Update(corner.v0, corner.v1);
+    // upper right
+    corner = gframe.LocalPoint(xsize - 1, ysize - 1);
+    corner.v0 += offset;
+    corner.v1 += offset;
+    gframe.To(corner.v0, corner.v1);
+    m_bbox->Update(corner.v0, corner.v1);
   }
   
 }
