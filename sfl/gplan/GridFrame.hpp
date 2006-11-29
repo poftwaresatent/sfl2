@@ -64,6 +64,8 @@ namespace sfl {
     void SetGlobalDisk(grid_t & grid, position_t center,
 		       double radius, double value);
     
+    double Delta() const { return m_delta; }
+    
   protected:
     double m_delta;
     double m_delta_inv;
