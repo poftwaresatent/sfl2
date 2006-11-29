@@ -150,10 +150,12 @@ namespace sfl {
     for(size_t iy(0); iy < grid_ysize; ++iy){
       vector<int> & line(data[iy]);
       for(size_t ix(0); ix < line.size(); ++ix)
-	(*result->data)[ix][iy] = line[ix];
+	(*result->data)[ix][grid_ysize - iy - 1] = line[ix];
     }
+    result->mindata = mindata;
+    result->maxdata = maxdata;
     
     return result;
   }
-
+  
 }

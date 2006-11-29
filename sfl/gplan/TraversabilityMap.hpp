@@ -49,6 +49,8 @@ namespace sfl {
     int obstacle;		/**< default 127 */
     std::string name;		/**< default "world" */
     boost::shared_ptr<array2d<int> >  data; /**< default NULL */
+    int mindata;		/**< only valid after successful Parse() */
+    int maxdata;		/**< only valid after successful Parse() */
   };
   
 }
