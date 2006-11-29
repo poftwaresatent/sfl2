@@ -76,7 +76,13 @@ namespace sfl {
 		      m_bubble_band.robot_radius,
 		      m_bubble_band.NF1GoalRadius());
     m_nf1->Calculate();
-    return m_nf1->ResetTrace();
+    const bool ok(m_nf1->ResetTrace());
+    if(ok){
+      m_nf1width = DEFAULTNF1WIDTH;
+      return true;
+    }
+    m_nf1width *= 2;
+    return false;
   }
   
   
