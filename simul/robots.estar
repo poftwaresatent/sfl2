@@ -7,8 +7,8 @@ Robot esbot Zillian
 	Goal  6  15  3.2  0.5  3.2
 	Goal 15  10  3.2  0.5  3.2
 	Option camera_zoom 4
-        Option dwa_dimension       31
-        Option dwa_grid_resolution 0.07
+        Option dwa_dimension       21
+        Option dwa_grid_resolution 0.1
 
 Robot visitor visitor0
 	Pose  7  5.5  0

@@ -148,9 +148,9 @@ namespace npm {
 
 
   shared_ptr<BicycleDrive> RobotClient::
-  DefineBicycleDrive(double wheelbase, double axlebase)
+  DefineBicycleDrive(double wheelbase, double wheelradius, double axlebase)
   {
-    return m_server->DefineBicycleDrive(wheelbase, axlebase);
+    return m_server->DefineBicycleDrive(wheelbase, wheelradius, axlebase);
   }
   
 }

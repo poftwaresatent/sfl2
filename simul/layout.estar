@@ -1,9 +1,7 @@
 View ground-truth
-     Camera  Zillian_true_zoom_camera
-#     Camera  expo
+     Camera  expo
      Drawing Zillian_global_risk
      Drawing Zillian_carrotdrawing
-     Drawing Zillian_fullcarrotdrawing
      Drawing expo
      Drawing Zillian_true_drawing
      Drawing visitor0_true_drawing

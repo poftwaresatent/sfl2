@@ -35,27 +35,49 @@ namespace npm {
 
 
   BicycleDrive::
-  BicycleDrive(shared_ptr<HAL> hal, double _wheelbase, double _axlewidth)
-    : Drive(hal), wheelbase(_wheelbase), axlewidth(_axlewidth)
+  BicycleDrive(shared_ptr<HAL> hal, double _wheelbase,
+	       double _wheelradius, double _axlewidth)
+    : Drive(hal), wheelbase(_wheelbase), wheelradius(_wheelradius),
+      axlewidth(_axlewidth)
   {
   }
 
   shared_ptr<Frame> BicycleDrive::
   ComputeNextPose(const Frame & current, double timestep) const
   {
-      double v_trans, steer;
-
-      m_hal->speed_get(&v_trans, &steer);
+    double v_trans, steer;
+    m_hal->speed_get(&v_trans, &steer);
     
-      double dtheta = (v_trans / wheelbase) * tan(steer) * timestep;
- 
-      double dx = sin(dtheta) * v_trans * timestep;
-      double dy = cos(dtheta) * v_trans * timestep;
-      
-      current.RotateTo(dx, dy);
-      shared_ptr<Frame> result(new Frame(current));
-      result->Add(dx, dy, dtheta);
-      return result;
+    double dx, dy, dtheta;
+    if(absval(absval(steer) - M_PI / 2) < epsilon * 2 * M_PI){
+      // straight line
+      dx = v_trans * timestep;
+      dy = 0;
+      dtheta = 0;
+    }
+    else{
+      // arc of circle
+      // tan(steer) is OK as of check for M_PI/2 above
+      const double R(wheelbase / tan(steer));
+      dtheta = v_trans * timestep * tan(steer) / wheelbase;
+      dx = R * sin(dtheta);
+      dy = R * (1 - cos(dtheta));
+    }
+    current.RotateTo(dx, dy);
+    
+    shared_ptr<Frame> result(new Frame(current));
+    result->Add(dx, dy, dtheta);
+    return result;
   }
-
+  
+  
+  void BicycleDrive::
+  GetState(double & v_trans, double & steer) const
+  {
+    if(0 != m_hal->speed_get(&v_trans, &steer)){
+      v_trans = 0;
+      steer = 0;
+    }
+  }
+  
 }

@@ -136,7 +136,7 @@ namespace npm {
 
     /** Factory method for creating a bicycle drive actuator. */
     boost::shared_ptr<BicycleDrive>
-    DefineBicycleDrive(double wheelbase, double axlewidth);
+    DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth);
     
       //  private:
   public:

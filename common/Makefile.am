@@ -10,4 +10,4 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      RobotServer.cpp RobotClient.cpp RobotDescriptor.cpp \
                      Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
                      DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp util.cpp \
-                     TraversabilityDrawing.cpp
+                     TraversabilityDrawing.cpp BicycleDriveDrawing.cpp

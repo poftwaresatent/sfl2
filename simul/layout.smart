@@ -1,0 +1,25 @@
+View ground-truth
+     Camera  world
+#     Drawing Ter_global_risk
+#     Drawing Ter_carrotdrawing
+     Drawing world
+     Drawing Ter_true_drawing
+     Drawing Ter_goaldrawing
+     Drawing Ter_trajectory
+     Drawing Ter_drive
+     Drawing Ter_lidar_0
+     Window  0.0  0.0  0.5  1.0
+     Border  0
+
+View ter
+     Camera  Ter_true_zoom_camera
+#     Drawing Ter_global_value
+#     Drawing Ter_fullcarrotdrawing
+     Drawing world
+     Drawing Ter_true_drawing
+     Drawing Ter_drive
+     Drawing Ter_goaldrawing
+     Drawing Ter_drive
+     Drawing Ter_lidar_0
+     Window  0.5  0.0  1.0  1.0
+     Border  2

@@ -21,48 +21,34 @@
  * USA
  */
 
-#ifndef NPM_BICYCLE_DRIVE_HPP
-#define NPM_BICYCLE_DRIVE_HPP
 
-#include <npm/common/Drive.hpp>
+#ifndef NPM_BICYCLEDRIVEDRAWING_HPP
+#define NPM_BICYCLEDRIVEDRAWING_HPP
+
+
+#include <npm/common/Drawing.hpp>
+#include <npm/common/BicycleDrive.hpp>
 
 namespace npm {
+
   
-  /**
-     Bicycle drive actuator.
- 
-     \code
-      /       /
-     /---+---/
-    /    |  /
-         |
-         |wheelbase
-         |
-     |   |   |
-     |---+---|
-     |       |
-     axlewidth
-     \endcode
-  */
-  
-  class BicycleDrive
-    : public Drive
+  class BicycleDriveDrawing
+    : public Drawing
   {
   public:
-    BicycleDrive(boost::shared_ptr<HAL> hal,  double wheelbase,
-		 double wheelradius, double axlewidth);
+    BicycleDriveDrawing(const std::string & name,
+		     boost::shared_ptr<const BicycleDrive> drive);
     
-    void GetState(double & v_trans, double & steer) const;
+    virtual void Draw();
     
-    const double wheelbase;
-    const double wheelradius;
-    const double axlewidth;
-    
-  protected:
-    virtual boost::shared_ptr<sfl::Frame>
-    ComputeNextPose(const sfl::Frame & current, double timestep) const;
+  private:
+    boost::shared_ptr<const BicycleDrive> m_drive;
+    const double m_wheelbase;
+    const double m_wheelradius;
+    const double m_axlewidth;
+
   };
-  
+
 }
 
-#endif // NPM_BYCICLE_DRIVE_HPP
+#endif // NPM_BICYCLEDRIVEDRAWING_HPP

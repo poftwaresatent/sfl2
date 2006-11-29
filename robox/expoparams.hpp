@@ -31,6 +31,7 @@ struct expoparams
   : public expo_parameters
 {
   explicit expoparams(boost::shared_ptr<npm::RobotDescriptor> descriptor);
+  double model_axlewidth;
 };
 
 #endif // EXPOPARAMS_HPP

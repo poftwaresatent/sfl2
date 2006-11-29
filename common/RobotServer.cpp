@@ -36,6 +36,7 @@
 #include "BicycleDrive.hpp"
 #include "DiffDriveDrawing.hpp"
 #include "HoloDriveDrawing.hpp"
+#include "BicycleDriveDrawing.hpp"
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/api/Scanner.hpp>
@@ -151,13 +152,14 @@ namespace npm {
   }
 
   shared_ptr<BicycleDrive> RobotServer::
-  DefineBicycleDrive(double wheelbase, double wheelradius)
+  DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth)
   {
     if(m_drive)
       return shared_ptr<BicycleDrive>();
-    shared_ptr<BicycleDrive> hd(new BicycleDrive(GetHAL(), wheelbase, wheelradius));
+    shared_ptr<BicycleDrive>
+      hd(new BicycleDrive(GetHAL(), wheelbase, wheelradius, axlewidth));
     m_drive = hd;
-    //AddDrawing(new BicycleDriveDrawing(m_descriptor->name + "_drive", hd));
+    AddDrawing(new BicycleDriveDrawing(m_descriptor->name + "_drive", hd));
     return hd;
   }
   

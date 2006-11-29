@@ -29,8 +29,8 @@
 #include <npm/common/wrap_glut.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
 #include <sfl/util/Pthread.hpp>
-#include <sfl/util/array2d.hpp>
-#include <sfl/util/Line.hpp>
+//#include <sfl/util/array2d.hpp>
+//#include <sfl/util/Line.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <fstream>
