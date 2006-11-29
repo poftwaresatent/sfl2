@@ -3,7 +3,6 @@
 # obstacle 10
 # freespace 5
 # default 18
-# name expo
 
 # note that all lines get expanded by default value to the longest
 # line in order to get a rectangular grid
@@ -21,4 +20,3 @@
  9  10  11  12  13  14  15
 10  11  12  13  14  15   0
 10   9   8   7   2   1   7
-

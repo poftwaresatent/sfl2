@@ -26,8 +26,6 @@
 #include <sfl/util/Frame.hpp>
 #include <math.h>
 
-#include <iostream>		// dbg
-
 using namespace sfl;
 using namespace boost;
 using namespace std;
@@ -55,41 +53,39 @@ namespace npm {
     double v_trans, steer;
     m_drive->GetState(v_trans, steer);
     
-    cerr << "(" << trans->X() << "   " << trans->Y() << "   "
-	 << trans->Theta() << ")   (" << v_trans << "   " << steer << ")\n";
-    
-    glBegin(GL_LINES);
-    
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glTranslated(trans->X(), trans->Y(), 0);
     glRotated(180 * trans->Theta() / M_PI, 0, 0, 1);
     
+    glLineWidth(2);
+    glBegin(GL_LINES);
     glColor3d(1, 1, 1);
     glVertex2d(0, -m_axlewidth/2);
     glVertex2d(0,  m_axlewidth/2);
-
     glColor3d(1, 0.5, 0.5);
     glVertex2d(-m_wheelradius, -m_axlewidth/2);
     glVertex2d( m_wheelradius, -m_axlewidth/2);
     glVertex2d(-m_wheelradius,  m_axlewidth/2);
     glVertex2d( m_wheelradius,  m_axlewidth/2);
+    glEnd();
     
     glTranslated(m_wheelbase, 0, 0);
     glRotated(180 * steer / M_PI, 0, 0, 1);
     
+    glBegin(GL_LINES);
     glColor3d(1, 1, 1);
     glVertex2d(0, -m_axlewidth/2);
     glVertex2d(0,  m_axlewidth/2);
-
     glColor3d(1, 0.5, 0.5);
     glVertex2d(-m_wheelradius, -m_axlewidth/2);
     glVertex2d( m_wheelradius, -m_axlewidth/2);
     glVertex2d(-m_wheelradius,  m_axlewidth/2);
     glVertex2d( m_wheelradius,  m_axlewidth/2);
-  
-    glPopMatrix();
     glEnd();
+    glLineWidth(1);
+    
+    glPopMatrix();
   }
 
 }

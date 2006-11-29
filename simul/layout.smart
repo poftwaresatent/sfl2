@@ -2,6 +2,7 @@ View ground-truth
      Camera  world
 #     Drawing Ter_global_risk
 #     Drawing Ter_carrotdrawing
+     Drawing travmap
      Drawing world
      Drawing Ter_true_drawing
      Drawing Ter_goaldrawing
@@ -15,6 +16,7 @@ View ter
      Camera  Ter_true_zoom_camera
 #     Drawing Ter_global_value
 #     Drawing Ter_fullcarrotdrawing
+     Drawing travmap
      Drawing world
      Drawing Ter_true_drawing
      Drawing Ter_drive

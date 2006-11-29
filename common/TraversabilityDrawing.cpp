@@ -74,7 +74,6 @@ namespace npm {
 	glColor3d(red, green, blue);
 	glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
       }
-    
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
   }

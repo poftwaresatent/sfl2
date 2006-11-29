@@ -63,14 +63,14 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 
   DefineBicycleDrive(m_wheelbase, m_wheelradius, m_axlewidth);
 
-  AddLine(Line(0, -m_axlewidth/2,
-	       0, m_axlewidth/2));
-  AddLine(Line(m_wheelbase, -m_axlewidth/2,
-	       m_wheelbase, m_axlewidth/2));
-  AddLine(Line(0, -m_axlewidth/2,
-	       m_wheelbase, -m_axlewidth/2));
-  AddLine(Line(0, m_axlewidth/2,
-	       m_wheelbase, m_axlewidth/2));
+  AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
+	       -m_wheelradius,  m_axlewidth/2 +m_wheelradius));
+  AddLine(Line(m_wheelbase +m_wheelradius, -m_axlewidth/2 -m_wheelradius,
+	       m_wheelbase +m_wheelradius,  m_axlewidth/2 +m_wheelradius));
+  AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
+	       m_wheelbase +m_wheelradius, -m_axlewidth/2 -m_wheelradius));
+  AddLine(Line(-m_wheelradius,  m_axlewidth/2 +m_wheelradius,
+	       m_wheelbase +m_wheelradius,  m_axlewidth/2 +m_wheelradius));
   
   AddDrawing(new GoalInstanceDrawing(descriptor->name + "_goaldrawing",
 				     *m_goal));
@@ -87,11 +87,11 @@ PrepareAction(double timestep)
   double dy(m_goal->Y() - pose.Y());
   pose.RotateFrom(dx, dy);
   const double phimax(M_PI / 2.1);
-  double dphi(boundval(-phimax, atan2(dy, dx - m_wheelbase), phimax));
+  const double dphi(boundval(-phimax, atan2(dy, dx), phimax));
   const double sdmin(0.05);
   const double sdmax(0.8);
   const double scale((phimax - absval(dphi)) / phimax);
-  const double sd(sdmax * (1 - scale) + sdmin * scale);
+  const double sd(sdmin * (1 - scale) + sdmax * scale);
   
   GetHAL()->speed_set(sd, dphi);
 }
