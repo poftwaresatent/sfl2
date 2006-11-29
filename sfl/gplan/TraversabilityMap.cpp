@@ -155,6 +155,8 @@ namespace sfl {
     result->mindata = mindata;
     result->maxdata = maxdata;
     
+    result->gframe.Configure(ox, oy, otheta, resolution);
+    
     return result;
   }
   
