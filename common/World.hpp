@@ -32,6 +32,7 @@
 
 namespace sfl {
   class Line;
+  class TraversabilityMap;
 }
 
 
@@ -65,6 +66,18 @@ namespace npm {
     static boost::shared_ptr<World> Mini();
     static boost::shared_ptr<World> Expo();
     static boost::shared_ptr<World> Stage();
+    
+    
+    /**
+       Adds lines to the world, based on the boundary between obstcale
+	and non-obstacle cells in the given traversability map. Cells
+	with a value of travmap.obstacle or higher are considered
+	obstacles.
+	
+	\todo Maybe add a way for traversability values to be
+	interpreted according to an inverted scale.
+    */
+    void ApplyTraversability(const sfl::TraversabilityMap & travmap);
     
     void AddLine(const sfl::Line & line);
     

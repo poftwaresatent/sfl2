@@ -29,6 +29,7 @@
 #include "WorldCamera.hpp"
 #include "BBox.hpp"
 #include <sfl/util/Line.hpp>
+#include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <cmath>
 
@@ -352,6 +353,47 @@ namespace npm {
 	os << "1\t" << foo->X0() << "\t" << foo->Y0()
 	   << "\t" << foo->X1() << "\t" << foo->Y1() << eol;
       }
+  }
+  
+  
+  void World::
+  ApplyTraversability(const TraversabilityMap & travmap)
+  {
+    const GridFrame & gframe(travmap.gframe);
+    const double offset(gframe.Delta() / 2);
+    const array2d<int> & data(*travmap.data);
+    const int obstacle(travmap.obstacle);
+    const size_t xsize(travmap.data->xsize);
+    const size_t ysize(travmap.data->ysize);
+    for(size_t ix(0); ix < xsize; ++ix)
+      for(size_t iy(0); iy < ysize; ++iy)
+	if(data[ix][iy] >= obstacle){
+	  GridFrame::position_t center(gframe.LocalPoint(ix, iy));
+	  if((0 >= ix) || (data[ix - 1][iy] < obstacle)){ // west
+	    Line line(center.v0 - offset, center.v1 - offset,
+		      center.v0 - offset, center.v1 + offset);
+	    line.TransformTo(gframe);
+	    AddLine(line);
+	  }
+	  if((xsize - 1 <= ix) || (data[ix + 1][iy] < obstacle)){ // east
+	    Line line(center.v0 + offset, center.v1 - offset,
+		      center.v0 + offset, center.v1 + offset);
+	    line.TransformTo(gframe);
+	    AddLine(line);
+	  }
+	  if((0 >= iy) || (data[ix][iy - 1] < obstacle)){ // south
+	    Line line(center.v0 - offset, center.v1 - offset,
+		      center.v0 + offset, center.v1 - offset);
+	    line.TransformTo(gframe);
+	    AddLine(line);
+	  }
+	  if((ysize - 1 <= iy) || (data[ix][iy + 1] < obstacle)){ // north
+	    Line line(center.v0 - offset, center.v1 + offset,
+		      center.v0 + offset, center.v1 + offset);
+	    line.TransformTo(gframe);
+	    AddLine(line);
+	  }
+	}
   }
   
 }
