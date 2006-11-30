@@ -1,4 +1,4 @@
-if ! BUILD_ESTAR
+if ! HAVE_ESTAR
   BUILT_SOURCES= estar_config_error
 endif
 CPPFLAGS+= @ESTAR_CPPFLAGS@

@@ -36,8 +36,8 @@ esac
 AC_ARG_WITH(boost,
   AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
   [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -I${withval}/include"
-      LDFLAGS="$LDFLAGS -L${withval}/lib"
+      CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}"
+      LDFLAGS="$LDFLAGS -L${withval}/lib -I${withval}"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
 test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
@@ -70,7 +70,7 @@ AC_ARG_WITH(xcf,
       AC_SUBST(XCF_CPPFLAGS, "-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include")
       AC_SUBST(XCF_LDFLAGS, "-lsigc-1.2 -lxcf -lxmltio -L${withval}/lib")
     fi
-    CPPFLAGS="$CPPFLAGS -DBUILD_BIRON"
+    CPPFLAGS="$CPPFLAGS -DHAVE_XCF"
     oldCPPFLAGS="$CPPFLAGS"
     if test "$prefix" != "NONE"; then
       CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
@@ -80,14 +80,14 @@ AC_ARG_WITH(xcf,
     AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
       AC_MSG_ERROR([cannot compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
     CPPFLAGS="$oldCPPFLAGS"
-    AM_CONDITIONAL([BUILD_BIRON], [true]) ],
+    AM_CONDITIONAL([HAVE_XCF], [true]) ],
   [ AC_SUBST(XCF_CPPFLAGS, "")
     AC_SUBST(XCF_LDFLAGS, "")
-    AM_CONDITIONAL([BUILD_BIRON], [false]) ])
+    AM_CONDITIONAL([HAVE_XCF], [false]) ])
 
 AC_ARG_WITH(xcfglue,
   AC_HELP_STRING([--with-xcfglue=PATH], [special XCFGLUE install PATH]),
-  [ if test ! -z "$BUILD_BIRON_TRUE"; then
+  [ if test ! -z "$HAVE_XCF_TRUE"; then
       AC_MSG_ERROR([--with-xcfglue requires --with-xcf])
     fi
     if test "x$withval" != "x" ; then
@@ -95,7 +95,7 @@ AC_ARG_WITH(xcfglue,
       XCF_LDFLAGS="-lxcfglue $XCF_LDFLAGS -L${withval}/lib"
     fi ], [])
 
-if test -z "$BUILD_BIRON_TRUE"; then
+if test -z "$HAVE_XCF_TRUE"; then
   oldCPPFLAGS="$CPPFLAGS"
   if test "$prefix" != "NONE"; then
     CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
@@ -110,20 +110,20 @@ fi
 AC_ARG_WITH(estar,
   AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
   [ if test "x$withval" = "x" ; then
-      AC_SUBST(ESTAR_CPPFLAGS, "-DBUILD_ESTAR")
+      AC_SUBST(ESTAR_CPPFLAGS, "-DHAVE_ESTAR")
       AC_SUBST(ESTAR_LDFLAGS, "-lestar")
     else
-      AC_SUBST(ESTAR_CPPFLAGS, "-DBUILD_ESTAR -I${withval}/include")
+      AC_SUBST(ESTAR_CPPFLAGS, "-DHAVE_ESTAR -I${withval}/include")
       AC_SUBST(ESTAR_LDFLAGS, "-lasl-mcontrol -lestar -L${withval}/lib")
     fi
-    AM_CONDITIONAL([BUILD_ESTAR], [true]) ],
+    AM_CONDITIONAL([HAVE_ESTAR], [true]) ],
   [ AC_SUBST(ESTAR_CPPFLAGS, "")
     AC_SUBST(ESTAR_LDFLAGS, "")
-    AM_CONDITIONAL([BUILD_ESTAR], [false]) ])
+    AM_CONDITIONAL([HAVE_ESTAR], [false]) ])
 
 AC_ARG_WITH(asl,
   AC_HELP_STRING([--with-asl=PATH], [ASL 'standard software' install PATH]),
-  [ if test ! -z "$BUILD_ESTAR_TRUE"; then
+  [ if test ! -z "$HAVE_ESTAR_TRUE"; then
       AC_MSG_ERROR([--with-asl makes no sense without --with-estar])
     fi
     if test "x$withval" != "x" ; then
@@ -131,7 +131,7 @@ AC_ARG_WITH(asl,
       ESTAR_LDFLAGS="-L${withval}/lib $ESTAR_LDFLAGS"
     fi ], [])
 
-if test -z "$BUILD_ESTAR_TRUE"; then
+if test -z "$HAVE_ESTAR_TRUE"; then
   oldCPPFLAGS="$CPPFLAGS"
   if test "$prefix" != "NONE"; then
     CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS -I$prefix/include"
@@ -159,5 +159,6 @@ test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                laas/Makefile biron/Makefile estar/Makefile smart/Makefile simul/Makefile])
+                laas/Makefile biron/Makefile estar/Makefile smart/Makefile
+                simul/Makefile])
 AC_OUTPUT

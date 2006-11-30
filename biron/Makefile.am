@@ -1,4 +1,4 @@
-if ! BUILD_BIRON
+if ! HAVE_XCF
   BUILT_SOURCES=xcf_config_error
 endif
 CPPFLAGS+= @XCF_CPPFLAGS@

@@ -28,13 +28,13 @@
 #include <npm/robox/Robox.hpp>
 #include <npm/laas/LAAS.hpp>
 
-#ifdef BUILD_BIRON
+#ifdef HAVE_XCF
 # include <npm/biron/Biron.hpp>
-#endif // BUILD_BIRON
+#endif // HAVE_XCF
 
-#ifdef BUILD_ESTAR
+#ifdef HAVE_ESTAR
 # include <npm/estar/Esbot.hpp>
-#endif // BUILD_ESTAR
+#endif // HAVE_ESTAR
 
 //#include <npm/theater/TheaterRobot.hpp>
 ////#include <npm/braitenberg/Braitenberg.hpp>
@@ -53,14 +53,14 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
     rob = Robox::Create(descriptor, world);
   else if(descriptor->model == "visitor")
     rob = new Visitor(descriptor, world);
-#ifdef BUILD_BIRON
+#ifdef HAVE_XCF
   else if(descriptor->model == "biron")
     rob = new Biron(descriptor, world);
-#endif // BUILD_BIRON
-#ifdef BUILD_ESTAR
+#endif // HAVE_XCF
+#ifdef HAVE_ESTAR
   else if(descriptor->model == "esbot")
     rob = new Esbot(descriptor, world);
-#endif // BUILD_ESTAR
+#endif // HAVE_ESTAR
   else if(descriptor->model == "jido")
     rob = new Jido(descriptor, world);
   else if(descriptor->model == "rackham")

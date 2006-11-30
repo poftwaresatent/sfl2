@@ -1,9 +1,9 @@
-if BUILD_BIRON
+if HAVE_XCF
   BIRON_DIR=    biron
   BIRON_LIBADD= biron/libbiron.la
 endif
 
-if BUILD_ESTAR
+if HAVE_ESTAR
   ESTAR_DIR=    estar
   ESTAR_LIBADD= estar/libestar.la
 endif 
