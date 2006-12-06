@@ -162,4 +162,17 @@ namespace sfl {
     return result;
   }
   
+
+  bool TraversabilityMap::
+  GetValue(double global_x, double global_y, int & value) const
+  {
+    if( ! data)
+      return false;
+    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+    if( ! data->ValidIndex(idx))
+      return false;
+    value = (*data)[idx];
+    return true;
+  }
+  
 }

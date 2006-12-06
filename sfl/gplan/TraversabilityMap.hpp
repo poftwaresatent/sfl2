@@ -44,6 +44,13 @@ namespace sfl {
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
     
+    /**
+       \return true if the traversability at the given global
+       coordinates is known, in which case the out-parameter
+       <code>value</code> is set to it.
+    */
+    bool GetValue(double global_x, double global_y, int & value) const;
+    
     GridFrame gframe;		/**< default (0, 0, 0, 1) */
     int freespace;		/**< default 0 */
     int obstacle;		/**< default 127 */
