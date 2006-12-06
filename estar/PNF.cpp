@@ -370,19 +370,18 @@ void * run(void * arg)
 }
 
 
-static bool do_add_static_object(Flow * flow, double xx, double yy)
+struct flow_draw_callback
+  : public GridFrame::draw_callback
 {
-  const size_t ix(static_cast<size_t>(rint(xx)));
-  const size_t iy(static_cast<size_t>(rint(yy)));
-  PVDEBUG("%g   %g   %ul   %ul\n", xx, yy, ix, iy);
-  if((ix >= flow->xsize) || (iy >= flow->ysize))
-    return false;
-  flow->AddStaticObject(ix, iy);
-  return true;
-}
+  flow_draw_callback(Flow * flow): m_flow(flow) {}
+  void operator () (size_t ix, size_t iy) {
+    PVDEBUG("grid: %zu   %zu\n", ix, iy);
+    m_flow->AddStaticObject(ix, iy);
+  }
+  Flow * m_flow;
+};
 
 
-/** \note Digital Differential Analyzer style algorithm */
 bool PNF::
 AddStaticLine(double x0, double y0,
 	      double x1, double y1)
@@ -390,44 +389,8 @@ AddStaticLine(double x0, double y0,
   PVDEBUG("global: %g   %g   %g   %g\n", x0, y0, x1, y1);
   Wait();
   
-  m_frame->From(x0, y0);
-  m_frame->From(x1, y1);
-  x0 /= resolution;
-  y0 /= resolution;
-  x1 /= resolution;
-  y1 /= resolution;
-  PVDEBUG("local: %g   %g   %g   %g\n", x0, y0, x1, y1);
-  PVDEBUG("gridsize: %ul   %ul\n", m_flow->xsize, m_flow->ysize);
-  
-  Flow * flow(m_flow.get());
-  bool ok(false);
-  if(do_add_static_object(flow, x0, y0))
-    ok = true;
-  
-  double dx(x1 - x0);
-  double dy(y1 - y0);
-  if(absval(dx) > absval(dy)){
-    double slope(dy / dx);
-    dx = (dx < 0) ? -1 : 1;
-    slope *= dx;
-    while(absval(x0 - x1) >= 0.5){
-      x0 += dx;
-      y0 += slope;
-      if(do_add_static_object(flow, x0, y0))
-	ok = true;
-    }
-  }
-  else{
-    double slope(dx / dy);
-    dy = (dy < 0) ? -1 : 1;
-    slope *= dy;
-    while(absval(y0 - y1) >= 0.5){
-      y0 += dy;
-      x0 += slope;
-      if(do_add_static_object(flow, x0, y0))
-	ok = true;
-    }
-  }
-  
-  return ok;
+  flow_draw_callback cb(m_flow.get());
+  return
+    0 !=
+    m_frame->DrawGlobalLine(x0, y0, x1, y1, m_flow->xsize, m_flow->ysize, cb);
 }
