@@ -266,7 +266,6 @@ PrepareAction(double timestep)
   if(m_replan_request){
     m_replan_request = false;
     
-    m_pnf.reset();
     m_pnf.reset(new PNF(m_pose->X(), m_pose->Y(), m_radius, m_speed,
 			m_goal->X(), m_goal->Y(), m_goal->Dr(),
 			m_grid_width, m_grid_wdim));
