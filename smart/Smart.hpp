@@ -24,7 +24,29 @@
 #ifndef NPM_SMART_HPP
 #define NPM_SMART_HPP
 
+
 #include <npm/common/RobotClient.hpp>
+
+
+namespace npm {
+  class CheatSheet;
+}
+
+
+namespace sfl {
+  class GridFrame;
+  class TraversabilityMap;
+}
+
+
+namespace estar {
+  class Facade;
+  class Region;
+}
+
+
+class PlanThread;
+
 
 class Smart
   : public npm::RobotClient
@@ -35,7 +57,6 @@ private:
 public:
   Smart(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	const npm::World & world);
-  virtual ~Smart() {}
   
   virtual void PrepareAction(double timestep);
   virtual void InitPose(double x, double y, double theta);
@@ -46,14 +67,21 @@ public:
   virtual bool GoalReached();
 
 protected:
+  friend class SmartPlanProxy;
+  
   boost::shared_ptr<npm::HAL> m_hal;
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Goal> m_goal;
-  bool m_goal_changed;
+  boost::shared_ptr<estar::Region> m_goalregion;
+  boost::shared_ptr<estar::Facade> m_estar;
+  boost::shared_ptr<npm::CheatSheet> m_cheat;
+  boost::shared_ptr<PlanThread> m_plan_thread;
+  boost::shared_ptr<const sfl::GridFrame> m_gframe;
+  boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
+  
+  bool m_replan_request;
   int m_nscans, m_sick_channel;
   double m_wheelbase, m_wheelradius, m_axlewidth;
-  int m_speedref_status, m_position_status, m_goal_status,
-    m_odometry_status, m_scan_status, m_curspeed_status;
-
 };
-#endif //NPM_SMART_HPP
+
+#endif // NPM_SMART_HPP

@@ -4,7 +4,7 @@ endif
 CPPFLAGS+= @ESTAR_CPPFLAGS@
 noinst_LTLIBRARIES= libestar.la
 libestar_la_SOURCES= CarrotDrawing.cpp Esbot.cpp PNF.cpp \
-                     PNFCamera.cpp PNFDrawing.cpp
+                     PNFCamera.cpp PNFDrawing.cpp EstarDrawing.cpp
 
 estar_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"
