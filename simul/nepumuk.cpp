@@ -131,7 +131,7 @@ int main(int argc, char ** argv)
       exit(EXIT_FAILURE);
     }
     world.reset(new World(traversability->name));
-    world->ApplyTraversability(*traversability);
+    world->ApplyTraversability(traversability);
     travdrawing.reset(new TraversabilityDrawing("travmap", traversability));
   }
   else{

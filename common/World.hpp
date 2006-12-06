@@ -77,7 +77,8 @@ namespace npm {
 	\todo Maybe add a way for traversability values to be
 	interpreted according to an inverted scale.
     */
-    void ApplyTraversability(const sfl::TraversabilityMap & travmap);
+    void
+    ApplyTraversability(boost::shared_ptr<sfl::TraversabilityMap> travmap);
     
     void AddLine(const sfl::Line & line);
     
@@ -111,6 +112,7 @@ namespace npm {
     boost::shared_ptr<WorldCamera> m_camera;
     object_t m_object;
     boost::shared_ptr<BBox> m_bbox;
+    boost::shared_ptr<sfl::TraversabilityMap> m_travmap;
   };
   
 }

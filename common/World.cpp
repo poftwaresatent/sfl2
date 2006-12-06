@@ -357,14 +357,16 @@ namespace npm {
   
   
   void World::
-  ApplyTraversability(const TraversabilityMap & travmap)
+  ApplyTraversability(shared_ptr<TraversabilityMap> travmap)
   {
-    const GridFrame & gframe(travmap.gframe);
+    m_travmap = travmap;
+    
+    const GridFrame & gframe(travmap->gframe);
     const double offset(gframe.Delta() / 2);
-    const array2d<int> & data(*travmap.data);
-    const int obstacle(travmap.obstacle);
-    const size_t xsize(travmap.data->xsize);
-    const size_t ysize(travmap.data->ysize);
+    const array2d<int> & data(*travmap->data);
+    const int obstacle(travmap->obstacle);
+    const size_t xsize(travmap->data->xsize);
+    const size_t ysize(travmap->data->ysize);
     for(size_t ix(0); ix < xsize; ++ix)
       for(size_t iy(0); iy < ysize; ++iy)
 	if(data[ix][iy] >= obstacle){
