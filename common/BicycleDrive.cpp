@@ -27,13 +27,14 @@
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/numeric.hpp>
 
+
 using namespace sfl;
 using namespace boost;
 
 
 namespace npm {
-
-
+  
+  
   BicycleDrive::
   BicycleDrive(shared_ptr<HAL> hal, double _wheelbase,
 	       double _wheelradius, double _axlewidth)
@@ -41,12 +42,15 @@ namespace npm {
       axlewidth(_axlewidth)
   {
   }
-
+  
+  
   shared_ptr<Frame> BicycleDrive::
   ComputeNextPose(const Frame & current, double timestep) const
   {
     double v_trans, steer;
     m_hal->speed_get(&v_trans, &steer);
+    if(absval(v_trans) < epsilon) // otherwise we get NaN results...
+      return shared_ptr<Frame>(new Frame(current));
     
     double dx, dy, dtheta;
     if(absval(absval(steer) - M_PI / 2) < epsilon * 2 * M_PI){
