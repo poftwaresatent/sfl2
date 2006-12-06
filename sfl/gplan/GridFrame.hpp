@@ -41,6 +41,12 @@ namespace sfl {
     typedef vec2d<double> position_t;
     typedef array2d<double> grid_t;
     
+    struct draw_callback {
+      virtual ~draw_callback() {}
+      virtual void operator () (size_t ix, size_t iy) = 0;
+    };
+    
+    
     explicit GridFrame(double delta);
     GridFrame(double x, double y, double theta, double delta);
     GridFrame(const GridFrame & orig);
@@ -63,6 +69,24 @@ namespace sfl {
     
     void SetGlobalDisk(grid_t & grid, position_t center,
 		       double radius, double value);
+    
+    /**
+       Calls the provided callback functor for each index that lies on
+       the line.
+       
+       \note Uses a Differential Analyzer style algorithm.
+       
+       \return The number of grid cells drawn.
+    */
+    size_t DrawLocalLine(double x0, double y0, double x1, double y1,
+			 size_t xsize, size_t ysize, draw_callback & cb);
+    
+    /**
+       Same as DrawLocalLine() but first transforms the given
+       endpoints from the global to the local frame of reference.
+    */
+    size_t DrawGlobalLine(double x0, double y0, double x1, double y1,
+			  size_t xsize, size_t ysize, draw_callback & cb);
     
     double Delta() const { return m_delta; }
     

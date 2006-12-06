@@ -161,4 +161,68 @@ namespace sfl {
     SetLocalDisk(grid, center, radius, value);
   }
   
+  
+  size_t GridFrame::
+  DrawLocalLine(double x0, double y0, double x1, double y1,
+		size_t xsize, size_t ysize, draw_callback & cb)
+  {
+    x0 /= m_delta;
+    y0 /= m_delta;
+    x1 /= m_delta;
+    y1 /= m_delta;
+    
+    size_t ix(static_cast<size_t>(rint(x0)));
+    size_t iy(static_cast<size_t>(rint(y0)));
+    size_t count(0);
+    if((ix < xsize) && (iy < ysize)){
+      cb(ix, iy);
+      ++count;
+    }
+    
+    double dx(x1 - x0);
+    double dy(y1 - y0);
+    if(absval(dx) > absval(dy)){
+      double slope(dy / dx);
+      dx = (dx < 0) ? -1 : 1;
+      slope *= dx;
+      while(absval(x0 - x1) >= 0.5){
+	x0 += dx;
+	y0 += slope;
+	ix = static_cast<size_t>(rint(x0));
+	iy = static_cast<size_t>(rint(y0));
+	if((ix < xsize) && (iy < ysize)){
+	  cb(ix, iy);
+	  ++count;
+	}
+      }
+    }
+    else{
+      double slope(dx / dy);
+      dy = (dy < 0) ? -1 : 1;
+      slope *= dy;
+      while(absval(y0 - y1) >= 0.5){
+	y0 += dy;
+	x0 += slope;
+	ix = static_cast<size_t>(rint(x0));
+	iy = static_cast<size_t>(rint(y0));
+	if((ix < xsize) && (iy < ysize)){
+	  cb(ix, iy);
+	  ++count;
+	}
+      }
+    }
+    
+    return count;
+  }
+  
+  
+  size_t GridFrame::
+  DrawGlobalLine(double x0, double y0, double x1, double y1,
+		 size_t xsize, size_t ysize, draw_callback & cb)
+  {
+    From(x0, y0);
+    From(x1, y1);
+    return DrawLocalLine(x0, y0, x1, y1, xsize, ysize, cb);
+  }
+  
 }
