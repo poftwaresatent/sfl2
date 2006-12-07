@@ -29,14 +29,12 @@
 #include <npm/robox/GridLayerCamera.hpp>
 #include <npm/robox/GridLayerDrawing.hpp>
 #include <npm/robox/expoparams.hpp>
-//#include <npm/common/Globals.hpp>
 #include <npm/common/OdometryDrawing.hpp>
 #include <npm/common/StillCamera.hpp>
 #include <npm/common/HAL.hpp>
 #include <npm/common/DiffDrive.hpp>
 #include <npm/common/RobotDescriptor.hpp>
 #include <npm/common/Lidar.hpp>
-//#include <sfl/util/Pthread.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Scanner.hpp>

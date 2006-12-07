@@ -61,7 +61,7 @@ namespace npm {
   protected:
     friend class RobotServer;
     
-    void UpdateSpeeds();
+    virtual void UpdateSpeeds();
     
   private:
     RobotServer * m_owner;

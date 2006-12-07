@@ -145,6 +145,21 @@ if test -z "$HAVE_ESTAR_TRUE"; then
   CPPFLAGS="$oldCPPFLAGS"
 fi
 
+AC_ARG_WITH(genom,
+  AC_HELP_STRING([--with-genom=PATH], [specify openrobots install dir]),
+  [ if test "x$withval" != "x" ; then
+      CPPFLAGS="$CPPFLAGS -DHAVE_GENOM -I${withval}/include"
+      LDFLAGS="$LDFLAGS -L${withval}/lib"
+    fi
+    AM_CONDITIONAL([HAVE_GENOM], [true])
+    oldCPPFLAGS="$CPPFLAGS"
+    test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
+    AC_CHECK_HEADER([posterLib.h], [], [
+      AC_MSG_ERROR([cannot compile posterLib.h (CPPFLAGS=$CPPFLAGS)])], [])
+    CPPFLAGS="$oldCPPFLAGS"
+  ],[
+    AM_CONDITIONAL([HAVE_GENOM], [false])])
+
 case $host_os in
   darwin*) AC_DISABLE_SHARED;;
   *)       AC_DISABLE_STATIC;;

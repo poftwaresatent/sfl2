@@ -26,7 +26,10 @@
 #include <npm/common/RobotDescriptor.hpp>
 #include <npm/visitor/Visitor.hpp>
 #include <npm/robox/Robox.hpp>
-#include <npm/laas/LAAS.hpp>
+
+#ifdef HAVE_GENOM
+# include <npm/laas/LAAS.hpp>
+#endif // HAVE_GENOM
 
 #ifdef HAVE_XCF
 # include <npm/biron/Biron.hpp>
@@ -49,24 +52,32 @@ shared_ptr<RobotClient> RobotFactory::
 Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
 {
   RobotClient * rob(0);
+
   if(descriptor->model == "robox")
     rob = Robox::Create(descriptor, world);
+
   else if(descriptor->model == "visitor")
     rob = new Visitor(descriptor, world);
+
 #ifdef HAVE_XCF
   else if(descriptor->model == "biron")
     rob = new Biron(descriptor, world);
 #endif // HAVE_XCF
+
 #ifdef HAVE_ESTAR
   else if(descriptor->model == "esbot")
     rob = new Esbot(descriptor, world);
 #endif // HAVE_ESTAR
+
+#ifdef HAVE_GENOM
   else if(descriptor->model == "jido")
     rob = new Jido(descriptor, world);
   else if(descriptor->model == "rackham")
     rob = new Rackham(descriptor, world);
+#endif // HAVE_GENOM
+
   else if (descriptor->model == "smart")
-      rob = new Smart(descriptor, world);
+    rob = new Smart(descriptor, world);
 
   return shared_ptr<RobotClient>(rob);
 }

@@ -8,15 +8,21 @@ if HAVE_ESTAR
   ESTAR_LIBADD= estar/libestar.la
 endif 
 
-SUBDIRS= common robox smart visitor laas $(BIRON_DIR) $(ESTAR_DIR) . simul
+if HAVE_GENOM
+  LAAS_DIR=    laas
+  LAAS_LIBADD= laas/liblaas.la
+endif
+
+SUBDIRS= common robox smart visitor \
+         $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) . simul
 
 noinst_LTLIBRARIES=    libnepumuk.la
 libnepumuk_la_SOURCES= 
 libnepumuk_la_LIBADD=  common/libcommon.la \
                        robox/librobox.la \
                        visitor/libvisitor.la \
-                       laas/liblaas.la \
-					   smart/libsmart.la \
+                       $(LAAS_LIBADD) \
+                       smart/libsmart.la \
                        $(BIRON_LIBADD) \
                        $(ESTAR_LIBADD)
 
