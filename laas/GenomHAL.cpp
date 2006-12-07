@@ -42,6 +42,31 @@ using namespace boost;
 using namespace std;
 
 
+template<typename PT>
+POSTER_ID create_poster(const char * name)
+{
+  POSTER_ID id;
+  if(posterCreate(const_cast<char *>(name), sizeof(PT), &id) != OK){
+    perror(name);
+    exit(EXIT_FAILURE);
+  }
+  
+  char *tmp(reinterpret_cast<char *>(calloc(1, sizeof(PT))));
+  if( ! tmp){
+    cerr << "not enough mem to init poster " << name << "\n";
+    exit(EXIT_FAILURE);
+  }
+  if(sizeof(PT) != posterWrite(id, 0, tmp, sizeof(PT))){
+    cerr << "cannot init poster " << name << "\n";
+    free(tmp);
+    exit(EXIT_FAILURE);
+  }
+  free(tmp);
+  
+  return id;
+}
+
+
 GenomHAL::
 GenomHAL(RobotServer * owner, LAAS * laas)
   : HAL(owner),
@@ -52,34 +77,18 @@ GenomHAL(RobotServer * owner, LAAS * laas)
     cerr << "ERROR creating sfl::Mutex\n";
     exit(EXIT_FAILURE);
   }
-  STATUS status;
-  status = posterCreate("npm_pompos", sizeof(POM_POS), &m_pompos);
-  if(0 != status){
-    h2perror("npm_pompos");
-    exit(EXIT_FAILURE);
-  }
-  status = posterCreate("npm_scanpolar", sizeof(SICK_SCANPOLAR_POSTER_STR),
-			&m_scanpolar);
-  if(0 != status){
-    h2perror("npm_scanpolar");
-    exit(EXIT_FAILURE);
-  }
-  status = posterCreate("npm_curspeed", sizeof(SFL_CURSPEED), &m_curspeed);
-  if(0 != status){
-    h2perror("npm_curspeed");
-    exit(EXIT_FAILURE);
-  }
-  status = posterCreate("npm_goal", sizeof(SFL_GOAL), &m_goal);
-  if(0 != status){
-    h2perror("npm_goal");
-    exit(EXIT_FAILURE);
-  }
+  m_pompos = create_poster<POM_POS>("npm_pompos");
+  m_scanpolar = create_poster<SICK_SCANPOLAR_POSTER_STR>("npm_scanpolar");
+  m_curspeed = create_poster<SFL_CURSPEED>("npm_curspeed");
+  m_goal = create_poster<SFL_GOAL>("npm_goal");
 }
 
 
 GenomHAL::
 ~GenomHAL()
 {
+  cerr << "HELLO from ~GenomHAL()\n";
+  
   sfl::Mutex::sentry sm(m_mutex);
   
   if(0 != m_goal)      posterDelete(&m_goal);
@@ -116,9 +125,10 @@ odometry_set(double x, double y, double theta,
   static int tick(0);
   pom_pos.pomTickDate = ++tick;
   
-  status = posterWrite(m_pompos, 0, &pom_pos, sizeof(POM_POS));
-  if(0 != status)
+  if(sizeof(POM_POS) != posterWrite(m_pompos, 0, &pom_pos, sizeof(POM_POS))){
+    h2perror("posterWrite(m_pompos)");
     return -123;
+  }
   
   return 0;
 }
@@ -157,9 +167,8 @@ speed_get(double * qdl, double * qdr)
   }
   
   GENPOS_CART_SPEED speedRef;
-  const int
-    status(posterRead(m_cartspeed, 0, &speedRef, sizeof(GENPOS_CART_SPEED)));
-  if(0 != status){
+  if(sizeof(GENPOS_CART_SPEED) !=
+     posterRead(m_cartspeed, 0, &speedRef, sizeof(GENPOS_CART_SPEED))){
     h2perror("posterRead(m_cartspeed)");
     m_cartspeed = 0;
     return -126;
@@ -191,8 +200,8 @@ goal_set(double x, double y, double theta,
   goal.timestamp  = static_cast<unsigned long long>(t0.tv_sec  * 1000);
   goal.timestamp += static_cast<unsigned long long>(t0.tv_usec / 1000);
   
-  const int status(posterWrite(m_goal, 0, &goal, sizeof(SFL_GOAL)));
-  if(0 != status){
+  if(sizeof(SFL_GOAL) !=
+     posterWrite(m_goal, 0, &goal, sizeof(SFL_GOAL))){
     h2perror("writing npm_goal");
     return -123;
   }
@@ -224,9 +233,8 @@ UpdateSpeeds()
   curspeed.timestamp  = static_cast<unsigned long long>(t0.tv_sec  * 1000);
   curspeed.timestamp += static_cast<unsigned long long>(t0.tv_usec / 1000);
   
-  const int
-    status(posterWrite(m_curspeed, 0, &curspeed, sizeof(SFL_CURSPEED)));
-  if(0 != status)
+  if(sizeof(SFL_CURSPEED) !=
+     posterWrite(m_curspeed, 0, &curspeed, sizeof(SFL_CURSPEED)))
     h2perror("writing m_curspeed");
 }
 
