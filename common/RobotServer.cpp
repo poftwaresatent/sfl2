@@ -232,8 +232,7 @@ namespace npm {
   void RobotServer::
   SimulateAction(double timestep)
   {
-    for(size_t ii(0); ii < 3; ++ii)
-      m_hal->m_current_speed[ii] = m_hal->m_wanted_speed[ii];
+    m_hal->UpdateSpeeds();
     if(m_drive)
       AddTruePose(m_drive->NextPose( * m_true_pose, timestep));
   }

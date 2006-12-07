@@ -58,9 +58,12 @@ namespace npm {
     void speed_set(double vx, double vy, double omega);
     void speed_get(double & vx, double & vy, double & omega);
     
-  private:
+  protected:
     friend class RobotServer;
     
+    void UpdateSpeeds();
+    
+  private:
     RobotServer * m_owner;
     double m_wanted_speed[3];
     double m_current_speed[3];

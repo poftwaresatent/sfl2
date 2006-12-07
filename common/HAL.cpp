@@ -146,4 +146,12 @@ namespace npm {
     omega = m_wanted_speed[2];
   }
   
+  
+  void HAL::
+  UpdateSpeeds()
+  {
+    for(size_t ii(0); ii < 3; ++ii)
+      m_current_speed[ii] = m_wanted_speed[ii];
+  }
+
 }
