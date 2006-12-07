@@ -132,22 +132,28 @@ namespace sfl {
     return m_history.rbegin()->second;
   }
   
-  
-//   const Pose * Odometry::
-//   Get(const Timestamp & t)
-//     const
-//   {
-//     history_t::const_iterator ih(m_history.find(t));
-//     if(ih == m_history.end())
-//       return 0;
-//     //       ostringstream os;
-//     //       os << "ERROR in sfl::Odometry::Get(const Timestamp &):\n"
-//     // 	 << "  no stamp for " << t << "\n"
-//     // 	 << "  available history:\n";
-//     //       for(i = _history.begin(); i != _history.end(); ++i)
-//     // 	os << "    " << i->first << ": " << i->second << "\n";
-//     return (ih->second).get();
-//   }
+ 
+  Odometry::history_t::value_type Odometry::
+  Get(const Timestamp & t) const
+  {
+    if(m_history.empty())
+      return make_pair(Timestamp::first, shared_ptr<Pose>());
+    
+    history_t::const_iterator cand1(m_history.lower_bound(t));
+    if(cand1 == m_history.end())
+      return *m_history.rbegin();
+    if((cand1->first == t) || (cand1 == m_history.begin()))
+      return *cand1;
+    
+    history_t::const_iterator cand2(cand1--);
+    Timestamp t1(t);
+    t1 -= cand1->first;
+    Timestamp t2(cand2->first);
+    t2 -= t;
+    if(t1 < t2)
+      return *cand1;
+    return *cand2;
+  }
   
   
   int Odometry::
