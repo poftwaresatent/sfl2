@@ -69,6 +69,17 @@ namespace npm {
     double m_current_speed[3];
   };
   
+  
+  /**
+     A quick'n'dirty way for subclasses of RobotClient to provide
+     their own subclass of HAL.
+  */
+  class HALFactory {
+  public:
+    virtual ~HALFactory() {}
+    virtual HAL * Create(RobotServer * owner) const = 0;
+  };
+  
 }
 
 #endif // NPM_HAL_HPP

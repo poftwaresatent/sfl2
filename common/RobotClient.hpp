@@ -36,6 +36,7 @@ namespace sfl {
 namespace npm {
   
   class HAL;
+  class HALFactory;
   class RobotDescriptor;
   class Lidar;
   class Sharp;
@@ -47,6 +48,7 @@ namespace npm {
   class RobotServer;
   class World;
   
+  
   /**
      Pure abstract interface. Allows subclasses of Robot to "construct"
      their hardware and register drawings and such.
@@ -56,6 +58,11 @@ namespace npm {
   public:
     RobotClient(boost::shared_ptr<RobotDescriptor> descriptor,
 		const World & world, bool enable_trajectory);
+    
+    RobotClient(const HALFactory & hal_factory,
+		boost::shared_ptr<RobotDescriptor> descriptor,
+		const World & world, bool enable_trajectory);
+    
     virtual ~RobotClient();
     
     /** Entry point for simulating the robot. It should calculate the

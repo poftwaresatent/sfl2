@@ -37,6 +37,9 @@ namespace sfl {
 }
 
 
+class LAAS;
+
+
 /**
    Forwards calls to the base class and simultaneously updates some
    LAAS-conformant Genom posters for interaction with the SFL
@@ -46,8 +49,7 @@ class GenomHAL
   : public npm::HAL
 {
 public:
-  GenomHAL(npm::RobotServer * owner,
-	   boost::shared_ptr<const sfl::RobotModel> model);
+  GenomHAL(npm::RobotServer * owner, LAAS * laas);
   virtual ~GenomHAL();
   
   virtual int odometry_set(double x, double y, double theta,
@@ -62,13 +64,26 @@ protected:
   virtual void UpdateSpeeds();
   
 private:
-  boost::shared_ptr<const sfl::RobotModel> m_model;
+  LAAS * m_laas;
   boost::shared_ptr<sfl::Mutex> m_mutex;
   POSTER_ID m_pompos;
   POSTER_ID m_scanpolar;
   POSTER_ID m_cartspeed;
   POSTER_ID m_curspeed;
   POSTER_ID m_goal;
+};
+
+
+class GenomHALFactory
+  : public npm::HALFactory
+{
+public:
+  GenomHALFactory(LAAS * laas);
+  virtual GenomHAL * Create(npm::RobotServer * owner) const;
+  //  { return new GenomHAL(owner, m_laas); }
+  
+private:
+  LAAS * m_laas;
 };
 
 #endif // GENOM_HAL_HPP

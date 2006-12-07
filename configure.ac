@@ -149,7 +149,9 @@ AC_ARG_WITH(genom,
   AC_HELP_STRING([--with-genom=PATH], [specify openrobots install dir]),
   [ if test "x$withval" != "x" ; then
       CPPFLAGS="$CPPFLAGS -DHAVE_GENOM -I${withval}/include"
-      LDFLAGS="$LDFLAGS -L${withval}/lib"
+      LDFLAGS="-L${withval}/lib -lposterLib $LDFLAGS"
+    else
+      LDFLAGS="-lposterLib $LDFLAGS"
     fi
     AM_CONDITIONAL([HAVE_GENOM], [true])
     oldCPPFLAGS="$CPPFLAGS"

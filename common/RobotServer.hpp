@@ -43,12 +43,14 @@ namespace npm {
   class Sharp;
   class RobotDescriptor;
   class HAL;
+  class HALFactory;
   class Drawing;
   class Camera;
   class Drive;
   class DiffDrive;
   class HoloDrive;
   class BicycleDrive;
+  
   
   class RobotServer
   {
@@ -59,6 +61,10 @@ namespace npm {
     typedef std::vector<boost::shared_ptr<const sfl::Frame> > trajectory_t;
     
     RobotServer(boost::shared_ptr<RobotDescriptor> descriptor,
+		const World & world, bool enable_trajectory);
+    
+    RobotServer(const HALFactory & hal_factory,
+		boost::shared_ptr<RobotDescriptor> descriptor,
 		const World & world, bool enable_trajectory);
     
     void UpdateAllSensors();

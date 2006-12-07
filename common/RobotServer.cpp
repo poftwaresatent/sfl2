@@ -81,6 +81,35 @@ namespace npm {
     AddCamera(new RobotZoomCamera(this, zoom));
   }
   
+
+  /** \todo Copy-pasted code is error prone, should factor-out a
+      common private ctor and a static factory method. */  
+  RobotServer::
+  RobotServer(const HALFactory & hal_factory,
+	      shared_ptr<RobotDescriptor> descriptor,
+	      const World & world, bool enable_trajectory)
+    : m_identifier(next_identifier++),
+      m_enable_trajectory(enable_trajectory),
+      m_world(world),
+      m_hal(hal_factory.Create(this)),
+      m_descriptor(descriptor),
+      m_body(new Object(descriptor->name)),
+      m_true_pose(new Frame())
+  {
+    AddDrawing(new RobotDrawing(this));
+    AddDrawing(new TrajectoryDrawing(this));
+    double zoom(2);
+    if(descriptor->GetOption("camera_zoom") != ""){
+      istringstream is(descriptor->GetOption("camera_zoom"));
+      if( ! (is >> zoom)){
+	cerr << "WARNING: cannot read camera_zoom from \""
+	     << descriptor->GetOption("camera_zoom") << "\"\n";
+	zoom = 2;
+      }
+    }
+    AddCamera(new RobotZoomCamera(this, zoom));
+  }
+  
   
   shared_ptr<Lidar> RobotServer::
   DefineLidar(const Frame & mount, size_t nscans, double rhomax,

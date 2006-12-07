@@ -27,20 +27,12 @@
 
 
 namespace sfl {
-  class DynamicWindow;
   class RobotModel;
   class Hull;
-  class BubbleBand;
-  class Odometry;
-  class Scanner;
-  class Multiscanner;
 }
 
 
-namespace expo {
-  class MotionPlanner;
-  class MotionController;
-}
+class GenomHAL;
 
 
 class LAAS
@@ -66,30 +58,17 @@ public:
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
   
 protected:
+  friend class GenomHAL;
+  
   void CreateGfxStuff(const std::string & name);
   
-  boost::shared_ptr<sfl::Scanner> m_front;
+  boost::shared_ptr<npm::Lidar> m_front;
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<sfl::RobotModel> m_robotModel;
-  boost::shared_ptr<expo::MotionController> m_motionController;
-  boost::shared_ptr<sfl::DynamicWindow> m_dynamicWindow;
-  boost::shared_ptr<sfl::Odometry> m_odometry;
-  boost::shared_ptr<sfl::BubbleBand> m_bubbleBand;
-  boost::shared_ptr<sfl::Multiscanner> m_multiscanner;
-  boost::shared_ptr<expo::MotionPlanner> m_motionPlanner;
   boost::shared_ptr<sfl::Hull> m_hull;
+  boost::shared_ptr<sfl::Goal> m_goal;
   
-  boost::scoped_ptr<struct cwrap_hal_s> m_cwrap_hal;
-  
-  int m_hal_handle;
-  int m_front_handle;
-  int m_robotModel_handle;
-  int m_motionController_handle;
-  int m_dynamicWindow_handle;
-  int m_odometry_handle;
-  int m_bubbleBand_handle;
-  int m_multiscanner_handle;
-  int m_motionPlanner_handle;
+  boost::scoped_ptr<GenomHAL> m_genom_hal;
 };
 
 

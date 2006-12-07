@@ -39,6 +39,16 @@ namespace npm {
   
   
   RobotClient::
+  RobotClient(const HALFactory & hal_factory,
+	      boost::shared_ptr<RobotDescriptor> descriptor,
+	      const World & world, bool enable_trajectory)
+    : m_server(new RobotServer(hal_factory, descriptor, world,
+			       enable_trajectory))
+  {
+  }
+  
+  
+  RobotClient::
   ~RobotClient()
   {
   }
