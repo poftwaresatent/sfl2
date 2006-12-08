@@ -1,8 +1,15 @@
 if ! HAVE_GENOM
   BUILT_SOURCES= genom_config_error
 endif
+
+noinst_PROGRAMS= pwrite pread
+pwrite_SOURCES=  pwrite.cpp
+pwrite_LDADD=    liblaas.la
+pread_SOURCES=   pread.cpp
+pread_LDADD=     liblaas.la
+
 noinst_LTLIBRARIES= liblaas.la
-liblaas_la_SOURCES= LAAS.cpp GenomHAL.cpp
+liblaas_la_SOURCES= LAAS.cpp GenomHAL.cpp phelp.cpp
 
 gnom_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"
