@@ -189,7 +189,9 @@ SetScan(const sfl::Scanner & scanner, HAL & hal)
 				 sizeof(SICK_SCANPOLAR_POSTER_STR));
     if(0 == m_scanpolar)      
       return false;
-    
+  }
+  
+  if(scanner.nscans != polar.Header.np){
     SICK_MEASURES_HEADER_STR * header = &polar.Header;
     header->np = scanner.nscans;
     header->frame = SICK_SICK_FRAME;
@@ -222,6 +224,8 @@ SetScan(const sfl::Scanner & scanner, HAL & hal)
     cerr << "scan_get() failed (" << status << ")\n";
     return false;
   }
+  cerr << "GenomBridge::SetScan(): got " << rho_len << " sending "
+       << polar.Header.np << "\n";
   
   polar.Header.sickPomPos.date = t1.tv_sec * 1000 + t1.tv_nsec / 1000000;
   polar.Header.rcv_time = polar.Header.sickPomPos.date;

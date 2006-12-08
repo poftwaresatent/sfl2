@@ -198,7 +198,8 @@ PrepareAction(double timestep)
   
   double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
   struct ::timespec t0;
-  if(0 != GetHAL()->odometry_get(&t0, &x, &y, &theta, &sxx, &syy, &stt, &sxy, &sxt, &syt)){
+  if(0 != GetHAL()->odometry_get(&t0, &x, &y, &theta,
+				 &sxx, &syy, &stt, &sxy, &sxt, &syt)){
     cerr << "WARNING odometry_get() failed\n";
     m_bridge->SetOdometry(0, 0, 0, 1, 1, 1, 0, 0, 0);
   }
