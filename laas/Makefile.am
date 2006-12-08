@@ -9,7 +9,7 @@ pread_SOURCES=   pread.cpp
 pread_LDADD=     liblaas.la
 
 noinst_LTLIBRARIES= liblaas.la
-liblaas_la_SOURCES= LAAS.cpp GenomHAL.cpp phelp.cpp
+liblaas_la_SOURCES= LAAS.cpp GenomBridge.cpp phelp.cpp
 
 gnom_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"

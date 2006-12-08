@@ -5,9 +5,10 @@ View ground-truth
 ##      Drawing Rackham_drive
 ##      Drawing Rackham_goaldrawing
 ##      Drawing Rackham_trajectory
+     Drawing Jido_lidar_0
      Drawing Jido_true_drawing
      Drawing Jido_drive
-     Drawing Jido_goaldrawing
+##     Drawing Jido_goaldrawing
      Drawing Jido_trajectory
 ##     Window  0.0  0.2  0.6  0.8
      Window  0.0  0.0  0.5  1.0
@@ -27,12 +28,10 @@ View ground-truth
 
 View jido
      Camera  Jido_true_zoom_camera
-     Drawing Jido_global_gldrawing
-     Drawing Jido_bbdrawing
      Drawing Jido_true_drawing
      Drawing Jido_drive
      Drawing Jido_lidar_0
-     Drawing Jido_goaldrawing
+##     Drawing Jido_goaldrawing
      Drawing Jido_trajectory
      Window  0.5  0.0  1.0  1.0
      Border  0

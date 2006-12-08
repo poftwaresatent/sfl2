@@ -32,7 +32,7 @@ namespace sfl {
 }
 
 
-class GenomHAL;
+class GenomBridge;
 
 
 class LAAS
@@ -59,6 +59,7 @@ public:
   
 protected:
   friend class GenomHAL;
+  friend class GenomHALFactory;
   
   void CreateGfxStuff(const std::string & name);
   
@@ -67,8 +68,7 @@ protected:
   boost::shared_ptr<sfl::RobotModel> m_robotModel;
   boost::shared_ptr<sfl::Hull> m_hull;
   boost::shared_ptr<sfl::Goal> m_goal;
-  
-  boost::scoped_ptr<GenomHAL> m_genom_hal;
+  boost::shared_ptr<GenomBridge> m_bridge;
 };
 
 

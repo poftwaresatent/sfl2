@@ -19,14 +19,14 @@
 
 
 #include "LAAS.hpp"
-#include "GenomHAL.hpp"
+#include "GenomBridge.hpp"
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/OdometryDrawing.hpp>
 #include <npm/common/StillCamera.hpp>
-//#include <npm/common/HAL.hpp>
 #include <npm/common/DiffDrive.hpp>
 #include <npm/common/RobotDescriptor.hpp>
 #include <npm/common/Lidar.hpp>
+#include <npm/common/HAL.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Goal.hpp>
@@ -93,8 +93,9 @@ CreateRobotParameters(expoparams & params)
 LAAS::
 LAAS(shared_ptr<sfl::Hull> hull,
      shared_ptr<RobotDescriptor> descriptor, const World & world)
-  : RobotClient(GenomHALFactory(this), descriptor, world, true), m_hull(hull),
-    m_goal(new Goal())
+  : RobotClient(descriptor, world, true), m_hull(hull),
+    m_goal(new Goal()),
+    m_bridge(new GenomBridge())
 {
   for(size_t ip(0); ip < m_hull->GetNPolygons(); ++ip){
     shared_ptr<const Polygon> poly(m_hull->GetPolygon(ip));
@@ -103,18 +104,14 @@ LAAS(shared_ptr<sfl::Hull> hull,
   }
   
   expoparams params(descriptor);
-  
-//     sfl_create_Scanner(m_hal_handle,
-// 		       params.front_channel,
-// 		       params.front_mount_x,
-// 		       params.front_mount_y,
-// 		       params.front_mount_theta,
-// 		       params.front_nscans,
-// 		       params.front_rhomax,
-// 		       params.front_phi0,
-// 		       params.front_phirange);
-//  m_front = sfl_cwrap::get_Scanner(m_front_handle);
-//  DefineLidar(m_front);
+  m_front = DefineLidar(Frame(params.front_mount_x,
+			      params.front_mount_y,
+			      params.front_mount_theta),
+			params.front_nscans,
+			params.front_rhomax,
+			params.front_phi0,
+			params.front_phirange,
+			params.front_channel);  
   
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
@@ -141,6 +138,7 @@ void LAAS::
 InitPose(double x, double y, double theta)
 {
   GetHAL()->odometry_set(x, y, theta, 1, 1, 1, 0, 0, 0);
+  m_bridge->SetOdometry(x, y, theta, 1, 1, 1, 0, 0, 0);
 }
 
 
@@ -148,6 +146,7 @@ void LAAS::
 SetPose(double x, double y, double theta)
 {
   GetHAL()->odometry_set(x, y, theta, 1, 1, 1, 0, 0, 0);
+  m_bridge->SetOdometry(x, y, theta, 1, 1, 1, 0, 0, 0);
 }
 
 
@@ -187,12 +186,51 @@ void LAAS::
 SetGoal(double timestep, const Goal & goal)
 {
   *m_goal = goal;
+  m_bridge->SetGoal(goal.X(), goal.Y(), goal.Theta(), goal.Dr(),
+		    goal.Dtheta(), goal.IsVia() ? 1 : 0);
 }
 
 
 void LAAS::
 PrepareAction(double timestep)
 {
+  m_front->Update();
+  
+  double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
+  struct ::timespec t0;
+  if(0 != GetHAL()->odometry_get(&t0, &x, &y, &theta, &sxx, &syy, &stt, &sxy, &sxt, &syt)){
+    cerr << "WARNING odometry_get() failed\n";
+    m_bridge->SetOdometry(0, 0, 0, 1, 1, 1, 0, 0, 0);
+  }
+  else
+    m_bridge->SetOdometry(x, y, theta, sxx, syy, stt, sxy, sxt, syt);
+  
+  double qdl, qdr;
+  if(0 != GetHAL()->speed_get(&qdl, &qdr)){
+    cerr << "WARNING speed_get() failed\n";
+    m_bridge->SetCurspeed(0, 0);
+  }
+  else{
+    double sd, thetad;
+    m_robotModel->Actuator2Global(qdl, qdr, sd, thetad);
+    m_bridge->SetCurspeed(sd, thetad);
+  }
+  
+  m_bridge->SetScan(*m_front->GetScanner(), *GetHAL());
+  
+  double sd, thetad;
+  int numRef;
+  if( ! m_bridge->GetSpeedref(sd, thetad, numRef)){
+    cerr << "WARNING GetSpeedref() failed\n";
+    if(0 != GetHAL()->speed_set(0, 0))
+      cerr << "WARNING speed_set() failed\n";
+  }
+  else{
+    double qdl, qdr;
+    m_robotModel->Global2Actuator(sd, thetad, qdl, qdr);
+    if(0 != GetHAL()->speed_set(qdl, qdr))
+      cerr << "WARNING speed_set() failed\n";
+  }
 }
 
 
