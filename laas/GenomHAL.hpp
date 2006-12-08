@@ -59,7 +59,9 @@ public:
   
   int goal_set(double x, double y, double theta,
 	       double dr, double dtheta, int via_goal);
-
+  
+  void UpdateScan();
+  
 protected:
   virtual void UpdateSpeeds();
   
@@ -80,7 +82,6 @@ class GenomHALFactory
 public:
   GenomHALFactory(LAAS * laas);
   virtual GenomHAL * Create(npm::RobotServer * owner) const;
-  //  { return new GenomHAL(owner, m_laas); }
   
 private:
   LAAS * m_laas;

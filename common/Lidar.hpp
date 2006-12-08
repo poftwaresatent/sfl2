@@ -52,8 +52,8 @@ namespace npm {
 	Robot::DefineLidar().
     */
     Lidar(const RobotServer * owner, boost::shared_ptr<HAL> hal,
-	  int hal_channel, const sfl::Frame & mount,
-	  size_t nscans, double rhomax, double phi0, double phirange,
+	  const sfl::Frame & mount,
+	  size_t nscans, double rhomax,
 	  boost::shared_ptr<sfl::Scanner> scanner);
     
     /** non-copyable */

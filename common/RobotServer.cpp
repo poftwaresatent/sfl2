@@ -138,9 +138,8 @@ namespace npm {
       exit(EXIT_FAILURE);
     }
     shared_ptr<Lidar>
-      lidar(new Lidar(this, GetHAL(), scanner->hal_channel, *scanner->mount,
-		      scanner->nscans, scanner->rhomax, scanner->phi0,
-		      scanner->phirange, scanner));
+      lidar(new Lidar(this, GetHAL(), *scanner->mount,
+		      scanner->nscans, scanner->rhomax, scanner));
     m_lidar.insert(make_pair(scanner->hal_channel, lidar));
     m_sensor.push_back(lidar);
     return lidar;

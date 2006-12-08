@@ -27,11 +27,13 @@ int main(int argc, char ** argv)
     return -1;
   }
   poster_id = create("speedref", sizeof(GENPOS_CART_SPEED));
+  if(0 == poster_id)
+    return -2;
   for(int numRef(0); true; ++numRef){
     GENPOS_CART_SPEED speedref;
     speedref.numRef = numRef;
     if( ! write(poster_id, &speedref, sizeof(GENPOS_CART_SPEED)))
-      return -2;
+      return -3;
     cout << "wrote " << speedref.numRef << "\n";
     usleep(400000);
   }

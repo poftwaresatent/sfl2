@@ -24,8 +24,11 @@
 
 #include "GenomHAL.hpp"
 #include "LAAS.hpp"
+#include "phelp.hpp"
+#include <npm/common/Lidar.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/api/RobotModel.hpp>
+#include <sfl/api/Scanner.hpp>
 #include <iostream>
 #include <sys/time.h>
 
@@ -42,29 +45,11 @@ using namespace boost;
 using namespace std;
 
 
-template<typename PT>
-POSTER_ID create_poster(const char * name)
-{
-  POSTER_ID id;
-  if(posterCreate(const_cast<char *>(name), sizeof(PT), &id) != OK){
-    perror(name);
-    exit(EXIT_FAILURE);
-  }
-  
-  char *tmp(reinterpret_cast<char *>(calloc(1, sizeof(PT))));
-  if( ! tmp){
-    cerr << "not enough mem to init poster " << name << "\n";
-    exit(EXIT_FAILURE);
-  }
-  if(sizeof(PT) != posterWrite(id, 0, tmp, sizeof(PT))){
-    cerr << "cannot init poster " << name << "\n";
-    free(tmp);
-    exit(EXIT_FAILURE);
-  }
-  free(tmp);
-  
-  return id;
-}
+static const char * pomPosterName("xcfwrapOdometry");
+static const char * scannerPosterName("xcfwrapScan");
+static const char * speedrefPosterName("sflSpeedRef");
+static const char * goalPosterName("xcfwrapGoal");
+static const char * curspeedPosterName("xcfwrapCurspeed");
 
 
 GenomHAL::
@@ -77,10 +62,12 @@ GenomHAL(RobotServer * owner, LAAS * laas)
     cerr << "ERROR creating sfl::Mutex\n";
     exit(EXIT_FAILURE);
   }
-  m_pompos = create_poster<POM_POS>("npm_pompos");
-  m_scanpolar = create_poster<SICK_SCANPOLAR_POSTER_STR>("npm_scanpolar");
-  m_curspeed = create_poster<SFL_CURSPEED>("npm_curspeed");
-  m_goal = create_poster<SFL_GOAL>("npm_goal");
+  m_pompos = poster::create(pomPosterName, sizeof(POM_POS));
+  m_cartspeed = poster::find(speedrefPosterName, sizeof(GENPOS_CART_SPEED));
+  m_goal = poster::create(goalPosterName, sizeof(SFL_GOAL));
+  m_curspeed = poster::create(curspeedPosterName, sizeof(SFL_CURSPEED));
+  m_scanpolar = poster::create(scannerPosterName,
+			       sizeof(SICK_SCANPOLAR_POSTER_STR));
 }
 
 
@@ -91,11 +78,10 @@ GenomHAL::
   
   sfl::Mutex::sentry sm(m_mutex);
   
-  if(0 != m_goal)      posterDelete(&m_goal);
-  if(0 != m_curspeed)  posterDelete(&m_curspeed);
-  //  if(0 != m_cartspeed) posterDelete(&m_cartspeed);
-  if(0 != m_scanpolar) posterDelete(&m_scanpolar);
-  if(0 != m_pompos)    posterDelete(&m_pompos);
+  if(0 != m_goal)      poster::destroy(m_goal);
+  if(0 != m_curspeed)  poster::destroy(m_curspeed);
+  if(0 != m_scanpolar) poster::destroy(m_scanpolar);
+  if(0 != m_pompos)    poster::destroy(m_pompos);
 }
 
 
@@ -109,6 +95,12 @@ odometry_set(double x, double y, double theta,
   int status(HAL::odometry_set(x, y, theta, sxx, syy, stt, sxy, sxt, syt));
   if(0 != status)
     return status;
+  
+  if(0 == m_pompos){
+    m_pompos = poster::create(pomPosterName, sizeof(POM_POS));
+    if(0 == m_pompos)
+      return -123;
+  }
   
   POM_POS pom_pos;
   POM_EULER_V *origin = &(pom_pos.mainToOrigin);
@@ -125,10 +117,8 @@ odometry_set(double x, double y, double theta,
   static int tick(0);
   pom_pos.pomTickDate = ++tick;
   
-  if(sizeof(POM_POS) != posterWrite(m_pompos, 0, &pom_pos, sizeof(POM_POS))){
-    h2perror("posterWrite(m_pompos)");
-    return -123;
-  }
+  if( ! poster::write(m_pompos, &pom_pos, sizeof(POM_POS)))
+    return -124;
   
   return 0;
 }
@@ -146,32 +136,15 @@ speed_get(double * qdl, double * qdr)
   sfl::Mutex::sentry sm(m_mutex);
   
   if(0 == m_cartspeed){
-    int status(posterFind("sflSpeedRef", &m_cartspeed));
-    if(ERROR == status){
-      h2perror("finding sflSpeedRef");
+    m_cartspeed = poster::find(speedrefPosterName, sizeof(GENPOS_CART_SPEED));
+    if(0 == m_cartspeed)
       return -123;
-    }
-    int length;
-    status = posterIoctl(m_cartspeed, FIO_GETSIZE, &length);
-    if(ERROR == status){
-      h2perror("ioctl on sflSpeedRef");
-      m_cartspeed = 0;
-      return -124;
-    }
-    if(sizeof(GENPOS_CART_SPEED) != length){
-      cerr << "ERROR sflSpeedRef has wrong length (" << length
-	   << " instead of " << sizeof(GENPOS_CART_SPEED) << ")\n";
-      m_cartspeed = 0;
-      return -125;
-    }
   }
   
   GENPOS_CART_SPEED speedRef;
-  if(sizeof(GENPOS_CART_SPEED) !=
-     posterRead(m_cartspeed, 0, &speedRef, sizeof(GENPOS_CART_SPEED))){
-    h2perror("posterRead(m_cartspeed)");
+  if( ! poster::read(m_cartspeed, &speedRef, sizeof(GENPOS_CART_SPEED))){
     m_cartspeed = 0;
-    return -126;
+    return -124;
   }
   
   m_laas->m_robotModel->Global2Actuator(speedRef.v, speedRef.w, *qdl, *qdr);
@@ -187,6 +160,12 @@ goal_set(double x, double y, double theta,
 {
   sfl::Mutex::sentry sm(m_mutex);
   
+  if(0 == m_goal){
+    m_goal = poster::create(goalPosterName, sizeof(SFL_GOAL));
+    if(0 == m_goal)
+      return -123;
+  }
+  
   SFL_GOAL goal;
   goal.x = x;
   goal.y = y;
@@ -200,11 +179,8 @@ goal_set(double x, double y, double theta,
   goal.timestamp  = static_cast<unsigned long long>(t0.tv_sec  * 1000);
   goal.timestamp += static_cast<unsigned long long>(t0.tv_usec / 1000);
   
-  if(sizeof(SFL_GOAL) !=
-     posterWrite(m_goal, 0, &goal, sizeof(SFL_GOAL))){
-    h2perror("writing npm_goal");
-    return -123;
-  }
+  if( ! poster::write(m_goal, &goal, sizeof(SFL_GOAL)))
+    return -124;
   
   return 0;
 }
@@ -214,6 +190,12 @@ void GenomHAL::
 UpdateSpeeds()
 {
   sfl::Mutex::sentry sm(m_mutex);
+  
+  if(0 == m_curspeed){
+    m_curspeed = poster::create(curspeedPosterName, sizeof(SFL_CURSPEED));
+    if(0 == m_curspeed)
+      return;
+  }
   
   HAL::UpdateSpeeds();
   
@@ -233,9 +215,64 @@ UpdateSpeeds()
   curspeed.timestamp  = static_cast<unsigned long long>(t0.tv_sec  * 1000);
   curspeed.timestamp += static_cast<unsigned long long>(t0.tv_usec / 1000);
   
-  if(sizeof(SFL_CURSPEED) !=
-     posterWrite(m_curspeed, 0, &curspeed, sizeof(SFL_CURSPEED)))
-    h2perror("writing m_curspeed");
+  poster::write(m_curspeed, &curspeed, sizeof(SFL_CURSPEED));
+}
+
+
+void GenomHAL::
+UpdateScan()
+{
+  static SICK_SCANPOLAR_POSTER_STR polar;
+  
+  sfl::Mutex::sentry sm(m_mutex);
+  
+  if(0 == m_scanpolar){
+    m_scanpolar = poster::create(scannerPosterName,
+				 sizeof(SICK_SCANPOLAR_POSTER_STR));
+    if(0 == m_scanpolar)      
+      return;
+    
+    SICK_MEASURES_HEADER_STR * header = &polar.Header;
+    header->np = m_laas->m_front->nscans;
+    header->frame = SICK_SICK_FRAME;
+    header->send_time = 0;
+    header->rcv_time = 0;
+    header->theta_min = m_laas->m_front->GetScanner()->phi0;
+    header->dtheta = m_laas->m_front->GetScanner()->phirange;
+    header->sickPomPos.date = 0;
+    POM_EULER_V * sensorToMain = &header->sickPomPos.sensorToMain;
+    sensorToMain->euler.yaw = m_laas->m_front->mount->Theta();
+    sensorToMain->euler.pitch = 0;
+    sensorToMain->euler.roll = 0;
+    sensorToMain->euler.x = m_laas->m_front->mount->X();
+    sensorToMain->euler.y = m_laas->m_front->mount->Y();
+    sensorToMain->euler.z = 0;
+    bzero(&sensorToMain->var, sizeof(sensorToMain->var));
+    bzero(&header->sickPomPos.mainToBase,
+	  sizeof(header->sickPomPos.mainToBase));
+    bzero(&header->sickPomPos.mainToOrigin,
+	  sizeof(header->sickPomPos.mainToOrigin));
+    bzero(&header->sickPomPos.VLocal,
+	  sizeof(header->sickPomPos.VLocal));
+  }
+  
+  double rho[SICK_N_PT_MAX];
+  size_t rho_len(SICK_N_PT_MAX);
+  struct ::timespec t0, t1;
+  if(0 != scan_get(m_laas->m_front->GetScanner()->hal_channel, rho,
+		   &rho_len, &t0, &t1)){
+    cerr << "scan_get() failed\n";
+    return;
+  }
+  
+  polar.Header.sickPomPos.date = t1.tv_sec * 1000 + t1.tv_nsec / 1000000;
+  polar.Header.rcv_time = polar.Header.sickPomPos.date;
+  for(size_t ii(0); ii < rho_len; ++ii)
+    polar.Rho[ii] = rho[ii];
+  for(size_t ii(rho_len); ii < SICK_N_PT_MAX; ++ii)
+    polar.Rho[ii] = 8;
+  
+  poster::write(m_scanpolar, &polar, sizeof(SICK_SCANPOLAR_POSTER_STR));
 }
 
 

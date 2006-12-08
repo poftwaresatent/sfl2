@@ -42,9 +42,9 @@ namespace npm {
 
 
   Lidar::
-  Lidar(const RobotServer * owner, shared_ptr<HAL> hal, int hal_channel,
-	const Frame & _mount, size_t _nscans, double _rhomax, double phi0,
-	double phirange, shared_ptr<Scanner> scanner)
+  Lidar(const RobotServer * owner, shared_ptr<HAL> hal,
+	const Frame & _mount, size_t _nscans, double _rhomax,
+	shared_ptr<Scanner> scanner)
     : Sensor(owner),
       nscans(_nscans),
       rhomax(_rhomax),
@@ -53,7 +53,7 @@ namespace npm {
       m_scanner(scanner),
       m_global_pose(new Frame(_mount)),
       m_drawing(new ScannerDrawing(this)),
-      m_rho(nscans, rhomax)
+      m_rho(nscans, _rhomax)
   {
     if(0 != hal->time_get( & m_t0)){
       cerr << "ERROR in npm::Lidar ctor(): m_hal->time_get() failed.\n";
