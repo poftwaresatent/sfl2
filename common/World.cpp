@@ -401,7 +401,10 @@ namespace npm {
     corner.v0 -= offset;
     corner.v1 -= offset;
     gframe.To(corner.v0, corner.v1);
-    m_bbox->Update(corner.v0, corner.v1);
+    if( ! m_bbox)
+      m_bbox.reset(new BBox(corner.v0, corner.v1, corner.v0, corner.v1));
+    else
+      m_bbox->Update(corner.v0, corner.v1);
     // upper left
     corner = gframe.LocalPoint(0, ysize - 1);
     corner.v0 -= offset;
