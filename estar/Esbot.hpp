@@ -80,8 +80,8 @@ public:
 protected:
   const double m_radius;
   const double m_speed;
-  const double m_grid_width;
-  const size_t m_grid_wdim;
+  double m_grid_width;
+  size_t m_grid_wdim;
   
   boost::shared_ptr<sfl::Goal> m_goal;
   boost::shared_ptr<sfl::Scanner> m_front;

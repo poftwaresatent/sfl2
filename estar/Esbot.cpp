@@ -21,6 +21,7 @@
 #include "Esbot.hpp"
 #include "PNF.hpp"
 #include "PNFDrawing.hpp"
+#include "EstarDrawing.hpp"
 #include "PNFCamera.hpp"
 #include "CarrotDrawing.hpp"
 #include <npm/robox/OCamera.hpp>
@@ -28,6 +29,7 @@
 #include <npm/robox/DODrawing.hpp>
 #include <npm/robox/DWDrawing.hpp>
 #include <npm/robox/expoparams.hpp>
+#include <npm/common/util.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/OdometryDrawing.hpp>
@@ -84,14 +86,33 @@ static RobotModel::Parameters CreateRobotParameters(expoparams & params);
 static shared_ptr<Hull> CreateHull();  
 
 
+class EnvdistProxy: public PlanProxy {
+public:
+  EnvdistProxy(Esbot * esbot): m_esbot(esbot) {}
+  
+  virtual const estar::Facade * GetFacade() {
+    if( ! m_esbot->GetPNF()) return 0;
+    return &m_esbot->GetPNF()->GetFlow()->GetEnvdist();
+  }
+  
+  virtual const sfl::GridFrame * GetFrame() {
+    if( ! m_esbot->GetPNF()) return 0;
+    return m_esbot->GetPNF()->GetGridFrame().get();
+  }
+  
+private:
+  Esbot * m_esbot;
+};
+
+
 Esbot::
 Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
       const World & world)
   : RobotClient(descriptor, world, true),
     m_radius(0.0),
     m_speed(0.0),
-    m_grid_width(8),		// TO DO: no magic numbers
-    m_grid_wdim(60),		// TO DO: no magic numbers
+    m_grid_width(8),		// override with option pnf_grid_width
+    m_grid_wdim(60),		// override with option pnf_grid_wdim
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_trace(new carrot_trace()),
@@ -102,7 +123,14 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   for(HullIterator ih(*hull); ih.IsValid(); ih.Increment())
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
   const_cast<double &>(m_radius) = hull->CalculateRadius();
-
+  
+  double foo;
+  if(string_to(descriptor->GetOption("pnf_grid_width"), foo))
+    m_grid_width = foo;
+  size_t bar;
+  if(string_to(descriptor->GetOption("pnf_grid_wdim"), bar))
+    m_grid_wdim = bar;
+  
   expoparams params(descriptor);
   
   m_front = DefineLidar(Frame(params.front_mount_x,
@@ -180,7 +208,9 @@ CreateGfxStuff(const std::string & name)
 			    this, PNFDrawing::GLOBAL, PNFDrawing::VALUE));
   AddDrawing(new PNFDrawing(name + "_gframe_value",
 			    this, PNFDrawing::GFRAME, PNFDrawing::VALUE));
-
+  
+  AddDrawing(new EstarDrawing(name + "_envdist", shared_ptr<PlanProxy>(new EnvdistProxy(this)), EstarDrawing::VALUE));
+			      
   // XXX to do: magic numbers!!!
   AddDrawing(new CarrotDrawing(name + "_carrotdrawing",
 			       this, true, false, 0));
