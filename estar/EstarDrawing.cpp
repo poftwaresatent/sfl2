@@ -27,10 +27,6 @@
 #include <estar/Facade.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
-//#include <cmath>
-
-//// for boost::tie
-//#include <boost/graph/adjacency_list.hpp>
 
 
 #define PDEBUG PDEBUG_ERR
@@ -39,6 +35,7 @@
 
 using namespace sfl;
 using namespace boost;
+using namespace std;
 
 
 EstarDrawing::
@@ -68,10 +65,21 @@ Draw()
   
   const gfx::ColorScheme * cs(gfx::ColorScheme::Get(gfx::GREY_WITH_SPECIAL));
   
-  if(VALUE == what)
+  switch(what){
+  case VALUE:
     gfx::draw_grid_value(*facade, cs, true);
-  else
+    break;
+  case META:
     gfx::draw_grid_meta(*facade, cs);
+    break;
+  case QUEUE:
+    gfx::draw_grid_queue(*facade);
+    break;
+  default:
+    cerr << "ERROR in EstarDrawing::Draw(): invalid what=" << what
+	 << " (expected VALUE, META, or QUEUE)\n";
+    exit(EXIT_FAILURE);
+  }
   
   double x0, y0, x1, y1;
   gfx::get_grid_bbox(*facade, x0, y0, x1, y1);
