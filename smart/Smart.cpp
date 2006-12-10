@@ -110,8 +110,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
  			      proxy, EstarDrawing::META));
   AddDrawing(new EstarDrawing(descriptor->name + "_estar_value",
  			      proxy, EstarDrawing::VALUE));
+  AddDrawing(new EstarDrawing(descriptor->name + "_estar_queue",
+ 			      proxy, EstarDrawing::QUEUE));
 }
 
+
+// something's wrong with sfl::SimpleThread
+#define DISABLE_THREADS
 
 void Smart::
 PrepareAction(double timestep)
@@ -130,12 +135,10 @@ PrepareAction(double timestep)
   if(m_replan_request){
     m_replan_request = false;
     
-    //// if(m_plan_thread)
-    ////  m_plan_thread->Stop();
-    if(m_plan_thread){
-      cerr << "get rid of //// temporary stuff!\n";
-      exit(EXIT_FAILURE);
-    }
+#ifndef DISABLE_THREADS
+    if(m_plan_thread)
+      m_plan_thread->Stop();
+#endif // ! DISABLE_THREADS
     
     shared_ptr<const array2d<int> > data(m_travmap->data);
     if( ! data){
@@ -186,15 +189,22 @@ PrepareAction(double timestep)
 	in != m_goalregion->GetArea().end(); ++in)
       m_estar->AddGoal(in->x, in->y, in->r);
     
-    cout << "==================================================\n"
-	 << "queue right after adding the goal region:\n";
-    dump_queue(*m_estar, 0, stdout);
-    cout << "==================================================\n";
+//     cout << "==================================================\n"
+// 	 << "queue right after adding the goal region:\n";
+//     dump_queue(*m_estar, 0, stdout);
+//     cout << "==================================================\n";
     
     if( ! m_plan_thread)
       m_plan_thread.reset(new PlanThread(m_estar, m_gframe,
 					 data->xsize, data->ysize));
-    ////    m_plan_thread->Start(0);
+
+#ifndef DISABLE_THREADS
+    if( ! m_plan_thread->Start(100000)){
+      cerr << "ERROR in Smart::PrepareAction():"
+	   << " m_plan_thread->Start(100000) failed\n";
+      exit(EXIT_FAILURE);
+    }
+#endif // ! DISABLE_THREADS
   }
   
   if( ! m_plan_thread){
@@ -203,8 +213,9 @@ PrepareAction(double timestep)
     return;
   }
   
-  //// just hacked...
+#ifdef DISABLE_THREADS
   m_plan_thread->Step();  
+#endif // DISABLE_THREADS
   
   //// const Frame & pose(GetServer()->GetTruePose());
   const Frame pose(GetServer()->GetTruePose());

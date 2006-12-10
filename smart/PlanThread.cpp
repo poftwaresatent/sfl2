@@ -26,21 +26,14 @@
 #include <estar/Facade.hpp>
 #include <estar/Queue.hpp>
 #include <estar/Algorithm.hpp>
-#include <estar/dump.hpp>
+//#include <estar/dump.hpp>
 #include <sfl/gplan/GridFrame.hpp>
-
-// manual override
-#define NPM_DEBUG
-#ifdef NPM_DEBUG
-# define PDEBUG PDEBUG_OUT
-#else // ! NPM_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // NPM_DEBUG
-
+#include <iostream>
 
 using namespace sfl;
 using namespace estar;
 using namespace boost;
+using namespace std;
 
 
 PlanThread::
@@ -55,7 +48,7 @@ PlanThread(shared_ptr<Facade> estar,
     m_mutex(Mutex::Create("PlanThread"))
 {
   if( ! m_mutex){
-    PDEBUG_ERR("ERROR: could not allocate a mutex\n");
+    cerr << "ERROR in PlanThread ctor: could not allocate mutex\n";
     exit(EXIT_FAILURE);
   }
 }
@@ -68,7 +61,7 @@ Step()
   if( ! m_estar->HaveWork())
     return;
   m_estar->ComputeOne();
-  dump_queue(*m_estar, 0, stdout);
+  //  dump_queue(*m_estar, 0, stdout);
 }
 
 
@@ -78,8 +71,8 @@ GetStatus(double robot_global_x, double robot_global_y)
   const GridFrame::index_t
     idx(m_gframe->GlobalIndex(robot_global_x, robot_global_y));
 
-  PDEBUG("pos %g   %g   idx %zu %zu\n",
-	 robot_global_x, robot_global_y, idx.v0, idx.v1);
+  //   PDEBUG("pos %g   %g   idx %zu %zu\n",
+  // 	 robot_global_x, robot_global_y, idx.v0, idx.v1);
   
   if((idx.v0 >= m_grid_xsize) || (idx.v1 >= m_grid_ysize))
     return -1;
@@ -92,7 +85,7 @@ GetStatus(double robot_global_x, double robot_global_y)
   
   const double rval(m_estar->GetValue(idx.v0, idx.v1));
   if( ! m_estar->HaveWork()){
-    PDEBUG_OUT("no work left to do\n");
+    //    PDEBUG_OUT("no work left to do\n");
     if(rval < infinity)
       return 0;
     return 2;
@@ -100,12 +93,13 @@ GetStatus(double robot_global_x, double robot_global_y)
   
   const queue_t queue(m_estar->GetAlgorithm().GetQueue().Get());
   if(queue.empty()){
-    PDEBUG_ERR("BUG: m_estar->HaveWork() but queue.empty()!\n");
+    cerr << "BUG in PlanThread::GetStatus():"
+	 << " m_estar->HaveWork() but queue.empty()!\n";
     exit(EXIT_FAILURE);
   }
   queue_t::const_iterator qt(queue.begin());
   if(qt->first <= rval){
-    PDEBUG_OUT("robot is downwind of wavefront\n");
+    //    PDEBUG_OUT("robot is downwind of wavefront\n");
     return 1;
   }
   return 0;
