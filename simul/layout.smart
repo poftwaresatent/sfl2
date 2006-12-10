@@ -2,6 +2,7 @@ View ground-truth
      Camera  world
      Drawing Ter_estar_meta
      Drawing Ter_estar_queue
+     Drawing Ter_estar_upwind
      Drawing world
      Drawing Ter_true_drawing
      Drawing Ter_goaldrawing

@@ -75,9 +75,12 @@ Draw()
   case QUEUE:
     gfx::draw_grid_queue(*facade);
     break;
+  case UPWIND:
+    gfx::draw_grid_upwind(*facade, 1, 0, 0, 2);
+    break;
   default:
     cerr << "ERROR in EstarDrawing::Draw(): invalid what=" << what
-	 << " (expected VALUE, META, or QUEUE)\n";
+	 << " (expected VALUE, META, QUEUE, or UPWIND)\n";
     exit(EXIT_FAILURE);
   }
   

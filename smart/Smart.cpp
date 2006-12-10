@@ -112,6 +112,8 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
  			      proxy, EstarDrawing::VALUE));
   AddDrawing(new EstarDrawing(descriptor->name + "_estar_queue",
  			      proxy, EstarDrawing::QUEUE));
+  AddDrawing(new EstarDrawing(descriptor->name + "_estar_upwind",
+ 			      proxy, EstarDrawing::UPWIND));
 }
 
 
