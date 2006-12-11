@@ -26,6 +26,7 @@
 
 
 #include <npm/common/RobotClient.hpp>
+#include <vector>
 
 
 namespace npm {
@@ -42,10 +43,18 @@ namespace sfl {
 namespace estar {
   class Facade;
   class Region;
+  struct carrot_item;
+  typedef std::vector<carrot_item> carrot_trace;
+}
+
+
+namespace asl {
+  class AckermannController;
 }
 
 
 class PlanThread;
+class SmartCarrotProxy;
 
 
 class Smart
@@ -68,8 +77,9 @@ public:
 
 protected:
   friend class SmartPlanProxy;
+  friend class SmartNavFuncQuery;
+  friend class SmartCarrotProxy;
   
-  boost::shared_ptr<npm::HAL> m_hal;
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Goal> m_goal;
   boost::shared_ptr<estar::Region> m_goalregion;
@@ -78,6 +88,9 @@ protected:
   boost::shared_ptr<PlanThread> m_plan_thread;
   boost::shared_ptr<const sfl::GridFrame> m_gframe;
   boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
+  boost::shared_ptr<asl::AckermannController> m_controller;
+  boost::shared_ptr<SmartCarrotProxy> m_carrot_proxy;
+  boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
   
   bool m_replan_request;
   int m_nscans, m_sick_channel;

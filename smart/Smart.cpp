@@ -23,6 +23,8 @@
 
 #include "Smart.hpp"
 #include "PlanThread.hpp"
+#include "SmartNavFuncQuery.hpp"
+#include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/util/numeric.hpp>
@@ -41,6 +43,7 @@
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/CheatSheet.hpp>
 #include <npm/estar/EstarDrawing.hpp>
+#include <npm/estar/CarrotDrawing.hpp>
 #include <iostream>
 #include <math.h>
 
@@ -50,10 +53,12 @@
 #else // ! NPM_DEBUG
 # define PDEBUG PDEBUG_OFF
 #endif // NPM_DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace npm;
 using namespace sfl;
+using namespace asl;
 using namespace estar;
 using namespace boost;
 using namespace std;
@@ -68,11 +73,26 @@ public:
 };
 
 
+class SmartCarrotProxy: public CarrotProxy {
+public:
+  SmartCarrotProxy(const Smart * _smart): smart(_smart) {}
+  
+  virtual const estar::carrot_trace * GetCarrotTrace() const
+  { return smart->m_carrot_trace.get(); }
+  
+  virtual const sfl::GridFrame * GetGridFrame() const
+  { return smart->m_gframe.get(); }
+  
+  const Smart * smart;
+};
+
+
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
+    m_carrot_proxy(new SmartCarrotProxy(this)),
     m_replan_request(false)
 {
   expoparams params(descriptor);
@@ -82,6 +102,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   m_wheelradius = params.model_wheelradius;
   m_axlewidth = params.model_axlewidth;
 
+  m_controller.
+    reset(new AckermannController(AckermannModel(params.model_sd_max,
+						 params.model_sdd_max,
+						 params.model_phi_max,
+						 params.model_phid_max,
+						 m_wheelbase)));
+  
   m_sick = DefineLidar(Frame(params.front_mount_x,
                              params.front_mount_y,
                              params.front_mount_theta),
@@ -102,18 +129,21 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   AddLine(Line(-m_wheelradius,  m_axlewidth/2 +m_wheelradius,
 	       m_wheelbase +m_wheelradius,  m_axlewidth/2 +m_wheelradius));
   
-  AddDrawing(new GoalInstanceDrawing(descriptor->name + "_goaldrawing",
+  const string & name(descriptor->name);
+  AddDrawing(new GoalInstanceDrawing(name + "_goaldrawing",
 				     *m_goal));
   
   shared_ptr<SmartPlanProxy> proxy(new SmartPlanProxy(this));
-  AddDrawing(new EstarDrawing(descriptor->name + "_estar_meta",
+  AddDrawing(new EstarDrawing(name + "_estar_meta",
  			      proxy, EstarDrawing::META));
-  AddDrawing(new EstarDrawing(descriptor->name + "_estar_value",
+  AddDrawing(new EstarDrawing(name + "_estar_value",
  			      proxy, EstarDrawing::VALUE));
-  AddDrawing(new EstarDrawing(descriptor->name + "_estar_queue",
+  AddDrawing(new EstarDrawing(name + "_estar_queue",
  			      proxy, EstarDrawing::QUEUE));
-  AddDrawing(new EstarDrawing(descriptor->name + "_estar_upwind",
+  AddDrawing(new EstarDrawing(name + "_estar_upwind",
  			      proxy, EstarDrawing::UPWIND));
+  
+  AddDrawing(new CarrotDrawing(name + "_carrot", m_carrot_proxy, 1));
 }
 
 
@@ -245,21 +275,76 @@ PrepareAction(double timestep)
     exit(EXIT_FAILURE);
   }
   
-  const GridFrame::index_t idx(m_gframe->GlobalIndex(pose.X(), pose.Y()));
-  double gradx, grady;
-  m_estar->GetGrid().ComputeGradient(idx.v0, idx.v1, gradx, grady);
-  gradx = -gradx;		// follow the NEGATIVE gradient
-  grady = -grady;
+//   const GridFrame::index_t idx(m_gframe->GlobalIndex(pose.X(), pose.Y()));
+//   double gradx, grady;
+//   m_estar->GetGrid().ComputeGradient(idx.v0, idx.v1, gradx, grady);
+//   gradx = -gradx;		// follow the NEGATIVE gradient
+//   grady = -grady;
   
-  m_gframe->RotateTo(gradx, grady);
-  pose.RotateFrom(gradx, grady);
-  const double phimax(M_PI / 2.1);
-  const double dphi(sfl::boundval(-phimax, atan2(grady, gradx), phimax));
-  const double sdmin(0.05);
-  const double sdmax(0.8);
-  const double scale((phimax - sfl::absval(dphi)) / phimax);
-  const double sd(sdmin * (1 - scale) + sdmax * scale);
-  GetHAL()->speed_set(sd, dphi);
+//   m_gframe->RotateTo(gradx, grady);
+//   pose.RotateFrom(gradx, grady);
+//   const double phimax(M_PI / 2.1);
+//   const double dphi(sfl::boundval(-phimax, atan2(grady, gradx), phimax));
+//   const double sdmin(0.05);
+//   const double sdmax(0.8);
+//   const double scale((phimax - sfl::absval(dphi)) / phimax);
+//   const double sd(sdmin * (1 - scale) + sdmax * scale);
+  
+  if( ! m_carrot_trace)
+    m_carrot_trace.reset(new carrot_trace());
+  else
+    m_carrot_trace->clear();
+  const double carrot_distance(5); // XXX to do: magic numbers...
+  const double carrot_stepsize(0.5);
+  const size_t carrot_maxnsteps(30);
+  double v_trans, steer;
+  GetHAL()->speed_get(&v_trans, &steer);
+  int result(trace_carrot(*m_estar, pose.X(), pose.Y(),
+			  carrot_distance, carrot_stepsize,
+			  carrot_maxnsteps, *m_carrot_trace));
+  if(0 > result){
+    PVDEBUG("FAILED compute_carrot()\n");
+    GetHAL()->speed_set(0, steer);
+    return;
+  }
+  else{
+    if(1 == result)
+      PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
+    PVDEBUG("carrot.value = %g\n", m_carrot_trace->back().value);
+    if(m_carrot_trace->back().value <= 3 * carrot_stepsize){
+      // could just as well simply keep (carx, cary) untouched, but
+      // we want to see this adaption in the CarrotDrawing... his is
+      // really "dumb" because we undo the same trasformations right
+      // afterwards, but well.
+      PVDEBUG("carrot on goal border, appending goal point to carrot");
+      double foox(m_goal->X());
+      double fooy(m_goal->Y());
+      m_gframe->From(foox, fooy);
+      m_carrot_trace->push_back(carrot_item(foox, fooy, 0, 0, 0, true));
+    }
+  }
+  
+  path_t path;
+  for(size_t ii(0); ii < m_carrot_trace->size(); ++ii){
+    const carrot_item & item((*m_carrot_trace)[ii]);
+    path.push_back(path_element(path_point(item.cx, item.cy),
+				path_point(item.gradx, item.grady),
+				item.value, item.degenerate));
+  }
+  
+  result = m_controller->ComputeCommand(pose, path, SmartNavFuncQuery(this),
+					v_trans, steer, timestep);
+  if(0 != result){
+    PVDEBUG("FAILED ComputeCommand()\n");
+    GetHAL()->speed_set(0, steer);
+    return;
+  }
+  if( ! m_controller->GetCommand(v_trans, steer)){
+    PVDEBUG("FAILED GetCommand()\n");
+    GetHAL()->speed_set(0, steer);
+    return;
+  }
+  GetHAL()->speed_set(v_trans, steer);
 }
 
 
