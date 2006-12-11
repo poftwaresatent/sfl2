@@ -136,7 +136,7 @@ namespace sfl {
     int Set(const Pose & pose);
     
     /** Access to the pose history in case you want to do fancy stuff. */
-    const history_t & GetHistory() const;
+    const history_t & GetHistory() const { return m_history; }
     
     /**
        Find closest matching pose in the history. If the history is
