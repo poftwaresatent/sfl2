@@ -26,7 +26,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
+#include <math.h>
 
 using namespace boost;
 using namespace std;
@@ -40,7 +40,27 @@ namespace sfl {
     : gframe(0, 0, 0, 1), freespace(0), obstacle(127), name("world")
   {
   }
-  
+ 
+	TraversabilityMap::
+	TraversabilityMap(Frame &origin, double resolution, double xSize, double ySize)
+		: gframe(origin.X(), origin.Y(), origin.Theta(), resolution)
+		, freespace(0), obstacle(127), name("world")
+	{
+		/*		vector<vector<int> > data;
+		vector<int> line;
+		int value(0);
+		cout << "Allocating Map" << endl;
+		for (int j(0); j<(ySize/resolution); j++)
+			{
+				for (int i(0); i<(xSize/resolution); i++)
+					{
+						line.push_back(value);
+					}
+				data.push_back(line);
+				cout << "Allocated Line " << j << endl;
+				}*/
+		data.reset(new array2d<int> (rint(xSize/resolution), rint(ySize/resolution), freespace)); 
+	}
   
   shared_ptr<TraversabilityMap> TraversabilityMap::
   Parse(istream & is, ostream * os)
@@ -174,5 +194,37 @@ namespace sfl {
     value = (*data)[idx];
     return true;
   }
-  
+
+	bool TraversabilityMap::
+	SetValue(double global_x, double global_y, int & value)
+  {
+    if( ! data)
+      return false;
+    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+		cout << "Trying to add point at " << global_x << " " << global_y 
+				 << " to cell " << idx.v0 << " " << idx.v1 << endl;
+    if( ! data->ValidIndex(idx))
+      return false;
+    (*data)[idx] = value;
+    return true;
+		
+	}
+
+	void TraversabilityMap::
+	DumpMap(ostream * os){
+		*os << "# resolution " << gframe.Delta() << endl;
+		*os << "# origin " << gframe.X() << " " << gframe.Y() << " " << gframe.Theta() << endl;
+		*os << "# obstacle " << obstacle << endl;
+		*os << "# freespace " << freespace << endl;
+		*os << "# default " << 0 << endl;
+		*os << "# name " << name << endl;;
+
+		for (int j(0); j < data->ysize; j++)
+			{
+				for (int i(0); i < data->xsize; i++) 
+					*os << (*data) [i][data->ysize - j - 1] << " ";
+				*os << endl;
+			}
+	}
+	
 }

@@ -28,6 +28,7 @@
 
 #include <sfl/util/array2d.hpp>
 #include <sfl/gplan/GridFrame.hpp>
+#include <sfl/util/Frame.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <iosfwd>
@@ -40,6 +41,7 @@ namespace sfl {
   {
   public:
     TraversabilityMap();
+		TraversabilityMap(Frame &origin, double resolution, double xSize, double ySize); 
     
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
@@ -50,6 +52,9 @@ namespace sfl {
        <code>value</code> is set to it.
     */
     bool GetValue(double global_x, double global_y, int & value) const;
+    bool SetValue(double global_x, double global_y, int & value);
+
+		void DumpMap(std::ostream * os);
     
     GridFrame gframe;		/**< default (0, 0, 0, 1) */
     int freespace;		/**< default 0 */
