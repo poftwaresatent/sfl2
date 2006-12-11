@@ -1,8 +1,7 @@
-View meta
+View world
      Camera  world
      Drawing Ter_estar_meta
      Drawing Ter_estar_queue
-     Drawing Ter_estar_upwind
      Drawing Ter_carrot
      Drawing world
      Drawing Ter_true_drawing
@@ -13,11 +12,9 @@ View meta
      Window  0.0  0.0  0.5  1.0
      Border  0
 
-View value
-     Camera  world
-     Drawing Ter_estar_value
+View ter
+     Camera  Ter_true_zoom_camera
      Drawing Ter_estar_queue
-     Drawing Ter_estar_upwind
      Drawing Ter_carrot
      Drawing world
      Drawing Ter_true_drawing
