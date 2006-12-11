@@ -105,6 +105,30 @@ private:
 };
 
 
+class EsbotCarrotProxy: public CarrotProxy {
+public:
+  EsbotCarrotProxy(const Esbot * _esbot, bool _full_trace)
+    : esbot(_esbot), full_trace(_full_trace)
+  {}
+  
+  virtual const estar::carrot_trace * GetCarrotTrace() const {
+    if(full_trace) trace = esbot->ComputeFullCarrot();
+    else           trace = esbot->GetCarrotTrace();
+    return trace.get();
+  }
+  
+  virtual const sfl::GridFrame * GetGridFrame() const {
+    boost::shared_ptr<const PNF> pnf(esbot->GetPNF());
+    if( ! pnf) return 0;
+    return pnf->GetGridFrame().get();
+  }
+  
+  const Esbot * esbot;
+  mutable shared_ptr<carrot_trace> trace;
+  bool full_trace;
+};
+
+
 Esbot::
 Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
       const World & world)
@@ -212,12 +236,12 @@ CreateGfxStuff(const std::string & name)
   AddDrawing(new EstarDrawing(name + "_envdist", shared_ptr<PlanProxy>(new EnvdistProxy(this)), EstarDrawing::VALUE));
 			      
   // XXX to do: magic numbers!!!
-  AddDrawing(new CarrotDrawing(name + "_carrotdrawing",
-			       this, true, false, 0));
-  AddDrawing(new CarrotDrawing(name + "_fullcarrotdrawing",
-			       this, true, true, 5));
-  AddDrawing(new CarrotDrawing(name + "_localcarrotdrawing",
-			       this, false, false, 5));
+  AddDrawing(new CarrotDrawing(name + "_carrot",
+	     shared_ptr<EsbotCarrotProxy>(new EsbotCarrotProxy(this, false)),
+	     0));
+  AddDrawing(new CarrotDrawing(name + "_fullcarrot",
+	     shared_ptr<EsbotCarrotProxy>(new EsbotCarrotProxy(this, true)),
+	     5));
   
   AddCamera(new StillCamera(name + "_dwcamera",
 			    0,

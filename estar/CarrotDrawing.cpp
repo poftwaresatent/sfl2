@@ -19,7 +19,6 @@
 
 
 #include "CarrotDrawing.hpp"
-#include "Esbot.hpp"
 #include "PNF.hpp"
 #include <npm/common/wrap_gl.hpp>
 #include <npm/common/wrap_glu.hpp>
@@ -41,15 +40,11 @@ using namespace boost;
 
 CarrotDrawing::
 CarrotDrawing(const std::string & name,
-	      Esbot * bot,
-	      bool _global_mode,
-	      bool _full_trace,
+	      shared_ptr<CarrotProxy> proxy,
 	      size_t _gradplot_frequency)
   : Drawing(name),
-    global_mode(_global_mode),
-    full_trace(_full_trace),
     gradplot_frequency(_gradplot_frequency),
-    m_bot(bot)
+    m_proxy(proxy)
 {
 }
   
@@ -57,56 +52,28 @@ CarrotDrawing(const std::string & name,
 void CarrotDrawing::
 Draw()
 {
-  boost::shared_ptr<PNF> pnf(m_bot->GetPNF());
-  if( ! pnf){
-    PDEBUG("carrot: no PNF in bot\n");
-    return;
-  }
-  
-  shared_ptr<carrot_trace> trace;
-  if(full_trace){
-    PDEBUG("carrot: full trace\n");
-    trace = m_bot->ComputeFullCarrot();
-  }
-  else{
-    PDEBUG("carrot: partial trace\n");    
-    trace = m_bot->GetCarrotTrace();
-  }
-  if((!trace) || (trace->empty())){
+  const carrot_trace * trace(m_proxy->GetCarrotTrace());
+  if(( ! trace) || (trace->empty())){
     PDEBUG("carrot: invalid or empty trace\n");    
     return;
   }
-
-  double carx, cary;
-  if(full_trace){
-    const carrot_item ci(m_bot->GetCarrotTrace()->back());
-    carx = ci.cx;
-    cary = ci.cy;
-  }
-  else{
-    carx = trace->back().cx;
-    cary = trace->back().cy;
-  }
   
-  shared_ptr<const GridFrame> gframe(pnf->GetGridFrame());
-  Frame lframe(m_bot->GetPose());
-  gframe->From(lframe);
+  const GridFrame * gframe(m_proxy->GetGridFrame());
+  if(( ! gframe)){
+    PDEBUG("carrot: invalid GridFrame\n");    
+    return;
+  }
   
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  if(global_mode){
-    glTranslated(gframe->X(), gframe->Y(), 0);
-    glRotated(180 * gframe->Theta() / M_PI, 0, 0, 1);
-  }
-  else{
-    glTranslated(lframe.X(), lframe.Y(), 0);
-    glRotated(180 * lframe.Theta() / M_PI, 0, 0, 1);    
-  }
+  glTranslated(gframe->X(), gframe->Y(), 0);
+  glRotated(180 * gframe->Theta() / M_PI, 0, 0, 1);
   
   const double startval(trace->front().value);
   double deltav(absval(startval - trace->back().value));
   if(deltav <= epsilon)
     deltav = startval;
+  
   if(0 == gradplot_frequency){
     glBegin(GL_LINE_STRIP);
     for(size_t ii(0); ii < trace->size(); ++ii){
@@ -146,6 +113,8 @@ Draw()
     glEnd();
   }
   
+  double carx(trace->back().cx);
+  double cary(trace->back().cy);
   glColor3d(1, 1, 0);
   glPushMatrix();
   glTranslated(carx, cary, 0);

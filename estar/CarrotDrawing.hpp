@@ -23,30 +23,44 @@
 
 
 #include <npm/common/Drawing.hpp>
+#include <vector>
 
+namespace sfl {
+  class GridFrame;
+}
 
-class Esbot;
+namespace estar {
+  struct carrot_item;
+  typedef std::vector<carrot_item> carrot_trace;
+}
+
+class CarrotProxy {
+public:
+  virtual ~CarrotProxy() {}
+  
+  /** \return zero (a.k.a. NULL) or a valid carrot_trace instance */
+  virtual const estar::carrot_trace * GetCarrotTrace() const = 0;
+  
+  /** \return zero (a.k.a. NULL) or a valid GridFrame instance */
+  virtual const sfl::GridFrame * GetGridFrame() const = 0;
+};
 
 
 class CarrotDrawing
   : public npm::Drawing
 {
 public:
-  bool global_mode;
-  bool full_trace;
   size_t gradplot_frequency;
   
   CarrotDrawing(const std::string & name,
-		Esbot * bot,
-		bool global_mode,
-		bool full_trace,
+		boost::shared_ptr<CarrotProxy> proxy,
 		/** plot gradient every X steps (0: don't plot gradient) */
 		size_t gradplot_frequency);
   
   virtual void Draw();
   
 private:
-  Esbot * m_bot;
+  boost::shared_ptr<CarrotProxy> m_proxy;
 };
 
 #endif // CARROT_DRAWING_HPP

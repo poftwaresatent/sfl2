@@ -72,6 +72,7 @@ public:
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
   boost::shared_ptr<PNF> GetPNF() { return m_pnf; }
+  boost::shared_ptr<const PNF> GetPNF() const { return m_pnf; }
   boost::shared_ptr<estar::carrot_trace> GetCarrotTrace() const
   { return m_carrot_trace; }
   boost::shared_ptr<estar::carrot_trace> ComputeFullCarrot() const;
