@@ -8,6 +8,9 @@ expoparams::
 expoparams(shared_ptr<RobotDescriptor> descriptor)
 {
   expo_default_parameters(this);
+  model_axlewidth = 0.8;
+  model_phi_max = 1.0;
+  model_phid_max = 3.0;
   if( ! descriptor)
     return;
   
@@ -40,6 +43,8 @@ expoparams(shared_ptr<RobotDescriptor> descriptor)
   string_to(descriptor->GetOption("model_thetad_max"), model_thetad_max);
   string_to(descriptor->GetOption("model_sdd_max"), model_sdd_max);
   string_to(descriptor->GetOption("model_thetadd_max"), model_thetadd_max);
+  string_to(descriptor->GetOption("model_phi_max"), model_phi_max);
+  string_to(descriptor->GetOption("model_phid_max"), model_phid_max);
   
   string_to(descriptor->GetOption("dwa_dimension"), dwa_dimension);
   string_to(descriptor->GetOption("dwa_grid_width"), dwa_grid_width);
