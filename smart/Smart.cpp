@@ -304,7 +304,10 @@ PrepareAction(double timestep)
   const size_t carrot_maxnsteps(30);
   double v_trans, steer;
   GetHAL()->speed_get(&v_trans, &steer);
-  int result(trace_carrot(*m_estar, pose.X(), pose.Y(),
+  double robx_grid(pose.X());
+  double roby_grid(pose.Y());
+  m_gframe->From(robx_grid, roby_grid);
+  int result(trace_carrot(*m_estar, robx_grid, roby_grid,
 			  carrot_distance, carrot_stepsize,
 			  carrot_maxnsteps, *m_carrot_trace));
   if(0 > result){
@@ -331,7 +334,9 @@ PrepareAction(double timestep)
   
   path_t path;
   for(size_t ii(0); ii < m_carrot_trace->size(); ++ii){
-    const carrot_item & item((*m_carrot_trace)[ii]);
+    carrot_item item((*m_carrot_trace)[ii]);
+    m_gframe->To(item.cx, item.cy);
+    m_gframe->RotateTo(item.gradx, item.grady);
     path.push_back(path_element(path_point(item.cx, item.cy),
 				path_point(item.gradx, item.grady),
 				item.value, item.degenerate));
