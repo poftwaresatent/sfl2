@@ -42,7 +42,7 @@ namespace sfl {
   public:
     TraversabilityMap();
 		TraversabilityMap(Frame &origin, double resolution, double xSize, double ySize); 
-    
+    virtual ~TraversabilityMap() { }
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
     
@@ -51,8 +51,18 @@ namespace sfl {
        coordinates is known, in which case the out-parameter
        <code>value</code> is set to it.
     */
-    bool GetValue(double global_x, double global_y, int & value) const;
-    bool SetValue(double global_x, double global_y, int & value);
+    virtual bool GetValue(double global_x, double global_y, int & value) const;
+    virtual bool SetValue(double global_x, double global_y, int & value);
+
+		virtual bool SetObst(double global_x, double global_y) 
+		{
+			return SetValue(global_x, global_y, obstacle);
+		}
+
+		virtual bool SetFree(double global_x, double global_y) 
+		{
+			return SetValue(global_x, global_y, freespace);
+		}
 
 		void DumpMap(std::ostream * os);
     
