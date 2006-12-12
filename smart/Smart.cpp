@@ -90,6 +90,7 @@ public:
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
+    single_step_estar(false),
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_proxy(new SmartCarrotProxy(this)),
@@ -246,7 +247,11 @@ PrepareAction(double timestep)
   }
   
 #ifdef DISABLE_THREADS
-  m_plan_thread->Step();  
+  if(single_step_estar)
+    m_plan_thread->Step();
+  else
+    while(m_estar->HaveWork())
+      m_plan_thread->Step();
 #endif // DISABLE_THREADS
   
   //// const Frame & pose(GetServer()->GetTruePose());

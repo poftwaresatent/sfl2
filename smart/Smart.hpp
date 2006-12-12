@@ -74,7 +74,10 @@ public:
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   virtual bool GoalReached();
-
+  
+  /** default false */
+  bool single_step_estar;
+  
 protected:
   friend class SmartPlanProxy;
   friend class SmartNavFuncQuery;
