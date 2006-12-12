@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_RESULT([detected Linux])
-	   LDFLAGS="$LDFLAGS -lpthread";;
+	   LDFLAGS="-lpthread $LDFLAGS";;
   darwin*) AC_MSG_RESULT([detected Darwin (OS X)])
            CPPFLAGS="$CPPFLAGS -Wno-long-double";;
   *)       AC_MSG_WARN([unknown host_os $host_os, please update configure.ac]);;
@@ -38,7 +38,7 @@ AC_ARG_WITH(boost,
   AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
   [ if test "x$withval" != "x" ; then
       CPPFLAGS="$CPPFLAGS -I${withval}/include"
-      LDFLAGS="$LDFLAGS -L${withval}/lib"
+      LDFLAGS="-L${withval}/lib $LDFLAGS"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS -I${prefix}/include"
@@ -60,6 +60,18 @@ dnl any libs??? LDFLAGS="$LDFLAGS -L${withval}/lib -lWHATEVER"
     CPPFLAGS="$oldCPPFLAGS" ],
   [ AM_CONDITIONAL([ROBOX], [false]) ])
 
+AC_ARG_WITH(estar,
+  AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
+  [ if test "x$withval" = "x" ; then
+      CPPFLAGS="$CPPFLAGS -DHAVE_ESTAR"
+      LDFLAGS="-lestar $LDFLAGS"
+    else
+      CPPFLAGS="$CPPFLAGS -DHAVE_ESTAR -I${withval}/include"
+      LDFLAGS="-lestar -L${withval}/lib $LDFLAGS"
+    fi
+    AM_CONDITIONAL([HAVE_ESTAR], [true]) ],
+  [ AM_CONDITIONAL([HAVE_ESTAR], [false]) ])
+
 case $host_os in
   darwin*) AC_DISABLE_SHARED;;
   *)       AC_DISABLE_STATIC;;
@@ -67,7 +79,8 @@ esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
-CPPFLAGS="$CPPFLAGS -I${prefix}/include"
+test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
+test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
 
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
