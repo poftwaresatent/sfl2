@@ -11,10 +11,10 @@ libgplan_la_SOURCES=   GridFrame.cpp \
                        TraversabilityMap.cpp \
                        $(OPTSRC)
 
-include_HEADERS=       GridFrame.cpp \
-                       NF1Wave.cpp \
-                       NF1.cpp \
-                       TraversabilityMap.cpp \
+include_HEADERS=       GridFrame.hpp \
+                       NF1Wave.hpp \
+                       NF1.hpp \
+                       TraversabilityMap.hpp \
                        $(OPTHDR)
 
 includedir=            @includedir@/sfl/gplan

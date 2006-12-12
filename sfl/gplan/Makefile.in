@@ -70,8 +70,8 @@ CXXLINK = $(LIBTOOL) --mode=link --tag=CXX $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libgplan_la_SOURCES)
 DIST_SOURCES = $(am__libgplan_la_SOURCES_DIST)
-am__include_HEADERS_DIST = GridFrame.cpp NF1Wave.cpp NF1.cpp \
-	TraversabilityMap.cpp TraversabilityMapCS.hpp
+am__include_HEADERS_DIST = GridFrame.hpp NF1Wave.hpp NF1.hpp \
+	TraversabilityMap.hpp TraversabilityMapCS.hpp
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -193,10 +193,10 @@ libgplan_la_SOURCES = GridFrame.cpp \
                        TraversabilityMap.cpp \
                        $(OPTSRC)
 
-include_HEADERS = GridFrame.cpp \
-                       NF1Wave.cpp \
-                       NF1.cpp \
-                       TraversabilityMap.cpp \
+include_HEADERS = GridFrame.hpp \
+                       NF1Wave.hpp \
+                       NF1.hpp \
+                       TraversabilityMap.hpp \
                        $(OPTHDR)
 
 all: all-am
