@@ -33,6 +33,9 @@
 #include <cmath>
 
 
+// manual override
+#define DEBUG
+
 #ifdef DEBUG
 # define PDEBUG PDEBUG_ERR
 # define PVDEBUG PDEBUG_OFF
@@ -139,9 +142,9 @@ namespace expo {
   TurnToward(double timestep, direction_t direction,
 	     shared_ptr<const sfl::Scan> global_scan) const
   {
-    if(m_mp->strict_dwa)
-      m_mp->dynamic_window->GoStrictSlow();
-    else
+// //     if(m_mp->strict_dwa)
+// //       m_mp->dynamic_window->GoStrictSlow();
+// //     else
       m_mp->dynamic_window->GoSlow();
     AskDynamicWindow(timestep, direction, global_scan);
   }
@@ -151,9 +154,9 @@ namespace expo {
   GoAlong(double timestep, direction_t direction,
 	  shared_ptr<const sfl::Scan> global_scan) const
   {
-    if(m_mp->strict_dwa)
-      m_mp->dynamic_window->GoStrictFast();
-    else
+// //     if(m_mp->strict_dwa)
+// //       m_mp->dynamic_window->GoStrictFast();
+// //     else
       m_mp->dynamic_window->GoFast();
     AskDynamicWindow(timestep, direction, global_scan);
   }

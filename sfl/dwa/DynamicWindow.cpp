@@ -29,6 +29,9 @@
 #include <iostream>
 
 
+// manual dbg
+#define DEBUG
+
 #ifdef DEBUG
 # define PDEBUG PDEBUG_ERR
 # define PVDEBUG PDEBUG_OFF
@@ -174,8 +177,8 @@ namespace sfl {
   {
     double qdl, qdr;
     _motion_controller.GetCurrentAct(qdl, qdr);
-    PDEBUG("DWA dt: %g   goal: %g   %g   qd: %g   %g\n",
-	   timestep, dx, dy, qdl, qdr);
+    PVDEBUG("DWA dt: %g   goal: %g   %g   qd: %g   %g\n",
+	    timestep, dx, dy, qdl, qdr);
     
     CalculateReachable(timestep, qdl, qdr);
     _distance_objective.Calculate(timestep, _qdlMin, _qdlMax, _qdrMin, _qdrMax,
@@ -226,13 +229,15 @@ namespace sfl {
   void DynamicWindow::
   GoFast()
   {
+    PDEBUG("going fast\n");
     _speed_objective.GoFast();
   }
   
   
   void DynamicWindow::
-  GoStrictFast()
+  _GoStrictFast()
   {
+    PDEBUG("going fast, but strictly, whatever that means\n");
     _speed_objective.GoStrictFast();
   }
 
@@ -240,13 +245,15 @@ namespace sfl {
   void DynamicWindow::
   GoSlow()
   {
+    PDEBUG("going slow\n");
     _speed_objective.GoSlow();
   }
 
 
   void DynamicWindow::
-  GoStrictSlow()
+  _GoStrictSlow()
   {
+    PDEBUG("going slow, but strictly, whatever that means\n");
     _speed_objective.GoStrictSlow();
   }
 
@@ -254,6 +261,7 @@ namespace sfl {
   void DynamicWindow::
   GoForward()
   {
+    PDEBUG("going forward\n");
     _heading_objective.angle_offset = 0;
     _speed_objective.GoForward();
   }
@@ -262,6 +270,7 @@ namespace sfl {
   void DynamicWindow::
   GoBackward()
   {
+    PDEBUG("going backward\n");
     _heading_objective.angle_offset = M_PI;
     _speed_objective.GoBackward();
   }

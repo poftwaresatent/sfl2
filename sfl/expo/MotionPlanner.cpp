@@ -34,6 +34,9 @@
 #include <sfl/dwa/DynamicWindow.hpp>
 
 
+// manual
+#define DEBUG
+
 #ifdef DEBUG
 # define PDEBUG PDEBUG_ERR
 #else // ! DEBUG
@@ -84,6 +87,7 @@ namespace expo {
   void MotionPlanner::
   Update(double timestep)
   {
+    PDEBUG("\n==================================================\n");
     shared_ptr<const sfl::Pose> pose(odometry->Get());
     m_internal_state = m_internal_state->NextState(timestep);
     m_internal_state->Act(timestep, multiscanner->CollectScans());
@@ -117,6 +121,7 @@ namespace expo {
   int MotionPlanner::
   UpdateAll(double timestep)
   {
+    PDEBUG("\n==================================================\n");
     sfl::Odometry & odo(const_cast<sfl::Odometry &>(*odometry));
     int status(odo.Update());
     if(0 > status){
