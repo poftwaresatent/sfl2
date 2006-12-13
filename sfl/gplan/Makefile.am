@@ -1,6 +1,8 @@
 if HAVE_ESTAR
-  OPTSRC=              TraversabilityMapCS.cpp
-  OPTHDR=              TraversabilityMapCS.hpp
+  OPTSRC=              TraversabilityMapCS.cpp \
+											 Mapper2d.cpp
+  OPTHDR=              TraversabilityMapCS.hpp \
+											 Mapper2d.hpp
 endif
 
 noinst_LTLIBRARIES=    libgplan.la

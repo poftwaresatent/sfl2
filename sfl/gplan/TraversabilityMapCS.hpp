@@ -13,7 +13,7 @@ namespace sfl{
 	{
 	public:
 		//TraversabilityMapCS();
-	TraversabilityMapCS(Frame &origin, boost::shared_ptr<estar::Sprite> &sprite, double resolution, double xSize, double ySize); 
+		TraversabilityMapCS(Frame &origin, boost::shared_ptr<estar::Sprite> &sprite, double resolution, double xSize, double ySize); 
 
 		//	~TraversabilityMapCS() { }
 		// virtual functions
