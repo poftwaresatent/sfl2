@@ -38,6 +38,7 @@ namespace sfl {
 
 class PlanProxy {
 public:
+	virtual ~PlanProxy() {}
   virtual const estar::Facade * GetFacade() = 0;
   virtual const sfl::GridFrame * GetFrame() = 0;
 };

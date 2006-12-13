@@ -41,6 +41,7 @@
 #include <npm/common/HAL.hpp>
 #include <npm/common/RobotServer.hpp>
 #include <npm/common/GoalInstanceDrawing.hpp>
+#include <npm/common/TraversabilityDrawing.hpp>
 #include <npm/common/CheatSheet.hpp>
 #include <npm/estar/EstarDrawing.hpp>
 #include <npm/estar/CarrotDrawing.hpp>
@@ -87,6 +88,14 @@ public:
 };
 
 
+class SmartTraversabilityProxy: public TraversabilityProxy {
+public:
+	SmartTraversabilityProxy(Mapper2d * mapper): m_mapper(mapper) {}
+	virtual sfl::TraversabilityMap * Get() { return m_mapper->getTravMap().get(); }
+	Mapper2d * m_mapper;
+};
+
+
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
@@ -119,6 +128,10 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
                        params.front_phirange,
                        params.front_channel)->GetScanner();
 
+	m_mapper = new Mapper2d();
+	//boost::shared_ptr<TraversabilityMap> travMap(m_mapper->getTravMap());
+	m_travmap = m_mapper->getTravMap();
+
   DefineBicycleDrive(m_wheelbase, m_wheelradius, m_axlewidth);
 
   AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
@@ -144,6 +157,8 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   AddDrawing(new EstarDrawing(name + "_estar_upwind",
  			      proxy, EstarDrawing::UPWIND));
   
+  AddDrawing(new TraversabilityDrawing(name + "_travcs", shared_ptr<TraversabilityProxy>(new SmartTraversabilityProxy(m_mapper))));
+  
   AddDrawing(new CarrotDrawing(name + "_carrot", m_carrot_proxy, 1));
 }
 
@@ -155,15 +170,25 @@ void Smart::
 PrepareAction(double timestep)
 {
   m_sick->Update();
-  
+	m_travmap = m_mapper->getTravMap();
+
   if( ! m_travmap)
-    m_travmap = m_cheat->GetTravmap();
+		{
+			m_travmap = m_cheat->GetTravmap();
+			cout << "Pssst, We are cheating a bit..." << endl; 
+		}
   if( ! m_travmap){
     cerr << "ERROR: Smart needs a traversability map.\n";
     exit(EXIT_FAILURE);
   }
   if( ! m_gframe)
     m_gframe.reset(new GridFrame(m_travmap->gframe));
+	
+	shared_ptr<const array2d<int> > data(m_travmap->data);
+	if( ! data){
+		cerr << "ERROR: Invalid traversability map (no data).\n";
+		exit(EXIT_FAILURE);
+	}
   
   if(m_replan_request){
     m_replan_request = false;
@@ -172,12 +197,6 @@ PrepareAction(double timestep)
     if(m_plan_thread)
       m_plan_thread->Stop();
 #endif // ! DISABLE_THREADS
-    
-    shared_ptr<const array2d<int> > data(m_travmap->data);
-    if( ! data){
-      cerr << "ERROR: Invalid traversability map (no data).\n";
-      exit(EXIT_FAILURE);
-    }
     
     if( ! m_estar){
       m_estar.reset(Facade::CreateDefault(data->xsize, data->ysize,
@@ -245,8 +264,24 @@ PrepareAction(double timestep)
     GetHAL()->speed_set(0, 0);
     return;
   }
-  
-#ifdef DISABLE_THREADS
+
+  // Updating traversability Map
+	Pose mypose(GetServer()->GetTruePose());
+	m_mapper->update(mypose , *m_sick);
+	
+#ifndef DISABLE_THREADS
+	m_plan_thread->Stop();
+#endif // DISABLE_THREADS
+	
+	const double obst(m_estar->GetObstacleMeta());
+	for(size_t ii(0); ii < data->xsize; ++ii)
+		for(size_t jj(0); jj < data->ysize; ++jj)
+			if((*data)[ii][jj] >= m_travmap->obstacle)
+				m_estar->SetMeta(ii, jj, obst);
+	
+#ifndef DISABLE_THREADS
+	m_plan_thread->Start(100000);
+#else // DISABLE_THREADS
   if(single_step_estar)
     m_plan_thread->Step();
   else

@@ -68,6 +68,14 @@ public:
 };
 
 
+class RawTraversibilityProxy: public TraversabilityProxy {
+public:
+	RawTraversibilityProxy(TraversabilityMap * foo): m_foo(foo) {}
+	virtual sfl::TraversabilityMap * Get() { return m_foo; }
+	TraversabilityMap * m_foo;
+};
+
+
 static Parameters params;
 static const unsigned int glut_timer_ms(50);
 static const unsigned int timestep_usec(100000);
@@ -132,7 +140,7 @@ int main(int argc, char ** argv)
     }
     world.reset(new World(traversability->name));
     world->ApplyTraversability(traversability);
-    travdrawing.reset(new TraversabilityDrawing("travmap", traversability));
+    travdrawing.reset(new TraversabilityDrawing("travmap", shared_ptr<RawTraversibilityProxy>(new RawTraversibilityProxy(traversability.get()))));
   }
   else{
     cerr << "ERROR: Specify either a world or a traversability file.\n";

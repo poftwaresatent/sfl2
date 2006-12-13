@@ -36,17 +36,24 @@ namespace sfl {
 
 namespace npm {
   
+  class TraversabilityProxy {
+	public:
+		virtual ~TraversabilityProxy() {}
+		virtual sfl::TraversabilityMap * Get() = 0;
+	};
+	
+	
   class TraversabilityDrawing
     : public Drawing
   {
   public:
     TraversabilityDrawing(const std::string & name,
-			  boost::shared_ptr<const sfl::TraversabilityMap> tm);
+													boost::shared_ptr<TraversabilityProxy> proxy);
     
     virtual void Draw();
     
   private:
-    boost::shared_ptr<const sfl::TraversabilityMap> m_tm;
+    boost::shared_ptr<TraversabilityProxy> m_proxy;
   };
 
 }

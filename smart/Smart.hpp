@@ -26,6 +26,7 @@
 
 
 #include <npm/common/RobotClient.hpp>
+#include <sfl/gplan/Mapper2d.hpp>
 #include <vector>
 
 
@@ -94,7 +95,7 @@ protected:
   boost::shared_ptr<asl::AckermannController> m_controller;
   boost::shared_ptr<SmartCarrotProxy> m_carrot_proxy;
   boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
-  
+  Mapper2d *m_mapper; 
   bool m_replan_request;
   int m_nscans, m_sick_channel;
   double m_wheelbase, m_wheelradius, m_axlewidth;

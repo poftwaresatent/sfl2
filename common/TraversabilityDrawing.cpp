@@ -39,8 +39,8 @@ namespace npm {
   
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
-			shared_ptr<const sfl::TraversabilityMap> tm)
-    : Drawing(name), m_tm(tm)
+												shared_ptr<TraversabilityProxy> proxy)
+    : Drawing(name), m_proxy(proxy)
   {
   }
   
@@ -48,28 +48,29 @@ namespace npm {
   void TraversabilityDrawing::
   Draw()
   {
-    if( ! m_tm)
+		TraversabilityMap * tm(m_proxy->Get());
+    if( ! tm)
       return;
-    if( ! m_tm->data)
+    if( ! tm->data)
       return;
     
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    glTranslated(m_tm->gframe.X(), m_tm->gframe.Y(), 0);
-    glRotated(180 * m_tm->gframe.Theta() / M_PI, 0, 0, 1);
-    glScaled(m_tm->gframe.Delta(), m_tm->gframe.Delta(), 1);
+    glTranslated(tm->gframe.X(), tm->gframe.Y(), 0);
+    glRotated(180 * tm->gframe.Theta() / M_PI, 0, 0, 1);
+    glScaled(tm->gframe.Delta(), tm->gframe.Delta(), 1);
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    const double cscale(1.0 / (m_tm->maxdata - m_tm->mindata));
-    for(size_t ix(0); ix < m_tm->data->xsize; ++ix)
-      for(size_t iy(0); iy < m_tm->data->ysize; ++iy){
-	const int value((*m_tm->data)[ix][iy]);
-	const double blue((value - m_tm->mindata) * cscale);
+    const double cscale(1.0 / (tm->maxdata - tm->mindata));
+    for(size_t ix(0); ix < tm->data->xsize; ++ix)
+      for(size_t iy(0); iy < tm->data->ysize; ++iy){
+	const int value((*tm->data)[ix][iy]);
+	const double blue((value - tm->mindata) * cscale);
 	double green(blue);
-	if(value <= m_tm->freespace)
+	if(value <= tm->freespace)
 	  green = minval(1.0, green * 2 + 0.2);
 	double red(blue);
-	if(value >= m_tm->obstacle)
+	if(value >= tm->obstacle)
 	  red = minval(1.0, red * 2);
 	glColor3d(red, green, blue);
 	glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
