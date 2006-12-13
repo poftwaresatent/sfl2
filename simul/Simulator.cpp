@@ -152,6 +152,41 @@ InitRobots(const string & filename)
       rdesc.back()->AddGoal(x, y, theta, dr, dtheta);
       continue;
     }
+    if(token == "EndGoal"){
+      //      double x, y, theta, dr, dtheta;
+      double x;
+      if( ! (config >> x)){
+	cerr << "ERROR in Simulator::InitRobots():\n"
+	     << "  can't read goal x\n";
+	exit(EXIT_FAILURE);
+      }
+      double y;
+      if( ! (config >> y)){
+	cerr << "ERROR in Simulator::InitRobots():\n"
+	     << "  can't read goal y\n";
+	exit(EXIT_FAILURE);
+      }
+      double theta;
+      if( ! (config >> theta)){
+	cerr << "ERROR in Simulator::InitRobots():\n"
+	     << "  can't read goal theta\n";
+	exit(EXIT_FAILURE);
+      }
+      double dr;
+      if( ! (config >> dr)){
+	cerr << "ERROR in Simulator::InitRobots():\n"
+	     << "  can't read goal dr\n";
+	exit(EXIT_FAILURE);
+      }
+      double dtheta;
+      if( ! (config >> dtheta)){
+	cerr << "ERROR in Simulator::InitRobots():\n"
+	     << "  can't read goal dtheta\n";
+	exit(EXIT_FAILURE);
+      }
+      rdesc.back()->AddEndGoal(x, y, theta, dr, dtheta);
+      continue;
+    }
     if(token == "Option"){
       string name;
       if( ! (config >> name)){

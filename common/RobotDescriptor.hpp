@@ -71,6 +71,11 @@ namespace npm {
     
     void AddGoal(double x, double y, double theta, double dr, double dtheta);
     
+    /** Like AddGoal(), but after NextGoal() has reached this one, it
+	won't change (loop) afterwards. */
+    void AddEndGoal(double x, double y, double theta, double dr,
+		    double dtheta);
+    
     /** Used to cycle through the goals registered with AddGoal(). */
     void NextGoal();
     
@@ -84,7 +89,8 @@ namespace npm {
     boost::shared_ptr<sfl::Frame> m_initial_pose;
     option_t m_option;
     goal_t m_goal;
-    size_t m_current_goal;
+    ssize_t m_current_goal;
+    ssize_t m_stop_loop_idx;
   };
 
 }

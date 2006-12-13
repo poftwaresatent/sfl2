@@ -38,7 +38,7 @@ namespace npm {
 
   RobotDescriptor::
   RobotDescriptor(const string & _model, const string & _name)
-    : model(_model), name(_name)
+    : model(_model), name(_name), m_current_goal(0), m_stop_loop_idx(-1)
   {
   }
 
@@ -86,17 +86,35 @@ namespace npm {
   void RobotDescriptor::
   AddGoal(double x, double y, double theta, double dr, double dtheta)
   {
+    if(m_stop_loop_idx >= 0)
+      return;
     if(m_goal.empty())
       m_current_goal = 0;		// paranoid redundancy
-    m_goal.push_back(shared_ptr<Goal>(new Goal(x, y, theta, dr, dtheta)));
+    m_goal.push_back(shared_ptr<Goal>(new Goal(x, y, theta, dr, dtheta,
+					       true)));
+  }
+
+
+  void RobotDescriptor::
+  AddEndGoal(double x, double y, double theta, double dr, double dtheta)
+  {
+    if(m_stop_loop_idx >= 0)
+      return;
+    if(m_goal.empty())
+      m_current_goal = 0;		// paranoid redundancy
+    m_goal.push_back(shared_ptr<Goal>(new Goal(x, y, theta, dr, dtheta,
+					       false)));
+    m_stop_loop_idx = m_goal.size() - 1;
   }
 
 
   void RobotDescriptor::
   NextGoal()
   {
+    if(m_stop_loop_idx == m_current_goal)
+      return;
     ++m_current_goal;
-    if(m_goal.size() <= m_current_goal)
+    if(m_goal.size() <= static_cast<size_t>(m_current_goal))
       m_current_goal = 0;
   }
 
