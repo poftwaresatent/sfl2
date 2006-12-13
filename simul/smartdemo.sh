@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./nepumuk -f -m travCS.map -l layout.smart -r robots.smart
+./nepumuk -f -m trav.map -l layout.smart -r robots.smart

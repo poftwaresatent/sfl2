@@ -1,8 +1,8 @@
 View ground-truth
      Camera  world
      #Drawing Ter_estar_meta
-#		 Drawing Ter_estar_value	
-		 Drawing Ter_travcs
+		 Drawing Ter_estar_value	
+		 #Drawing Ter_travcs
      Drawing Ter_estar_queue
      #Drawing Ter_estar_upwind
      Drawing world
