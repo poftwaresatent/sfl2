@@ -57,6 +57,15 @@ namespace sfl {
   }
   
   
+  GridFrame::
+  GridFrame(const Frame & frame, double delta)
+    : Frame(frame),
+      m_delta(delta),
+      m_delta_inv(1 / delta)
+  {
+  }
+  
+  
   void GridFrame::
   Configure(double position_x, double position_y, double position_theta,
 	    double delta)

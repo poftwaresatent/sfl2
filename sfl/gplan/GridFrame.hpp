@@ -50,6 +50,7 @@ namespace sfl {
     explicit GridFrame(double delta);
     GridFrame(double x, double y, double theta, double delta);
     GridFrame(const GridFrame & orig);
+    GridFrame(const Frame & frame, double delta);
     
     void Configure(double position_x, double position_y, double position_theta,
 		   double delta);
