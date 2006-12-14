@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006
  * Swiss Federal Institute of Technology, Zurich. All rights reserved.
@@ -42,8 +43,8 @@ namespace sfl {
   }
  
 	TraversabilityMap::
-	TraversabilityMap(Frame &origin, double resolution, double xSize, double ySize)
-		: gframe(origin.X(), origin.Y(), origin.Theta(), resolution)
+	TraversabilityMap(const Frame &origin, double resolution, double xSize, double ySize)
+		: gframe(origin, resolution)
 		, freespace(0), obstacle(127), name("world")
 	{
 		/*		vector<vector<int> > data;
@@ -59,7 +60,9 @@ namespace sfl {
 				data.push_back(line);
 				cout << "Allocated Line " << j << endl;
 				}*/
-		data.reset(new array2d<int> (rint(xSize/resolution), rint(ySize/resolution), freespace)); 
+		data.reset(new array2d<int> (static_cast<size_t>(rint(xSize/resolution)),
+					     static_cast<size_t>(rint(ySize/resolution)),
+					     freespace)); 
 	}
   
   shared_ptr<TraversabilityMap> TraversabilityMap::
@@ -219,9 +222,9 @@ namespace sfl {
 		*os << "# default " << 0 << endl;
 		*os << "# name " << name << endl;;
 
-		for (int j(0); j < data->ysize; j++)
+		for (size_t j(0); j < data->ysize; j++)
 			{
-				for (int i(0); i < data->xsize; i++) 
+				for (size_t i(0); i < data->xsize; i++) 
 					*os << (*data) [i][data->ysize - j - 1] << " ";
 				*os << endl;
 			}

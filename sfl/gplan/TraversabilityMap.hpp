@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006
  * Swiss Federal Institute of Technology, Zurich. All rights reserved.
@@ -41,7 +42,7 @@ namespace sfl {
   {
   public:
     TraversabilityMap();
-		TraversabilityMap(Frame &origin, double resolution, double xSize, double ySize); 
+		TraversabilityMap(const Frame &origin, double resolution, double xSize, double ySize); 
     virtual ~TraversabilityMap() { }
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
