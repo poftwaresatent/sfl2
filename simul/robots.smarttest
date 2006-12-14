@@ -16,3 +16,5 @@ Robot smart Ter
         Option model_phid_max      0.8
         Option model_sd_max        2.5
         Option model_sdd_max       5.0
+        Option use_travmap         cheat
+#        Option estar_mode          step
