@@ -26,7 +26,6 @@
 
 
 #include <npm/common/RobotClient.hpp>
-#include <sfl/gplan/Mapper2d.hpp>
 #include <vector>
 
 
@@ -36,8 +35,10 @@ namespace npm {
 
 
 namespace sfl {
-  class GridFrame;
   class TraversabilityMap;
+  class Mapper2d;
+  class Frame;
+  class GridFrame;
 }
 
 
@@ -51,6 +52,8 @@ namespace estar {
 
 namespace asl {
   class AckermannController;
+  struct path_element;
+  typedef std::vector<path_element> path_t;
 }
 
 
@@ -80,6 +83,11 @@ public:
   bool single_step_estar;
   
 protected:
+  void HandleReplanRequest();
+  bool UpdatePlan();
+  bool ComputePath(const sfl::Frame & pose, const sfl::GridFrame & gframe,
+		   asl::path_t & path);
+
   friend class SmartPlanProxy;
   friend class SmartNavFuncQuery;
   friend class SmartCarrotProxy;
@@ -90,15 +98,16 @@ protected:
   boost::shared_ptr<estar::Facade> m_estar;
   boost::shared_ptr<npm::CheatSheet> m_cheat;
   boost::shared_ptr<PlanThread> m_plan_thread;
-  boost::shared_ptr<const sfl::GridFrame> m_gframe;
-  boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
   boost::shared_ptr<asl::AckermannController> m_controller;
   boost::shared_ptr<SmartCarrotProxy> m_carrot_proxy;
   boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
-  Mapper2d *m_mapper; 
+  boost::shared_ptr<sfl::Mapper2d> m_mapper;
+  boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
+  
   bool m_replan_request;
   int m_nscans, m_sick_channel;
   double m_wheelbase, m_wheelradius, m_axlewidth;
+  int m_plan_status;
 };
 
 #endif // NPM_SMART_HPP
