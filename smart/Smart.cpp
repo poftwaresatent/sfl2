@@ -45,6 +45,7 @@
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
 #include <npm/common/CheatSheet.hpp>
+#include <npm/common/util.hpp>
 #include <npm/estar/EstarDrawing.hpp>
 #include <npm/estar/CarrotDrawing.hpp>
 #include <iostream>
@@ -130,6 +131,9 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	
 	if(descriptor->GetOption("estar_mode") == "step")
 		single_step_estar = true;		
+	
+	if( ! string_to(descriptor->GetOption("replan_distance"), m_replan_distance))
+		m_replan_distance = 3;
 	
   expoparams params(descriptor);
   m_nscans = params.front_nscans;
@@ -259,14 +263,25 @@ UpdatePlan()
 	if(m_mapper)
 		m_mapper->update(mypose , *m_sick);
 	
+	// check if we've moved far enough to trigger a replan
+	if(m_last_plan_pose){
+		const double dist(sqrt(sqr(m_last_plan_pose->X() - mypose.X())
+													 + sqr(m_last_plan_pose->Y() - mypose.Y())));
+		if(dist < m_replan_distance)
+			return true;
+		*m_last_plan_pose = mypose;
+	}
+	else
+		m_last_plan_pose.reset(new Frame(mypose));
+	
 	////m_plan_thread->Stop();
 	
+	// feed traversability changes to E-Star
 	shared_ptr<const array2d<int> > travdata(m_travmap->data);
 	if( ! travdata){
 		cerr << "ERROR: Invalid traversability map (no data).\n";
 		return false;
 	}
-	
 	const double obst(m_estar->GetObstacleMeta());
 	for(size_t ii(0); ii < travdata->xsize; ++ii)
 		for(size_t jj(0); jj < travdata->ysize; ++jj)
@@ -274,11 +289,11 @@ UpdatePlan()
 				m_estar->SetMeta(ii, jj, obst);
 	
 	////m_plan_thread->Start(100000);
-
+	
+	// do the actual planning
 	m_plan_status = m_plan_thread->GetStatus(mypose.X(), mypose.Y());
 	if(PlanThread::HAVE_PLAN == m_plan_status)
 		return true;
-	
   if(single_step_estar){
     m_plan_thread->Step();
 		m_plan_status = m_plan_thread->GetStatus(mypose.X(), mypose.Y());
@@ -353,7 +368,10 @@ PrepareAction(double timestep)
   double v_trans, steer;
   GetHAL()->speed_get(&v_trans, &steer);
 	
-	UpdatePlan();
+	if( ! UpdatePlan()){
+    PDEBUG_ERR("ERROR: plan update failed\n");
+    exit(EXIT_FAILURE);
+	}
   switch(m_plan_status){
   case PlanThread::HAVE_PLAN:
 		// do the stuff after this switch

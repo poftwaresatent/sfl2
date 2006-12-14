@@ -103,11 +103,13 @@ protected:
   boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
   boost::shared_ptr<sfl::Mapper2d> m_mapper;
   boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
+  boost::shared_ptr<sfl::Frame> m_last_plan_pose;
   
   bool m_replan_request;
   int m_nscans, m_sick_channel;
   double m_wheelbase, m_wheelradius, m_axlewidth;
   int m_plan_status;
+  double m_replan_distance;
 };
 
 #endif // NPM_SMART_HPP
