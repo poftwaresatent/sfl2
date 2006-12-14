@@ -41,10 +41,12 @@ using namespace std;
 EstarDrawing::
 EstarDrawing(const std::string & name,
 	     shared_ptr<PlanProxy> proxy,
-	     what_t _what)
+	     what_t _what,
+	     gfx::ColorScheme * custom_cs)
   : Drawing(name),
     what(_what),
-    m_proxy(proxy)
+    m_proxy(proxy),
+    m_custom_cs(custom_cs)
 {
 }
 
@@ -63,11 +65,20 @@ Draw()
   glRotated(180 * gframe->Theta() / M_PI, 0, 0, 1);
   glScaled(gframe->Delta(), gframe->Delta(), 1);
   
-  const gfx::ColorScheme * cs(gfx::ColorScheme::Get(gfx::GREY_WITH_SPECIAL));
+  const gfx::ColorScheme * cs;
+  bool autoscale_value;
+  if(m_custom_cs){
+    cs = m_custom_cs;
+    autoscale_value = false;
+  }
+  else{
+    cs = gfx::ColorScheme::Get(gfx::GREY_WITH_SPECIAL);
+    autoscale_value = true;
+  }
   
   switch(what){
   case VALUE:
-    gfx::draw_grid_value(*facade, cs, true);
+    gfx::draw_grid_value(*facade, cs, autoscale_value);
     break;
   case META:
     gfx::draw_grid_meta(*facade, cs);
@@ -77,6 +88,9 @@ Draw()
     break;
   case UPWIND:
     gfx::draw_grid_upwind(*facade, 1, 0, 0, 2);
+    break;
+  case OBST:
+    gfx::draw_grid_obstacles(*facade, 1, 0.5, 0.5);
     break;
   default:
     cerr << "ERROR in EstarDrawing::Draw(): invalid what=" << what

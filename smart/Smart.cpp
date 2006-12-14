@@ -37,7 +37,8 @@
 #include <estar/Kernel.hpp>	// for delete in shared_ptr through Facade
 #include <estar/Region.hpp>
 #include <estar/Grid.hpp>
-#include <estar/dump.hpp>	// dbg
+#include <estar/graphics.hpp>
+#include <estar/numeric.hpp>
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/HAL.hpp>
@@ -46,6 +47,7 @@
 #include <npm/common/TraversabilityDrawing.hpp>
 #include <npm/common/CheatSheet.hpp>
 #include <npm/common/util.hpp>
+#include <npm/common/wrap_gl.hpp>
 #include <npm/estar/EstarDrawing.hpp>
 #include <npm/estar/CarrotDrawing.hpp>
 #include <iostream>
@@ -108,6 +110,25 @@ public:
 };
 
 
+class SmartColorScheme: public gfx::ColorScheme {
+public:
+	SmartColorScheme(): smart_value(0) {}
+	virtual void Set(double value) const {
+		if(value >= estar::infinity)
+			glColor3d(0, 0, 0.4);
+		else if(value > smart_value)
+			glColor3d(0.4, 0, 0);
+		else if(smart_value > estar::epsilon){
+			const double grey(value / smart_value);
+			glColor3d(0, grey, grey);
+		}
+		else
+			glColor3d(1, 0, 1);			
+	}
+	double smart_value;
+};
+
+
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
@@ -115,6 +136,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_proxy(new SmartCarrotProxy(this)),
+		m_smart_cs(new SmartColorScheme()),
     m_replan_request(false),
 		m_plan_status(PlanThread::PLANNING)
 {
@@ -178,11 +200,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
 																proxy, EstarDrawing::META));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
-																proxy, EstarDrawing::VALUE));
+																proxy, EstarDrawing::VALUE, m_smart_cs.get()));
 		AddDrawing(new EstarDrawing(name + "_estar_queue",
 																proxy, EstarDrawing::QUEUE));
 		AddDrawing(new EstarDrawing(name + "_estar_upwind",
 																proxy, EstarDrawing::UPWIND));
+		AddDrawing(new EstarDrawing(name + "_estar_obst",
+																proxy, EstarDrawing::OBST));
 	}
 	
 	{
@@ -202,13 +226,12 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 
 
 void Smart::
-HandleReplanRequest()
+HandleReplanRequest(const GridFrame & gframe)
 {
   if( ! m_replan_request)
 		return;
 	m_replan_request = false;
 	
-	const GridFrame & gframe(m_travmap->gframe);
 	shared_ptr<const array2d<int> > travdata(m_travmap->data);
 	if( ! travdata){
 		cerr << "ERROR: Invalid traversability map (no data).\n";
@@ -232,8 +255,8 @@ HandleReplanRequest()
 	double goalx(m_goal->X());
 	double goaly(m_goal->Y());
 	gframe.From(goalx, goaly);
-	m_goalregion.reset(new Region(m_goal->Dr(), gframe.Delta(),
-																goalx, goaly, travdata->xsize, travdata->ysize));
+	m_goalregion.reset(new Region(m_goal->Dr(), gframe.Delta(), goalx, goaly,
+																travdata->xsize, travdata->ysize));
 	if(m_goalregion->GetArea().empty()){
 		PDEBUG_ERR("ERROR: empty goal area()!\n");
 		exit(EXIT_FAILURE);
@@ -256,23 +279,22 @@ HandleReplanRequest()
 	 actually changed
 */
 bool Smart::
-UpdatePlan()
+UpdatePlan(const Frame & pose)
 {
   // Updating traversability Map
-	const Frame mypose(GetServer()->GetTruePose());
 	if(m_mapper)
-		m_mapper->update(mypose , *m_sick);
+		m_mapper->update(pose , *m_sick);
 	
 	// check if we've moved far enough to trigger a replan
 	if(m_last_plan_pose){
-		const double dist(sqrt(sqr(m_last_plan_pose->X() - mypose.X())
-													 + sqr(m_last_plan_pose->Y() - mypose.Y())));
+		const double dist(sqrt(sqr(m_last_plan_pose->X() - pose.X())
+													 + sqr(m_last_plan_pose->Y() - pose.Y())));
 		if(dist < m_replan_distance)
 			return true;
-		*m_last_plan_pose = mypose;
+		*m_last_plan_pose = pose;
 	}
 	else
-		m_last_plan_pose.reset(new Frame(mypose));
+		m_last_plan_pose.reset(new Frame(pose));
 	
 	////m_plan_thread->Stop();
 	
@@ -291,17 +313,17 @@ UpdatePlan()
 	////m_plan_thread->Start(100000);
 	
 	// do the actual planning
-	m_plan_status = m_plan_thread->GetStatus(mypose.X(), mypose.Y());
+	m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
 	if(PlanThread::HAVE_PLAN == m_plan_status)
 		return true;
   if(single_step_estar){
     m_plan_thread->Step();
-		m_plan_status = m_plan_thread->GetStatus(mypose.X(), mypose.Y());
+		m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
 	}
   else
     while(m_plan_status == PlanThread::PLANNING){
       m_plan_thread->Step();
-			m_plan_status = m_plan_thread->GetStatus(mypose.X(), mypose.Y());
+			m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
 		}
 	
 	return true;
@@ -359,7 +381,8 @@ PrepareAction(double timestep)
 {
   m_sick->Update();
 	
-	HandleReplanRequest();
+	const GridFrame & gframe(m_travmap->gframe);
+	HandleReplanRequest(gframe);
   if( ! m_plan_thread){
     PDEBUG_ERR("BUG: no plan thread late in Smart::PrepareAction()!\n");
 		exit(EXIT_FAILURE);
@@ -368,7 +391,8 @@ PrepareAction(double timestep)
   double v_trans, steer;
   GetHAL()->speed_get(&v_trans, &steer);
 	
-	if( ! UpdatePlan()){
+	const Frame pose(GetServer()->GetTruePose());
+	if( ! UpdatePlan(pose)){
     PDEBUG_ERR("ERROR: plan update failed\n");
     exit(EXIT_FAILURE);
 	}
@@ -394,9 +418,16 @@ PrepareAction(double timestep)
 							 m_plan_status);
     exit(EXIT_FAILURE);
   }
+
+  const GridFrame::index_t idx(gframe.GlobalIndex(pose.X(), pose.Y()));
+	shared_ptr<const array2d<int> > travdata(m_travmap->data);
+	if(travdata){
+		if((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize))
+			m_smart_cs->smart_value = m_estar->GetValue(idx.v0, idx.v1);
+	}
 	
   path_t path;
-	if( ! ComputePath(GetServer()->GetTruePose(), m_travmap->gframe, path)){
+	if( ! ComputePath(GetServer()->GetTruePose(), gframe, path)){
     GetHAL()->speed_set(0, steer);
 		return;
 	}

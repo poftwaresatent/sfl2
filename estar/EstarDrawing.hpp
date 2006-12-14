@@ -30,6 +30,9 @@ namespace estar {
   class Facade;
 }
 
+namespace gfx {
+  class ColorScheme;
+}
 
 namespace sfl {
   class GridFrame;
@@ -48,18 +51,20 @@ class EstarDrawing
   : public npm::Drawing
 {
 public:
-  typedef enum { VALUE, META, QUEUE, UPWIND } what_t;
+  typedef enum { VALUE, META, QUEUE, UPWIND, OBST } what_t;
   
   what_t what;
   
   EstarDrawing(const std::string & name,
 	       boost::shared_ptr<PlanProxy> proxy,
-	       what_t what);
+	       what_t what,
+	       gfx::ColorScheme * custom_cs = 0);
   
   virtual void Draw();
   
 private:
   boost::shared_ptr<PlanProxy> m_proxy;
+  gfx::ColorScheme * m_custom_cs;
 };
 
 #endif // ESTAR_DRAWING_HPP

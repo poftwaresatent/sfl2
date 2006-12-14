@@ -26,6 +26,7 @@
 
 
 #include <npm/common/RobotClient.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <vector>
 
 
@@ -59,6 +60,7 @@ namespace asl {
 
 class PlanThread;
 class SmartCarrotProxy;
+class SmartColorScheme;
 
 
 class Smart
@@ -83,8 +85,8 @@ public:
   bool single_step_estar;
   
 protected:
-  void HandleReplanRequest();
-  bool UpdatePlan();
+  void HandleReplanRequest(const sfl::GridFrame & gframe);
+  bool UpdatePlan(const sfl::Frame & pose);
   bool ComputePath(const sfl::Frame & pose, const sfl::GridFrame & gframe,
 		   asl::path_t & path);
 
@@ -104,6 +106,7 @@ protected:
   boost::shared_ptr<sfl::Mapper2d> m_mapper;
   boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
   boost::shared_ptr<sfl::Frame> m_last_plan_pose;
+  boost::scoped_ptr<SmartColorScheme> m_smart_cs;
   
   bool m_replan_request;
   int m_nscans, m_sick_channel;
