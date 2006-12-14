@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006
  * Swiss Federal Institute of Technology, Zurich. All rights reserved.
@@ -39,7 +40,16 @@ namespace npm {
   class TraversabilityProxy {
 	public:
 		virtual ~TraversabilityProxy() {}
-		virtual sfl::TraversabilityMap * Get() = 0;
+		virtual const sfl::TraversabilityMap * Get() = 0;
+	};
+  
+	
+  class DirectTraversabilityProxy: public TraversabilityProxy {
+	public:
+		DirectTraversabilityProxy(const sfl::TraversabilityMap * _travmap)
+			: travmap(_travmap) {}
+		virtual const sfl::TraversabilityMap * Get() { return travmap; }
+		const sfl::TraversabilityMap * travmap;
 	};
 	
 	
@@ -49,6 +59,12 @@ namespace npm {
   public:
     TraversabilityDrawing(const std::string & name,
 													boost::shared_ptr<TraversabilityProxy> proxy);
+		
+		/** \note Packs proxy into a boost::shared_ptr<>, so only use this
+				if you have a raw pointer that will NOT be deleted in your
+				code. */
+    TraversabilityDrawing(const std::string & name,
+													TraversabilityProxy * proxy);
     
     virtual void Draw();
     

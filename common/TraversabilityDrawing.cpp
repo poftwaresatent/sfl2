@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006
  * Swiss Federal Institute of Technology, Zurich. All rights reserved.
@@ -45,10 +46,18 @@ namespace npm {
   }
   
   
+  TraversabilityDrawing::
+  TraversabilityDrawing(const string & name,
+			TraversabilityProxy * proxy)
+    : Drawing(name), m_proxy(proxy)
+  {
+  }
+  
+  
   void TraversabilityDrawing::
   Draw()
   {
-		TraversabilityMap * tm(m_proxy->Get());
+		const TraversabilityMap * tm(m_proxy->Get());
     if( ! tm)
       return;
     if( ! tm->data)
