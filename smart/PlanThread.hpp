@@ -26,8 +26,9 @@
 #define NPM_PLAN_THREAD_HPP
 
 
-#include <sfl/util/Pthread.hpp>
+////#include <sfl/util/Pthread.hpp>
 #include <sfl/gplan/GridFrame.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 namespace estar {
@@ -36,31 +37,40 @@ namespace estar {
 
 
 class PlanThread
-  : public sfl::SimpleThread
+////  : public sfl::SimpleThread
 {
 public:
+  typedef enum {
+    /** there is a valid plan */
+    HAVE_PLAN = 0,
+    /** the wavefront hasn't crossed the robot yet */
+    PLANNING = 1,
+    /** there is no plan and the wavefront is empty */
+    UNREACHABLE = 2,
+    /** the robot is outside the grid */
+    OUT_OF_GRID = -1,
+    /** the robot is in an obstacle */
+    IN_OBSTACLE = -2,
+    /** an error has occurred (probably a bug) */
+    ERROR = -42
+  } status_t;
+  
+  
   PlanThread(boost::shared_ptr<estar::Facade> estar,
-	     boost::shared_ptr<const sfl::GridFrame> gframe,
+	     const sfl::GridFrame & gframe,
 	     size_t grid_xsize, size_t grid_ysize);
   
-  virtual void Step();
+  ////  virtual void Step();
+  void Step();
   
-  /**
-     \return 0 if there is a valid plan, 1 if the wavefront hasn't
-     crossed the robot yet, 2 if there is no plan and the wavefront is
-     empty or has already passed the robot (there is no path, the
-     latter check is basically redundant because if there is no path
-     the wavefront will never cross the robot), -1 if the robot is
-     outside the grid, -2 if the robot is in an obstacle.
-  */
-  int GetStatus(double robot_global_x, double robot_global_y);
+  status_t GetStatus(double robot_global_x, double robot_global_y);
   
 private:
   boost::shared_ptr<estar::Facade> m_estar;
-  boost::shared_ptr<const sfl::GridFrame> m_gframe;
+  const sfl::GridFrame m_gframe;
   const size_t m_grid_xsize;
   const size_t m_grid_ysize;
-  boost::shared_ptr<sfl::Mutex> m_mutex;
+  ////  boost::shared_ptr<sfl::Mutex> m_mutex;
 };
 
 #endif // NPM_PLAN_THREAD_HPP
