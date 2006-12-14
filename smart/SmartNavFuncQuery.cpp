@@ -41,14 +41,13 @@ SmartNavFuncQuery::status_t SmartNavFuncQuery::
 GetValue(double globalx, double globaly,
 	 double & value) const
 {
-  if(( ! m_smart->m_gframe)
-     || ( ! m_smart->m_travmap)
+  if(( ! m_smart->m_travmap)
      || ( ! m_smart->m_travmap->data)
      || ( ! m_smart->m_estar))
     return INVALID;
   
   const GridFrame::index_t
-    idx(m_smart->m_gframe->GlobalIndex(globalx, globaly));
+    idx(m_smart->m_travmap->gframe.GlobalIndex(globalx, globaly));
   shared_ptr<const array2d<int> > data(m_smart->m_travmap->data);
   
   if((idx.v0 >= data->xsize) || (idx.v1 >= data->ysize))
