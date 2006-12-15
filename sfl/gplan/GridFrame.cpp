@@ -173,7 +173,7 @@ namespace sfl {
   
   size_t GridFrame::
   DrawLocalLine(double x0, double y0, double x1, double y1,
-		size_t xsize, size_t ysize, draw_callback & cb)
+		size_t xsize, size_t ysize, draw_callback & cb) const
   {
     x0 /= m_delta;
     y0 /= m_delta;

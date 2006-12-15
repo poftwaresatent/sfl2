@@ -24,7 +24,6 @@
 
 
 #include <sfl/api/Scan.hpp>
-#include <sfl/api/Scanner.hpp>
 #include <estar/Sprite.hpp>
 #include <iostream>
 
@@ -59,25 +58,12 @@ namespace sfl {
 	}
 	
 	
-	bool Mapper2d::update(const Frame &odo, const Scanner &scanner)
+	bool Mapper2d::update(const Frame &odo, const Scan &scan)
 	{
-		scan_data p;
-		for (size_t i(0); i< scanner.nscans; i++)
-			{
-				/* get scan point */
-				scanner.GetData(i, p);
-			
-				if(p.rho >= scanner.rhomax)
-					continue;
-			
-				/* translate coordinates to global */
-				double x= p.locx;
-				double y= p.locy;
-				odo.To(x, y);
+		const Scan::array_t & scan_data(scan.data);
+		for (size_t i(0); i< scan_data.size(); i++)
+				simpleCellUpdate(scan_data[i].globx, scan_data[i].globy);
 
-				/* update traversability map */
-				simpleCellUpdate(x, y);
-			}
 		odo_ = odo;
 
 		return true;

@@ -80,7 +80,8 @@ namespace sfl {
        \return The number of grid cells drawn.
     */
     size_t DrawLocalLine(double x0, double y0, double x1, double y1,
-			 size_t xsize, size_t ysize, draw_callback & cb);
+			 size_t xsize, size_t ysize,
+			 draw_callback & cb) const;
     
     /**
        Same as DrawLocalLine() but first transforms the given

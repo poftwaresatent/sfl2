@@ -48,21 +48,21 @@ namespace sfl {
 		, freespace(0), obstacle(127), name("world")
 	{
 		/*		vector<vector<int> > data;
-		vector<int> line;
-		int value(0);
-		cout << "Allocating Map" << endl;
-		for (int j(0); j<(ySize/resolution); j++)
-			{
-				for (int i(0); i<(xSize/resolution); i++)
+					vector<int> line;
+					int value(0);
+					cout << "Allocating Map" << endl;
+					for (int j(0); j<(ySize/resolution); j++)
 					{
-						line.push_back(value);
+					for (int i(0); i<(xSize/resolution); i++)
+					{
+					line.push_back(value);
 					}
-				data.push_back(line);
-				cout << "Allocated Line " << j << endl;
-				}*/
+					data.push_back(line);
+					cout << "Allocated Line " << j << endl;
+					}*/
 		data.reset(new array2d<int> (static_cast<size_t>(rint(xSize/resolution)),
-					     static_cast<size_t>(rint(ySize/resolution)),
-					     freespace)); 
+																 static_cast<size_t>(rint(ySize/resolution)),
+																 freespace)); 
 	}
   
   shared_ptr<TraversabilityMap> TraversabilityMap::
@@ -84,79 +84,79 @@ namespace sfl {
     while(getline(is, textline)){
       istringstream tls(textline);
       if(textline[0] == '#'){
-	tls.ignore(1, '\n');
-	string token;
-	if(tls >> token){
-	  if(token == "resolution"){
-	    tls >> resolution;
-	    if( ! tls){
-	      if(os) *os << "ERROR: could not parse resolution from \""
-			 << tls.str() << "\"\n";
-	      return shared_ptr<TraversabilityMap>();
-	    }
-	  }
-	  else if(token == "origin"){
-	    tls >> ox >> oy >> otheta;
-	    if( ! tls){
-	      if(os) *os << "ERROR: could not parse origin from \""
-			 << tls.str() << "\"\n";
-	      return shared_ptr<TraversabilityMap>();
-	    }
-	  }
-	  else if(token == "obstacle"){
-	    tls >> result->obstacle;
-	    if( ! tls){
-	      if(os) *os << "ERROR: could not parse obstacle from \""
-			 << tls.str() << "\"\n";
-	      return shared_ptr<TraversabilityMap>();
-	    }
-	  }
-	  else if(token == "freespace"){
-	    tls >> result->freespace;
-	    if( ! tls){
-	      if(os) *os << "ERROR: could not parse freespace from \""
-			 << tls.str() << "\"\n";
-	      return shared_ptr<TraversabilityMap>();
-	    }
-	  }
-	  else if(token == "default"){
-	    tls >> default_traversability;
-	    if( ! tls){
-	    if(os) *os << "ERROR: could not parse default from \""
-		       << tls.str() << "\"\n";
-	    return shared_ptr<TraversabilityMap>();
-	    }
-	  }
-	  else if(token == "name"){
-	    tls >> result->name;
-	    if( ! tls){
-	      if(os) *os << "ERROR: could not parse name from \""
-			 << tls.str() << "\"\n";
-	      return shared_ptr<TraversabilityMap>();
-	    }
-	    if(result->name.empty()){
-	      if(os) *os << "ERROR: empty names not allowed (from \""
-			 << tls.str() << "\")\n";
-	      return shared_ptr<TraversabilityMap>();
-	    }
-	  }
-	}
-	continue;
+				tls.ignore(1, '\n');
+				string token;
+				if(tls >> token){
+					if(token == "resolution"){
+						tls >> resolution;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse resolution from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "origin"){
+						tls >> ox >> oy >> otheta;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse origin from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "obstacle"){
+						tls >> result->obstacle;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse obstacle from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "freespace"){
+						tls >> result->freespace;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse freespace from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "default"){
+						tls >> default_traversability;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse default from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "name"){
+						tls >> result->name;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse name from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+						if(result->name.empty()){
+							if(os) *os << "ERROR: empty names not allowed (from \""
+												 << tls.str() << "\")\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+				}
+				continue;
       }
       
       vector<int> line;
       int value;
       while(tls >> value){
-	line.push_back(value);
-	if(value > maxdata)
-	  maxdata = value;
-	if(value < mindata)
-	  mindata = value;
+				line.push_back(value);
+				if(value > maxdata)
+					maxdata = value;
+				if(value < mindata)
+					mindata = value;
       }
       if( ! line.empty()){
-	data.push_back(line);
-	if(line.size() > grid_xsize)
-	  grid_xsize = line.size();
+				data.push_back(line);
+				if(line.size() > grid_xsize)
+					grid_xsize = line.size();
       }
     }
     const size_t grid_ysize(data.size());
@@ -171,11 +171,11 @@ namespace sfl {
     }
     
     result->data.reset(new array2d<int>(grid_xsize, grid_ysize,
-					default_traversability));
+																				default_traversability));
     for(size_t iy(0); iy < grid_ysize; ++iy){
       vector<int> & line(data[iy]);
       for(size_t ix(0); ix < line.size(); ++ix)
-	(*result->data)[ix][grid_ysize - iy - 1] = line[ix];
+				(*result->data)[ix][grid_ysize - iy - 1] = line[ix];
     }
     result->mindata = mindata;
     result->maxdata = maxdata;
