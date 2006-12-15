@@ -33,6 +33,9 @@ namespace sfl {
     vec2d(value_t _v0, value_t _v1): v0(_v0), v1(_v1) {}
     vec2d(const vec2d & orig): v0(orig.v0), v1(orig.v1) {}
     
+    const bool operator == (const vec2d & rhs)
+    { return (v0 == rhs.v0) && (v1 == rhs.v1); }
+    
     const vec2d & operator = (const vec2d & rhs)
     { v0 = rhs.v0; v1 = rhs.v1; return * this; }
     

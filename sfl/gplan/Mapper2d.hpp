@@ -27,7 +27,7 @@
 #define SFL_MAPPER2D_HPP
 
 
-#include <sfl/util/Frame.hpp>
+#include <sfl/gplan/GridFrame.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -49,13 +49,16 @@ namespace sfl {
 			 comes from one or several Scanner instances (e.g. use
 			 Multiscanner::CollectScans().
 		*/
-		bool update(const Frame &odo, const Scan &scan);
+		bool update(const Frame &odo, const Scan &scan,
+								GridFrame::draw_callback * cb);
 		
 		boost::shared_ptr<TraversabilityMap> getTravMap();
 		
 	private:
-		bool simpleCellUpdate(double x, double y);
-		bool swipeCellUpdate(double x, double y);
+		bool simpleCellUpdate(double x, double y,
+													GridFrame::draw_callback * cb);
+		bool swipeCellUpdate(double x, double y,
+												 GridFrame::draw_callback * cb);
 		int map_obstacle_between_trace(int fx0, int fy0, int fx1, int fy1);
 		
 		boost::shared_ptr <TraversabilityMap> travMap_;

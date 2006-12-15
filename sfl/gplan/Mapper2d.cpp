@@ -58,11 +58,12 @@ namespace sfl {
 	}
 	
 	
-	bool Mapper2d::update(const Frame &odo, const Scan &scan)
+	bool Mapper2d::update(const Frame &odo, const Scan &scan,
+												GridFrame::draw_callback * cb)
 	{
 		const Scan::array_t & scan_data(scan.data);
 		for (size_t i(0); i< scan_data.size(); i++)
-				simpleCellUpdate(scan_data[i].globx, scan_data[i].globy);
+				simpleCellUpdate(scan_data[i].globx, scan_data[i].globy, cb);
 
 		odo_ = odo;
 
@@ -71,13 +72,15 @@ namespace sfl {
 
 	// Private functions
 
-	inline bool Mapper2d::simpleCellUpdate(double x, double y)
+	inline bool Mapper2d::simpleCellUpdate(double x, double y,
+																				 GridFrame::draw_callback * cb)
 	{
-		travMap_->SetObst(x, y);
+		travMap_->SetObst(x, y, cb);
 		return true; 
 	}
 
-	bool Mapper2d::swipeCellUpdate(double x, double y)
+	bool Mapper2d::swipeCellUpdate(double x, double y,
+																 GridFrame::draw_callback * cb)
 	{
 	
 		double x0(odo_.X());
@@ -88,7 +91,7 @@ namespace sfl {
 
 		map_obstacle_between_trace(idx0.v0, idx0.v1, idx.v0, idx.v1);
 
-		travMap_->SetObst(x, y);
+		travMap_->SetObst(x, y, cb);
 	
 		return true;
 	}

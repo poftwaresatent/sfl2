@@ -31,6 +31,8 @@
 
 #include <sfl/gplan/TraversabilityMap.hpp>
 
+#include <map>
+
 namespace sfl{
 
 	class TraversabilityMapCS
@@ -41,15 +43,23 @@ namespace sfl{
 		TraversabilityMapCS(const TraversabilityMapCS &);
 		
 	public:
-		TraversabilityMapCS(const Frame &origin, boost::shared_ptr<estar::Sprite> sprite, double resolution, double xSize, double ySize); 
+		TraversabilityMapCS(const Frame &origin,
+												boost::shared_ptr<estar::Sprite> sprite,
+												double resolution, double xSize, double ySize); 
 
-		bool SetValue(double global_x, double global_y, int & value);
-		bool SetObst(double global_x, double global_y);
-		bool SetFree(double global_x, double global_y);
-
+		virtual bool SetValue(double global_x, double global_y, int value,
+													GridFrame::draw_callback * cb);
+		virtual bool SetObst(double global_x, double global_y,
+												 GridFrame::draw_callback * cb);
+		virtual bool SetFree(double global_x, double global_y,
+												 GridFrame::draw_callback * cb);
+		
 	private:
+		typedef std::multimap<double, vec2d<size_t> > refmap_t;
+		
 		int doubleToInt(const double &val);
-		boost::shared_ptr<array2d<estar::Sprite::indexlist_t> >  references_; /**< default NULL */
+		
+		boost::shared_ptr<array2d<refmap_t> >  references_;
 		boost::shared_ptr<estar::Sprite> sprite_;
 	};
 

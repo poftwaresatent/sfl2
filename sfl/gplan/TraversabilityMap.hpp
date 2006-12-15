@@ -53,16 +53,19 @@ namespace sfl {
        <code>value</code> is set to it.
     */
     virtual bool GetValue(double global_x, double global_y, int & value) const;
-    virtual bool SetValue(double global_x, double global_y, int & value);
-
-		virtual bool SetObst(double global_x, double global_y) 
+    virtual bool SetValue(double global_x, double global_y, int value,
+													GridFrame::draw_callback * cb);
+		
+		virtual bool SetObst(double global_x, double global_y,
+												 GridFrame::draw_callback * cb)
 		{
-			return SetValue(global_x, global_y, obstacle);
+			return SetValue(global_x, global_y, obstacle, cb);
 		}
 
-		virtual bool SetFree(double global_x, double global_y) 
+		virtual bool SetFree(double global_x, double global_y,
+												 GridFrame::draw_callback * cb)
 		{
-			return SetValue(global_x, global_y, freespace);
+			return SetValue(global_x, global_y, freespace, cb);
 		}
 
 		void DumpMap(std::ostream * os);

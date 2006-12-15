@@ -34,108 +34,85 @@ using namespace boost;
 
 namespace sfl {
 
-	/**
-		 \todo Take data size from base class instead of computing them
-		 again, in order to avoid future bugs when maybe changing the
-		 formula in one or the other implementation.
-	*/
 	TraversabilityMapCS::
 	TraversabilityMapCS(const Frame &origin, 
 											shared_ptr<Sprite> sprite, 
 											double resolution, double xSize, double ySize)
 		: TraversabilityMap(origin, resolution, xSize,  ySize),
-			references_(new array2d<Sprite::indexlist_t> (static_cast<size_t>(rint(xSize/resolution)),
-																										static_cast<size_t>(rint(ySize/resolution))) ),
+			references_(new array2d<refmap_t>(data->xsize, data->ysize)),
 			sprite_(sprite)
 	{
 	}
-
+	
+	
 	bool TraversabilityMapCS::
-	SetValue(double global_x, double global_y, int & value)
+	SetValue(double global_x, double global_y, int value,
+					 GridFrame::draw_callback * cb)
 	{
-		cout << "Todo: SetValue not defined yet for Configuration Space Maps." <<endl
-				 << "For now use SetFree(x, y) and SetObst(x, y)" << endl; 
-		return true;
+		cout << "Todo: SetValue not defined yet for Configuration Space Maps.\n"
+				 << "For now use SetFree(x, y) and SetObst(x, y)\n"; 
+		return TraversabilityMap::SetValue(global_x, global_y, value, cb);
 	}
-
-
+	
+	
 	bool TraversabilityMapCS::
-	SetObst(double global_x, double global_y)
+	SetObst(double global_x, double global_y,
+					GridFrame::draw_callback * cb)
 	{
-		//cout << "  ***  " <<endl;
-		//cout << "Set obstacle at " << global_x << " " << global_y << endl;
-	
 		gframe.From(global_x, global_y);
-
-		//cout << "After gframe.From "  << global_x << " " << global_y << endl;
-
-		Region *region = new Region(sprite_, global_x, global_y, data->xsize, data->ysize);
-		Sprite::indexlist_t csMask = region->GetArea();
-
+		Region region(sprite_, global_x, global_y, data->xsize, data->ysize);
+		const Sprite::indexlist_t & csMask(region.GetArea());
 		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-
-		for (unsigned int i(0); i<csMask.size(); i++)
+		for (size_t ii(0); ii < csMask.size(); ++ii)
 			{
-			
-				// update references
-				Sprite::sindex ref(idx.v0, idx.v1 , 1.0 - csMask.at(i).r);
-	
-				GridFrame::index_t csidx;
-				csidx.v0 = csMask.at(i).x;
-				csidx.v1 = csMask.at(i).y;
-			
-				//cout << " affects grid cell " << csMask.at(i).x << " " << csMask.at(i).y << endl;
-
-				if (references_->ValidIndex(csidx))
-					(*references_)[csidx].push_back(ref);
-	
-				// update map
-				if(data->ValidIndex(csidx))
+				const GridFrame::index_t csidx(csMask[ii].x, csMask[ii].y);				
+				if(references_->ValidIndex(csidx)){
+					// update references
+					(*references_)[csidx].insert(make_pair(1.0 - csMask[ii].r, idx));
+					// update map
 					(*data)[csidx] = obstacle;//doubleToInt(1.0 - csMask.at(i).r);
+					// notify callback
+					if(cb)
+						(*cb)(csidx.v0, csidx.v1);
+				}
 			}
 		return true;
 	}
-
+	
+	
 	bool TraversabilityMapCS::
-	SetFree(double global_x, double global_y)
+	SetFree(double global_x, double global_y,
+					GridFrame::draw_callback * cb)
 	{
 		gframe.From(global_x, global_y);
-	
-		Region *region = new Region(sprite_, global_x, global_y, data->xsize, data->ysize);
-		Sprite::indexlist_t csMask = region->GetArea();
-
+		
+		Region region(sprite_, global_x, global_y, data->xsize, data->ysize);
+		const Sprite::indexlist_t & csMask(region.GetArea());
 		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-
-		for (size_t i(0); i<csMask.size(); i++)
+		for (size_t ii(0); ii < csMask.size(); ++ii)
 			{
-				GridFrame::index_t csidx;
-				csidx.v0 = csMask.at(i).x;
-				csidx.v1 = csMask.at(i).y;
-
-				for (size_t j(0);j<((*references_)[csidx].size());j++)
-					{
-						// delete reference to parent cell
-						if (((*references_)[csidx][j].x == static_cast<ssize_t>(idx.v0))
-								&& ((*references_)[csidx][j].y == static_cast<ssize_t>(idx.v1)))
-							(*references_)[csidx].erase((*references_)[csidx].begin()+j);
-					}
-
-				double max(0.0);
-
-				for (size_t j(0);j<((*references_)[csidx].size());j++)
-					{
-						//get remaining max value 
-						if (max < ((*references_)[csidx][j].r)) max = ((*references_)[csidx][j].r); 
-					}			
-
-				// update map
-				if(data->ValidIndex(csidx))
-					(*data)[csidx] = doubleToInt(max);
+				GridFrame::index_t csidx(csMask[ii].x, csMask[ii].y);
+				if(references_->ValidIndex(csidx)){
+					refmap_t & ref((*references_)[csidx]);
+					vector<refmap_t::iterator> tbd;
+					for(refmap_t::iterator jj(ref.begin()); jj != ref.end(); ++jj)
+						if (jj->second == idx)
+							tbd.push_back(jj);
+					for(size_t jj(0); jj < tbd.size(); ++jj)
+						ref.erase(tbd[jj]);
+					if(ref.empty())
+						(*data)[csidx] = freespace;
+					else
+						(*data)[csidx] = doubleToInt(ref.begin()->first);
+					if(cb)
+						(*cb)(csidx.v0, csidx.v1);
+				}
 			}
-	
+		
 		return true;
 	}
-
+	
+	
 	inline int TraversabilityMapCS::
 	doubleToInt(const double &val)
 	{

@@ -199,18 +199,20 @@ namespace sfl {
   }
 
 	bool TraversabilityMap::
-	SetValue(double global_x, double global_y, int & value)
+	SetValue(double global_x, double global_y, int value,
+					 GridFrame::draw_callback * cb)
   {
     if( ! data)
       return false;
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-		cout << "Trying to add point at " << global_x << " " << global_y 
-				 << " to cell " << idx.v0 << " " << idx.v1 << endl;
+// 		cout << "Trying to add point at " << global_x << " " << global_y 
+// 				 << " to cell " << idx.v0 << " " << idx.v1 << endl;
     if( ! data->ValidIndex(idx))
       return false;
     (*data)[idx] = value;
+		if(cb)
+			(*cb)(idx.v0, idx.v1);
     return true;
-		
 	}
 
 	void TraversabilityMap::
