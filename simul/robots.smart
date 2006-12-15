@@ -16,3 +16,6 @@ Robot smart Ter
         Option model_phid_max      0.4
         Option model_sd_max        3.0
         Option model_sdd_max       6.0
+
+        Option replan_distance     2
+        Option estar_mode          finish

@@ -27,7 +27,10 @@
 #include "SmartNavFuncQuery.hpp"
 #include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
+#include <sfl/api/Scan.hpp>
 #include <sfl/api/Scanner.hpp>
+#include <sfl/api/Multiscanner.hpp>
+#include <sfl/api/Odometry.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <sfl/gplan/GridFrame.hpp>
@@ -39,6 +42,7 @@
 #include <estar/Grid.hpp>
 #include <estar/graphics.hpp>
 #include <estar/numeric.hpp>
+//#include <estar/dump.hpp>
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/HAL.hpp>
@@ -112,20 +116,86 @@ public:
 
 class SmartColorScheme: public gfx::ColorScheme {
 public:
-	SmartColorScheme(): smart_value(0) {}
+	SmartColorScheme(): smart_value(0), queue_bottom(0) {}
 	virtual void Set(double value) const {
 		if(value >= estar::infinity)
 			glColor3d(0, 0, 0.4);
-		else if(value > smart_value)
-			glColor3d(0.4, 0, 0);
-		else if(smart_value > estar::epsilon){
-			const double grey(value / smart_value);
-			glColor3d(0, grey, grey);
+		else{
+			double green;
+			if(value <= smart_value)
+				green = sfl::minval(1.0, value / smart_value) * 0.4;
+			else
+				green = 0.5;
+			double red;
+			if(value <= queue_bottom){
+				if(smart_value > queue_bottom)
+					red = sfl::minval(1.0, value / queue_bottom) * 0.4;
+				else
+					red = 0;
+			}
+			else{
+				red = 0.5;
+				green = 0;
+			}
+			glColor3d(red, green, sfl::minval(1.0,
+																				value / sfl::maxval(estar::epsilon,
+																														smart_value)));
 		}
-		else
-			glColor3d(1, 0, 1);			
 	}
 	double smart_value;
+	double queue_bottom;
+};
+
+
+class SmartDrawCallback: public GridFrame::draw_callback {
+public:
+	class index_t: public array2d<size_t> {
+	public:
+		index_t(size_t _ix, size_t _iy): ix(_ix), iy(_iy) {}
+		bool operator < (const index_t rhs) const
+		{ return (ix < rhs.ix) || ((ix == rhs.ix) && (iy < rhs.iy)); }
+		const size_t ix;
+		const size_t iy;
+	};
+	
+	typedef map<index_t, double> buf_t;
+	typedef set<index_t> known_t;
+	typedef buf_t::const_iterator it_t;
+	
+	SmartDrawCallback(const sfl::TraversabilityMap * _travmap,
+										Facade * _estar)
+		: travmap(_travmap), estar(_estar),
+			scale(1.0 / (_travmap->obstacle - _travmap->freespace)),
+			obstacle(_travmap->obstacle) {}
+	
+	double compute(int trav) const
+	{ return sfl::boundval(0.0, scale * (obstacle - trav), 1.0); }
+	
+	void flush() {
+		for(it_t it(buf.begin()); it != buf.end(); ++it)
+			estar->SetMeta(it->first.ix, it->first.iy, it->second);
+		buf.clear();
+	}
+	
+	virtual void operator () (size_t ix, size_t iy) {
+		const array2d<int> * data(travmap->data.get());
+		if(( ! data) || (ix >= data->xsize) || (iy >= data->ysize))
+			return;
+		const index_t idx(ix, iy);
+		if(known.find(idx) != known.end())
+			return;
+		const double meta(compute((*data)[ix][iy]));
+		cerr << "cb: " << ix << " " << iy << ": meta " << meta << "\n";
+		buf.insert(make_pair(idx, meta));
+		known.insert(idx);
+	}
+	
+	const sfl::TraversabilityMap * travmap;
+	mutable Facade * estar;
+	const double scale;
+	const double obstacle;
+	buf_t buf;
+	known_t known;
 };
 
 
@@ -133,6 +203,7 @@ Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
     single_step_estar(false),
+		finish_estar(false),
     m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_proxy(new SmartCarrotProxy(this)),
@@ -151,8 +222,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     exit(EXIT_FAILURE);
   }
 	
-	if(descriptor->GetOption("estar_mode") == "step")
+	const string estar_mode(descriptor->GetOption("estar_mode"));
+	if(estar_mode == "step")
 		single_step_estar = true;		
+	else if(estar_mode == "finish")
+		finish_estar = true;
 	
 	if( ! string_to(descriptor->GetOption("replan_distance"), m_replan_distance))
 		m_replan_distance = 3;
@@ -171,15 +245,18 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 						 params.model_phid_max,
 						 m_wheelbase)));
   
-  m_sick = DefineLidar(Frame(params.front_mount_x,
-                             params.front_mount_y,
-                             params.front_mount_theta),
-                       params.front_nscans,
-                       params.front_rhomax,
-                       params.front_phi0,
-                       params.front_phirange,
-                       params.front_channel)->GetScanner();
-
+	shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart")));	
+	m_mscan.reset(new Multiscanner(odo));
+	m_sick = DefineLidar(Frame(params.front_mount_x,
+														 params.front_mount_y,
+														 params.front_mount_theta),
+											 params.front_nscans,
+											 params.front_rhomax,
+											 params.front_phi0,
+											 params.front_phirange,
+											 params.front_channel)->GetScanner();
+	m_mscan->Add(m_sick);
+	
   DefineBicycleDrive(m_wheelbase, m_wheelradius, m_axlewidth);
 
   AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
@@ -225,11 +302,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 }
 
 
-void Smart::
+bool Smart::
 HandleReplanRequest(const GridFrame & gframe)
 {
   if( ! m_replan_request)
-		return;
+		return false;
 	m_replan_request = false;
 	
 	shared_ptr<const array2d<int> > travdata(m_travmap->data);
@@ -238,19 +315,13 @@ HandleReplanRequest(const GridFrame & gframe)
 		exit(EXIT_FAILURE);
 	}
 	
-	if( ! m_estar){
+	if( ! m_estar)
 		m_estar.reset(Facade::CreateDefault(travdata->xsize, travdata->ysize,
 																				gframe.Delta()));
-		
-		const double scale(1.0 / (m_travmap->obstacle - m_travmap->freespace));
-		for(size_t ix(0); ix < travdata->xsize; ++ix)
-			for(size_t iy(0); iy < travdata->ysize; ++iy){
-				const double meta(scale * (m_travmap->obstacle - (*travdata)[ix][iy]));
-				m_estar->InitMeta(ix, iy, sfl::boundval(0.0, meta, 1.0));
-			}
-	}
-	else
+	else{
 		m_estar->RemoveAllGoals();
+		m_estar->GetAlgorithm().Reset();
+	}
 	
 	double goalx(m_goal->X());
 	double goaly(m_goal->Y());
@@ -271,6 +342,24 @@ HandleReplanRequest(const GridFrame & gframe)
 	if( ! m_plan_thread)
 		m_plan_thread.reset(new PlanThread(m_estar, gframe,
 																			 travdata->xsize, travdata->ysize));
+
+	return true;
+}
+
+
+static void foo(double x0, double y0, double x1, double y1,
+								size_t xsize, size_t ysize, SmartDrawCallback & cb){
+	const GridFrame & gframe(cb.travmap->gframe);
+	const double delta(gframe.Delta()/2);
+	const size_t
+		nsteps(static_cast<size_t>(ceil(sqrt(sqr(x0-x1)+sqr(y0-y1)) / delta)));
+	for(size_t ii(0); ii <= nsteps; ++ii){
+		const double alpha(ii / static_cast<double>(nsteps));
+		const GridFrame::index_t
+			idx(gframe.GlobalIndex(x0* alpha + x1 * (1-alpha),
+														 y0* alpha + y1 * (1-alpha)));
+		cb(idx.v0, idx.v1);
+	}
 }
 
 
@@ -278,55 +367,88 @@ HandleReplanRequest(const GridFrame & gframe)
 	 \todo provide a way to just set those E-Star meta values that have
 	 actually changed
 */
-bool Smart::
-UpdatePlan(const Frame & pose)
+void Smart::
+UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
+					 bool replan)
 {
+	if( ! m_cb)
+		m_cb.reset(new SmartDrawCallback(m_travmap.get(), m_estar.get()));
+	bool flushed(false);	
+	
   // Updating traversability Map
-	if(m_mapper)
-		m_mapper->update(pose , *m_sick);
-	
-	// check if we've moved far enough to trigger a replan
-	if(m_last_plan_pose){
-		const double dist(sqrt(sqr(m_last_plan_pose->X() - pose.X())
-													 + sqr(m_last_plan_pose->Y() - pose.Y())));
-		if(dist < m_replan_distance)
-			return true;
-		*m_last_plan_pose = pose;
+	if(m_mapper){
+		// use our sfl::Mapper2d instance
+		m_mapper->update(pose , scan, m_cb.get());
+		if(m_last_plan_pose){
+	 		const double dist(sqrt(sqr(m_last_plan_pose->X() - pose.X())
+	 													 + sqr(m_last_plan_pose->Y() - pose.Y())));
+			cerr << "dist " << dist << "   m_replan_distance "
+					 << m_replan_distance << "\n";
+	 		if((dist > m_replan_distance) || replan){
+				*m_last_plan_pose = pose;
+				m_cb->flush();
+				flushed = true;
+			}
+	 	}
+	 	else{
+	 		m_last_plan_pose.reset(new Frame(pose));
+			m_cb->flush();
+			flushed = true;
+	 	}
 	}
-	else
-		m_last_plan_pose.reset(new Frame(pose));
-	
-	////m_plan_thread->Stop();
-	
-	// feed traversability changes to E-Star
-	shared_ptr<const array2d<int> > travdata(m_travmap->data);
-	if( ! travdata){
-		cerr << "ERROR: Invalid traversability map (no data).\n";
-		return false;
+	else{
+		// fake it using the cheat travmap
+		shared_ptr<Scan> myscan(m_sick->GetScanCopy());
+		const Scan::array_t mydata(myscan->data);
+		const size_t xsize(m_travmap->data->xsize);
+		const size_t ysize(m_travmap->data->ysize);
+		for(size_t i(0); i< mydata.size(); i++){
+			//			gframe.DrawLocalLine(pose.X(), pose.Y(),
+			foo(pose.X(), pose.Y(),
+					mydata[i].globx, mydata[i].globy,
+					xsize, ysize, *m_cb);
+		}
+		const size_t flushsize(3);
+		cerr << "replan = " << (replan ? "true" : "false") << "   buf.size == "
+				 <<  m_cb->buf.size() << "   known.size = " << m_cb->known.size()
+				 << "\n";
+		if((replan && ( ! m_cb->buf.empty()))
+			 || (m_cb->buf.size() > flushsize)){
+			m_cb->flush();
+			flushed = true;
+			cerr << "FLUSH buf.size == " <<  m_cb->buf.size() << "\n";
+		}
 	}
-	const double obst(m_estar->GetObstacleMeta());
-	for(size_t ii(0); ii < travdata->xsize; ++ii)
-		for(size_t jj(0); jj < travdata->ysize; ++jj)
-			if((*travdata)[ii][jj] >= m_travmap->obstacle)
-				m_estar->SetMeta(ii, jj, obst);
 	
-	////m_plan_thread->Start(100000);
-	
-	// do the actual planning
-	m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
-	if(PlanThread::HAVE_PLAN == m_plan_status)
-		return true;
-  if(single_step_estar){
-    m_plan_thread->Step();
-		m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
-	}
-  else
-    while(m_plan_status == PlanThread::PLANNING){
-      m_plan_thread->Step();
+	// do the actual planning, if there's anything to do
+	if(flushed || (PlanThread::HAVE_PLAN != m_plan_status)){
+		if(flushed) cerr << "FLUSHED\n";
+		if(single_step_estar){
+			m_plan_thread->Step();
 			m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
 		}
-	
-	return true;
+		else{
+			if(finish_estar){
+				while(m_estar->HaveWork())
+					m_plan_thread->Step();
+				m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
+			}
+			else
+				while(m_plan_status == PlanThread::PLANNING){
+					m_plan_thread->Step();
+					m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
+				}
+		}
+		const double lpkey(m_estar->GetAlgorithm().GetLastPoppedKey());
+		m_smart_cs->queue_bottom = lpkey;
+		////		cerr << "lpkey = " << m_smart_cs->queue_bottom << "\n";
+// 		const vertex_t lcnode(m_estar->GetAlgorithm().GetLastComputedVertex());
+// 		const double lcval(get(m_estar->GetAlgorithm().GetValueMap(), lcnode));
+// 		if(lcval < infinity){
+// 			m_smart_cs->queue_bottom = lcval;
+// 			cerr << "lcval = " << m_smart_cs->queue_bottom << "\n";
+// 		}
+	}
 }
 
 
@@ -379,10 +501,11 @@ ComputePath(const Frame & pose, const GridFrame & gframe, path_t & path)
 void Smart::
 PrepareAction(double timestep)
 {
-  m_sick->Update();
+  m_mscan->UpdateAll();
+	shared_ptr<const Scan> scan(m_mscan->CollectScans());
 	
 	const GridFrame & gframe(m_travmap->gframe);
-	HandleReplanRequest(gframe);
+	const bool replan(HandleReplanRequest(gframe));
   if( ! m_plan_thread){
     PDEBUG_ERR("BUG: no plan thread late in Smart::PrepareAction()!\n");
 		exit(EXIT_FAILURE);
@@ -391,17 +514,18 @@ PrepareAction(double timestep)
   double v_trans, steer;
   GetHAL()->speed_get(&v_trans, &steer);
 	
-	const Frame pose(GetServer()->GetTruePose());
-	if( ! UpdatePlan(pose)){
-    PDEBUG_ERR("ERROR: plan update failed\n");
-    exit(EXIT_FAILURE);
-	}
+	const Frame & pose(GetServer()->GetTruePose());
+	UpdatePlan(pose, gframe, *scan, replan);
   switch(m_plan_status){
   case PlanThread::HAVE_PLAN:
 		// do the stuff after this switch
     break;
   case PlanThread::PLANNING:
     PDEBUG("wave hasn't crossed robot yet\n");
+    GetHAL()->speed_set(0, steer);
+    return;
+  case PlanThread::AT_GOAL:
+    PDEBUG("at goal\n");
     GetHAL()->speed_set(0, steer);
     return;
   case PlanThread::UNREACHABLE:
@@ -493,4 +617,3 @@ GoalReached()
 {
   return m_goal->DistanceReached(GetServer()->GetTruePose());
 }
-

@@ -40,6 +40,9 @@ namespace sfl {
   class Mapper2d;
   class Frame;
   class GridFrame;
+  class Multiscanner;
+  class Scanner;
+  class Scan;
 }
 
 
@@ -61,6 +64,7 @@ namespace asl {
 class PlanThread;
 class SmartCarrotProxy;
 class SmartColorScheme;
+class SmartDrawCallback;
 
 
 class Smart
@@ -83,10 +87,12 @@ public:
   
   /** default false */
   bool single_step_estar;
+  bool finish_estar;
   
 protected:
-  void HandleReplanRequest(const sfl::GridFrame & gframe);
-  bool UpdatePlan(const sfl::Frame & pose);
+  bool HandleReplanRequest(const sfl::GridFrame & gframe);
+  void UpdatePlan(const sfl::Frame & pose, const sfl::GridFrame & gframe,
+		  const sfl::Scan & scan, bool replan);
   bool ComputePath(const sfl::Frame & pose, const sfl::GridFrame & gframe,
 		   asl::path_t & path);
 
@@ -95,6 +101,7 @@ protected:
   friend class SmartCarrotProxy;
   
   boost::shared_ptr<sfl::Scanner> m_sick;
+  boost::shared_ptr<sfl::Multiscanner> m_mscan;
   boost::shared_ptr<sfl::Goal> m_goal;
   boost::shared_ptr<estar::Region> m_goalregion;
   boost::shared_ptr<estar::Facade> m_estar;
@@ -107,6 +114,7 @@ protected:
   boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
   boost::shared_ptr<sfl::Frame> m_last_plan_pose;
   boost::scoped_ptr<SmartColorScheme> m_smart_cs;
+  boost::scoped_ptr<SmartDrawCallback> m_cb;
   
   bool m_replan_request;
   int m_nscans, m_sick_channel;

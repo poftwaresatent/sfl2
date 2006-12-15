@@ -1,6 +1,7 @@
 View world
      Camera  world
-     Drawing travmap
+     Drawing Ter_estar_meta
+#     Drawing travmap
      Drawing Ter_estar_queue
      Drawing Ter_carrot
      Drawing world
@@ -13,8 +14,10 @@ View world
      Border  0
 
 View ter
-     Camera  Ter_true_zoom_camera
+     Camera  world
+#     Camera  Ter_true_zoom_camera
      Drawing Ter_estar_value
+     Drawing Ter_estar_obst
      Drawing Ter_estar_queue
      Drawing Ter_carrot
      Drawing world

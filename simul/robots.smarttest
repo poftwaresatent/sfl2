@@ -9,12 +9,15 @@ Robot smart Ter
         Option front_mount_x       1.3
         Option front_mount_y       0.0
         Option front_mount_theta   0.0
+        Option front_nscans       46
+        Option front_rhomax       12
         Option model_wheelbase     1.0
         Option model_axlewidth     0.8
         Option model_wheelradius   0.2
-        Option model_phi_max       0.8
-        Option model_phid_max      0.8
+        Option model_phi_max       1.2
+        Option model_phid_max    100
         Option model_sd_max        2.5
         Option model_sdd_max       5.0
         Option use_travmap         cheat
-#        Option estar_mode          step
+        Option replan_distance     1
+        Option estar_mode          step

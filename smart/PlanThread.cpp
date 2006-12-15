@@ -26,6 +26,7 @@
 #include <estar/Facade.hpp>
 #include <estar/Queue.hpp>
 #include <estar/Algorithm.hpp>
+#include <estar/Grid.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <iostream>
 
@@ -68,31 +69,44 @@ GetStatus(double robot_global_x, double robot_global_y)
 {
   const GridFrame::index_t
     idx(m_gframe.GlobalIndex(robot_global_x, robot_global_y));
+  
   if((idx.v0 >= m_grid_xsize) || (idx.v1 >= m_grid_ysize))
     return OUT_OF_GRID;
   
-  ////  Mutex::sentry ss(m_mutex);
-  
-  const double rmeta(m_estar->GetMeta(idx.v0, idx.v1));
-  if(rmeta == m_estar->GetObstacleMeta())
+  const double meta(m_estar->GetMeta(idx.v0, idx.v1));
+  if(meta == m_estar->GetObstacleMeta())
     return IN_OBSTACLE;
   
-  const double rval(m_estar->GetValue(idx.v0, idx.v1));
-  if( ! m_estar->HaveWork()){
-    if(rval < infinity)
-      return HAVE_PLAN;
+  const Algorithm & algo(m_estar->GetAlgorithm());
+  const flag_map_t & flag_map(algo.GetFlagMap());
+  const vertex_t rnode(m_estar->GetGrid().GetVertex(idx.v0, idx.v1));
+  const flag_t flag(get(flag_map, rnode));
+  if(flag & GOAL){
+    ////    cerr << "AT_GOAL\n";
+    return AT_GOAL;
+  }
+  if(flag & OPEN){
+    ////    cerr << "OPEN -> PLANNING\n";
+    return PLANNING;
+  }
+  
+  //const double lcvalplus(get(m_estar->GetAlgorithm().GetValueMap(), lcnode));
+  //const double lcvalminus(m_estar->GetAlgorithm().GetLastComputedValue());
+  //const double lcval(minval(lcvalplus, lcvalminus));
+  const double lpkey(algo.GetLastPoppedKey());
+  const double value(m_estar->GetValue(idx.v0, idx.v1));
+  
+  //cerr << "lcval = min(" << lcvalminus << " " << lcvalplus << ") = " << lcval
+  ////  cerr << "lpkey = " << lpkey << "  value = " << value;
+  //  if((lcval <= value) || (lcval == infinity)){
+  if(lpkey <= value){
+    if(m_estar->HaveWork()){
+      ////      cerr << " PLANNING\n";
+      return PLANNING;
+    }
+    ////    cerr << " UNREACHABLE\n";    
     return UNREACHABLE;
   }
-  
-  const queue_t queue(m_estar->GetAlgorithm().GetQueue().Get());
-  if(queue.empty()){
-    cerr << "BUG in PlanThread::GetStatus():"
-	 << " m_estar->HaveWork() but queue.empty()!\n";
-    return ERROR;
-  }
-  queue_t::const_iterator qt(queue.begin());
-  if(qt->first <= rval)
-    return PLANNING;
-  
+  ////  cerr << " HAVE_PLAN\n";    
   return HAVE_PLAN;
 }

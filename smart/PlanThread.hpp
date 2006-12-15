@@ -47,6 +47,8 @@ public:
     PLANNING = 1,
     /** there is no plan and the wavefront is empty */
     UNREACHABLE = 2,
+    /** whatevers else, robot is at a goal node */
+    AT_GOAL = 3,
     /** the robot is outside the grid */
     OUT_OF_GRID = -1,
     /** the robot is in an obstacle */
