@@ -371,6 +371,21 @@ namespace npm {
       for(size_t iy(0); iy < ysize; ++iy)
 	if(data[ix][iy] >= obstacle){
 	  GridFrame::position_t center(gframe.LocalPoint(ix, iy));
+#define KEPP_IT_SIMPLE
+#ifdef KEPP_IT_SIMPLE
+	  {
+	    Line line(center.v0 - offset, center.v1,
+		      center.v0 + offset, center.v1);
+	    line.TransformTo(gframe);
+	    AddLine(line);
+	  }
+	  {
+	    Line line(center.v0, center.v1 - offset,
+		      center.v0, center.v1 + offset);
+	    line.TransformTo(gframe);
+	    AddLine(line);
+	  }
+#else
 	  if((0 >= ix) || (data[ix - 1][iy] < obstacle)){ // west
 	    Line line(center.v0 - offset, center.v1 - offset,
 		      center.v0 - offset, center.v1 + offset);
@@ -395,6 +410,7 @@ namespace npm {
 	    line.TransformTo(gframe);
 	    AddLine(line);
 	  }
+#endif
 	}
     // lower left
     GridFrame::position_t corner(gframe.LocalPoint(0, 0));

@@ -185,7 +185,7 @@ public:
 		if(known.find(idx) != known.end())
 			return;
 		const double meta(compute((*data)[ix][iy]));
-		cerr << "cb: " << ix << " " << iy << ": meta " << meta << "\n";
+		////		cerr << "cb: " << ix << " " << iy << ": meta " << meta << "\n";
 		buf.insert(make_pair(idx, meta));
 		known.insert(idx);
 	}
@@ -382,8 +382,8 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 		if(m_last_plan_pose){
 	 		const double dist(sqrt(sqr(m_last_plan_pose->X() - pose.X())
 	 													 + sqr(m_last_plan_pose->Y() - pose.Y())));
-			cerr << "dist " << dist << "   m_replan_distance "
-					 << m_replan_distance << "\n";
+			//// 			cerr << "dist " << dist << "   m_replan_distance "
+			//// 					 << m_replan_distance << "\n";
 	 		if((dist > m_replan_distance) || replan){
 				*m_last_plan_pose = pose;
 				m_cb->flush();
@@ -409,20 +409,19 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 					xsize, ysize, *m_cb);
 		}
 		const size_t flushsize(3);
-		cerr << "replan = " << (replan ? "true" : "false") << "   buf.size == "
-				 <<  m_cb->buf.size() << "   known.size = " << m_cb->known.size()
-				 << "\n";
-		if((replan && ( ! m_cb->buf.empty()))
-			 || (m_cb->buf.size() > flushsize)){
+		//// 		cerr << "pose " << pose << "  replan " << (replan ? "true" : "false")
+		//// 				 << "   buf.size " <<  m_cb->buf.size()
+		//// 				 << "   known.size " << m_cb->known.size() << "\n";
+		if(replan || (m_cb->buf.size() > flushsize)){
 			m_cb->flush();
 			flushed = true;
-			cerr << "FLUSH buf.size == " <<  m_cb->buf.size() << "\n";
+			//// cerr << "FLUSH buf.size == " <<  m_cb->buf.size() << "\n";
 		}
 	}
 	
 	// do the actual planning, if there's anything to do
 	if(flushed || (PlanThread::HAVE_PLAN != m_plan_status)){
-		if(flushed) cerr << "FLUSHED\n";
+		////		if(flushed) cerr << "FLUSHED\n";
 		if(single_step_estar){
 			m_plan_thread->Step();
 			m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());

@@ -53,7 +53,7 @@ namespace npm {
       return shared_ptr<Frame>(new Frame(current));
     
     double dx, dy, dtheta;
-    if(absval(absval(steer) - M_PI / 2) < epsilon * 2 * M_PI){
+    if(absval(steer) < epsilon * 2 * M_PI){
       // straight line
       dx = v_trans * timestep;
       dy = 0;
