@@ -37,12 +37,12 @@
 
 #ifdef HAVE_ESTAR
 # include <npm/estar/Esbot.hpp>
+# include <npm/smart/Smart.hpp>
 #endif // HAVE_ESTAR
 
 //#include <npm/theater/TheaterRobot.hpp>
 ////#include <npm/braitenberg/Braitenberg.hpp>
 
-#include <npm/smart/Smart.hpp>
 
 using namespace npm;
 using namespace boost;
@@ -67,6 +67,8 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
 #ifdef HAVE_ESTAR
   else if(descriptor->model == "esbot")
     rob = new Esbot(descriptor, world);
+  else if (descriptor->model == "smart")
+    rob = new Smart(descriptor, world);
 #endif // HAVE_ESTAR
 
 #ifdef HAVE_GENOM
@@ -75,9 +77,6 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
   else if(descriptor->model == "rackham")
     rob = new Rackham(descriptor, world);
 #endif // HAVE_GENOM
-
-  else if (descriptor->model == "smart")
-    rob = new Smart(descriptor, world);
 
   return shared_ptr<RobotClient>(rob);
 }
