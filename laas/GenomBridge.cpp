@@ -39,7 +39,7 @@ extern "C" {
 #include <sick/sickStruct.h>
 #include <sick/server/sickPosterLibStruct.h>
 #include <genPos/genPosStruct.h>
-#include <sfl/sflStruct.h>
+#include <sflmod/sflmodStruct.h>
 }
 
 using namespace npm;
@@ -49,7 +49,7 @@ using namespace std;
 
 static const char * pomPosterName("xcfwrapOdometry");
 static const char * scannerPosterName("xcfwrapScan");
-static const char * speedrefPosterName("sflSpeedRef");
+static const char * speedrefPosterName("sflmodSpeedRef");
 static const char * goalPosterName("xcfwrapGoal");
 static const char * curspeedPosterName("xcfwrapCurspeed");
 
@@ -58,8 +58,8 @@ GenomBridge::
 GenomBridge()
   : m_pompos(poster::create(pomPosterName, sizeof(POM_POS))),
     m_cartspeed(poster::find(speedrefPosterName, sizeof(GENPOS_CART_SPEED))),
-    m_goal(poster::create(goalPosterName, sizeof(SFL_GOAL))),
-    m_curspeed(poster::create(curspeedPosterName, sizeof(SFL_CURSPEED))),
+    m_goal(poster::create(goalPosterName, sizeof(SFLMOD_GOAL))),
+    m_curspeed(poster::create(curspeedPosterName, sizeof(SFLMOD_CURSPEED))),
     m_scanpolar(poster::create(scannerPosterName,
 			       sizeof(SICK_SCANPOLAR_POSTER_STR)))
 {
@@ -135,12 +135,12 @@ SetGoal(double x, double y, double theta,
 	double dr, double dtheta, int via_goal)
 {
   if(0 == m_goal){
-    m_goal = poster::create(goalPosterName, sizeof(SFL_GOAL));
+    m_goal = poster::create(goalPosterName, sizeof(SFLMOD_GOAL));
     if(0 == m_goal)
       return false;
   }
   
-  SFL_GOAL goal;
+  SFLMOD_GOAL goal;
   goal.x = x;
   goal.y = y;
   goal.theta = theta;
@@ -153,7 +153,7 @@ SetGoal(double x, double y, double theta,
   goal.timestamp  = static_cast<unsigned long long>(t0.tv_sec  * 1000);
   goal.timestamp += static_cast<unsigned long long>(t0.tv_usec / 1000);
   
-  return poster::write(m_goal, &goal, sizeof(SFL_GOAL));
+  return poster::write(m_goal, &goal, sizeof(SFLMOD_GOAL));
 }
 
 
@@ -161,12 +161,12 @@ bool GenomBridge::
 SetCurspeed(double sd, double thetad)
 {
   if(0 == m_curspeed){
-    m_curspeed = poster::create(curspeedPosterName, sizeof(SFL_CURSPEED));
+    m_curspeed = poster::create(curspeedPosterName, sizeof(SFLMOD_CURSPEED));
     if(0 == m_curspeed)
       return false;
   }
   
-  SFL_CURSPEED curspeed;
+  SFLMOD_CURSPEED curspeed;
   curspeed.sd = sd;
   curspeed.thetad = thetad;
   
@@ -175,7 +175,7 @@ SetCurspeed(double sd, double thetad)
   curspeed.timestamp  = static_cast<unsigned long long>(t0.tv_sec  * 1000);
   curspeed.timestamp += static_cast<unsigned long long>(t0.tv_usec / 1000);
   
-  return poster::write(m_curspeed, &curspeed, sizeof(SFL_CURSPEED));
+  return poster::write(m_curspeed, &curspeed, sizeof(SFLMOD_CURSPEED));
 }
 
 
