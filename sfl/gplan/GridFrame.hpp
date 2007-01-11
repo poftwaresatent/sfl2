@@ -43,7 +43,8 @@ namespace sfl {
     
     struct draw_callback {
       virtual ~draw_callback() {}
-      virtual void operator () (size_t ix, size_t iy) = 0;
+			/** \note defaults to no operation */
+      virtual void operator () (size_t ix, size_t iy) {}
     };
     
     

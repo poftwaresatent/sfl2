@@ -57,7 +57,19 @@ namespace sfl {
 		return travMap_;
 	}
 	
-	
+	bool Mapper2d::update(const Pose &odo, int length, double *x, double *y, GridFrame::draw_callback * cb)
+	{
+		double xw, yw;
+		for (int i(0); i<length; i++)
+			{
+				xw=x[i];
+				yw=y[i];
+				odo.To(xw, yw);
+				simpleCellUpdate(xw, yw, cb);
+			}
+		return true;
+	}
+
 	bool Mapper2d::update(const Frame &odo, const Scan &scan,
 												GridFrame::draw_callback * cb)
 	{
@@ -89,6 +101,8 @@ namespace sfl {
 		const GridFrame::index_t idx0(travMap_->gframe.GlobalIndex(x0, y0));
 		const GridFrame::index_t idx(travMap_->gframe.GlobalIndex(x, y));
 
+		/* Attention: This will free cells we can "watch through" without the callback
+		 => those changes are not recognized!*/
 		map_obstacle_between_trace(idx0.v0, idx0.v1, idx.v0, idx.v1);
 
 		travMap_->SetObst(x, y, cb);

@@ -51,7 +51,9 @@ namespace sfl {
 		*/
 		bool update(const Frame &odo, const Scan &scan,
 								GridFrame::draw_callback * cb);
-		
+
+		bool update(const Pose &odo, int length, double *x, double *y, GridFrame::draw_callback * cb);
+ 
 		boost::shared_ptr<TraversabilityMap> getTravMap();
 		
 	private:
