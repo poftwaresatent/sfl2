@@ -37,7 +37,7 @@ AC_ARG_ENABLE(pedantic,
 AC_ARG_WITH(boost,
   AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
   [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -I${withval}/include"
+      CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}"
       LDFLAGS="-L${withval}/lib $LDFLAGS"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
