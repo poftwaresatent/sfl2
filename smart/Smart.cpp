@@ -238,13 +238,22 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   m_wheelradius = params.model_wheelradius;
   m_axlewidth = params.model_axlewidth;
 
+	string controller_name(descriptor->GetOption("controller_name"));
+	if(controller_name == "")
+		controller_name = "simple";
   m_controller.
-    reset(new AckermannController(AckermannModel(params.model_sd_max,
-						 params.model_sdd_max,
-						 params.model_phi_max,
-						 params.model_phid_max,
-						 m_wheelbase)));
-  
+    reset(asl::CreateAckermannController(controller_name,
+																				 AckermannModel(params.model_sd_max,
+																												params.model_sdd_max,
+																												params.model_phi_max,
+																												params.model_phid_max,
+																												m_wheelbase),
+																				 &cerr));
+  if( ! m_controller){
+		cerr << "something went wrong in asl::CreateAckermannController()\n";
+		exit(EXIT_FAILURE);
+	}
+	
 	shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart")));	
 	m_mscan.reset(new Multiscanner(odo));
 	m_sick = DefineLidar(Frame(params.front_mount_x,
