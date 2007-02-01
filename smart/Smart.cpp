@@ -257,7 +257,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 											 params.front_channel)->GetScanner();
 	m_mscan->Add(m_sick);
 	
-  DefineBicycleDrive(m_wheelbase, m_wheelradius, m_axlewidth);
+	DefineBicycleDrive(m_wheelbase, m_wheelradius, m_axlewidth);
 
   AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
 	       -m_wheelradius,  m_axlewidth/2 +m_wheelradius));
@@ -320,7 +320,6 @@ HandleReplanRequest(const GridFrame & gframe)
 																				gframe.Delta()));
 	else{
 		m_estar->RemoveAllGoals();
-		m_estar->GetAlgorithm().Reset();
 	}
 	
 	double goalx(m_goal->X());
@@ -458,6 +457,7 @@ ComputePath(const Frame & pose, const GridFrame & gframe, path_t & path)
     m_carrot_trace.reset(new carrot_trace());
   else
     m_carrot_trace->clear();
+
   const double carrot_distance(5); // XXX to do: magic numbers...
   const double carrot_stepsize(0.5);
   const size_t carrot_maxnsteps(30);

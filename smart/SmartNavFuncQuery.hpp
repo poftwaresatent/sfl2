@@ -26,10 +26,27 @@
 
 
 #include <asl/path_tracking.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <vector>
 
 
 class Smart;
 
+namespace asl {
+  struct path_element;
+  typedef std::vector<path_element> path_t;
+}
+
+namespace estar {
+  class Facade;
+  class Region;
+  struct carrot_item;
+  typedef std::vector<carrot_item> carrot_trace;
+}
+
+namespace sfl{
+  class Goal;
+}
 
 class SmartNavFuncQuery
   : public asl::NavFuncQuery
@@ -38,7 +55,11 @@ public:
   SmartNavFuncQuery(Smart * smart);
   virtual status_t GetValue(double globalx, double globaly,
 			    double & value) const;
+  virtual status_t ComputeDeltaCost(double x0, double y0, double x1, double y1,
+				    double & delta) const;
+  virtual status_t GetPath(double lookahead, double stepsize, double globalx, double globaly, asl::path_t & path) const;
 
+  virtual status_t IsWithinBounds(double globalx, double globaly) const;
 private:
   Smart * m_smart;
 };
