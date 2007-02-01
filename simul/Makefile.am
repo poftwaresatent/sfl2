@@ -11,3 +11,26 @@ endif
 
 dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
 dumpworld_LDADD=   ../libnepumuk.la
+
+dist_bin_SCRIPTS= birondemo.sh \
+                  estardemo.sh \
+                  expodemo.sh \
+                  smartdemo.sh \
+                  smarttest.sh \
+                  testestar.sh \
+                  layout.biron \
+                  layout.config \
+                  layout.estar \
+                  layout.expo \
+                  layout.smart \
+                  layout.smarttest \
+                  robots.biron \
+                  robots.config \
+                  robots.estar \
+                  robots.expo \
+                  robots.smart \
+                  robots.smarttest \
+                  smart.trm \
+                  trav.map \
+                  travCS.map \
+                  travmap-example.txt
