@@ -1,5 +1,10 @@
 CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
 LDFLAGS+= @GLUTLIBS@ @SFL_LDFLAGS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
+if SMARTFLOWER
+  LDFLAGS+= -L@top_builddir@/sunflower \
+            -L@top_builddir@/estar \
+            -L@top_builddir@/asl-mcontrol
+endif
 
 bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp

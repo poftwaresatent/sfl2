@@ -173,6 +173,9 @@ AC_CHECK_HEADERS([png.h], [LDFLAGS="$LDFLAGS -lpng -lz"])
 test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
 test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
 
+dnl *** bit of a hack for smartflower 'meta' build
+AM_CONDITIONAL([SMARTFLOWER], [false])
+
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
