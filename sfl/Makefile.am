@@ -15,7 +15,11 @@ libsunflower_la_LIBADD=  api/libapi.la \
 pkgconfigdir=            $(libdir)/pkgconfig
 pkgconfig_DATA=          sunflower.pc
 
-BUILT_SOURCES=           sfl
+SRCDIR=                  @abs_top_srcdir@
+BUILDDIR=                @top_builddir@
 
-sfl:
-	test -L sfl || ln -s $(top_srcdir) sfl
+BUILT_SOURCES=           incsym
+
+incsym:
+	test -d $(BUILDDIR)/include || mkdir -p $(BUILDDIR)/include
+	test -L $(BUILDDIR)/include/sfl || ln -s $(SRCDIR) $(BUILDDIR)/include/sfl

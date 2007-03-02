@@ -6,3 +6,5 @@ include_HEADERS=    SpeedObjective.hpp Lookup.hpp Objective.hpp \
                     HeadingObjective.hpp DistanceObjective.hpp \
                     DynamicWindow.hpp
 includedir=         @includedir@/sfl/dwa
+
+CPPFLAGS+=          -I@top_builddir@/include

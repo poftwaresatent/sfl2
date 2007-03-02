@@ -20,3 +20,5 @@ include_HEADERS=       GridFrame.hpp \
                        $(OPTHDR)
 
 includedir=            @includedir@/sfl/gplan
+
+CPPFLAGS+=             -I@top_builddir@/include

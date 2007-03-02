@@ -17,5 +17,7 @@ xcomp_test_c___boost_SOURCES=    xcomp-test-c++-boost.cpp
 LDADD=                           ../libsunflower.la
 xcomp_test_c_LDADD=              -lstdc++
 
+CPPFLAGS+=                       -I@top_builddir@/include
+
 ../libsunflower.la:
 	$(MAKE) -C ..
