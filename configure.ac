@@ -17,8 +17,6 @@ AC_ARG_ENABLE(pedantic,
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pedantic" ],
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -Wall" ])
 
-AC_SUBST(SFL_LDFLAGS, "-lsunflower")
-
 AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_RESULT([detected Linux])
