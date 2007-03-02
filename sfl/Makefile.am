@@ -16,7 +16,7 @@ pkgconfigdir=            $(libdir)/pkgconfig
 pkgconfig_DATA=          sunflower.pc
 
 SRCDIR=                  @abs_top_srcdir@
-BUILDDIR=                @top_builddir@
+BUILDDIR=                @abs_top_builddir@
 
 BUILT_SOURCES=           incsym
 
