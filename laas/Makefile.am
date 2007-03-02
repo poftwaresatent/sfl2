@@ -11,7 +11,9 @@ pread_LDADD=     liblaas.la
 noinst_LTLIBRARIES= liblaas.la
 liblaas_la_SOURCES= LAAS.cpp GenomBridge.cpp phelp.cpp
 
-gnom_config_error:
+CPPFLAGS+=           -I@abs_top_builddir@/include
+
+genom_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"
 	@echo "  unless --with-genom has been given to the configure script"
 	@echo "  this is a bug in the automake files, please inform the"

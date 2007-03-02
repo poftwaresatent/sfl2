@@ -1,5 +1,5 @@
-CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@
-LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
+CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
+LDFLAGS+= @GLUTLIBS@ @SFL_LDFLAGS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
 
 bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp

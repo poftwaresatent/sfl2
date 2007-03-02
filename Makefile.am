@@ -25,7 +25,11 @@ libnepumuk_la_LIBADD=  common/libcommon.la \
                        $(BIRON_LIBADD) \
                        $(ESTAR_LIBADD)
 
-BUILT_SOURCES= npm
+SRCDIR=                @abs_top_srcdir@
+BUILDDIR=              @abs_top_builddir@
 
-npm:
-	test -L npm || ln -s $(top_srcdir) npm
+BUILT_SOURCES=         incsym
+
+incsym:
+	test -d $(BUILDDIR)/include || mkdir -p $(BUILDDIR)/include
+	test -L $(BUILDDIR)/include/npm || ln -s $(SRCDIR) $(BUILDDIR)/include/npm

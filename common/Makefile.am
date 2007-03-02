@@ -11,3 +11,5 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
                      DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp util.cpp \
                      TraversabilityDrawing.cpp BicycleDriveDrawing.cpp
+
+CPPFLAGS+=           -I@abs_top_builddir@/include
