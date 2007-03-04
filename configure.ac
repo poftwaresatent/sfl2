@@ -168,8 +168,17 @@ AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_CHECK_HEADERS([png.h], [LDFLAGS="$LDFLAGS -lpng -lz"])
 
-test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
-test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
+ABSTOPBUILDDIR=`pwd`
+if test -z "$ABSTOPBUILDDIR" ; then
+  AC_MSG_ERROR([could not determine current working directory])
+fi
+if test "$prefix" = "NONE" ; then
+  CPPFLAGS="-I${ABSTOPBUILDDIR}/include $CPPFLAGS"
+else
+  CPPFLAGS="-I${ABSTOPBUILDDIR}/include $CPPFLAGS -I${prefix}/include"
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi
+CXXFLAGS="$CFLAGS"
 
 dnl *** bit of a hack for smartflower 'meta' build
 AM_CONDITIONAL([SMARTFLOWER], [false])

@@ -12,4 +12,4 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                      DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp util.cpp \
                      TraversabilityDrawing.cpp BicycleDriveDrawing.cpp
 
-CPPFLAGS+=           -I@abs_top_builddir@/include
+###CPPFLAGS+=           -I@abs_top_builddir@/include

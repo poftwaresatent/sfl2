@@ -11,7 +11,7 @@ pread_LDADD=     liblaas.la
 noinst_LTLIBRARIES= liblaas.la
 liblaas_la_SOURCES= LAAS.cpp GenomBridge.cpp phelp.cpp
 
-CPPFLAGS+=           -I@abs_top_builddir@/include
+###CPPFLAGS+=           -I@abs_top_builddir@/include
 
 genom_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"

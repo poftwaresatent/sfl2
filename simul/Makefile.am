@@ -1,4 +1,5 @@
-CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
+###CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
+CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@
 LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
 if SMARTFLOWER
   LDFLAGS+= -L@top_builddir@/sunflower \

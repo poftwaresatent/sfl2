@@ -1,7 +1,8 @@
 if ! HAVE_ESTAR
   BUILT_SOURCES= estar_config_error
 endif
-CPPFLAGS+= @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
+###CPPFLAGS+= @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
+CPPFLAGS+= @ESTAR_CPPFLAGS@
 noinst_LTLIBRARIES= libestar.la
 libestar_la_SOURCES= CarrotDrawing.cpp Esbot.cpp PNF.cpp \
                      PNFCamera.cpp PNFDrawing.cpp EstarDrawing.cpp

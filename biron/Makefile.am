@@ -1,7 +1,8 @@
 if ! HAVE_XCF
   BUILT_SOURCES=xcf_config_error
 endif
-CPPFLAGS+= @XCF_CPPFLAGS@ -I@abs_top_builddir@/include
+###CPPFLAGS+= @XCF_CPPFLAGS@ -I@abs_top_builddir@/include
+CPPFLAGS+= @XCF_CPPFLAGS@
 noinst_LTLIBRARIES=  libbiron.la
 libbiron_la_SOURCES= Biron.cpp
 
