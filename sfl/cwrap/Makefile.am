@@ -7,7 +7,7 @@ check_PROGRAMS=      testcwrap
 testcwrap_SOURCES=   testcwrap.cpp
 testcwrap_LDADD=     ../libsunflower.la
 
-CPPFLAGS+=           -I@top_builddir@/include
+###CPPFLAGS+=           -I@top_builddir@/include
 
 ../libsunflower.la:
 	$(MAKE) -C ..

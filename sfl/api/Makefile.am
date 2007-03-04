@@ -7,4 +7,4 @@ include_HEADERS=    Pose.hpp Scan.hpp Multiscanner.hpp RobotModel.hpp \
                     MotionController.hpp Odometry.hpp Timestamp.hpp HAL.hpp
 includedir=         @includedir@/sfl/api
 
-CPPFLAGS+=           -I@top_builddir@/include
+###CPPFLAGS+=           -I@top_builddir@/include

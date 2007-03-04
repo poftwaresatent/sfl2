@@ -6,4 +6,4 @@ include_HEADERS=    Point.hpp array2d.hpp functors.hpp Frame.hpp \
                     Polygon.hpp Hull.hpp numeric.hpp
 includedir=         @includedir@/sfl/util
 
-CPPFLAGS+=          -I@top_builddir@/include
+###CPPFLAGS+=          -I@top_builddir@/include

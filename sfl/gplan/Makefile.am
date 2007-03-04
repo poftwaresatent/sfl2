@@ -21,4 +21,4 @@ include_HEADERS=       GridFrame.hpp \
 
 includedir=            @includedir@/sfl/gplan
 
-CPPFLAGS+=             -I@top_builddir@/include
+###CPPFLAGS+=             -I@top_builddir@/include

@@ -79,8 +79,17 @@ esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
-test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
-test "$prefix" != "NONE" && LDFLAGS="$LDFLAGS -L$prefix/lib"
+ABSTOPBUILDDIR=`pwd`
+if test -z "$ABSTOPBUILDDIR" ; then
+  AC_MSG_ERROR([could not determine current working directory])
+fi
+if test "$prefix" = "NONE" ; then
+  CPPFLAGS="-I${ABSTOPBUILDDIR}/include $CPPFLAGS"
+else
+  CPPFLAGS="-I${ABSTOPBUILDDIR}/include $CPPFLAGS -I${prefix}/include"
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi
+CXXFLAGS="$CFLAGS"
 
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)
