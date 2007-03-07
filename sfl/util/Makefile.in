@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 
-SOURCES = $(libutil_la_SOURCES)
+SOURCES = $(libutil_la_SOURCES) $(test_goalmgr_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -23,7 +23,7 @@ VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ../..
+top_builddir = ..
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = @INSTALL@
 install_sh_DATA = $(install_sh) -c -m 644
@@ -39,23 +39,27 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = sunflower/util
+check_PROGRAMS = test-goalmgr$(EXEEXT)
+subdir = util
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/sunflower/config.h \
-	$(top_builddir)/nepumuk/config.h
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
 am_libutil_la_OBJECTS = Point.lo Ray.lo Frame.lo Line.lo Pthread.lo \
-	Hull.lo numeric.lo Polygon.lo
+	Hull.lo numeric.lo Polygon.lo GoalManager.lo
 libutil_la_OBJECTS = $(am_libutil_la_OBJECTS)
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/sunflower -I$(top_builddir)/nepumuk
+am_test_goalmgr_OBJECTS = test-goalmgr.$(OBJEXT)
+test_goalmgr_OBJECTS = $(am_test_goalmgr_OBJECTS)
+test_goalmgr_LDADD = $(LDADD)
+test_goalmgr_DEPENDENCIES = ../libsunflower.la
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -66,8 +70,8 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile --tag=CXX $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link --tag=CXX $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libutil_la_SOURCES)
-DIST_SOURCES = $(libutil_la_SOURCES)
+SOURCES = $(libutil_la_SOURCES) $(test_goalmgr_SOURCES)
+DIST_SOURCES = $(libutil_la_SOURCES) $(test_goalmgr_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -106,20 +110,12 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
-ESTAR_CPPFLAGS = @ESTAR_CPPFLAGS@
-ESTAR_LDFLAGS = @ESTAR_LDFLAGS@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
-GFXLIBS = @GFXLIBS@
-GLUTLIBS = @GLUTLIBS@
 GREP = @GREP@
 HAVE_ESTAR_FALSE = @HAVE_ESTAR_FALSE@
 HAVE_ESTAR_TRUE = @HAVE_ESTAR_TRUE@
-HAVE_GENOM_FALSE = @HAVE_GENOM_FALSE@
-HAVE_GENOM_TRUE = @HAVE_GENOM_TRUE@
-HAVE_XCF_FALSE = @HAVE_XCF_FALSE@
-HAVE_XCF_TRUE = @HAVE_XCF_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -143,14 +139,9 @@ RANLIB = @RANLIB@
 ROBOX_FALSE = @ROBOX_FALSE@
 ROBOX_TRUE = @ROBOX_TRUE@
 SET_MAKE = @SET_MAKE@
-SFL_LDFLAGS = @SFL_LDFLAGS@
 SHELL = @SHELL@
-SMARTFLOWER_FALSE = @SMARTFLOWER_FALSE@
-SMARTFLOWER_TRUE = @SMARTFLOWER_TRUE@
 STRIP = @STRIP@
 VERSION = @VERSION@
-XCF_CPPFLAGS = @XCF_CPPFLAGS@
-XCF_LDFLAGS = @XCF_LDFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
@@ -174,7 +165,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-glut = @glut@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -201,12 +191,14 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 noinst_LTLIBRARIES = libutil.la
 libutil_la_SOURCES = Point.cpp Ray.cpp Frame.cpp Line.cpp Pthread.cpp \
-                    Hull.cpp numeric.cpp Polygon.cpp
+                    Hull.cpp numeric.cpp Polygon.cpp GoalManager.cpp
 
 include_HEADERS = Point.hpp array2d.hpp functors.hpp Frame.hpp \
                     vec2d.hpp Pthread.hpp Ray.hpp Line.hpp pdebug.hpp \
-                    Polygon.hpp Hull.hpp numeric.hpp
+                    Polygon.hpp Hull.hpp numeric.hpp GoalManager.hpp
 
+LDADD = ../libsunflower.la
+test_goalmgr_SOURCES = test-goalmgr.cpp
 all: all-am
 
 .SUFFIXES:
@@ -220,9 +212,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  sunflower/util/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  util/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  sunflower/util/Makefile
+	  $(AUTOMAKE) --foreign  util/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -252,6 +244,16 @@ clean-noinstLTLIBRARIES:
 libutil.la: $(libutil_la_OBJECTS) $(libutil_la_DEPENDENCIES) 
 	$(CXXLINK)  $(libutil_la_LDFLAGS) $(libutil_la_OBJECTS) $(libutil_la_LIBADD) $(LIBS)
 
+clean-checkPROGRAMS:
+	@list='$(check_PROGRAMS)'; for p in $$list; do \
+	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  echo " rm -f $$p $$f"; \
+	  rm -f $$p $$f ; \
+	done
+test-goalmgr$(EXEEXT): $(test_goalmgr_OBJECTS) $(test_goalmgr_DEPENDENCIES) 
+	@rm -f test-goalmgr$(EXEEXT)
+	$(CXXLINK) $(test_goalmgr_LDFLAGS) $(test_goalmgr_OBJECTS) $(test_goalmgr_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -259,6 +261,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Frame.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GoalManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hull.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Line.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Point.Plo@am__quote@
@@ -266,6 +269,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Pthread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/numeric.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-goalmgr.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -391,6 +395,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
@@ -423,8 +428,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -472,21 +477,22 @@ ps-am:
 
 uninstall-am: uninstall-includeHEADERS uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-includeHEADERS install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-includeHEADERS \
-	uninstall-info-am
+.PHONY: CTAGS GTAGS all all-am check check-am clean \
+	clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES ctags distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-exec install-exec-am \
+	install-includeHEADERS install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-includeHEADERS uninstall-info-am
 
 
-###CPPFLAGS+=          -I@top_builddir@/include
+../libsunflower.la:
+	$(MAKE) -C ..
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

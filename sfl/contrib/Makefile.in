@@ -23,7 +23,7 @@ VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ../..
+top_builddir = ..
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = @INSTALL@
 install_sh_DATA = $(install_sh) -c -m 644
@@ -43,16 +43,15 @@ host_triplet = @host@
 @ROBOX_TRUE@am__append_2 = asl_hal.hpp
 check_PROGRAMS = xcomp-test-c++-iostream$(EXEEXT) tpthread$(EXEEXT) \
 	xcomp-test-c++-boost$(EXEEXT) xcomp-test-c$(EXEEXT)
-subdir = sunflower/contrib
+subdir = contrib
 DIST_COMMON = $(am__include_HEADERS_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/sunflower/config.h \
-	$(top_builddir)/nepumuk/config.h
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libcontrib_la_LIBADD =
@@ -77,7 +76,7 @@ xcomp_test_c___iostream_OBJECTS =  \
 	$(am_xcomp_test_c___iostream_OBJECTS)
 xcomp_test_c___iostream_LDADD = $(LDADD)
 xcomp_test_c___iostream_DEPENDENCIES = ../libsunflower.la
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/sunflower -I$(top_builddir)/nepumuk
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -141,20 +140,12 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
-ESTAR_CPPFLAGS = @ESTAR_CPPFLAGS@
-ESTAR_LDFLAGS = @ESTAR_LDFLAGS@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
-GFXLIBS = @GFXLIBS@
-GLUTLIBS = @GLUTLIBS@
 GREP = @GREP@
 HAVE_ESTAR_FALSE = @HAVE_ESTAR_FALSE@
 HAVE_ESTAR_TRUE = @HAVE_ESTAR_TRUE@
-HAVE_GENOM_FALSE = @HAVE_GENOM_FALSE@
-HAVE_GENOM_TRUE = @HAVE_GENOM_TRUE@
-HAVE_XCF_FALSE = @HAVE_XCF_FALSE@
-HAVE_XCF_TRUE = @HAVE_XCF_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -178,14 +169,9 @@ RANLIB = @RANLIB@
 ROBOX_FALSE = @ROBOX_FALSE@
 ROBOX_TRUE = @ROBOX_TRUE@
 SET_MAKE = @SET_MAKE@
-SFL_LDFLAGS = @SFL_LDFLAGS@
 SHELL = @SHELL@
-SMARTFLOWER_FALSE = @SMARTFLOWER_FALSE@
-SMARTFLOWER_TRUE = @SMARTFLOWER_TRUE@
 STRIP = @STRIP@
 VERSION = @VERSION@
-XCF_CPPFLAGS = @XCF_CPPFLAGS@
-XCF_LDFLAGS = @XCF_LDFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
@@ -209,7 +195,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-glut = @glut@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -255,9 +240,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  sunflower/contrib/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  contrib/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  sunflower/contrib/Makefile
+	  $(AUTOMAKE) --foreign  contrib/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
