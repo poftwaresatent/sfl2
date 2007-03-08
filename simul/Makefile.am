@@ -10,9 +10,9 @@ endif
 bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp
 if HAVE_ESTAR
-  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsunflower
+  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsunflower -lestar
 else
-  nepumuk_LDADD=   ../libnepumuk.la -lsunflower
+  nepumuk_LDADD=   ../libnepumuk.la -lsunflower -lestar
 endif
 
 dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
