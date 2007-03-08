@@ -1,22 +1,45 @@
 ###CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
 CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@
-LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
+
 if SMARTFLOWER
-  LDFLAGS+= -L@top_builddir@/sunflower \
-            -L@top_builddir@/estar \
-            -L@top_builddir@/asl-mcontrol
+  LDFLAGS+= @GLUTLIBS@
+else
+  LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
 endif
 
 bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp
+
 if HAVE_ESTAR
-  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsunflower -lestar
+
+if SMARTFLOWER
+  nepumuk_LDADD= ../libnepumuk.la \
+                 ../../asl-mcontrol/libasl-mcontrol.la \
+                 ../../sunflower/libsunflower.la \
+                 ../../estar/libestar.la
 else
-  nepumuk_LDADD=   ../libnepumuk.la -lsunflower -lestar
+  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsunflower -lestar
+endif
+
+else
+
+if SMARTFLOWER
+  nepumuk_LDADD= ../libnepumuk.la \
+                 ../../sunflower/libsunflower.la
+else
+  nepumuk_LDADD=   ../libnepumuk.la -lsunflower
+endif
+
 endif
 
 dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
-dumpworld_LDADD=   ../libnepumuk.la -lsunflower
+
+if SMARTFLOWER
+  dumpworld_LDADD= ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la
+else
+  dumpworld_LDADD= ../libnepumuk.la -lsunflower
+endif
 
 dist_bin_SCRIPTS= birondemo.sh \
                   estardemo.sh \
