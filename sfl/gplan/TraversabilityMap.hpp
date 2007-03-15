@@ -42,8 +42,12 @@ namespace sfl {
   {
   public:
     TraversabilityMap();
-		TraversabilityMap(const Frame &origin, double resolution, double xSize, double ySize); 
+		TraversabilityMap(const GridFrame & origin, size_t ncells_x, size_t ncells_y);
+		TraversabilityMap(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+											int _freespace, int _obstacle, const std::string & _name);
+		
     virtual ~TraversabilityMap() { }
+		
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
     
@@ -67,7 +71,7 @@ namespace sfl {
 		{
 			return SetValue(global_x, global_y, freespace, cb);
 		}
-
+		
 		void DumpMap(std::ostream * os);
     
     GridFrame gframe;		/**< default (0, 0, 0, 1) */

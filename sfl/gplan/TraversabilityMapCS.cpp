@@ -35,11 +35,21 @@ using namespace boost;
 namespace sfl {
 
 	TraversabilityMapCS::
-	TraversabilityMapCS(const Frame &origin, 
-											shared_ptr<Sprite> sprite, 
-											double resolution, double xSize, double ySize)
-		: TraversabilityMap(origin, resolution, xSize,  ySize),
-			references_(new array2d<refmap_t>(data->xsize, data->ysize)),
+	TraversabilityMapCS(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+											boost::shared_ptr<estar::Sprite> sprite)
+		: TraversabilityMap(origin, ncells_x, ncells_y),
+			references_(new array2d<refmap_t>(ncells_x, ncells_y)),
+			sprite_(sprite)
+	{
+	}
+	
+	
+	TraversabilityMapCS::
+	TraversabilityMapCS(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+											int freespace, int obstacle, const std::string & name,
+											boost::shared_ptr<estar::Sprite> sprite)
+		: TraversabilityMap(origin, ncells_x, ncells_y, freespace, obstacle, name),
+			references_(new array2d<refmap_t>(ncells_x, ncells_y)),
 			sprite_(sprite)
 	{
 	}

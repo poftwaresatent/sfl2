@@ -41,30 +41,25 @@ namespace sfl {
     : gframe(0, 0, 0, 1), freespace(0), obstacle(127), name("world")
   {
   }
- 
+	
+	
 	TraversabilityMap::
-	TraversabilityMap(const Frame &origin, double resolution, double xSize, double ySize)
-		: gframe(origin, resolution)
-		, freespace(0), obstacle(127), name("world")
+	TraversabilityMap(const GridFrame & origin, size_t ncells_x, size_t ncells_y)
+		: gframe(origin), freespace(0), obstacle(127), name("world")
 	{
-		/*		vector<vector<int> > data;
-					vector<int> line;
-					int value(0);
-					cout << "Allocating Map" << endl;
-					for (int j(0); j<(ySize/resolution); j++)
-					{
-					for (int i(0); i<(xSize/resolution); i++)
-					{
-					line.push_back(value);
-					}
-					data.push_back(line);
-					cout << "Allocated Line " << j << endl;
-					}*/
-		data.reset(new array2d<int> (static_cast<size_t>(rint(xSize/resolution)),
-																 static_cast<size_t>(rint(ySize/resolution)),
-																 freespace)); 
+		data.reset(new array2d<int>(ncells_x, ncells_y, freespace)); 
+	}
+	
+	
+	TraversabilityMap::
+	TraversabilityMap(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+										int _freespace, int _obstacle, const string & _name)
+		: gframe(origin), freespace(_freespace), obstacle(_obstacle), name(_name)
+	{
+		data.reset(new array2d<int>(ncells_x, ncells_y, freespace));
 	}
   
+	
   shared_ptr<TraversabilityMap> TraversabilityMap::
   Parse(istream & is, ostream * os)
   {

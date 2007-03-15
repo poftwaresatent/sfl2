@@ -43,10 +43,12 @@ namespace sfl{
 		TraversabilityMapCS(const TraversabilityMapCS &);
 		
 	public:
-		TraversabilityMapCS(const Frame &origin,
-												boost::shared_ptr<estar::Sprite> sprite,
-												double resolution, double xSize, double ySize); 
-
+		TraversabilityMapCS(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+												boost::shared_ptr<estar::Sprite> sprite); 
+		TraversabilityMapCS(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+												int freespace, int obstacle, const std::string & name,
+												boost::shared_ptr<estar::Sprite> sprite); 
+		
 		virtual bool SetValue(double global_x, double global_y, int value,
 													GridFrame::draw_callback * cb);
 		virtual bool SetObst(double global_x, double global_y,

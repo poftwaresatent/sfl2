@@ -40,14 +40,16 @@ namespace sfl {
   
   class Mapper2d{
   public:
-		Mapper2d();
+		Mapper2d(const GridFrame & grid_origin,
+						 size_t grid_ncells_x,
+						 size_t grid_ncells_y,
+						 double robot_radius,
+						 int freespace,
+						 int obstacle,
+						 const std::string & name);
 		
 		/**
 			 Update of traversability Map based on Scan.
-
-			 \todo better to use a Scan object, then it doesn't matter if it
-			 comes from one or several Scanner instances (e.g. use
-			 Multiscanner::CollectScans().
 		*/
 		bool update(const Frame &odo, const Scan &scan,
 								GridFrame::draw_callback * cb);

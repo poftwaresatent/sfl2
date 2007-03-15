@@ -39,15 +39,17 @@ using namespace boost;
 namespace sfl {
 	
 	
-	/**
-		 \todo get stuff as parameters (from config file) instead of magic
-		 numbers
-	*/ 
-	Mapper2d::Mapper2d()
-		: travMap_(new TraversabilityMapCS(Frame(-10.0 ,-60.0 ,0),
-																			 shared_ptr<Sprite>(new Sprite(1.0, 0.5)),
-																			 0.5, 100.0, 100.0))
-		
+	Mapper2d::Mapper2d(const GridFrame & grid_origin,
+										 size_t grid_ncells_x,
+										 size_t grid_ncells_y,
+										 double robot_radius,
+										 int freespace,
+										 int obstacle,
+										 const std::string & name)
+		: travMap_(new TraversabilityMapCS(grid_origin, grid_ncells_x, grid_ncells_y,
+																			 freespace, obstacle, name,
+																			 shared_ptr<Sprite>(new Sprite(robot_radius,
+																																		 grid_origin.Delta()))))
 	{
 	}
 	
