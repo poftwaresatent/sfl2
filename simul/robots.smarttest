@@ -20,6 +20,9 @@ Robot smart Ter
         Option model_phid_max    100
         Option model_sd_max        2.5
         Option model_sdd_max       5.0
-        Option use_travmap         cheat
+        Option use_travmap         cheat_discover
+#        Option use_travmap         cheat_apriori
+#        Option use_travmap         mapper
+#        Option robot_radiu         0.5
         Option replan_distance     1
         Option estar_mode          finish

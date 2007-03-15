@@ -121,6 +121,7 @@ protected:
   double m_wheelbase, m_wheelradius, m_axlewidth;
   int m_plan_status;
   double m_replan_distance;
+  bool m_discover_travmap;
 };
 
 #endif // NPM_SMART_HPP

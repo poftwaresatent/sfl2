@@ -209,16 +209,46 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     m_replan_request(false),
 		m_plan_status(PlanThread::PLANNING)
 {
-	if(descriptor->GetOption("use_travmap") == "cheat")
-		m_travmap = m_cheat->GetTravmap();
-	else{
-		m_mapper.reset(new Mapper2d());
-		m_travmap = m_mapper->getTravMap();
-	}
-  if( ! m_travmap){
-    cerr << "ERROR: Smart needs a traversability map.\n";
+	shared_ptr<const TraversabilityMap> cheat_travmap(m_cheat->GetTravmap());
+  if( ! cheat_travmap){
+    cerr << "ERROR: Smart needs an a-priori traversability map.\n";
     exit(EXIT_FAILURE);
   }
+	if( ! cheat_travmap->data){
+    cerr << "ERROR: The a-priori traversability map is empty (data is NULL).\n";
+    exit(EXIT_FAILURE);
+  }
+	
+	const string use_travmap(descriptor->GetOption("use_travmap"));
+	if(use_travmap == "cheat_discover"){
+		m_travmap = cheat_travmap;
+		m_discover_travmap = true;
+	}
+	else if(use_travmap == "cheat_apriori"){
+		m_travmap = cheat_travmap;
+		m_discover_travmap = false;
+	}
+	else if(use_travmap == "mapper"){
+		double robot_radius;
+		if( ! string_to(descriptor->GetOption("robot_radius"), robot_radius)){
+			cerr << "ERROR: Smart 'Option use_travmap mapper' also needs 'Option robot_radius'.\n";
+			exit(EXIT_FAILURE);
+		}
+		m_mapper.reset(new Mapper2d(cheat_travmap->gframe,
+																cheat_travmap->data->xsize,
+																cheat_travmap->data->ysize,
+																robot_radius,
+																cheat_travmap->freespace,
+																cheat_travmap->obstacle,
+																cheat_travmap->name));
+		m_travmap = m_mapper->getTravMap();
+	}
+	else{
+    cerr << "ERROR: Option 'use_travmap' must be one of the following:\n"
+				 << "  cheat_discover, cheat_apriori, or mapper\n";
+    exit(EXIT_FAILURE);
+	}
+	
 	
 	const string estar_mode(descriptor->GetOption("estar_mode"));
 	if(estar_mode == "step")
@@ -361,9 +391,17 @@ void Smart::
 UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 					 bool replan)
 {
-	if( ! m_cb)
+	bool flushed(false);
+	if( ! m_cb){
 		m_cb.reset(new SmartDrawCallback(m_travmap.get(), m_estar.get()));
-	bool flushed(false);	
+		if( ! m_discover_travmap){
+			for(size_t ix(0); ix < m_travmap->data->xsize; ++ix)
+				for(size_t iy(0); iy < m_travmap->data->ysize; ++iy)
+					(*m_cb)(ix, iy);
+			m_cb->flush();
+			flushed = true;
+		}
+	}
 	
   // Updating traversability Map
 	if(m_mapper){
@@ -384,7 +422,7 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 			flushed = true;
 	 	}
 	} // ! m_mapper
-	else{
+	else if(m_discover_travmap){
 		// fake it using the cheat travmap
 		shared_ptr<Scan> myscan(m_sick->GetScanCopy());
 		const Scan::array_t mydata(myscan->data);
@@ -400,6 +438,8 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 			flushed = true;
 		}
 	}
+	else
+		flushed = true;
 	
 	// do the actual planning, if there's anything to do
 	if(flushed || (PlanThread::HAVE_PLAN != m_plan_status)){
