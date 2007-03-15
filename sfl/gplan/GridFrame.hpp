@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2004
  * Swiss Federal Institute of Technology, Lausanne. All rights reserved.
@@ -28,6 +29,7 @@
 
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/array2d.hpp>
+#include <iosfwd>
 
 
 namespace sfl {
@@ -46,6 +48,14 @@ namespace sfl {
 			/** \note defaults to no operation */
       virtual void operator () (size_t ix, size_t iy) {}
     };
+		
+		/** Debug utility that simply prints out the (ix, iy) passed to
+				it, with one leading whitespace. */
+		struct dbg_draw_callback: public draw_callback {
+			dbg_draw_callback(std::ostream & os);
+      virtual void operator () (size_t ix, size_t iy);
+			std::ostream & m_os;
+		};
     
     
     explicit GridFrame(double delta);
@@ -72,24 +82,35 @@ namespace sfl {
     void SetGlobalDisk(grid_t & grid, position_t center,
 		       double radius, double value);
     
+		/**
+			 Draws a purely grid-index based line using the Differential
+			 Analyzer Algorithm.
+       
+			 \return The number of grid cells drawn.
+		*/
+    size_t DrawDDALine(size_t ix0, size_t iy0, size_t ix1, size_t iy1,
+											 size_t xsize, size_t ysize,
+											 draw_callback & cb) const;
+		
     /**
        Calls the provided callback functor for each index that lies on
        the line.
        
-       \note Uses a Differential Analyzer style algorithm.
+       \todo Simply calls DrawDDALine() but could be smarter.
        
        \return The number of grid cells drawn.
     */
     size_t DrawLocalLine(double x0, double y0, double x1, double y1,
-			 size_t xsize, size_t ysize,
-			 draw_callback & cb) const;
+												 size_t xsize, size_t ysize,
+												 draw_callback & cb) const;
     
     /**
        Same as DrawLocalLine() but first transforms the given
        endpoints from the global to the local frame of reference.
     */
     size_t DrawGlobalLine(double x0, double y0, double x1, double y1,
-			  size_t xsize, size_t ysize, draw_callback & cb);
+													size_t xsize, size_t ysize,
+													draw_callback & cb) const;
     
     double Delta() const { return m_delta; }
     
