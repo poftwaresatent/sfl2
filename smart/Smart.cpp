@@ -355,22 +355,6 @@ HandleReplanRequest(const GridFrame & gframe)
 }
 
 
-static void foo(double x0, double y0, double x1, double y1,
-								size_t xsize, size_t ysize, SmartDrawCallback & cb){
-	const GridFrame & gframe(cb.travmap->gframe);
-	const double delta(gframe.Delta()/2);
-	const size_t
-		nsteps(static_cast<size_t>(ceil(sqrt(sqr(x0-x1)+sqr(y0-y1)) / delta)));
-	for(size_t ii(0); ii <= nsteps; ++ii){
-		const double alpha(ii / static_cast<double>(nsteps));
-		const GridFrame::index_t
-			idx(gframe.GlobalIndex(x0* alpha + x1 * (1-alpha),
-														 y0* alpha + y1 * (1-alpha)));
-		cb(idx.v0, idx.v1);
-	}
-}
-
-
 /**
 	 \todo provide a way to just set those E-Star meta values that have
 	 actually changed
@@ -397,25 +381,23 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 				m_cb->flush();
 				flushed = true;
 			}
-	 	}
+	 	} // ! m_last_plan_pose
 	 	else{
 	 		m_last_plan_pose.reset(new Frame(pose));
 			m_cb->flush();
 			flushed = true;
 	 	}
-	}
+	} // ! m_mapper
 	else{
 		// fake it using the cheat travmap
 		shared_ptr<Scan> myscan(m_sick->GetScanCopy());
 		const Scan::array_t mydata(myscan->data);
 		const size_t xsize(m_travmap->data->xsize);
 		const size_t ysize(m_travmap->data->ysize);
-		for(size_t i(0); i< mydata.size(); i++){
-			//			gframe.DrawLocalLine(pose.X(), pose.Y(),
-			foo(pose.X(), pose.Y(),
-					mydata[i].globx, mydata[i].globy,
-					xsize, ysize, *m_cb);
-		}
+		for(size_t i(0); i< mydata.size(); i++)
+			gframe.DrawGlobalLine(pose.X(), pose.Y(),
+														mydata[i].globx, mydata[i].globy,
+														xsize, ysize, *m_cb);
 		const size_t flushsize(3);
 		//// 		cerr << "pose " << pose << "  replan " << (replan ? "true" : "false")
 		//// 				 << "   buf.size " <<  m_cb->buf.size()
