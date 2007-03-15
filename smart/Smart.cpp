@@ -42,7 +42,6 @@
 #include <estar/Grid.hpp>
 #include <estar/graphics.hpp>
 #include <estar/numeric.hpp>
-//#include <estar/dump.hpp>
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/HAL.hpp>
@@ -185,7 +184,6 @@ public:
 		if(known.find(idx) != known.end())
 			return;
 		const double meta(compute((*data)[ix][iy]));
-		////		cerr << "cb: " << ix << " " << iy << ": meta " << meta << "\n";
 		buf.insert(make_pair(idx, meta));
 		known.insert(idx);
 	}
@@ -374,8 +372,6 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 		if(m_last_plan_pose){
 	 		const double dist(sqrt(sqr(m_last_plan_pose->X() - pose.X())
 	 													 + sqr(m_last_plan_pose->Y() - pose.Y())));
-			//// 			cerr << "dist " << dist << "   m_replan_distance "
-			//// 					 << m_replan_distance << "\n";
 	 		if((dist > m_replan_distance) || replan){
 				*m_last_plan_pose = pose;
 				m_cb->flush();
@@ -399,19 +395,14 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 														mydata[i].globx, mydata[i].globy,
 														xsize, ysize, *m_cb);
 		const size_t flushsize(3);
-		//// 		cerr << "pose " << pose << "  replan " << (replan ? "true" : "false")
-		//// 				 << "   buf.size " <<  m_cb->buf.size()
-		//// 				 << "   known.size " << m_cb->known.size() << "\n";
 		if(replan || (m_cb->buf.size() > flushsize)){
 			m_cb->flush();
 			flushed = true;
-			//// cerr << "FLUSH buf.size == " <<  m_cb->buf.size() << "\n";
 		}
 	}
 	
 	// do the actual planning, if there's anything to do
 	if(flushed || (PlanThread::HAVE_PLAN != m_plan_status)){
-		////		if(flushed) cerr << "FLUSHED\n";
 		if(single_step_estar){
 			m_plan_thread->Step();
 			m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
@@ -430,13 +421,6 @@ UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
 		}
 		const double lpkey(m_estar->GetAlgorithm().GetLastPoppedKey());
 		m_smart_cs->queue_bottom = lpkey;
-		////		cerr << "lpkey = " << m_smart_cs->queue_bottom << "\n";
-// 		const vertex_t lcnode(m_estar->GetAlgorithm().GetLastComputedVertex());
-// 		const double lcval(get(m_estar->GetAlgorithm().GetValueMap(), lcnode));
-// 		if(lcval < infinity){
-// 			m_smart_cs->queue_bottom = lcval;
-// 			cerr << "lcval = " << m_smart_cs->queue_bottom << "\n";
-// 		}
 	}
 }
 
