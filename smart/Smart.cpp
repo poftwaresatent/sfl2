@@ -209,6 +209,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     m_replan_request(false),
 		m_plan_status(PlanThread::PLANNING)
 {
+	if( ! string_to(descriptor->GetOption("carrot_distance"), m_carrot_distance))
+		m_carrot_distance = 5;
+	if( ! string_to(descriptor->GetOption("carrot_stepsize"), m_carrot_stepsize))
+		m_carrot_stepsize = 0.5;
+	if( ! string_to(descriptor->GetOption("carrot_maxnsteps"), m_carrot_maxnsteps))
+		m_carrot_maxnsteps = 30;
+		
 	shared_ptr<const TraversabilityMap> cheat_travmap(m_cheat->GetTravmap());
   if( ! cheat_travmap){
     cerr << "ERROR: Smart needs an a-priori traversability map.\n";
@@ -473,24 +480,21 @@ ComputePath(const Frame & pose, const GridFrame & gframe, path_t & path)
   else
     m_carrot_trace->clear();
 
-  const double carrot_distance(5); // XXX to do: magic numbers...
-  const double carrot_stepsize(0.5);
-  const size_t carrot_maxnsteps(30);
   double robx_grid(pose.X());
   double roby_grid(pose.Y());
   gframe.From(robx_grid, roby_grid);
   const int result(trace_carrot(*m_estar, robx_grid, roby_grid,
-																carrot_distance, carrot_stepsize,
-																carrot_maxnsteps, *m_carrot_trace));
+																m_carrot_distance, m_carrot_stepsize,
+																m_carrot_maxnsteps, *m_carrot_trace));
   if(0 > result){
     PVDEBUG("FAILED compute_carrot()\n");
     return false;
   }
   else{
     if(1 == result)
-      PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
+      PVDEBUG("WARNING: carrot didn't reach distance %g\n", m_carrot_distance);
     PVDEBUG("carrot.value = %g\n", m_carrot_trace->back().value);
-    if(m_carrot_trace->back().value <= 3 * carrot_stepsize){ // XXX magic numbers!
+    if(m_carrot_trace->back().value <= 3 * m_carrot_stepsize){ // XXX magic numbers!
       PVDEBUG("carrot on goal border, appending goal point to carrot");
       double foox(m_goal->X());
       double fooy(m_goal->Y());

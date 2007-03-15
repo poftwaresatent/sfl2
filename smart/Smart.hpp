@@ -122,6 +122,8 @@ protected:
   int m_plan_status;
   double m_replan_distance;
   bool m_discover_travmap;
+  double m_carrot_distance, m_carrot_stepsize;
+  size_t m_carrot_maxnsteps;
 };
 
 #endif // NPM_SMART_HPP
