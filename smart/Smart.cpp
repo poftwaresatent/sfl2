@@ -148,13 +148,11 @@ public:
 
 class SmartDrawCallback: public GridFrame::draw_callback {
 public:
-	class index_t: public array2d<size_t> {
+	class index_t: public vec2d<size_t> {
 	public:
-		index_t(size_t _ix, size_t _iy): ix(_ix), iy(_iy) {}
+		index_t(size_t v0, size_t v1): vec2d<size_t>(v0, v1) {}
 		bool operator < (const index_t rhs) const
-		{ return (ix < rhs.ix) || ((ix == rhs.ix) && (iy < rhs.iy)); }
-		const size_t ix;
-		const size_t iy;
+		{ return (v0 < rhs.v0) || ((v0 == rhs.v0) && (v1 < rhs.v1)); }
 	};
 	
 	typedef map<index_t, double> buf_t;
@@ -172,7 +170,7 @@ public:
 	
 	void flush() {
 		for(it_t it(buf.begin()); it != buf.end(); ++it)
-			estar->SetMeta(it->first.ix, it->first.iy, it->second);
+			estar->SetMeta(it->first.v0, it->first.v1, it->second);
 		buf.clear();
 	}
 	
