@@ -120,17 +120,28 @@ ComputeDeltaCost(double x0, double y0, double x1, double y1,
 SmartNavFuncQuery::status_t SmartNavFuncQuery::
 GetPath(double lookahead, double stepsize, double globalx, double globaly,  asl::path_t & path) const
 {
-
+ 
+  if(( ! m_smart->m_travmap)
+     || ( ! m_smart->m_travmap->data)
+     || ( ! m_smart->m_estar))
+    return INVALID;
+  
+  double robx_grid(globalx);
+  double roby_grid(globaly);
+  
   /* no carrot_trace initialization assumed that it was initialized before in smart */
   if(!m_smart->m_carrot_trace){
     PVDEBUG("ERROR: The carrot path structure was not initialized!!!\n");
     return INVALID;
+  }else{
+    m_smart->m_carrot_trace->clear();
   }
 
- 
+  m_smart->m_travmap->gframe.From(robx_grid, roby_grid);
+
   const size_t maxnsteps(30);
   /*warning: the globalx, globaly coordinates are assumed to be already in the planning frame */
-  const int result(trace_carrot(*(m_smart->m_estar),globalx, globaly,lookahead, stepsize, maxnsteps, *(m_smart->m_carrot_trace)));
+  const int result(trace_carrot(*(m_smart->m_estar),robx_grid, roby_grid,lookahead, stepsize, maxnsteps, *(m_smart->m_carrot_trace)));
 
   if(0 > result){
     PVDEBUG("FAILED compute_carrot()\n");
@@ -140,32 +151,27 @@ GetPath(double lookahead, double stepsize, double globalx, double globaly,  asl:
     if(1 == result){ 
       PVDEBUG("WARNING: path didn't reach lookahead distance %g\n", lookahead);
     }
-    PVDEBUG("carrot.value = %g\n", m_smart->m_carrot_trace->back().value);
-    if(m_smart->m_carrot_trace->back().value <= 3 * stepsize){
+      if(m_smart->m_carrot_trace->back().value <= 3 * stepsize){
       PVDEBUG("carrot on goal border, appending goal point to carrot");
-      PVDEBUG("GFRAME POSE TRANSFORMATION not implemented yet!!!");
-    
-      /* Warning: this still has to be defined for the goal position */
-      //    double foox(0.0);
-      // double fooy(0.0);
       double foox(m_smart->m_goal->X());
       double fooy(m_smart->m_goal->Y());
+      m_smart->m_travmap->gframe.From(foox, fooy);
       m_smart->m_carrot_trace->push_back(estar::carrot_item(foox, fooy, 0, 0, 0, true));
       return INVALID;
     }
   }
 
+  path.clear();
 
-   for(size_t ii(0); ii < m_smart->m_carrot_trace->size(); ++ii){
+  for(size_t ii(0); ii < m_smart->m_carrot_trace->size(); ++ii){
     estar::carrot_item item((*(m_smart->m_carrot_trace))[ii]);
-    //gframe.To(item.cx, item.cy);
-    //gframe.RotateTo(item.gradx, item.grady);
+    m_smart->m_travmap->gframe.To(item.cx, item.cy);
+    m_smart->m_travmap->gframe.RotateTo(item.gradx, item.grady);
     path.push_back(path_element(path_point(item.cx, item.cy),
 				path_point(item.gradx, item.grady),
 				item.value, item.degenerate));
-   }
-
-
+   
+  }
   return SUCCESS;
 }
 
