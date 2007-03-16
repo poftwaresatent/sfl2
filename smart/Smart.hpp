@@ -56,6 +56,7 @@ namespace estar {
 
 namespace asl {
   class AckermannController;
+  class AckermannModel;
   struct path_element;
   typedef std::vector<path_element> path_t;
 }
@@ -108,6 +109,7 @@ protected:
   boost::shared_ptr<npm::CheatSheet> m_cheat;
   boost::shared_ptr<PlanThread> m_plan_thread;
   boost::shared_ptr<asl::AckermannController> m_controller;
+  boost::shared_ptr<asl::AckermannModel> m_model;
   boost::shared_ptr<SmartCarrotProxy> m_carrot_proxy;
   boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
   boost::shared_ptr<sfl::Mapper2d> m_mapper;

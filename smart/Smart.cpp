@@ -274,14 +274,18 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	string controller_name(descriptor->GetOption("controller_name"));
 	if(controller_name == "")
 		controller_name = "simple";
+
+
+	m_model.reset(new AckermannModel(params.model_sd_max,
+																						 params.model_sdd_max,
+																						 params.model_phi_max,
+																						 params.model_phid_max,
+																						 m_wheelbase));
+	
   m_controller.
-    reset(asl::CreateAckermannController(controller_name,
-																				 AckermannModel(params.model_sd_max,
-																												params.model_sdd_max,
-																												params.model_phi_max,
-																												params.model_phid_max,
-																												m_wheelbase),
-																				 &cerr));
+    reset(asl::CreateAckermannController(controller_name, *m_model.get(), &cerr));
+
+
   if( ! m_controller){
 		cerr << "something went wrong in asl::CreateAckermannController()\n";
 		exit(EXIT_FAILURE);
@@ -572,11 +576,17 @@ PrepareAction(double timestep)
 		return;
 	}
   
+	int result;
 	// beware: (v_trans, steer) have to be the *current* motion state
-  const int result(m_controller->ComputeCommand(GetServer()->GetTruePose(),
+
+	SmartNavFuncQuery foo(this);
+  result=(m_controller->ComputeCommand(GetServer()->GetTruePose(),
 																								path,
-																								SmartNavFuncQuery(this),
+																								foo,
+		
 																								v_trans, steer, timestep));
+	
+	
   if(0 != result){
     PVDEBUG("FAILED ComputeCommand()\n");
     GetHAL()->speed_set(0, steer);

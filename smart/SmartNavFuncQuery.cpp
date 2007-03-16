@@ -26,6 +26,7 @@
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/util/Frame.hpp>
+#include <sfl/api/Goal.hpp>
 #include <estar/Facade.hpp>
 #include <estar/util.hpp>
 
@@ -35,6 +36,8 @@
 # define PDEBUG PDEBUG_OFF
 #endif // NPM_DEBUG
 #define PVDEBUG PDEBUG_OFF
+
+#define TEMP_MAX_META 100000000
 
 using namespace sfl;
 using namespace asl;
@@ -78,10 +81,14 @@ ComputeDeltaCost(double x0, double y0, double x1, double y1,
 
   SmartNavFuncQuery::status_t stat_t;
 
-  if((stat_t=IsWithinBounds(x0,y0))!=SUCCESS)
+  if((stat_t=IsWithinBounds(x0,y0))!=SUCCESS){
+    PDEBUG_OUT("x0, y0 out of bounds!\n");
     return stat_t;
-  if((stat_t=IsWithinBounds(x1,y1))!=SUCCESS)
+  }
+  if((stat_t=IsWithinBounds(x1,y1))!=SUCCESS){
+    PDEBUG_OUT("x1, y1 out of bounds!\n");
     return stat_t;
+  }
 
   const GridFrame::index_t
     idx_0(m_smart->m_travmap->gframe.GlobalIndex(x0, y0));
@@ -91,19 +98,20 @@ ComputeDeltaCost(double x0, double y0, double x1, double y1,
   double value_0 = m_smart->m_estar->GetValue(idx_0.v0, idx_0.v1);
   double value_1 = m_smart->m_estar->GetValue(idx_1.v0, idx_1.v1);
 
+
   /*current implementation assumes the return OBSTACLE if one of the grid nodes 
     is occupied (no interpolation then) */
-  if(absval(value_0 - m_smart->m_estar->GetObstacleMeta()) < 100 * epsilon)
+  if(absval(value_0)> TEMP_MAX_META){
     return OBSTACLE;
-  if(absval(value_1 - m_smart->m_estar->GetObstacleMeta()) < 100 * epsilon)
+  }
+
+  if(absval(value_1)> TEMP_MAX_META){
     return OBSTACLE;
+  }
 
   /* assuming linearly interpolated velocity between the two grid nodes */
-  
-  double norm_0_1=sqrt(pow(idx_1.v1-idx_0.v1,2)+pow(idx_1.v0-idx_0.v0,2));
-   
-  delta=(value_1-value_0)/2.0*norm_0_1;
-  
+  delta=(value_0-value_1)/2.0;
+
   return SUCCESS;
 }
 
@@ -124,10 +132,6 @@ GetPath(double lookahead, double stepsize, double globalx, double globaly,  asl:
   /*warning: the globalx, globaly coordinates are assumed to be already in the planning frame */
   const int result(trace_carrot(*(m_smart->m_estar),globalx, globaly,lookahead, stepsize, maxnsteps, *(m_smart->m_carrot_trace)));
 
- 
-  
-
-
   if(0 > result){
     PVDEBUG("FAILED compute_carrot()\n");
     return INVALID;
@@ -142,8 +146,10 @@ GetPath(double lookahead, double stepsize, double globalx, double globaly,  asl:
       PVDEBUG("GFRAME POSE TRANSFORMATION not implemented yet!!!");
     
       /* Warning: this still has to be defined for the goal position */
-      double foox(0.0);
-      double fooy(0.0);
+      //    double foox(0.0);
+      // double fooy(0.0);
+      double foox(m_smart->m_goal->X());
+      double fooy(m_smart->m_goal->Y());
       m_smart->m_carrot_trace->push_back(estar::carrot_item(foox, fooy, 0, 0, 0, true));
       return INVALID;
     }
