@@ -45,6 +45,7 @@ dist_bin_SCRIPTS= birondemo.sh \
                   estardemo.sh \
                   expodemo.sh \
                   smartdemo.sh \
+		  smartphysical.sh \
                   smarttest.sh \
                   testestar.sh \
                   layout.biron \
@@ -59,6 +60,7 @@ dist_bin_SCRIPTS= birondemo.sh \
                   robots.expo \
                   robots.smart \
                   robots.smarttest \
+                  robots.physical \
                   smart.trm \
                   trav.map \
                   travCS.map \
