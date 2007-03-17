@@ -38,17 +38,16 @@ namespace npm {
 
 namespace asl {
   class SmartAlgo;
+
+  struct path_element;
+  typedef std::vector<path_element> path_t;
 }
 
 
 namespace sfl {
   class TraversabilityMap;
-//   class Mapper2d;
-//   class Frame;
-//   class GridFrame;
   class Multiscanner;
   class Scanner;
-//   class Scan;
 }
 
 
@@ -72,11 +71,11 @@ public:
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   virtual bool GoalReached();
+	
+	const asl::path_t * GetPath() const;
+	
   
 protected:
-//   friend class SmartPlanProxy;
-//   friend class SmartNavFuncQuery;
-  
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Multiscanner> m_mscan;
   boost::shared_ptr<npm::CheatSheet> m_cheat;

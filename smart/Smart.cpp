@@ -23,6 +23,7 @@
  */
 
 #include "Smart.hpp"
+#include "PathDrawing.hpp"
 #include <smartsfl/SmartAlgo.hpp>
 #include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
@@ -51,7 +52,6 @@
 #include <npm/common/util.hpp>
 #include <npm/common/wrap_gl.hpp>
 #include <npm/estar/EstarDrawing.hpp>
-#include <npm/estar/CarrotDrawing.hpp>
 #include <iostream>
 #include <math.h>
 
@@ -82,20 +82,6 @@ public:
   virtual const sfl::GridFrame * GetFrame()
 	{ return m_smart_algo->GetGridFrame(); }
 	
-  const SmartAlgo * m_smart_algo;
-};
-
-
-class SmartCarrotProxy: public CarrotProxy {
-public:
-  SmartCarrotProxy(const SmartAlgo * smart_algo): m_smart_algo(smart_algo) {}
-  
-  virtual const estar::carrot_trace * GetCarrotTrace() const
-  { return m_smart_algo->GetTrace(); }
-  
-  virtual const sfl::GridFrame * GetGridFrame() const
-  { return m_smart_algo->GetGridFrame(); }
-  
   const SmartAlgo * m_smart_algo;
 };
 
@@ -325,9 +311,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																				 cheat_proxy));
 	}
 	
-  shared_ptr<SmartCarrotProxy>
-		carrot_proxy(new SmartCarrotProxy(m_smart_algo.get()));
-  AddDrawing(new CarrotDrawing(name + "_carrot", carrot_proxy, 1));
+  AddDrawing(new PathDrawing(name + "_carrot", this, 1));
 }
 
 
@@ -431,4 +415,11 @@ bool Smart::
 GoalReached()
 {
   return m_smart_algo->GoalReached();
+}
+
+
+const asl::path_t * Smart::
+GetPath() const
+{
+	return m_smart_algo->GetPath();
 }
