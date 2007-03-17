@@ -21,14 +21,14 @@ Robot smart Ter
         Option model_sd_max        2.5
         Option model_sdd_max       5.0
 
-        Option use_travmap         cheat_discover
+#        Option use_travmap         cheat_discover
 #        Option use_travmap         cheat_apriori
-#        Option use_travmap         mapper
-#        Option robot_radius        0.5
+        Option use_travmap         mapper
+        Option robot_radius        0.5
 
-        Option carrot_distance     10
-        Option carrot_stepsize     2
-        Option carrot_maxnsteps    20
+        Option carrot_distance     6
+        Option carrot_stepsize     0.3
+        Option carrot_maxnsteps    30
 
         Option replan_distance     1
         Option estar_mode          finish

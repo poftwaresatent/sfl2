@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./nepumuk -f -m smart.trm -l layout.smarttest -r robots.smarttest
+./nepumuk -m smart.trm -l layout.smarttest -r robots.smarttest

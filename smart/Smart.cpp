@@ -23,8 +23,7 @@
  */
 
 #include "Smart.hpp"
-#include "PlanThread.hpp"
-#include "SmartNavFuncQuery.hpp"
+#include <smartsfl/SmartAlgo.hpp>
 #include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Scan.hpp>
@@ -75,41 +74,41 @@ using namespace std;
 
 class SmartPlanProxy: public PlanProxy {
 public:
-  SmartPlanProxy(Smart * smart): m_smart(smart) {}
+  SmartPlanProxy(const SmartAlgo * smart_algo): m_smart_algo(smart_algo) {}
 	
   virtual const estar::Facade * GetFacade()
-	{ return m_smart->m_estar.get(); }
+	{ return m_smart_algo->GetEstar(); }
 	
   virtual const sfl::GridFrame * GetFrame()
-	{ return & m_smart->m_travmap->gframe; }
+	{ return m_smart_algo->GetGridFrame(); }
 	
-  Smart * m_smart;
+  const SmartAlgo * m_smart_algo;
 };
 
 
 class SmartCarrotProxy: public CarrotProxy {
 public:
-  SmartCarrotProxy(const Smart * _smart): smart(_smart) {}
+  SmartCarrotProxy(const SmartAlgo * smart_algo): m_smart_algo(smart_algo) {}
   
   virtual const estar::carrot_trace * GetCarrotTrace() const
-  { return smart->m_carrot_trace.get(); }
+  { return m_smart_algo->GetTrace(); }
   
   virtual const sfl::GridFrame * GetGridFrame() const
-  { return & smart->m_travmap->gframe; }
+  { return m_smart_algo->GetGridFrame(); }
   
-  const Smart * smart;
+  const SmartAlgo * m_smart_algo;
 };
 
 
-class MapperTraversabilityProxy: public TraversabilityProxy {
+class SmartTraversabilityProxy: public TraversabilityProxy {
 public:
-	MapperTraversabilityProxy(Mapper2d * mapper)
-		: m_mapper(mapper) {}
+	SmartTraversabilityProxy(const SmartAlgo * smart_algo)
+		: m_smart_algo(smart_algo) {}
 	
 	virtual const sfl::TraversabilityMap * Get()
-	{ return m_mapper->getTravMap().get(); }
+	{ return m_smart_algo->GetTraversability(); }
 	
-	Mapper2d * m_mapper;
+	const SmartAlgo * m_smart_algo;
 };
 
 
@@ -146,92 +145,69 @@ public:
 };
 
 
-class SmartDrawCallback: public GridFrame::draw_callback {
+class SmartGoalDrawing: public GoalInstanceDrawing {
 public:
-	class index_t: public vec2d<size_t> {
-	public:
-		index_t(size_t v0, size_t v1): vec2d<size_t>(v0, v1) {}
-		bool operator < (const index_t rhs) const
-		{ return (v0 < rhs.v0) || ((v0 == rhs.v0) && (v1 < rhs.v1)); }
-	};
+	SmartGoalDrawing(const std::string name, const SmartAlgo * smart_algo)
+		: GoalInstanceDrawing(name, Goal()), m_smart_algo(smart_algo) {}
 	
-	typedef map<index_t, double> buf_t;
-	typedef set<index_t> known_t;
-	typedef buf_t::const_iterator it_t;
-	
-	SmartDrawCallback(const sfl::TraversabilityMap * _travmap,
-										Facade * _estar)
-		: travmap(_travmap), estar(_estar),
-			scale(1.0 / (_travmap->obstacle - _travmap->freespace)),
-			obstacle(_travmap->obstacle) {}
-	
-	double compute(int trav) const
-	{ return sfl::boundval(0.0, scale * (obstacle - trav), 1.0); }
-	
-	void flush() {
-		for(it_t it(buf.begin()); it != buf.end(); ++it)
-			estar->SetMeta(it->first.v0, it->first.v1, it->second);
-		buf.clear();
+	virtual void Draw() {
+		shared_ptr<const Goal> goal(m_smart_algo->GetGoal());
+		if(goal)
+			GoalInstanceDrawing::Draw(*goal);
 	}
 	
-	virtual void operator () (size_t ix, size_t iy) {
-		const array2d<int> * data(travmap->data.get());
-		if(( ! data) || (ix >= data->xsize) || (iy >= data->ysize))
-			return;
-		const index_t idx(ix, iy);
-		if(known.find(idx) != known.end())
-			return;
-		const double meta(compute((*data)[ix][iy]));
-		buf.insert(make_pair(idx, meta));
-		known.insert(idx);
-	}
-	
-	const sfl::TraversabilityMap * travmap;
-	mutable Facade * estar;
-	const double scale;
-	const double obstacle;
-	buf_t buf;
-	known_t known;
+  const SmartAlgo * m_smart_algo;
 };
 
 
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
-    single_step_estar(false),
-		finish_estar(false),
-    m_goal(new Goal()),
     m_cheat(new CheatSheet(&world, GetServer())),
-    m_carrot_proxy(new SmartCarrotProxy(this)),
-		m_smart_cs(new SmartColorScheme()),
-    m_replan_request(false),
-		m_plan_status(PlanThread::PLANNING)
+		m_smart_cs(new SmartColorScheme())
 {
-	if( ! string_to(descriptor->GetOption("carrot_distance"), m_carrot_distance))
-		m_carrot_distance = 5;
-	if( ! string_to(descriptor->GetOption("carrot_stepsize"), m_carrot_stepsize))
-		m_carrot_stepsize = 0.5;
-	if( ! string_to(descriptor->GetOption("carrot_maxnsteps"), m_carrot_maxnsteps))
-		m_carrot_maxnsteps = 30;
-		
-	shared_ptr<const TraversabilityMap> cheat_travmap(m_cheat->GetTravmap());
-  if( ! cheat_travmap){
+  expoparams params(descriptor);
+  m_nscans = params.front_nscans;
+  m_sick_channel = params.front_channel;
+	
+  double wheelbase(params.model_wheelbase);
+  double wheelradius(params.model_wheelradius);
+  double axlewidth(params.model_axlewidth);
+	
+	double carrot_distance;
+	if( ! string_to(descriptor->GetOption("carrot_distance"), carrot_distance))
+		carrot_distance = 5;
+	
+	double carrot_stepsize;
+	if( ! string_to(descriptor->GetOption("carrot_stepsize"), carrot_stepsize))
+		carrot_stepsize = 0.5;
+	
+	size_t carrot_maxnsteps;
+	if( ! string_to(descriptor->GetOption("carrot_maxnsteps"), carrot_maxnsteps))
+		carrot_maxnsteps = 30;
+	
+	double replan_distance;
+	if( ! string_to(descriptor->GetOption("replan_distance"), replan_distance))
+		replan_distance = 3;
+	
+	m_cheat_travmap = m_cheat->GetTravmap();
+  if( ! m_cheat_travmap){
     cerr << "ERROR: Smart needs an a-priori traversability map.\n";
     exit(EXIT_FAILURE);
   }
-	if( ! cheat_travmap->data){
+	if( ! m_cheat_travmap->data){
     cerr << "ERROR: The a-priori traversability map is empty (data is NULL).\n";
     exit(EXIT_FAILURE);
   }
 	
+	shared_ptr<const TraversabilityMap> prior_travmap;
+	shared_ptr<Mapper2d> mapper;
 	const string use_travmap(descriptor->GetOption("use_travmap"));
-	if(use_travmap == "cheat_discover"){
-		m_travmap = cheat_travmap;
+	if(use_travmap == "cheat_discover")
 		m_discover_travmap = true;
-	}
 	else if(use_travmap == "cheat_apriori"){
-		m_travmap = cheat_travmap;
 		m_discover_travmap = false;
+		prior_travmap = m_cheat_travmap;
 	}
 	else if(use_travmap == "mapper"){
 		double robot_radius;
@@ -239,14 +215,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 			cerr << "ERROR: Smart 'Option use_travmap mapper' also needs 'Option robot_radius'.\n";
 			exit(EXIT_FAILURE);
 		}
-		m_mapper.reset(new Mapper2d(cheat_travmap->gframe,
-																cheat_travmap->data->xsize,
-																cheat_travmap->data->ysize,
-																robot_radius,
-																cheat_travmap->freespace,
-																cheat_travmap->obstacle,
-																cheat_travmap->name));
-		m_travmap = m_mapper->getTravMap();
+		mapper.reset(new Mapper2d(m_cheat_travmap->gframe,
+															m_cheat_travmap->data->xsize,
+															m_cheat_travmap->data->ysize,
+															robot_radius,
+															m_cheat_travmap->freespace,
+															m_cheat_travmap->obstacle,
+															m_cheat_travmap->name));
 	}
 	else{
     cerr << "ERROR: Option 'use_travmap' must be one of the following:\n"
@@ -254,40 +229,47 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     exit(EXIT_FAILURE);
 	}
 	
-	
+  bool single_step_estar(false);
+  bool finish_estar(false);
 	const string estar_mode(descriptor->GetOption("estar_mode"));
 	if(estar_mode == "step")
 		single_step_estar = true;		
 	else if(estar_mode == "finish")
 		finish_estar = true;
 	
-	if( ! string_to(descriptor->GetOption("replan_distance"), m_replan_distance))
-		m_replan_distance = 3;
-	
-  expoparams params(descriptor);
-  m_nscans = params.front_nscans;
-  m_sick_channel = params.front_channel;
-  m_wheelbase = params.model_wheelbase;
-  m_wheelradius = params.model_wheelradius;
-  m_axlewidth = params.model_axlewidth;
-
 	string controller_name(descriptor->GetOption("controller_name"));
 	if(controller_name == "")
 		controller_name = "simple";
-
-
-	m_model.reset(new AckermannModel(params.model_sd_max,
-																						 params.model_sdd_max,
-																						 params.model_phi_max,
-																						 params.model_phid_max,
-																						 m_wheelbase));
+	shared_ptr<AckermannController>
+		controller(CreateAckermannController(controller_name,
+																				 AckermannModel(params.model_sd_max,
+																												params.model_sdd_max,
+																												params.model_phi_max,
+																												params.model_phid_max,
+																												wheelbase),
+																				 &cerr));
+  if( ! controller){
+		cerr << "ERROR asl::CreateAckermannController() failed\n"
+				 << "  controller_name: \"" << controller_name << "\"\n";
+		exit(EXIT_FAILURE);
+	}
 	
-  m_controller.
-    reset(asl::CreateAckermannController(controller_name, *m_model.get(), &cerr));
-
-
-  if( ! m_controller){
-		cerr << "something went wrong in asl::CreateAckermannController()\n";
+	ostringstream err_os;
+	m_smart_algo.reset(SmartAlgo::Create(replan_distance,
+																			 carrot_distance,
+																			 carrot_stepsize,
+																			 carrot_maxnsteps,
+																			 wheelbase,
+																			 wheelradius,
+																			 axlewidth,
+																			 single_step_estar,
+																			 finish_estar,
+																			 mapper,
+																			 controller,
+																			 prior_travmap,
+																			 &err_os));
+	if( ! m_smart_algo){
+		cerr << "ERROR asl::SmartAlgo::Create() failed\n " << err_os.str() << "\n";
 		exit(EXIT_FAILURE);
 	}
 	
@@ -303,23 +285,22 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 											 params.front_channel)->GetScanner();
 	m_mscan->Add(m_sick);
 	
-	DefineBicycleDrive(m_wheelbase, m_wheelradius, m_axlewidth);
+	DefineBicycleDrive(wheelbase, wheelradius, axlewidth);
 
-  AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
-	       -m_wheelradius,  m_axlewidth/2 +m_wheelradius));
-  AddLine(Line(m_wheelbase +m_wheelradius, -m_axlewidth/2 -m_wheelradius,
-	       m_wheelbase +m_wheelradius,  m_axlewidth/2 +m_wheelradius));
-  AddLine(Line(-m_wheelradius, -m_axlewidth/2 -m_wheelradius,
-	       m_wheelbase +m_wheelradius, -m_axlewidth/2 -m_wheelradius));
-  AddLine(Line(-m_wheelradius,  m_axlewidth/2 +m_wheelradius,
-	       m_wheelbase +m_wheelradius,  m_axlewidth/2 +m_wheelradius));
+  AddLine(Line(-wheelradius, -axlewidth/2 -wheelradius,
+							 -wheelradius,  axlewidth/2 +wheelradius));
+  AddLine(Line(wheelbase +wheelradius, -axlewidth/2 -wheelradius,
+							 wheelbase +wheelradius,  axlewidth/2 +wheelradius));
+  AddLine(Line(-wheelradius, -axlewidth/2 -wheelradius,
+							 wheelbase +wheelradius, -axlewidth/2 -wheelradius));
+  AddLine(Line(-wheelradius,  axlewidth/2 +wheelradius,
+							 wheelbase +wheelradius,  axlewidth/2 +wheelradius));
   
   const string & name(descriptor->name);
-  AddDrawing(new GoalInstanceDrawing(name + "_goaldrawing",
-				     *m_goal));
+	AddDrawing(new SmartGoalDrawing(name + "_goaldrawing", m_smart_algo.get()));
   
 	{
-		shared_ptr<SmartPlanProxy> proxy(new SmartPlanProxy(this));
+		shared_ptr<SmartPlanProxy> proxy(new SmartPlanProxy(m_smart_algo.get()));
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
 																proxy, EstarDrawing::META));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
@@ -333,189 +314,49 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	}
 	
 	{
-		shared_ptr<TraversabilityProxy> proxy;
-		if(m_mapper)
-			proxy.reset(new MapperTraversabilityProxy(m_mapper.get()));
-		else
-			proxy.reset(new DirectTraversabilityProxy(m_cheat->GetTravmap().get()));
-		AddDrawing(new TraversabilityDrawing(name + "_travcs", proxy));
-		if(m_mapper)
-			proxy.reset(new DirectTraversabilityProxy(m_cheat->GetTravmap().get()));
-		AddDrawing(new TraversabilityDrawing(name + "_cheat_trav", proxy));
+		shared_ptr<TraversabilityProxy>
+			smart_proxy(new SmartTraversabilityProxy(m_smart_algo.get()));
+		AddDrawing(new TraversabilityDrawing(name + "_smart_travmap",
+																				 smart_proxy));
+		
+		shared_ptr<TraversabilityProxy>
+			cheat_proxy(new DirectTraversabilityProxy(m_cheat_travmap.get()));
+		AddDrawing(new TraversabilityDrawing(name + "_cheat_travmap",
+																				 cheat_proxy));
 	}
 	
-  AddDrawing(new CarrotDrawing(name + "_carrot", m_carrot_proxy, 1));
+  shared_ptr<SmartCarrotProxy>
+		carrot_proxy(new SmartCarrotProxy(m_smart_algo.get()));
+  AddDrawing(new CarrotDrawing(name + "_carrot", carrot_proxy, 1));
 }
 
 
-bool Smart::
-HandleReplanRequest(const GridFrame & gframe)
-{
-  if( ! m_replan_request)
-		return false;
-	m_replan_request = false;
-	
-	shared_ptr<const array2d<int> > travdata(m_travmap->data);
-	if( ! travdata){
-		cerr << "ERROR: Invalid traversability map (no data).\n";
-		exit(EXIT_FAILURE);
-	}
-	
-	if( ! m_estar)
-		m_estar.reset(Facade::CreateDefault(travdata->xsize, travdata->ysize,
-																				gframe.Delta()));
-	else{
-		m_estar->RemoveAllGoals();
-	}
-	
-	double goalx(m_goal->X());
-	double goaly(m_goal->Y());
-	gframe.From(goalx, goaly);
-	m_goalregion.reset(new Region(m_goal->Dr(), gframe.Delta(), goalx, goaly,
-																travdata->xsize, travdata->ysize));
-	if(m_goalregion->GetArea().empty()){
-		PDEBUG_ERR("ERROR: empty goal area()!\n");
-		exit(EXIT_FAILURE);
-	}
-	
-	////    m_estar->AddGoal(*m_goalregion);
-	for(Region::indexlist_t::const_iterator
-				in(m_goalregion->GetArea().begin());
-			in != m_goalregion->GetArea().end(); ++in)
-		m_estar->AddGoal(in->x, in->y, in->r);
-	
-	if( ! m_plan_thread)
-		m_plan_thread.reset(new PlanThread(m_estar, gframe,
-																			 travdata->xsize, travdata->ysize));
-
-	return true;
-}
+//XXX rfct snippets void Smart::
+// UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
+// 					 bool replan)
+// {
+// 	else if(m_discover_travmap){
+// 		// fake it using the cheat travmap
+// 		shared_ptr<Scan> myscan(m_sick->GetScanCopy());
+// 		const Scan::array_t mydata(myscan->data);
+// 		const size_t xsize(m_travmap->data->xsize);
+// 		const size_t ysize(m_travmap->data->ysize);
+// 		for(size_t i(0); i< mydata.size(); i++)
+// 			gframe.DrawGlobalLine(pose.X(), pose.Y(),
+// 														mydata[i].globx, mydata[i].globy,
+// 														xsize, ysize, *m_cb);
+// 		const size_t flushsize(3);
+// 		if(replan || (m_cb->buf.size() > flushsize)){
+// 			m_cb->flush();
+// 			flushed = true;
+// 		}
+// 	}
 
 
-/**
-	 \todo provide a way to just set those E-Star meta values that have
-	 actually changed
-*/
-void Smart::
-UpdatePlan(const Frame & pose, const GridFrame & gframe, const Scan & scan,
-					 bool replan)
-{
-	bool flushed(false);
-	if( ! m_cb){
-		m_cb.reset(new SmartDrawCallback(m_travmap.get(), m_estar.get()));
-		if( ! m_discover_travmap){
-			for(size_t ix(0); ix < m_travmap->data->xsize; ++ix)
-				for(size_t iy(0); iy < m_travmap->data->ysize; ++iy)
-					(*m_cb)(ix, iy);
-			m_cb->flush();
-			flushed = true;
-		}
-	}
-	
-  // Updating traversability Map
-	if(m_mapper){
-		// use our sfl::Mapper2d instance
-		m_mapper->update(pose , scan, m_cb.get());
-		if(m_last_plan_pose){
-	 		const double dist(sqrt(sqr(m_last_plan_pose->X() - pose.X())
-	 													 + sqr(m_last_plan_pose->Y() - pose.Y())));
-	 		if((dist > m_replan_distance) || replan){
-				*m_last_plan_pose = pose;
-				m_cb->flush();
-				flushed = true;
-			}
-	 	} // ! m_last_plan_pose
-	 	else{
-	 		m_last_plan_pose.reset(new Frame(pose));
-			m_cb->flush();
-			flushed = true;
-	 	}
-	} // ! m_mapper
-	else if(m_discover_travmap){
-		// fake it using the cheat travmap
-		shared_ptr<Scan> myscan(m_sick->GetScanCopy());
-		const Scan::array_t mydata(myscan->data);
-		const size_t xsize(m_travmap->data->xsize);
-		const size_t ysize(m_travmap->data->ysize);
-		for(size_t i(0); i< mydata.size(); i++)
-			gframe.DrawGlobalLine(pose.X(), pose.Y(),
-														mydata[i].globx, mydata[i].globy,
-														xsize, ysize, *m_cb);
-		const size_t flushsize(3);
-		if(replan || (m_cb->buf.size() > flushsize)){
-			m_cb->flush();
-			flushed = true;
-		}
-	}
-	else
-		flushed = true;
-	
-	// do the actual planning, if there's anything to do
-	if(flushed || (PlanThread::HAVE_PLAN != m_plan_status)){
-		if(single_step_estar){
-			m_plan_thread->Step();
-			m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
-		}
-		else{
-			if(finish_estar){
-				while(m_estar->HaveWork())
-					m_plan_thread->Step();
-				m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
-			}
-			else
-				while(m_plan_status == PlanThread::PLANNING){
-					m_plan_thread->Step();
-					m_plan_status = m_plan_thread->GetStatus(pose.X(), pose.Y());
-				}
-		}
-		const double lpkey(m_estar->GetAlgorithm().GetLastPoppedKey());
-		m_smart_cs->queue_bottom = lpkey;
-	}
-}
-
-
-bool Smart::
-ComputePath(const Frame & pose, const GridFrame & gframe, path_t & path)
-{
-  if( ! m_carrot_trace)
-    m_carrot_trace.reset(new carrot_trace());
-  else
-    m_carrot_trace->clear();
-
-  double robx_grid(pose.X());
-  double roby_grid(pose.Y());
-  gframe.From(robx_grid, roby_grid);
-  const int result(trace_carrot(*m_estar, robx_grid, roby_grid,
-																m_carrot_distance, m_carrot_stepsize,
-																m_carrot_maxnsteps, *m_carrot_trace));
-  if(0 > result){
-    PVDEBUG("FAILED compute_carrot()\n");
-    return false;
-  }
-  else{
-    if(1 == result)
-      PVDEBUG("WARNING: carrot didn't reach distance %g\n", m_carrot_distance);
-    PVDEBUG("carrot.value = %g\n", m_carrot_trace->back().value);
-    if(m_carrot_trace->back().value <= 3 * m_carrot_stepsize){ // XXX magic numbers!
-      PVDEBUG("carrot on goal border, appending goal point to carrot");
-      double foox(m_goal->X());
-      double fooy(m_goal->Y());
-      gframe.From(foox, fooy);
-      m_carrot_trace->push_back(carrot_item(foox, fooy, 0, 0, 0, true));
-    }
-  }
-  
-  for(size_t ii(0); ii < m_carrot_trace->size(); ++ii){
-    carrot_item item((*m_carrot_trace)[ii]);
-    gframe.To(item.cx, item.cy);
-    gframe.RotateTo(item.gradx, item.grady);
-    path.push_back(path_element(path_point(item.cx, item.cy),
-				path_point(item.gradx, item.grady),
-				item.value, item.degenerate));
-  }
-	
-	return true;
-}
+// 		const double lpkey(m_estar->GetAlgorithm().GetLastPoppedKey());
+// 		m_smart_cs->queue_bottom = lpkey;
+// 	}
+// }
 
 
 void Smart::
@@ -524,80 +365,29 @@ PrepareAction(double timestep)
   m_mscan->UpdateAll();
 	shared_ptr<const Scan> scan(m_mscan->CollectScans());
 	
-	const GridFrame & gframe(m_travmap->gframe);
-	const bool replan(HandleReplanRequest(gframe));
-  if( ! m_plan_thread){
-    PDEBUG_ERR("BUG: no plan thread late in Smart::PrepareAction()!\n");
+  double vtrans_cur, steer_cur;
+  GetHAL()->speed_get( & vtrans_cur, & steer_cur);
+	
+	double vtrans_want, steer_want;
+	ostringstream err_os;
+	const SmartPlanThread::status_t
+		status(m_smart_algo->ComputeAction(timestep,
+																			 GetServer()->GetTruePose(),
+																			 scan,
+																			 vtrans_cur, steer_cur,
+																			 vtrans_want, steer_want,
+																			 & err_os));
+	if(SmartPlanThread::ERROR == status){
+		cerr << "asl::SmartAlgo::ComputeAction() failed:\n  "
+				 << err_os.str() << "\n";
 		exit(EXIT_FAILURE);
-  }
-
-  double v_trans, steer;
-  GetHAL()->speed_get(&v_trans, &steer);
-	
-	const Frame & pose(GetServer()->GetTruePose());
-	UpdatePlan(pose, gframe, *scan, replan);
-  switch(m_plan_status){
-  case PlanThread::HAVE_PLAN:
-		// do the stuff after this switch
-    break;
-  case PlanThread::PLANNING:
-    PDEBUG("wave hasn't crossed robot yet\n");
-    GetHAL()->speed_set(0, steer);
-    return;
-  case PlanThread::AT_GOAL:
-    PDEBUG("at goal\n");
-    GetHAL()->speed_set(0, steer);
-    return;
-  case PlanThread::UNREACHABLE:
-    PDEBUG_ERR("ERROR: no path to goal\n");
-    exit(EXIT_FAILURE);
-  case PlanThread::OUT_OF_GRID:
-    PDEBUG_ERR("ERROR: robot is outside grid\n");
-    exit(EXIT_FAILURE);
-  case PlanThread::IN_OBSTACLE:
-    PDEBUG_ERR("ERROR: robot is inside an obstacle\n");
-    exit(EXIT_FAILURE);
-  default:
-    PDEBUG_ERR("BUG: unhandled result %d of m_plan_thread->GetStatus()\n",
-							 m_plan_status);
-    exit(EXIT_FAILURE);
-  }
-
-  const GridFrame::index_t idx(gframe.GlobalIndex(pose.X(), pose.Y()));
-	shared_ptr<const array2d<int> > travdata(m_travmap->data);
-	if(travdata){
-		if((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize))
-			m_smart_cs->smart_value = m_estar->GetValue(idx.v0, idx.v1);
 	}
 	
-  path_t path;
-	if( ! ComputePath(GetServer()->GetTruePose(), gframe, path)){
-    GetHAL()->speed_set(0, steer);
-		return;
-	}
-  
-	int result;
-	// beware: (v_trans, steer) have to be the *current* motion state
-
-	SmartNavFuncQuery foo(this);
-  result=(m_controller->ComputeCommand(GetServer()->GetTruePose(),
-																								path,
-																								foo,
-		
-																								v_trans, steer, timestep));
+	GetHAL()->speed_set(vtrans_want, steer_want);
 	
-	
-  if(0 != result){
-    PVDEBUG("FAILED ComputeCommand()\n");
-    GetHAL()->speed_set(0, steer);
-    return;
-  }
-  if( ! m_controller->GetCommand(v_trans, steer)){
-    PVDEBUG("FAILED GetCommand()\n");
-    GetHAL()->speed_set(0, steer);
-    return;
-  }
-  GetHAL()->speed_set(v_trans, steer);
+	m_smart_cs->queue_bottom
+		= m_smart_algo->GetEstar()->GetAlgorithm().GetLastPoppedKey();
+	////	cerr << m_smart_cs->queue_bottom << "\n";
 }
 
 
@@ -626,20 +416,19 @@ GetPose(double & x, double & y, double & theta)
 void Smart::
 SetGoal(double timestep, const sfl::Goal & goal)
 {
-  m_replan_request = true;
-  *m_goal = goal;
+	m_smart_algo->SetGoal(goal);
 }
 
 
 shared_ptr<const Goal> Smart::
 GetGoal()
 {
-  return m_goal;
+  return m_smart_algo->GetGoal();
 }
 
 
 bool Smart::
 GoalReached()
 {
-  return m_goal->DistanceReached(GetServer()->GetTruePose());
+  return m_smart_algo->GoalReached();
 }

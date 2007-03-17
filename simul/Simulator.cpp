@@ -331,8 +331,11 @@ InitLayout(const string &filename, bool fatal_warnings)
   }
   
   if( ! warnings.str().empty()){
-    cerr << "WARNINGS in Simulator::InitLayout():\n"
-	 << warnings.str();
+    if(fatal_warnings)
+      cerr << "ERROR in Simulator::InitLayout():\n";
+    else
+      cerr << "WARNING in Simulator::InitLayout():\n";
+    cerr << warnings.str();
     Instance<UniqueManager<Drawing> >()->PrintCatalog(cerr);
     Instance<UniqueManager<Camera> >()->PrintCatalog(cerr);
     if(fatal_warnings)

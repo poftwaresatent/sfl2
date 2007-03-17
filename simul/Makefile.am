@@ -15,10 +15,11 @@ if HAVE_ESTAR
 if SMARTFLOWER
   nepumuk_LDADD= ../libnepumuk.la \
                  ../../asl-mcontrol/libasl-mcontrol.la \
+                 ../../smartsfl/libsmartsfl.la \
                  ../../sunflower/libsunflower.la \
                  ../../estar/libestar.la
 else
-  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsunflower -lestar
+  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsmartsfl -lsunflower -lestar
 endif
 
 else

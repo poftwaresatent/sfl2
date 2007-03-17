@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006
  * Swiss Federal Institute of Technology, Zurich. All rights reserved.
@@ -35,37 +36,23 @@ namespace npm {
 }
 
 
+namespace asl {
+  class SmartAlgo;
+}
+
+
 namespace sfl {
   class TraversabilityMap;
-  class Mapper2d;
-  class Frame;
-  class GridFrame;
+//   class Mapper2d;
+//   class Frame;
+//   class GridFrame;
   class Multiscanner;
   class Scanner;
-  class Scan;
+//   class Scan;
 }
 
 
-namespace estar {
-  class Facade;
-  class Region;
-  struct carrot_item;
-  typedef std::vector<carrot_item> carrot_trace;
-}
-
-
-namespace asl {
-  class AckermannController;
-  class AckermannModel;
-  struct path_element;
-  typedef std::vector<path_element> path_t;
-}
-
-
-class PlanThread;
-class SmartCarrotProxy;
 class SmartColorScheme;
-class SmartDrawCallback;
 
 
 class Smart
@@ -86,46 +73,20 @@ public:
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   virtual bool GoalReached();
   
-  /** default false */
-  bool single_step_estar;
-  bool finish_estar;
-  
 protected:
-  bool HandleReplanRequest(const sfl::GridFrame & gframe);
-  void UpdatePlan(const sfl::Frame & pose, const sfl::GridFrame & gframe,
-		  const sfl::Scan & scan, bool replan);
-  bool ComputePath(const sfl::Frame & pose, const sfl::GridFrame & gframe,
-		   asl::path_t & path);
-
-  friend class SmartPlanProxy;
-  friend class SmartNavFuncQuery;
-  friend class SmartCarrotProxy;
+//   friend class SmartPlanProxy;
+//   friend class SmartNavFuncQuery;
   
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Multiscanner> m_mscan;
-  boost::shared_ptr<sfl::Goal> m_goal;
-  boost::shared_ptr<estar::Region> m_goalregion;
-  boost::shared_ptr<estar::Facade> m_estar;
   boost::shared_ptr<npm::CheatSheet> m_cheat;
-  boost::shared_ptr<PlanThread> m_plan_thread;
-  boost::shared_ptr<asl::AckermannController> m_controller;
-  boost::shared_ptr<asl::AckermannModel> m_model;
-  boost::shared_ptr<SmartCarrotProxy> m_carrot_proxy;
-  boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
-  boost::shared_ptr<sfl::Mapper2d> m_mapper;
-  boost::shared_ptr<const sfl::TraversabilityMap> m_travmap;
-  boost::shared_ptr<sfl::Frame> m_last_plan_pose;
   boost::scoped_ptr<SmartColorScheme> m_smart_cs;
-  boost::scoped_ptr<SmartDrawCallback> m_cb;
   
-  bool m_replan_request;
+  boost::scoped_ptr<asl::SmartAlgo> m_smart_algo;
+  boost::shared_ptr<const sfl::TraversabilityMap> m_cheat_travmap;
+  
   int m_nscans, m_sick_channel;
-  double m_wheelbase, m_wheelradius, m_axlewidth;
-  int m_plan_status;
-  double m_replan_distance;
   bool m_discover_travmap;
-  double m_carrot_distance, m_carrot_stepsize;
-  size_t m_carrot_maxnsteps;
 };
 
 #endif // NPM_SMART_HPP
