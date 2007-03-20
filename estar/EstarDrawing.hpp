@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006 Roland Philippsen <roland dot philippsen at gmx dot net>
  * 
