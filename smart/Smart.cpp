@@ -27,25 +27,20 @@
 #include <smartsfl/SmartAlgo.hpp>
 #include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
-#include <sfl/api/Scan.hpp>
-#include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
-#include <sfl/gplan/GridFrame.hpp>
 #include <sfl/gplan/Mapper2d.hpp>
 #include <estar/Facade.hpp>
-#include <estar/Algorithm.hpp>	// for delete in shared_ptr through Facade
-#include <estar/Kernel.hpp>	// for delete in shared_ptr through Facade
-#include <estar/Region.hpp>
-#include <estar/Grid.hpp>
+#include <estar/Algorithm.hpp>
 #include <estar/graphics.hpp>
 #include <estar/numeric.hpp>
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/HAL.hpp>
 #include <npm/common/RobotServer.hpp>
+#include <npm/common/RobotDescriptor.hpp>
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
 #include <npm/common/CheatSheet.hpp>
@@ -53,7 +48,6 @@
 #include <npm/common/wrap_gl.hpp>
 #include <npm/estar/EstarDrawing.hpp>
 #include <iostream>
-#include <math.h>
 
 
 #ifdef NPM_DEBUG
