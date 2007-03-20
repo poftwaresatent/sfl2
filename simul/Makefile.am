@@ -45,25 +45,25 @@ endif
 dist_bin_SCRIPTS= birondemo.sh \
                   estardemo.sh \
                   expodemo.sh \
-                  smartdemo.sh \
-		  smartphysical.sh \
-                  smarttest.sh \
+                  smart0.sh \
+		  smart1.sh \
+                  smart2.sh \
                   testestar.sh \
                   layout.biron \
                   layout.config \
                   layout.estar \
                   layout.expo \
-                  layout.smart \
-                  layout.smarttest \
+                  layout.smart0 \
+                  layout.smart1 \
+                  layout.smart2 \
                   robots.biron \
                   robots.config \
                   robots.estar \
                   robots.expo \
-                  robots.smart \
-                  robots.smarttest \
-                  robots.physical \
-                  travmap.smarttest \
-                  world.smarttest \
-                  trav.map \
-                  travCS.map \
-                  travmap-example.txt
+                  robots.smart0 \
+                  robots.smart1 \
+                  robots.smart2 \
+                  travmap.smart0 \
+                  travmap.smart1 \
+                  travmap.smart2 \
+                  world.smart2
