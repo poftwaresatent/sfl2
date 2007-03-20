@@ -51,8 +51,9 @@ public:
     robot_config_filename("robots.config"),
     layout_config_filename("layout.config"),
     world_name(""),
+    world_filename(""),
     traversability_filename(""),
-    //    threaded(false),
+    trav_to_world(false),
     no_glut(false),
     fatal_warnings(false)
   {
@@ -61,8 +62,9 @@ public:
   string robot_config_filename;
   string layout_config_filename;
   string world_name;
+  string world_filename;
   string traversability_filename;
-  //  bool threaded;
+  bool trav_to_world;
   bool no_glut;
   bool fatal_warnings;
 };
@@ -114,17 +116,28 @@ int main(int argc, char ** argv)
   
   shared_ptr<World> world;
   if( ! params.world_name.empty()){
-    if( ! params.traversability_filename.empty()){
-      cerr << "ERROR: specify either world name or traversability file.\n";
-      exit(EXIT_FAILURE);
-    }
     world = World::Create(params.world_name);
     if( ! world){
-      cerr << "Invalid World \"" << params.world_name << "\"\n";
+      cerr << "Invalid world name \"" << params.world_name << "\"\n";
       exit(EXIT_FAILURE);
     }
   }
-  else if( ! params.traversability_filename.empty()){
+  else if( ! params.world_filename.empty()){
+    ifstream is(params.world_filename.c_str());
+    if( ! is){
+      cerr << "ERROR: invalid world file \""
+	   << params.world_filename << "\".\n";
+      exit(EXIT_FAILURE);
+    }
+    world = World::Parse(is, &cerr);
+    if( ! world){
+      cerr << "Error in world config file \"" << params.world_filename
+	   << "\"\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+  
+  if( ! params.traversability_filename.empty()){
     ifstream trav(params.traversability_filename.c_str());
     if( ! trav){
       cerr << "ERROR: invalid traversability file \""
@@ -138,12 +151,26 @@ int main(int argc, char ** argv)
 	   << params.traversability_filename << "\".\n";
       exit(EXIT_FAILURE);
     }
-    world.reset(new World(traversability->name));
-    world->ApplyTraversability(traversability);
-    travdrawing.reset(new TraversabilityDrawing("travmap", shared_ptr<RawTraversibilityProxy>(new RawTraversibilityProxy(traversability.get()))));
+    if(params.trav_to_world){
+      if( ! world)
+	world.reset(new World(traversability->name));
+      world->ApplyTraversability(traversability);
+    }
+    else{
+      if( ! world){
+	cerr << "When NOT initializing world from travmap, you have to\n"
+	     <<"specify another world creation method (such as -w or -W).\n";
+	exit(EXIT_FAILURE);
+      }
+      world->SetTraversability(traversability);     
+    }
+    shared_ptr<RawTraversibilityProxy>
+      tproxy(new RawTraversibilityProxy(traversability.get()));
+    travdrawing.reset(new TraversabilityDrawing("travmap", tproxy));
   }
-  else{
-    cerr << "ERROR: Specify either a world or a traversability file.\n";
+  
+  if( ! world){
+    cerr << "No world creation method specified.\n";
     exit(EXIT_FAILURE);
   }
   
@@ -152,11 +179,6 @@ int main(int argc, char ** argv)
   simulator->InitRobots(params.robot_config_filename);
   simulator->InitLayout(params.layout_config_filename, params.fatal_warnings);
   simulator->Init();
-  
-//   if(params.threaded){
-//     update_thread.reset(new SimulatorUpdateThread("nepumuk", simulator));
-//     update_thread->Start(timestep_usec);
-//   }
   
   if(params.no_glut){
     simulator->SetContinuous();
@@ -242,15 +264,17 @@ void parse_options(int argc,
 			 'w', "world", "Name of the world (expo|mini|tta)."));
   ilock.Add(new StringCB(params.traversability_filename,
 			 'm', "travmap", "Traversability map file."));
-//   ilock.
-//     Add(new Interlock::BoolCallback(params.threaded, 't', "threaded",
-// 				    "Use separate GLUT thread."));
+  ilock.Add(new StringCB(params.world_filename,
+			 'W', "worldfile", "World file."));
   ilock.
     Add(new Interlock::BoolCallback(params.no_glut, 'n', "no-glut",
 				    "Disable graphic output."));
   ilock.
     Add(new Interlock::BoolCallback(params.fatal_warnings, 'f', "fwarn",
 				    "Fatal warnings."));
+  ilock.
+    Add(new Interlock::BoolCallback(params.trav_to_world, 't', "travworld",
+				    "Use traversability map to init world."));
   
   ilock.UsageMessage(cerr, string(argv[0]) + " <options>");
   try {
