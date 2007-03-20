@@ -9,7 +9,7 @@ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pipe"
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O2)]),
-  [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -DDEBUG -g -O0" ],
+  [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -DNPM_DEBUG -g -O0" ],
   [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -O2" ])
 
 AC_ARG_ENABLE(pedantic,
