@@ -69,11 +69,11 @@ namespace sfl {
     double otheta(result->gframe.Theta());
     double resolution(result->gframe.Delta());
     int default_traversability(0);
-    
+    int force_dimx(-1);
+    int force_dimy(-1);
+		
     vector<vector<int> > data;
     size_t grid_xsize(0);
-    int maxdata(numeric_limits<int>::min());
-    int mindata(numeric_limits<int>::max());
     
     string textline;
     while(getline(is, textline)){
@@ -95,6 +95,19 @@ namespace sfl {
 						if( ! tls){
 							if(os) *os << "ERROR: could not parse origin from \""
 												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "dimension"){
+						tls >> force_dimx >> force_dimy;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse dimension from \""
+												 << tls.str() << "\"\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+						if((force_dimx < 1) || (force_dimy < 1)){
+							if(os) *os << "ERROR: invalid grid dimension \"" << tls.str()
+												 << "\" (two positive integers expected)\n";
 							return shared_ptr<TraversabilityMap>();
 						}
 					}
@@ -138,46 +151,54 @@ namespace sfl {
 				}
 				continue;
       }
-      
+			
       vector<int> line;
       int value;
-      while(tls >> value){
+      while(tls >> value)
 				line.push_back(value);
-				if(value > maxdata)
-					maxdata = value;
-				if(value < mindata)
-					mindata = value;
-      }
       if( ! line.empty()){
 				data.push_back(line);
 				if(line.size() > grid_xsize)
 					grid_xsize = line.size();
       }
     }
-    const size_t grid_ysize(data.size());
+    size_t grid_ysize(data.size());
     
-    if(grid_xsize < 1){
-      if(os) *os << "ERROR: grid_xsize == " << grid_xsize << "\n";
+    if((force_dimx < 0) && (grid_xsize < 1)){
+      if(os) *os << "ERROR: xsize is " << grid_xsize
+								 << " and dimension not specified\n";
       return shared_ptr<TraversabilityMap>();
     }
-    if(grid_ysize < 1){
-      if(os) *os << "ERROR: grid_ysize == " << grid_ysize << "\n";
+    if((force_dimy < 0) && (grid_ysize < 1)){
+      if(os) *os << "ERROR: ysize is " << grid_ysize
+								 << " and dimension not specified\n";
       return shared_ptr<TraversabilityMap>();
     }
     
-    result->data.reset(new array2d<int>(grid_xsize, grid_ysize,
+		if(force_dimx > 0)
+			grid_xsize = force_dimx;
+		if(force_dimy > 0)
+			grid_ysize = force_dimy;
+		result->data.reset(new array2d<int>(grid_xsize, grid_ysize,
 																				default_traversability));
-    for(size_t iy(0); iy < grid_ysize; ++iy){
-      vector<int> & line(data[iy]);
-      for(size_t ix(0); ix < line.size(); ++ix)
-				(*result->data)[ix][grid_ysize - iy - 1] = line[ix];
-    }
-    result->mindata = mindata;
-    result->maxdata = maxdata;
-    
+    result->mindata = default_traversability;
+    result->maxdata = default_traversability;
     result->gframe.Configure(ox, oy, otheta, resolution);
+    for(size_t iy(0); iy < grid_ysize; ++iy)
+			if(iy < data.size()){
+				vector<int> & line(data[iy]);
+				for(size_t ix(0); ix < grid_xsize; ++ix)
+					if(ix < line.size()){
+						const int value(line[ix]);
+						(*result->data)[ix][grid_ysize - iy - 1] = value;
+						if(value > result->maxdata)
+							result->maxdata = value;
+						if(value < result->mindata)
+							result->mindata = value;
+					}
+			}
     
-    return result;
+		return result;
   }
   
 
