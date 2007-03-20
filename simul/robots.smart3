@@ -1,10 +1,10 @@
 Robot smart Ter
-	Pose  2   2    0
-	Goal 35  25    0   2  3.2
-	Goal 65  35    0   2  3.2
-	Goal 65  10    0   2  3.2
-	Goal 90  70    0   2  3.2
-	Goal 10  10    0   2  3.2
+	Pose  2  10    0
+	Goal 35  25    0   5  3.2
+	Goal 65  35    0   5  3.2
+	Goal 65  10    0   5  3.2
+	Goal 90  70    0   5  3.2
+	Goal 10  10    0   5  3.2
 	
 	Option camera_zoom         20
 	Option front_channel       0
@@ -14,20 +14,20 @@ Robot smart Ter
         Option front_nscans      180
         Option front_rhomax       50
 
-        Option model_wheelbase     1.0
-        Option model_axlewidth     0.8
-        Option model_wheelradius   0.2
-        Option model_phi_max       1.2
-        Option model_phid_max    100
-        Option model_sd_max        2.5
-        Option model_sdd_max       5.0
+        Option model_wheelbase     1.812
+        Option model_axlewidth     1.354
+        Option model_wheelradius   0.27
+        Option model_phi_max       0.7
+        Option model_phid_max      1.0
+        Option model_sd_max        10.0
+        Option model_sdd_max       1.0
+	Option controller_name     tadpf
 
         Option use_travmap         mapper
-        Option robot_radius        0.5
+        Option robot_radius        1.5
 
         Option carrot_distance     10
         Option carrot_stepsize     1
         Option carrot_maxnsteps    15
-
         Option replan_distance     10
-        Option estar_step          60
+        Option estar_step         300
