@@ -1,5 +1,6 @@
 Robot smart Ter
 	Pose  2   2    0
+	Goal 35  25    0   2  3.2
 	Goal 65  35    0   2  3.2
 	Goal 65  10    0   2  3.2
 	Goal 90  70    0   2  3.2
@@ -28,5 +29,5 @@ Robot smart Ter
         Option carrot_stepsize     1
         Option carrot_maxnsteps    15
 
-        Option replan_distance     3
-        Option estar_step          30
+        Option replan_distance     10
+        Option estar_step          60
