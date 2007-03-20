@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2006 Roland Philippsen <roland dot philippsen at gmx dot net>
  * 
@@ -41,8 +42,19 @@ using namespace std;
 EstarDrawing::
 EstarDrawing(const std::string & name,
 	     shared_ptr<PlanProxy> proxy,
+	     what_t _what)
+  : Drawing(name),
+    what(_what),
+    m_proxy(proxy)
+{
+}
+
+
+EstarDrawing::
+EstarDrawing(const std::string & name,
+	     shared_ptr<PlanProxy> proxy,
 	     what_t _what,
-	     gfx::ColorScheme * custom_cs)
+	     shared_ptr<gfx::ColorScheme> custom_cs)
   : Drawing(name),
     what(_what),
     m_proxy(proxy),
@@ -68,7 +80,7 @@ Draw()
   const gfx::ColorScheme * cs;
   bool autoscale_value;
   if(m_custom_cs){
-    cs = m_custom_cs;
+    cs = m_custom_cs.get();
     autoscale_value = false;
   }
   else{

@@ -57,15 +57,19 @@ public:
   what_t what;
   
   EstarDrawing(const std::string & name,
-	       boost::shared_ptr<PlanProxy> proxy,
-	       what_t what,
-	       gfx::ColorScheme * custom_cs = 0);
+							 boost::shared_ptr<PlanProxy> proxy,
+							 what_t what);
+  
+  EstarDrawing(const std::string & name,
+							 boost::shared_ptr<PlanProxy> proxy,
+							 what_t what,
+							 boost::shared_ptr<gfx::ColorScheme> custom_cs);
   
   virtual void Draw();
   
 private:
   boost::shared_ptr<PlanProxy> m_proxy;
-  gfx::ColorScheme * m_custom_cs;
+  boost::shared_ptr<gfx::ColorScheme> m_custom_cs;
 };
 
 #endif // ESTAR_DRAWING_HPP
