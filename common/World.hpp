@@ -66,6 +66,9 @@ namespace npm {
     static boost::shared_ptr<World> Mini();
     static boost::shared_ptr<World> Expo();
     static boost::shared_ptr<World> Stage();
+
+    static boost::shared_ptr<World> Parse(std::istream & is,
+					  std::ostream * os);
     
     
     /**
@@ -79,6 +82,9 @@ namespace npm {
     */
     void
     ApplyTraversability(boost::shared_ptr<sfl::TraversabilityMap> travmap);
+    
+    /** Simply stores the travmap for retrieval via CheatSheet or so. */
+    void SetTraversability(boost::shared_ptr<sfl::TraversabilityMap> travmap);
     
     void AddLine(const sfl::Line & line);
     

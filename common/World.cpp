@@ -28,10 +28,20 @@
 #include "WorldDrawing.hpp"
 #include "WorldCamera.hpp"
 #include "BBox.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
+#include <sstream>
 #include <cmath>
+
+
+#ifdef NPM_DEBUG
+# define PDEBUG PDEBUG_OUT
+#else // ! NPM_DEBUG
+# define PDEBUG PDEBUG_OFF
+#endif // NPM_DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace sfl;
@@ -441,4 +451,68 @@ namespace npm {
     m_bbox->Update(corner.v0, corner.v1);
   }
   
+  
+  void World::
+  SetTraversability(shared_ptr<TraversabilityMap> travmap)
+  {
+    m_travmap = travmap;
+  }
+  
+  
+  shared_ptr<World> World::
+  Parse(istream & is, ostream * os)
+  {
+    string name("");
+    vector<Line> line;
+    string textline;
+    while(getline(is, textline)){
+      istringstream tls(textline);
+      if(textline[0] == '#')
+	continue;
+      string token;
+      if( ! (tls >> token))
+	continue;
+      if(token == "name"){
+	tls >> name;
+	if( ! tls){
+	  if(os) *os << "ERROR: could not parse name from \""
+		     << tls.str() << "\"\n";
+	  return shared_ptr<World>();
+	}
+	PDEBUG("name: %s\n", name.c_str());
+      }
+      else if(token == "line"){
+	double x0, y0, x1, y1;
+	tls >> x0 >> y0 >> x1 >> y1;
+	if( ! tls){
+	  if(os) *os << "ERROR: could not parse line from \""
+		     << tls.str() << "\"\n";
+	  return shared_ptr<World>();
+	}
+	line.push_back(Line(x0, y0, x1, y1));
+	PDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
+      }
+      else{
+	if(os) *os << "ERROR: could not parse \""
+		   << tls.str() << "\"\n";
+	return shared_ptr<World>();
+      }
+    }
+    if(name.empty()){
+      if(os) *os << "ERROR: no name specified\n";
+      return shared_ptr<World>();
+    }
+    if(line.empty()){
+      if(os) *os << "ERROR: no lines specified\n";
+      return shared_ptr<World>();
+    }
+    shared_ptr<World> world(new World(name));
+    for(size_t il(0); il < line.size(); ++il)
+      world->AddLine(line[il]);
+    PDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
+	   world->m_bbox->X1(), world->m_bbox->Y1());
+    return world;
+  }
+
 }
+
