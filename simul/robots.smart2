@@ -31,4 +31,4 @@ Robot smart Ter
         Option carrot_maxnsteps    30
 
         Option replan_distance     1
-        Option estar_mode          finish
+        Option estar_step          0

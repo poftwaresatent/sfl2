@@ -222,13 +222,8 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     exit(EXIT_FAILURE);
 	}
 	
-  bool single_step_estar(false);
-  bool finish_estar(false);
-	const string estar_mode(descriptor->GetOption("estar_mode"));
-	if(estar_mode == "step")
-		single_step_estar = true;		
-	else if(estar_mode == "finish")
-		finish_estar = true;
+	int estar_step(-1);
+	string_to(descriptor->GetOption("estar_step"), estar_step);
 	
 	string controller_name(descriptor->GetOption("controller_name"));
 	if(controller_name == "")
@@ -255,8 +250,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																			 wheelbase,
 																			 wheelradius,
 																			 axlewidth,
-																			 single_step_estar,
-																			 finish_estar,
+																			 estar_step,
 																			 mapper,
 																			 controller,
 																			 prior_travmap,
@@ -368,6 +362,13 @@ PrepareAction(double timestep)
 				 << err_os.str() << "\n";
 		exit(EXIT_FAILURE);
 	}
+	
+	//XXX rfct // 		const GridFrame::index_t idx(gframe.GlobalIndex(pose.X(), pose.Y()));
+	// // 		shared_ptr<const array2d<int> > travdata(m_travmap->data);
+	// // 		if(travdata){
+	// // 			if((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize))
+	// // 				m_smart_cs->smart_value = m_estar->GetValue(idx.v0, idx.v1);
+	// // 		}
 	
 	GetHAL()->speed_set(vtrans_want, steer_want);
 	

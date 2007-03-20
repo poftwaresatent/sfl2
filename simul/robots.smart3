@@ -25,8 +25,8 @@ Robot smart Ter
         Option robot_radius        0.5
 
         Option carrot_distance     10
-        Option carrot_stepsize     0.1
-        Option carrot_maxnsteps    150
+        Option carrot_stepsize     1
+        Option carrot_maxnsteps    15
 
         Option replan_distance     3
-        Option estar_mode          finish
+        Option estar_step          30
