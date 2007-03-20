@@ -479,7 +479,7 @@ namespace npm {
 		     << tls.str() << "\"\n";
 	  return shared_ptr<World>();
 	}
-	PDEBUG("name: %s\n", name.c_str());
+	PVDEBUG("name: %s\n", name.c_str());
       }
       else if(token == "line"){
 	double x0, y0, x1, y1;
@@ -490,7 +490,7 @@ namespace npm {
 	  return shared_ptr<World>();
 	}
 	line.push_back(Line(x0, y0, x1, y1));
-	PDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
+	PVDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
       }
       else{
 	if(os) *os << "ERROR: could not parse \""
@@ -509,8 +509,8 @@ namespace npm {
     shared_ptr<World> world(new World(name));
     for(size_t il(0); il < line.size(); ++il)
       world->AddLine(line[il]);
-    PDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
-	   world->m_bbox->X1(), world->m_bbox->Y1());
+    PVDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
+	    world->m_bbox->X1(), world->m_bbox->Y1());
     return world;
   }
 
