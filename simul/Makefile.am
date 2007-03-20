@@ -62,7 +62,8 @@ dist_bin_SCRIPTS= birondemo.sh \
                   robots.smart \
                   robots.smarttest \
                   robots.physical \
-                  smart.trm \
+                  travmap.smarttest \
+                  world.smarttest \
                   trav.map \
                   travCS.map \
                   travmap-example.txt
