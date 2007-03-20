@@ -79,7 +79,7 @@ protected:
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Multiscanner> m_mscan;
   boost::shared_ptr<npm::CheatSheet> m_cheat;
-  boost::scoped_ptr<SmartColorScheme> m_smart_cs;
+  boost::shared_ptr<SmartColorScheme> m_smart_cs;
   
   boost::scoped_ptr<asl::SmartAlgo> m_smart_algo;
   boost::shared_ptr<const sfl::TraversabilityMap> m_cheat_travmap;

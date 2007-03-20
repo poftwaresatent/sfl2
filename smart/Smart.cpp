@@ -125,6 +125,19 @@ public:
 };
 
 
+class MetaColorScheme: public gfx::ColorScheme {
+public:
+	virtual void Set(double value) const {
+		if(value >= (1 - estar::epsilon))
+			glColor3d(0, 0, 1);
+		else if(value <= estar::epsilon)
+			glColor3d(1, 0, 0);
+		else
+			glColor3d(value, value, value);
+	}
+};
+
+
 class SmartGoalDrawing: public GoalInstanceDrawing {
 public:
 	SmartGoalDrawing(const std::string name, const SmartAlgo * smart_algo)
@@ -281,10 +294,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
 	{
 		shared_ptr<SmartPlanProxy> proxy(new SmartPlanProxy(m_smart_algo.get()));
+		shared_ptr<MetaColorScheme> msc(new MetaColorScheme());
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
-																proxy, EstarDrawing::META));
+																proxy, EstarDrawing::META, msc));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
-																proxy, EstarDrawing::VALUE, m_smart_cs.get()));
+																proxy, EstarDrawing::VALUE, m_smart_cs));
 		AddDrawing(new EstarDrawing(name + "_estar_queue",
 																proxy, EstarDrawing::QUEUE));
 		AddDrawing(new EstarDrawing(name + "_estar_upwind",
@@ -331,12 +345,6 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 // 	}
 
 
-// 		const double lpkey(m_estar->GetAlgorithm().GetLastPoppedKey());
-// 		m_smart_cs->queue_bottom = lpkey;
-// 	}
-// }
-
-
 void Smart::
 PrepareAction(double timestep)
 {
@@ -365,7 +373,6 @@ PrepareAction(double timestep)
 	
 	m_smart_cs->queue_bottom
 		= m_smart_algo->GetEstar()->GetAlgorithm().GetLastPoppedKey();
-	////	cerr << m_smart_cs->queue_bottom << "\n";
 }
 
 
