@@ -44,6 +44,7 @@
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
 #include <npm/common/CheatSheet.hpp>
+#include <npm/common/World.hpp>
 #include <npm/common/util.hpp>
 #include <npm/common/wrap_gl.hpp>
 #include <npm/estar/EstarDrawing.hpp>
@@ -66,9 +67,13 @@ using namespace boost;
 using namespace std;
 
 
-class SmartPlanProxy: public PlanProxy {
+class SmartPlanProxy:
+	public PlanProxy,
+	public KeyListener
+{
 public:
-  SmartPlanProxy(const SmartAlgo * smart_algo): m_smart_algo(smart_algo) {}
+  SmartPlanProxy(const SmartAlgo * smart_algo, bool enabled)
+		: m_smart_algo(smart_algo), m_enabled(enabled) {}
 	
   virtual const estar::Facade * GetFacade()
 	{ return m_smart_algo->GetEstar(); }
@@ -76,7 +81,13 @@ public:
   virtual const sfl::GridFrame * GetFrame()
 	{ return m_smart_algo->GetGridFrame(); }
 	
+	virtual bool Enabled() const { return m_enabled; }
+	
+	virtual void KeyPressed(unsigned char key)
+	{ if('o' == key) m_enabled = ! m_enabled; }
+	
   const SmartAlgo * m_smart_algo;
+	bool m_enabled;
 };
 
 
@@ -284,18 +295,27 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	AddDrawing(new SmartGoalDrawing(name + "_goaldrawing", m_smart_algo.get()));
   
 	{
-		shared_ptr<SmartPlanProxy> proxy(new SmartPlanProxy(m_smart_algo.get()));
-		shared_ptr<MetaColorScheme> msc(new MetaColorScheme());
+		bool slow_drawing_enabled(true);
+		string_to(descriptor->GetOption("slow_drawing_enabled"),
+							slow_drawing_enabled);
+		shared_ptr<SmartPlanProxy>
+			slow_proxy(new SmartPlanProxy(m_smart_algo.get(), slow_drawing_enabled));
+		world.AddKeyListener(slow_proxy);
+		shared_ptr<SmartPlanProxy>
+			fast_proxy(new SmartPlanProxy(m_smart_algo.get(), true));
+		shared_ptr<MetaColorScheme> mcs(new MetaColorScheme());
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
-																proxy, EstarDrawing::META, msc));
+																slow_proxy, EstarDrawing::META, mcs));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
-																proxy, EstarDrawing::VALUE, m_smart_cs));
+																slow_proxy, EstarDrawing::VALUE, m_smart_cs));
 		AddDrawing(new EstarDrawing(name + "_estar_queue",
-																proxy, EstarDrawing::QUEUE));
+																fast_proxy, EstarDrawing::QUEUE));
 		AddDrawing(new EstarDrawing(name + "_estar_upwind",
-																proxy, EstarDrawing::UPWIND));
+																slow_proxy, EstarDrawing::UPWIND));
 		AddDrawing(new EstarDrawing(name + "_estar_obst",
-																proxy, EstarDrawing::OBST));
+																slow_proxy, EstarDrawing::OBST));
+		AddDrawing(new EstarDrawing(name + "_estar_status",
+																slow_proxy, EstarDrawing::STATUS));
 	}
 	
 	{
