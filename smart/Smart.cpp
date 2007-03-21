@@ -374,9 +374,26 @@ PrepareAction(double timestep)
 																			 vtrans_cur, steer_cur,
 																			 vtrans_want, steer_want,
 																			 & err_os));
-	if(SmartPlanThread::ERROR == status){
-		cerr << "asl::SmartAlgo::ComputeAction() failed:\n  "
-				 << err_os.str() << "\n";
+	switch(status){
+	case SmartPlanThread::HAVE_PLAN: break;
+	case SmartPlanThread::PLANNING: break;
+	case SmartPlanThread::AT_GOAL: break;
+	case SmartPlanThread::UNREACHABLE:
+		cerr << "\nERROR in Smart::PrepareAction(): goal is unreachable\n";
+		exit(EXIT_FAILURE);
+	case SmartPlanThread::OUT_OF_GRID:
+		cerr << "\nERROR in Smart::PrepareAction(): robot is out of grid\n";
+		exit(EXIT_FAILURE);
+	case SmartPlanThread::IN_OBSTACLE:
+		cerr << "\nERROR in Smart::PrepareAction(): robot is in obstacle\n";
+		exit(EXIT_FAILURE);
+	case SmartPlanThread::ERROR:
+		cerr << "\nERROR in Smart::PrepareAction(): ComputeAction() says\""
+				 << err_os.str() << "\"\n";
+		exit(EXIT_FAILURE);
+	default:
+		cerr << "\nERROR in Smart::PrepareAction(): unhandled retval " << status
+				 << " from ComputeAction()\n";
 		exit(EXIT_FAILURE);
 	}
 	
