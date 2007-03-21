@@ -427,6 +427,7 @@ Keyboard(unsigned char key,
 	 int mousex,
 	 int mousey)
 {
+  m_world->DispatchKey(key);
   switch(key){
   case ' ':
     m_mutex->Lock();
