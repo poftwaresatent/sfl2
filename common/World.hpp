@@ -45,6 +45,13 @@ namespace npm {
   class BBox;
   class Sensor;
   
+  class KeyListener {
+  public:
+    virtual ~KeyListener() {}
+    virtual void KeyPressed(unsigned char key) = 0;
+  };
+  
+  
   /**
      Simulated world. Basically a container for objects and robots.
      
@@ -108,6 +115,10 @@ namespace npm {
     /** For dumping the map in a textfile. */
     void DumpLines(std::ostream & os, bool use_windows_eol) const;
     
+    void AddKeyListener(boost::shared_ptr<KeyListener> listener) const;
+    void DispatchKey(unsigned char key) const;
+    
+    
   private:
     friend class CheatSheet;
     
@@ -119,6 +130,8 @@ namespace npm {
     object_t m_object;
     boost::shared_ptr<BBox> m_bbox;
     boost::shared_ptr<sfl::TraversabilityMap> m_travmap;
+    
+    mutable std::vector<boost::shared_ptr<KeyListener> > m_listener;
   };
   
 }

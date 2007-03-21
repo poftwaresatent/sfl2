@@ -513,6 +513,21 @@ namespace npm {
 	    world->m_bbox->X1(), world->m_bbox->Y1());
     return world;
   }
-
+  
+  
+  void World::
+  AddKeyListener(boost::shared_ptr<KeyListener> listener) const
+  {
+    m_listener.push_back(listener);
+  }
+  
+  
+  void World::
+  DispatchKey(unsigned char key) const
+  {
+    for(size_t il(0); il < m_listener.size(); ++il)
+      m_listener[il]->KeyPressed(key);
+  }
+  
 }
 
