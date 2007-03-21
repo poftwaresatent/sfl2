@@ -45,6 +45,7 @@ public:
 	virtual ~PlanProxy() {}
   virtual const estar::Facade * GetFacade() = 0;
   virtual const sfl::GridFrame * GetFrame() = 0;
+	virtual bool Enabled() const { return true; }
 };
 
 
@@ -52,7 +53,7 @@ class EstarDrawing
   : public npm::Drawing
 {
 public:
-  typedef enum { VALUE, META, QUEUE, UPWIND, OBST } what_t;
+  typedef enum { VALUE, META, QUEUE, UPWIND, OBST, STATUS } what_t;
   
   what_t what;
   

@@ -66,6 +66,9 @@ EstarDrawing(const std::string & name,
 void EstarDrawing::
 Draw()
 {
+  if( ! m_proxy->Enabled())
+    return;
+  
   const estar::Facade * facade(m_proxy->GetFacade());
   const sfl::GridFrame * gframe(m_proxy->GetFrame());
   if(( ! facade) || ( ! gframe))
@@ -104,9 +107,12 @@ Draw()
   case OBST:
     gfx::draw_grid_obstacles(*facade, 1, 0.5, 0.5);
     break;
+  case STATUS:
+    gfx::draw_grid_status(*facade);
+    break;
   default:
     cerr << "ERROR in EstarDrawing::Draw(): invalid what=" << what
-	 << " (expected VALUE, META, QUEUE, or UPWIND)\n";
+	 << " (expected VALUE, META, QUEUE, UPWIND, or STATUS)\n";
     exit(EXIT_FAILURE);
   }
   
