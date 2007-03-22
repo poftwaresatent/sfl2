@@ -26,8 +26,17 @@
 #include "TraversabilityDrawing.hpp"
 #include "wrap_gl.hpp"
 #include <sfl/util/numeric.hpp>
+#include <sfl/util/pdebug.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <math.h>
+
+
+#ifdef ASL_DEBUG
+# define PDEBUG PDEBUG_OUT
+#else // ! ASL_DEBUG
+# define PDEBUG PDEBUG_OFF
+#endif // ASL_DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace sfl;
@@ -48,7 +57,7 @@ namespace npm {
   
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
-			TraversabilityProxy * proxy)
+												TraversabilityProxy * proxy)
     : Drawing(name), m_proxy(proxy)
   {
   }
@@ -57,6 +66,12 @@ namespace npm {
   void TraversabilityDrawing::
   Draw()
   {
+		if( ! m_proxy->Enabled())
+			return;
+		
+		double dbgsum(0);
+		double dbgcount(0);
+		
 		const TraversabilityMap * tm(m_proxy->Get());
     if( ! tm)
       return;
@@ -70,22 +85,28 @@ namespace npm {
     glScaled(tm->gframe.Delta(), tm->gframe.Delta(), 1);
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    const double cscale(1.0 / (tm->maxdata - tm->mindata));
+    const double cscale(1.0 / (tm->obstacle - tm->freespace));
     for(size_t ix(0); ix < tm->data->xsize; ++ix)
       for(size_t iy(0); iy < tm->data->ysize; ++iy){
-	const int value((*tm->data)[ix][iy]);
-	const double blue((value - tm->mindata) * cscale);
-	double green(blue);
-	if(value <= tm->freespace)
-	  green = minval(1.0, green * 2 + 0.2);
-	double red(blue);
-	if(value >= tm->obstacle)
-	  red = minval(1.0, red * 2);
-	glColor3d(red, green, blue);
-	glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
+				const int value((*tm->data)[ix][iy]);
+				
+				dbgsum += value;
+				dbgcount += 1;
+				
+				const double blue((value - tm->freespace) * cscale);
+				double green(blue);
+				if(value <= tm->freespace)
+					green = minval(1.0, green * 2 + 0.2);
+				double red(blue);
+				if(value >= tm->obstacle)
+					red = minval(1.0, red * 2);
+				glColor3d(red, green, blue);
+				glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
       }
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+		
+		PDEBUG("mean value %g\n", dbgsum / dbgcount);
   }
 
 }

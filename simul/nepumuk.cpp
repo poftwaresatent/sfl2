@@ -29,12 +29,9 @@
 #include <npm/common/wrap_glut.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
 #include <sfl/util/Pthread.hpp>
-//#include <sfl/util/array2d.hpp>
-//#include <sfl/util/Line.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <fstream>
-//#include <sstream>
 #include <signal.h>
 
 
@@ -52,8 +49,7 @@ public:
     layout_config_filename("layout.config"),
     world_name(""),
     world_filename(""),
-    traversability_filename(""),
-    trav_to_world(false),
+    world_from_trav(""),
     no_glut(false),
     fatal_warnings(false)
   {
@@ -63,8 +59,7 @@ public:
   string layout_config_filename;
   string world_name;
   string world_filename;
-  string traversability_filename;
-  bool trav_to_world;
+  string world_from_trav;
   bool no_glut;
   bool fatal_warnings;
 };
@@ -122,7 +117,8 @@ int main(int argc, char ** argv)
       exit(EXIT_FAILURE);
     }
   }
-  else if( ! params.world_filename.empty()){
+
+  if( ! params.world_filename.empty()){
     ifstream is(params.world_filename.c_str());
     if( ! is){
       cerr << "ERROR: invalid world file \""
@@ -137,36 +133,23 @@ int main(int argc, char ** argv)
     }
   }
   
-  if( ! params.traversability_filename.empty()){
-    ifstream trav(params.traversability_filename.c_str());
+  if( ! params.world_from_trav.empty()){
+    ifstream trav(params.world_from_trav.c_str());
     if( ! trav){
       cerr << "ERROR: invalid traversability file \""
-	   << params.traversability_filename << "\".\n";
+	   << params.world_from_trav << "\".\n";
       exit(EXIT_FAILURE);
     }
     shared_ptr<TraversabilityMap>
       traversability(TraversabilityMap::Parse(trav, &cerr));
     if( ! traversability){
       cerr << "ERROR: parsing traversability file \""
-	   << params.traversability_filename << "\".\n";
+	   << params.world_from_trav << "\".\n";
       exit(EXIT_FAILURE);
     }
-    if(params.trav_to_world){
-      if( ! world)
-	world.reset(new World(traversability->name));
-      world->ApplyTraversability(traversability);
-    }
-    else{
-      if( ! world){
-	cerr << "When NOT initializing world from travmap, you have to\n"
-	     <<"specify another world creation method (such as -w or -W).\n";
-	exit(EXIT_FAILURE);
-      }
-      world->SetTraversability(traversability);     
-    }
-    shared_ptr<RawTraversibilityProxy>
-      tproxy(new RawTraversibilityProxy(traversability.get()));
-    travdrawing.reset(new TraversabilityDrawing("travmap", tproxy));
+    if( ! world)
+      world.reset(new World(traversability->name));
+    world->ApplyTraversability(*traversability);
   }
   
   if( ! world){
@@ -262,19 +245,16 @@ void parse_options(int argc,
 			 'r', "robot", "Name of the robot config file."));
   ilock.Add(new StringCB(params.world_name,
 			 'w', "world", "Name of the world (expo|mini|tta)."));
-  ilock.Add(new StringCB(params.traversability_filename,
-			 'm', "travmap", "Traversability map file."));
   ilock.Add(new StringCB(params.world_filename,
 			 'W', "worldfile", "World file."));
+  ilock.Add(new StringCB(params.world_from_trav,
+			 'M', "world-trav", "Add travmap lines to world."));
   ilock.
     Add(new Interlock::BoolCallback(params.no_glut, 'n', "no-glut",
 				    "Disable graphic output."));
   ilock.
     Add(new Interlock::BoolCallback(params.fatal_warnings, 'f', "fwarn",
 				    "Fatal warnings."));
-  ilock.
-    Add(new Interlock::BoolCallback(params.trav_to_world, 't', "travworld",
-				    "Use traversability map to init world."));
   
   ilock.UsageMessage(cerr, string(argv[0]) + " <options>");
   try {

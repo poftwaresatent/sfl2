@@ -29,9 +29,8 @@ Robot smart Ter
 
         Option replan_distance     1
  	Option estar_step          0
-	Option use_travmap          mapper
-#	Option use_travmap 	   cheat_apriori
 	Option robot_radius         1.5	
+        Option traversability_file  travmap.smart1
 	
 #	Option controller_name     simple
 	Option controller_name     tadpf

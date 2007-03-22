@@ -71,11 +71,4 @@ namespace npm {
     }
   }
   
-
-  shared_ptr<const TraversabilityMap> CheatSheet::
-  GetTravmap()
-  {
-    return world->m_travmap;
-  }
-  
 }

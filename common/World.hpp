@@ -80,18 +80,12 @@ namespace npm {
     
     /**
        Adds lines to the world, based on the boundary between obstcale
-	and non-obstacle cells in the given traversability map. Cells
-	with a value of travmap.obstacle or higher are considered
-	obstacles.
-	
-	\todo Maybe add a way for traversability values to be
-	interpreted according to an inverted scale.
+       and non-obstacle cells in the given traversability map. Cells
+       with a value of travmap.obstacle or higher are considered
+       obstacles.
     */
     void
-    ApplyTraversability(boost::shared_ptr<sfl::TraversabilityMap> travmap);
-    
-    /** Simply stores the travmap for retrieval via CheatSheet or so. */
-    void SetTraversability(boost::shared_ptr<sfl::TraversabilityMap> travmap);
+    ApplyTraversability(const sfl::TraversabilityMap & travmap);
     
     void AddLine(const sfl::Line & line);
     
@@ -129,7 +123,6 @@ namespace npm {
     boost::shared_ptr<WorldCamera> m_camera;
     object_t m_object;
     boost::shared_ptr<BBox> m_bbox;
-    boost::shared_ptr<sfl::TraversabilityMap> m_travmap;
     
     mutable std::vector<boost::shared_ptr<KeyListener> > m_listener;
   };

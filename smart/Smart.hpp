@@ -45,7 +45,7 @@ namespace asl {
 
 
 namespace sfl {
-  class TraversabilityMap;
+  class Mapper2d;
   class Multiscanner;
   class Scanner;
 }
@@ -82,10 +82,10 @@ protected:
   boost::shared_ptr<SmartColorScheme> m_smart_cs;
   
   boost::scoped_ptr<asl::SmartAlgo> m_smart_algo;
-  boost::shared_ptr<const sfl::TraversabilityMap> m_cheat_travmap;
+	boost::shared_ptr<sfl::Mapper2d> m_mapper;
   
   int m_nscans, m_sick_channel;
-  bool m_discover_travmap;
+	bool m_enable_mapper;//RFCT// to do
 };
 
 #endif // NPM_SMART_HPP

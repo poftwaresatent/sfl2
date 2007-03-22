@@ -1,6 +1,6 @@
 Robot smart Ter
-	Pose  2  10    0
-	Goal 35  25    0   5  3.2
+	Pose  2  15    0
+	Goal 35  30    0   5  3.2
 	Goal 65  35    0   5  3.2
 	Goal 65  10    0   5  3.2
 	Goal 90  70    0   5  3.2
@@ -23,12 +23,13 @@ Robot smart Ter
         Option model_sdd_max       1.0
 	Option controller_name     tadpf
 
-        Option use_travmap         mapper
-        Option robot_radius        1.5
+        Option traversability_file  travmap.smart3
+        Option robot_radius        2.0
+        Option buffer_zone         8.5
 
-        Option carrot_distance     10
-        Option carrot_stepsize     1
-        Option carrot_maxnsteps    15
+        Option carrot_distance     30
+        Option carrot_stepsize      0.4
+        Option carrot_maxnsteps   150
         Option replan_distance     10
         Option estar_step         300
 

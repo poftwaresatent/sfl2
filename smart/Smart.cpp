@@ -79,7 +79,7 @@ public:
 	{ return m_smart_algo->GetEstar(); }
 	
   virtual const sfl::GridFrame * GetFrame()
-	{ return m_smart_algo->GetGridFrame(); }
+	{ return & m_smart_algo->GetGridFrame(); }
 	
 	virtual bool Enabled() const { return m_enabled; }
 	
@@ -91,15 +91,24 @@ public:
 };
 
 
-class SmartTraversabilityProxy: public TraversabilityProxy {
+class SmartTraversabilityProxy:
+	public TraversabilityProxy,
+	public KeyListener
+{
 public:
-	SmartTraversabilityProxy(const SmartAlgo * smart_algo)
-		: m_smart_algo(smart_algo) {}
+	SmartTraversabilityProxy(const SmartAlgo * smart_algo, bool enabled)
+		: m_smart_algo(smart_algo), m_enabled(enabled) {}
 	
 	virtual const sfl::TraversabilityMap * Get()
 	{ return m_smart_algo->GetTraversability(); }
 	
+	virtual bool Enabled() const { return m_enabled; }
+	
+	virtual void KeyPressed(unsigned char key)
+	{ if('o' == key) m_enabled = ! m_enabled; }
+	
 	const SmartAlgo * m_smart_algo;
+	bool m_enabled;
 };
 
 
@@ -193,43 +202,29 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	double replan_distance;
 	if( ! string_to(descriptor->GetOption("replan_distance"), replan_distance))
 		replan_distance = 3;
+		
+	if(descriptor->GetOption("use_travmap") != ""){
+    cerr << "ERROR: Smart option 'use_travmap' is deprecated.\n"
+				 << "  Use the enable_mapper option (defaults to 'true')!\n";
+    exit(EXIT_FAILURE);
+	}
 	
-	m_cheat_travmap = m_cheat->GetTravmap();
-  if( ! m_cheat_travmap){
-    cerr << "ERROR: Smart needs an a-priori traversability map.\n";
+	m_enable_mapper = true;
+	string_to(descriptor->GetOption("enable_mapper"), m_enable_mapper);
+	string traversability_file(descriptor->GetOption("traversability_file"));
+	if(traversability_file == ""){
+    cerr << "ERROR: Smart needs an a-priori traversability map.\n"
+				 << "  Use the traversability_file option!\n";
     exit(EXIT_FAILURE);
   }
-	if( ! m_cheat_travmap->data){
-    cerr << "ERROR: The a-priori traversability map is empty (data is NULL).\n";
-    exit(EXIT_FAILURE);
-  }
-	
-	shared_ptr<const TraversabilityMap> prior_travmap;
-	shared_ptr<Mapper2d> mapper;
-	const string use_travmap(descriptor->GetOption("use_travmap"));
-	if(use_travmap == "cheat_discover")
-		m_discover_travmap = true;
-	else if(use_travmap == "cheat_apriori"){
-		m_discover_travmap = false;
-		prior_travmap = m_cheat_travmap;
-	}
-	else if(use_travmap == "mapper"){
-		double robot_radius;
-		if( ! string_to(descriptor->GetOption("robot_radius"), robot_radius)){
-			cerr << "ERROR: Smart 'Option use_travmap mapper' also needs 'Option robot_radius'.\n";
-			exit(EXIT_FAILURE);
-		}
-		mapper.reset(new Mapper2d(m_cheat_travmap->gframe,
-															m_cheat_travmap->data->xsize,
-															m_cheat_travmap->data->ysize,
-															robot_radius,
-															m_cheat_travmap->freespace,
-															m_cheat_travmap->obstacle,
-															m_cheat_travmap->name));
-	}
-	else{
-    cerr << "ERROR: Option 'use_travmap' must be one of the following:\n"
-				 << "  cheat_discover, cheat_apriori, or mapper\n";
+	double robot_radius(1.5);
+	string_to(descriptor->GetOption("robot_radius"), robot_radius);
+	double buffer_zone(robot_radius);
+	string_to(descriptor->GetOption("buffer_zone"), buffer_zone);
+	m_mapper = Mapper2d::Create(robot_radius, buffer_zone,
+															traversability_file, &cerr);
+	if( ! m_mapper){
+    cerr << "ERROR: Could not create mapper, see error messages above.\n";
     exit(EXIT_FAILURE);
 	}
 	
@@ -259,9 +254,8 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																			 carrot_stepsize,
 																			 carrot_maxnsteps,
 																			 estar_step,
-																			 mapper,
+																			 m_mapper,
 																			 controller,
-																			 prior_travmap,
 																			 &err_os));
 	if( ! m_smart_algo){
 		cerr << "ERROR asl::SmartAlgo::Create() failed\n " << err_os.str() << "\n";
@@ -294,10 +288,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   const string & name(descriptor->name);
 	AddDrawing(new SmartGoalDrawing(name + "_goaldrawing", m_smart_algo.get()));
   
+	bool slow_drawing_enabled(true);
+	string_to(descriptor->GetOption("slow_drawing_enabled"),
+						slow_drawing_enabled);
+	
 	{
-		bool slow_drawing_enabled(true);
-		string_to(descriptor->GetOption("slow_drawing_enabled"),
-							slow_drawing_enabled);
 		shared_ptr<SmartPlanProxy>
 			slow_proxy(new SmartPlanProxy(m_smart_algo.get(), slow_drawing_enabled));
 		world.AddKeyListener(slow_proxy);
@@ -319,15 +314,12 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	}
 	
 	{
-		shared_ptr<TraversabilityProxy>
-			smart_proxy(new SmartTraversabilityProxy(m_smart_algo.get()));
+		shared_ptr<SmartTraversabilityProxy>
+			smart_proxy(new SmartTraversabilityProxy(m_smart_algo.get(),
+																							 slow_drawing_enabled));
+		world.AddKeyListener(smart_proxy);
 		AddDrawing(new TraversabilityDrawing(name + "_smart_travmap",
 																				 smart_proxy));
-		
-		shared_ptr<TraversabilityProxy>
-			cheat_proxy(new DirectTraversabilityProxy(m_cheat_travmap.get()));
-		AddDrawing(new TraversabilityDrawing(name + "_cheat_travmap",
-																				 cheat_proxy));
 	}
 	
   AddDrawing(new PathDrawing(name + "_carrot", this, 1));
@@ -364,6 +356,8 @@ PrepareAction(double timestep)
 	
   double vtrans_cur, steer_cur;
   GetHAL()->speed_get( & vtrans_cur, & steer_cur);
+	
+	//RFCT// to do: handle m_enable_mapper here (currently in SmartAlgo)
 	
 	double vtrans_want, steer_want;
 	ostringstream err_os;

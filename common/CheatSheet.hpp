@@ -26,11 +26,6 @@
 #include <vector>
 
 
-namespace sfl {
-  class TraversabilityMap;
-}
-
-
 namespace npm {
 
   class World;
@@ -53,8 +48,6 @@ namespace npm {
   
     void UpdateLines();
     void UpdateDynobjs();
-    
-    boost::shared_ptr<const sfl::TraversabilityMap> GetTravmap();
   };
 
 }

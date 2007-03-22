@@ -41,6 +41,7 @@ namespace npm {
 	public:
 		virtual ~TraversabilityProxy() {}
 		virtual const sfl::TraversabilityMap * Get() = 0;
+		virtual bool Enabled() const { return true; }
 	};
   
 	

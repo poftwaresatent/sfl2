@@ -28,7 +28,5 @@ Robot smart Ter
         Option replan_distance     2
         Option estar_step          0
 
-#        Option use_travmap         cheat_discover
-#        Option use_travmap         cheat_apriori
-        Option use_travmap          mapper
+        Option traversability_file  travmap.smart0
         Option robot_radius         0.5
