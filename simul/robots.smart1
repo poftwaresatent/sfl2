@@ -28,10 +28,11 @@ Robot smart Ter
         Option model_sdd_max       1.0
 
         Option replan_distance     1
- 	Option estar_step          0
+ 	Option estar_step          1000
 	Option robot_radius         1.5	
         Option traversability_file  travmap.smart1
 	
 #	Option controller_name     simple
 	Option controller_name     tadpf
 
+        Option slow_drawing_enabled false

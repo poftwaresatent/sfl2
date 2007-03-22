@@ -26,7 +26,9 @@ Robot smart Ter
         Option model_sdd_max       6.0
 
         Option replan_distance     2
-        Option estar_step          0
+        Option estar_step          1000
 
         Option traversability_file  travmap.smart0
         Option robot_radius         0.5
+
+        Option slow_drawing_enabled false

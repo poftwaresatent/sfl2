@@ -8,14 +8,8 @@ View world
      Drawing Ter_trajectory
      Drawing Ter_drive
      Drawing Ter_lidar_0
-     Window  0.0  0.0  0.5  0.8
+     Window  0.0  0.0  0.5  1.0
      Border  1
-
-View cheat_travmap
-     Camera  world
-     Drawing Ter_cheat_travmap
-     Window  0.0  0.8  0.25 1.0
-     Border  0
 
 View smart_travmap
      Camera  world
