@@ -27,6 +27,7 @@
 
 
 #include <sfl/util/array2d.hpp>
+#include <sfl/gplan/GridFrame.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -42,9 +43,9 @@ namespace sfl {
   class NF1
   {
   public:
-    typedef vec2d<size_t> index_t;
-    typedef vec2d<double> position_t;
-    typedef array2d<double> grid_t;
+    typedef GridFrame::index_t index_t;
+    typedef GridFrame::position_t position_t;
+    typedef GridFrame::grid_t grid_t;
     
     NF1(boost::shared_ptr<Mutex> mutex);
     

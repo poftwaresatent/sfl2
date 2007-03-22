@@ -23,12 +23,26 @@
  */
 
 
+#include "Mapper2d.hpp"
+#include "GridFrame.hpp"
+#include <sfl/util/pdebug.hpp>
 #include <sfl/api/Scan.hpp>
 #include <estar/Sprite.hpp>
 #include <iostream>
+#include <fstream>
+#include <cmath>
 
-#include "Mapper2d.hpp"
-#include "TraversabilityMapCS.hpp"
+
+#ifdef DEBUG
+# define SFL_DEBUG
+#endif // DEBUG
+
+#ifdef SFL_DEBUG
+# define PDEBUG PDEBUG_ERR
+#else // ! DEBUG
+# define PDEBUG PDEBUG_OFF
+#endif // DEBUG
+#define PVDEBUG PDEBUG_OFF
 
 
 using namespace std;
@@ -36,165 +50,209 @@ using namespace estar;
 using namespace boost;
 
 
+static const double sqrt_of_two(1.41421356237);
+
+
 namespace sfl {
 	
 	
-	Mapper2d::Mapper2d(const GridFrame & grid_origin,
-										 size_t grid_ncells_x,
-										 size_t grid_ncells_y,
-										 double robot_radius,
-										 int freespace,
-										 int obstacle,
-										 const std::string & name)
-		: travMap_(new TraversabilityMapCS(grid_origin, grid_ncells_x, grid_ncells_y,
-																			 freespace, obstacle, name,
-																			 shared_ptr<Sprite>(new Sprite(robot_radius,
-																																		 grid_origin.Delta()))))
+	Mapper2d::
+	Mapper2d(const GridFrame & gridframe,
+					 size_t grid_ncells_x,
+					 size_t grid_ncells_y,
+					 double robot_radius,
+					 double buffer_zone,
+					 int freespace,
+					 int obstacle,
+					 const std::string & name)
+		: m_xsize(grid_ncells_x),
+			m_ysize(grid_ncells_y),
+			m_freespace(freespace),
+			m_obstacle(obstacle),
+			m_ws_obstacle(obstacle + 1),
+			m_gridframe(gridframe),
+			m_buffer_zone(buffer_zone),
+			m_grown_safe_distance(robot_radius + buffer_zone
+														+ gridframe.Delta() * sqrt_of_two),
+			m_grown_robot_radius(robot_radius + gridframe.Delta() * sqrt_of_two),
+			m_travmap(new TraversabilityMap(gridframe, grid_ncells_x, grid_ncells_y,
+																			freespace, obstacle, name)),
+			m_sprite(new Sprite(m_grown_safe_distance, gridframe.Delta())),
+			m_refmap(grid_ncells_x, grid_ncells_y)
 	{
 	}
 	
 	
-	shared_ptr<TraversabilityMap> Mapper2d::getTravMap()
+	Mapper2d::
+	Mapper2d(double robot_radius,
+					 double buffer_zone,
+					 boost::shared_ptr<TraversabilityMap> travmap)
+		: m_xsize(travmap->data->xsize),
+			m_ysize(travmap->data->ysize),
+			m_freespace(travmap->freespace),
+			m_obstacle(travmap->obstacle),
+			m_ws_obstacle(travmap->obstacle + 1),
+			m_gridframe(travmap->gframe),
+			m_buffer_zone(buffer_zone),
+			m_grown_safe_distance(robot_radius + buffer_zone
+														+ m_gridframe.Delta() * sqrt_of_two),
+			m_grown_robot_radius(robot_radius + m_gridframe.Delta() * sqrt_of_two),
+			m_travmap(travmap),
+			m_sprite(new Sprite(m_grown_safe_distance, m_gridframe.Delta())),
+			m_refmap(m_xsize, m_ysize)
 	{
-		return travMap_;
 	}
 	
-	bool Mapper2d::update(const Pose &odo, int length, double *x, double *y, GridFrame::draw_callback * cb)
+	
+	boost::shared_ptr<Mapper2d> Mapper2d::
+	Create(double robot_radius, double buffer_zone,
+				 const std::string & traversability_file,
+				 std::ostream * err_os)
 	{
-		double xw, yw;
-		for (int i(0); i<length; i++)
-			{
-				xw=x[i];
-				yw=y[i];
-				odo.To(xw, yw);
-				simpleCellUpdate(xw, yw, cb);
-			}
-		return true;
+		ifstream trav(traversability_file.c_str());
+    if( ! trav){
+      if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
+												 << "  invalid traversability file \""
+												 << traversability_file << "\".\n";
+      return boost::shared_ptr<Mapper2d>();
+    }
+    shared_ptr<TraversabilityMap>
+      traversability(TraversabilityMap::Parse(trav, err_os));
+    if( ! traversability){
+      if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
+												 << "  TraversabilityMap::Parse() failed on \""
+												 << traversability_file << "\".\n";
+      return boost::shared_ptr<Mapper2d>();
+    }
+		if( ! traversability->data){
+      if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
+												 << "  no traversability date available in \""
+												 << traversability_file << "\".\n";
+      return boost::shared_ptr<Mapper2d>();
+		}
+		boost::shared_ptr<Mapper2d> result(new Mapper2d(robot_radius,
+																										buffer_zone,
+																										traversability));
+		return result;
 	}
-
-	bool Mapper2d::update(const Frame &odo, const Scan &scan,
-												GridFrame::draw_callback * cb)
+	
+	
+	size_t Mapper2d::
+	Update(const Frame & pose, size_t length, double * locx, double * locy,
+				 draw_callback * cb)
+	{
+		size_t count(0);
+		for(size_t ii(0); ii < length; ++ii){
+			double xw(locx[ii]);
+			double yw(locy[ii]);
+			pose.To(xw, yw);
+			count += AddBufferedObstacle(xw, yw, cb);
+		}
+		return count;
+	}
+	
+	
+	size_t Mapper2d::
+	Update(const Frame & pose, const Scan & scan,
+				 draw_callback * cb)
 	{
 		const Scan::array_t & scan_data(scan.data);
-		for (size_t i(0); i< scan_data.size(); i++)
-				simpleCellUpdate(scan_data[i].globx, scan_data[i].globy, cb);
-
-		odo_ = odo;
-
-		return true;
+		size_t count(0);		
+		for(size_t ii(0); ii < scan_data.size(); ++ii)
+			count +=
+				AddBufferedObstacle(scan_data[ii].globx, scan_data[ii].globy, cb);
+		return count;
 	}
-
-	// Private functions
-
-	inline bool Mapper2d::simpleCellUpdate(double x, double y,
-																				 GridFrame::draw_callback * cb)
-	{
-		travMap_->SetObst(x, y, cb);
-		return true; 
-	}
-
-	bool Mapper2d::swipeCellUpdate(double x, double y,
-																 GridFrame::draw_callback * cb)
-	{
 	
-		double x0(odo_.X());
-		double y0(odo_.Y());
-
-		const GridFrame::index_t idx0(travMap_->gframe.GlobalIndex(x0, y0));
-		const GridFrame::index_t idx(travMap_->gframe.GlobalIndex(x, y));
-
-		/* Attention: This will free cells we can "watch through" without the callback
-		 => those changes are not recognized!*/
-		map_obstacle_between_trace(idx0.v0, idx0.v1, idx.v0, idx.v1);
-
-		travMap_->SetObst(x, y, cb);
 	
-		return true;
-	}
-
-  /* run Bresenham's line drawing algorithm, adapted from:
-		 www.cs.nps.navy.mil/people/faculty/capps/iap/class1/lines/lines.html 
-	*/
-	int Mapper2d::map_obstacle_between_trace(int fx0, int fy0, int fx1, int fy1){
-
-		int x0 = fx0, y0 = fy0, x1 = fx1, y1 = fy1;
-
-		GridFrame::index_t idx(travMap_->gframe.GlobalIndex(x0, y0));
-
-		int dy = y1 - y0;
-		int dx = x1 - x0;
-		int stepx, stepy;
-		int fraction;
-
-		if (dy < 0) { dy = -dy;  stepy = -1; } else { stepy = 1; }
-		if (dx < 0) { dx = -dx;  stepx = -1; } else { stepx = 1; }
-		dy <<= 1;                            /* dy is now 2*dy*/
-		dx <<= 1;                            /* dx is now 2*dx*/
-
-		idx.v0 = x0;
-		idx.v1 = y0;
-		if(travMap_->data->ValidIndex(idx))
-			if ((*travMap_->data)[idx] == travMap_->obstacle)
-				{
-					(*travMap_->data)[idx] = travMap_->freespace;
-				}
-
-		if (dx > dy) {
-			fraction = dy - (dx >> 1);                 /* same as 2*dy - dx */
-			while (x0 != x1) {
-				if (fraction >= 0) {
-					y0 += stepy;
-					fraction -= dx;                 /* same as fraction -= 2*dx */
-				}
-				x0 += stepx;
-				fraction += dy;                   /* same as fraction -= 2*dy */
-			 
-				idx.v0 = x0;
-				idx.v1 = y0;
-				if(travMap_->data->ValidIndex(idx))
-					if ((*travMap_->data)[idx] == travMap_->obstacle)
-						{
-							(*travMap_->data)[idx] = travMap_->freespace;
-						}
-			}
-			idx.v0 = x0;
-			idx.v1 = y0;
-			if(travMap_->data->ValidIndex(idx))
-				if ((*travMap_->data)[idx] == travMap_->obstacle)
-					{
-						(*travMap_->data)[idx] = travMap_->freespace;
-					}
-		} 
-		else {
-			fraction = dx - (dy >> 1);
-			while (y0 != y1) {
-				if (fraction >= 0) {
-					x0 += stepx;    
-					fraction -= dy;
-				}
-				y0 += stepy;
-				fraction += dx;
-			 
-				idx.v0 = x0;
-				idx.v1 = y0;
-				if(travMap_->data->ValidIndex(idx))
-					if ((*travMap_->data)[idx] == travMap_->obstacle)
-						{
-							(*travMap_->data)[idx] = travMap_->freespace;
-						}
-		 
-			}
-		 
-			idx.v0 = x0;
-			idx.v1 = y0;
-			if(travMap_->data->ValidIndex(idx))
-				if ((*travMap_->data)[idx] == travMap_->obstacle)
-					{
-						(*travMap_->data)[idx] = travMap_->freespace;
-					}
-
+	size_t Mapper2d::
+	AddBufferedObstacle(double globx, double globy, draw_callback * cb)
+	{
+		const GridFrame::index_t
+			source_index(m_gridframe.GlobalIndex(globx, globy));
+		const ssize_t ix0(source_index.v0);
+		const ssize_t iy0(source_index.v1);
+		
+		PVDEBUG("source index %lu %lu\n", ix0, iy0);
+		
+		// Check if the cell is in the grid or we already have a "true"
+		// (workspace) obstacle here. If not, flag it as the center of a
+		// new C-space extension.
+		{
+			int old_value;
+			if( ! m_travmap->GetValue(ix0, iy0, old_value))
+				return 0;
+			if(m_ws_obstacle == old_value)
+				return 0;
 		}
-		return 0;
+		m_travmap->SetValue(ix0, iy0, m_ws_obstacle, cb);
+		size_t count(1);
+		
+		PVDEBUG("set source to %d\n", m_ws_obstacle);
+		
+		// Perform C-space extension with buffer zone, housekeeping the
+		// cell-dependency structure.
+    const Sprite::indexlist_t & area(m_sprite->GetArea());
+		for(size_t ii(0); ii < area.size(); ++ii){
+			
+			const ssize_t ix(ix0 + area[ii].x);
+			if((ix < 0) || (ix >= m_xsize))
+				continue;								// outside of grid
+			
+			const ssize_t iy(iy0 + area[ii].y);
+			if((iy < 0) || (iy >= m_ysize))
+				continue;								// outside of grid
+			
+			if((ix0 == ix) && (iy0 == iy))
+				continue;								// we've already flagged the center
+			
+			const double dist(area[ii].r);
+			if(dist > m_grown_safe_distance)
+				continue;								// outside buffer: nothing to do
+			
+			int value(m_obstacle);
+			if(dist > m_grown_robot_radius){
+				const double vv(  m_freespace * (dist - m_grown_robot_radius)
+												+ m_obstacle  * (m_grown_safe_distance - dist));
+				value = static_cast<int>(rint(vv / m_buffer_zone));
+			}
+			
+			PVDEBUG("target %lu %lu to %d\n", ix, iy, value);
+			
+			if( ! AddReference(source_index, ix, iy, value))
+				continue;								// should never happen though...
+			
+			int old_value;
+			if( ! m_travmap->GetValue(ix, iy, old_value))
+				continue;								// should never happen though...
+			
+			if(value > old_value){
+				PVDEBUG("value = %d > old_value = %d\n", value, old_value);
+				m_travmap->SetValue(ix, iy, value, cb);
+				++count;
+			}
+		}
+		
+		PVDEBUG("changed %lu cells\n", count);
+		return count;
 	}
-
+	
+	
+	bool Mapper2d::
+	AddReference(GridFrame::index_t source_index,
+							 size_t target_ix, size_t target_iy,
+							 int value)
+	{
+		const GridFrame::index_t target_index(target_ix, target_iy);
+		ref_s & ref(m_refmap[target_index]);
+		if(ref.forward.find(source_index) != ref.forward.end()){
+			PVDEBUG("%lu %lu -> %lu %lu already referenced\n",
+							source_index.v0, source_index.v1, target_ix, target_iy);
+			return false;							// source -> target already in refmap
+		}
+		ref.forward.insert(make_pair(source_index, value));
+		ref.reverse.insert(make_pair(value, source_index));
+		return true;
+	}
+	
 }

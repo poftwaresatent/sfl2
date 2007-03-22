@@ -1,8 +1,6 @@
 if HAVE_ESTAR
-  OPTSRC=              TraversabilityMapCS.cpp \
-											 Mapper2d.cpp
-  OPTHDR=              TraversabilityMapCS.hpp \
-											 Mapper2d.hpp
+  OPTSRC= Mapper2d.cpp
+  OPTHDR= Mapper2d.hpp
 endif
 
 noinst_LTLIBRARIES=    libgplan.la
@@ -20,5 +18,3 @@ include_HEADERS=       GridFrame.hpp \
                        $(OPTHDR)
 
 includedir=            @includedir@/sfl/gplan
-
-###CPPFLAGS+=             -I@top_builddir@/include

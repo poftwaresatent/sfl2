@@ -181,21 +181,13 @@ namespace sfl {
 			grid_ysize = force_dimy;
 		result->data.reset(new array2d<int>(grid_xsize, grid_ysize,
 																				default_traversability));
-    result->mindata = default_traversability;
-    result->maxdata = default_traversability;
     result->gframe.Configure(ox, oy, otheta, resolution);
     for(size_t iy(0); iy < grid_ysize; ++iy)
 			if(iy < data.size()){
 				vector<int> & line(data[iy]);
 				for(size_t ix(0); ix < grid_xsize; ++ix)
-					if(ix < line.size()){
-						const int value(line[ix]);
-						(*result->data)[ix][grid_ysize - iy - 1] = value;
-						if(value > result->maxdata)
-							result->maxdata = value;
-						if(value < result->mindata)
-							result->mindata = value;
-					}
+					if(ix < line.size())
+						(*result->data)[ix][grid_ysize - iy - 1] = line[ix];
 			}
     
 		return result;
@@ -213,39 +205,98 @@ namespace sfl {
     value = (*data)[idx];
     return true;
   }
+  
 
+  bool TraversabilityMap::
+  GetValue(size_t index_x, size_t index_y, int & value) const
+  {
+    if( ! data)
+      return false;
+    if( ! data->ValidIndex(index_x, index_y))
+      return false;
+    value = (*data)[index_x][index_y];
+    return true;
+  }
+	
+	
 	bool TraversabilityMap::
 	SetValue(double global_x, double global_y, int value,
-					 GridFrame::draw_callback * cb)
+					 draw_callback * cb)
   {
     if( ! data)
       return false;
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-// 		cout << "Trying to add point at " << global_x << " " << global_y 
-// 				 << " to cell " << idx.v0 << " " << idx.v1 << endl;
     if( ! data->ValidIndex(idx))
       return false;
-    (*data)[idx] = value;
 		if(cb)
-			(*cb)(idx.v0, idx.v1);
+			(*cb)(idx.v0, idx.v1, (*data)[idx], value);
+    (*data)[idx] = value;
     return true;
 	}
-
+	
+	
+	bool TraversabilityMap::
+	SetValue(size_t index_x, size_t index_y, int value,
+					 draw_callback * cb)
+  {
+    if( ! data)
+      return false;
+    if( ! data->ValidIndex(index_x, index_y))
+      return false;
+		if(cb)
+			(*cb)(index_x, index_y, (*data)[index_x][index_y], value);
+    (*data)[index_x][index_y] = value;
+    return true;
+	}
+	
+	
 	void TraversabilityMap::
-	DumpMap(ostream * os){
-		*os << "# resolution " << gframe.Delta() << endl;
-		*os << "# origin " << gframe.X() << " " << gframe.Y() << " " << gframe.Theta() << endl;
-		*os << "# obstacle " << obstacle << endl;
-		*os << "# freespace " << freespace << endl;
-		*os << "# default " << 0 << endl;
-		*os << "# name " << name << endl;;
-
-		for (size_t j(0); j < data->ysize; j++)
-			{
+	DumpMap(ostream * os)
+	{
+		*os << "# resolution " << gframe.Delta() << "\n"
+				<< "# origin " << gframe.X() << " " << gframe.Y()
+				<< " " << gframe.Theta() << "\n";
+		if(data)
+			*os << "# dimension " << data->xsize << " " << data->ysize << "\n";
+		*os << "# obstacle " << obstacle << "\n"
+				<< "# freespace " << freespace << "\n"
+				<< "# default " << 0 << "\n"
+				<< "# name " << name << "\n";
+		
+		if(data)
+			for (size_t j(0); j < data->ysize; j++){
 				for (size_t i(0); i < data->xsize; i++) 
 					*os << (*data) [i][data->ysize - j - 1] << " ";
-				*os << endl;
+				*os << "\n";
 			}
+	}
+	
+
+	bool TraversabilityMap::
+	SetObst(double global_x, double global_y, draw_callback * cb)
+	{
+		return SetValue(global_x, global_y, obstacle, cb);
+	}
+	
+	
+	bool TraversabilityMap::
+	SetObst(size_t index_x, size_t index_y, draw_callback * cb)
+	{
+		return SetValue(index_x, index_y, obstacle, cb);
+	}
+	
+	
+	bool TraversabilityMap::
+	SetFree(double global_x, double global_y, draw_callback * cb)
+	{
+		return SetValue(global_x, global_y, freespace, cb);
+	}
+	
+	
+	bool TraversabilityMap::
+	SetFree(size_t index_x, size_t index_y, draw_callback * cb)
+	{
+		return SetValue(index_x, index_y, freespace, cb);
 	}
 	
 }

@@ -39,10 +39,25 @@ namespace sfl {
     : public Frame
   {
   public:
-    typedef vec2d<size_t> index_t;
     typedef vec2d<double> position_t;
     typedef array2d<double> grid_t;
+		
+		class index_t: public vec2d<size_t> {
+		public:
+			typedef vec2d<size_t> base_t;
+			
+			index_t(): base_t() {}
+			index_t(size_t v0, size_t v1): base_t(v0, v1) {}
+			index_t(const index_t & orig): base_t(orig) {}
+			
+			const bool operator < (const base_t & rhs) const
+			{ return (v0 < rhs.v0) || ((v0 == rhs.v0) && (v1 < rhs.v1)); }
+			
+			const index_t & operator = (const base_t & rhs)
+			{ v0 = rhs.v0; v1 = rhs.v1; return * this; }
+		};
     
+		
     struct draw_callback {
       virtual ~draw_callback() {}
 			/** \note defaults to no operation */
