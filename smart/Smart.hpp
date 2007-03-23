@@ -28,6 +28,7 @@
 
 #include <npm/common/RobotClient.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <sfl/util/vec2d.hpp>
 #include <vector>
 
 
@@ -41,7 +42,10 @@ namespace asl {
 
   struct path_element;
   typedef std::vector<path_element> path_t;
-}
+	typedef sfl::vec2d<double> path_point;
+	typedef std::vector<path_point> trajectory_t;
+	
+} 
 
 
 namespace sfl {
@@ -73,6 +77,9 @@ public:
   virtual bool GoalReached();
 	
 	const asl::path_t * GetPath() const;
+	const asl::trajectory_t * GetTrajectory() const;	
+	bool  GetRefpoint(asl::path_point &ref_point) const;
+ 
 	
   
 protected:

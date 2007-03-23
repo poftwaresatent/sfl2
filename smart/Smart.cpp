@@ -453,3 +453,17 @@ GetPath() const
 {
 	return m_smart_algo->GetPath();
 }
+
+
+const asl::trajectory_t * Smart::
+GetTrajectory() const
+{
+	return m_smart_algo->GetTrajectory();
+}
+
+bool Smart::
+GetRefpoint(asl::path_point &ref_point) const
+{
+	return m_smart_algo->GetRefpoint(ref_point);
+}
+
