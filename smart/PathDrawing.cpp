@@ -109,4 +109,31 @@ Draw()
   glTranslated(carx, cary, 0);
   gluDisk(wrap_glu_quadric_instance(), 0.2, 0.2, 36, 1);
   glPopMatrix();
+
+  /* trajectory and reference point drawings */
+  asl::path_point ref_point;
+  if(m_smart->GetRefpoint(ref_point))
+    {
+      glPointSize(8);
+      glBegin(GL_POINTS);
+      glColor3d(0.0, 1.0, 0.0);
+      glVertex2d(ref_point.v0, ref_point.v1);
+      glEnd();
+       
+    }else{
+      PDEBUG_OUT("No reference point could be queried!!!\n");
+    }
+
+  const asl::trajectory_t *current_traj=m_smart->GetTrajectory();
+  if(current_traj->size()>0)
+    {
+      glPointSize(5);
+      glBegin(GL_LINES);
+      glColor3d(1.0, 0.0, 0.0);
+      for(size_t ii(0); ii< current_traj->size();ii++){
+	glVertex2d((*current_traj)[ii].v0, (*current_traj)[ii].v1);
+      }
+      glEnd();
+    }
 }
+
