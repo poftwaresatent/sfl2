@@ -70,4 +70,5 @@ dist_bin_SCRIPTS= birondemo.sh \
                     layout.smart3 \
                     robots.smart3 \
                     travmap.smart3 \
+                    goals.smart3 \
                     world.smart3

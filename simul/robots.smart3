@@ -1,10 +1,7 @@
 Robot smart Ter
 	Pose 35  32    0.2
-	Goal 65  35    0   5  3.2
-	Goal 65  10    0   5  3.2
-	Goal 90  70    0   5  3.2
-	Goal 10  10    0   5  3.2
-	
+	Option goalmgr_filename goals.smart3
+		
 	Option camera_zoom         20
 	Option front_channel       0
         Option front_mount_x       1.3

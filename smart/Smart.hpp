@@ -52,6 +52,7 @@ namespace sfl {
   class Mapper2d;
   class Multiscanner;
   class Scanner;
+  class GoalManager;
 }
 
 
@@ -90,6 +91,7 @@ protected:
   
   boost::scoped_ptr<asl::SmartAlgo> m_smart_algo;
 	boost::shared_ptr<sfl::Mapper2d> m_mapper;
+	boost::shared_ptr<const sfl::GoalManager> m_goal_manager;
   
   int m_nscans, m_sick_channel;
 	bool m_enable_mapper;//RFCT// to do

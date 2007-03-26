@@ -251,6 +251,19 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	double wavefront_buffer(2);
 	string_to(descriptor->GetOption("wavefront_buffer"), wavefront_buffer);
 	
+	string goalmgr_filename(descriptor->GetOption("goalmgr_filename"));
+	if(goalmgr_filename != ""){
+		if(descriptor->HaveGoals()){
+			cerr << "ERROR goalmgr_filename option conflicts with Goal statements.\n"
+					 << "  Cannot mix npm Goal with Option goalmgr_filename.\n";
+			exit(EXIT_FAILURE);
+		}
+	}
+	else if( ! descriptor->HaveGoals()){
+		cerr << "ERROR no goals and no goalmgr_filename option given.\n";
+		exit(EXIT_FAILURE);
+	}
+	
 	ostringstream err_os;
 	m_smart_algo.reset(SmartAlgo::Create(replan_distance,
 																			 wavefront_buffer,
@@ -260,11 +273,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																			 estar_step,
 																			 m_mapper,
 																			 controller,
+																			 goalmgr_filename,
 																			 &err_os));
 	if( ! m_smart_algo){
 		cerr << "ERROR asl::SmartAlgo::Create() failed\n " << err_os.str() << "\n";
 		exit(EXIT_FAILURE);
 	}
+	m_goal_manager = m_smart_algo->GetGoalManager();
 	
 	shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart")));	
 	m_mscan.reset(new Multiscanner(odo));
@@ -375,7 +390,15 @@ PrepareAction(double timestep)
 	switch(status){
 	case SmartPlanThread::HAVE_PLAN: break;
 	case SmartPlanThread::PLANNING: break;
-	case SmartPlanThread::AT_GOAL: break;
+	case SmartPlanThread::AT_GOAL:
+		if(m_goal_manager){
+			if( ! m_smart_algo->SetNextGoal()){
+				cerr << "\nERROR in Smart::PrepareAction():"
+						 << " m_smart_algo->SetNextGoal() failed\n";
+				exit(EXIT_FAILURE);
+			}
+		}
+		break;
 	case SmartPlanThread::UNREACHABLE:
 		cerr << "\nERROR in Smart::PrepareAction(): goal is unreachable\n";
 		exit(EXIT_FAILURE);
