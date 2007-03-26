@@ -108,6 +108,11 @@ namespace sfl {
 		bool SetObst(size_t index_x, size_t index_y, draw_callback * cb);
 		bool SetFree(double global_x, double global_y, draw_callback * cb);
 		bool SetFree(size_t index_x, size_t index_y, draw_callback * cb);
+
+		bool IsObst(double global_x, double global_y) const;
+		bool IsObst(size_t index_x, size_t index_y) const;
+		bool IsFree(double global_x, double global_y) const;
+		bool IsFree(size_t index_x, size_t index_y) const;
 		
 		void DumpMap(std::ostream * os);
     

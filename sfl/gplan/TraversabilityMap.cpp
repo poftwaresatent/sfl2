@@ -299,4 +299,50 @@ namespace sfl {
 		return SetValue(index_x, index_y, freespace, cb);
 	}
 	
+	
+	bool TraversabilityMap::
+	IsObst(double global_x, double global_y) const
+	{
+		if( ! data)
+      return false;
+    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+    if( ! data->ValidIndex(idx))
+      return false;
+    return (*data)[idx] >= obstacle;
+	}
+	
+	
+	bool TraversabilityMap::
+	IsObst(size_t index_x, size_t index_y) const
+	{
+		if( ! data)
+      return false;
+    if( ! data->ValidIndex(index_x, index_y))
+      return false;
+    return (*data)[index_x][index_y] >= obstacle;
+	}
+	
+	
+	bool TraversabilityMap::
+	IsFree(double global_x, double global_y) const
+	{
+		if( ! data)
+      return false;
+    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+    if( ! data->ValidIndex(idx))
+      return false;
+    return (*data)[idx] <= freespace;
+	}
+	
+	
+	bool TraversabilityMap::
+	IsFree(size_t index_x, size_t index_y) const
+	{
+		if( ! data)
+      return false;
+    if( ! data->ValidIndex(index_x, index_y))
+      return false;
+    return (*data)[index_x][index_y] <= freespace;
+	}
+	
 }

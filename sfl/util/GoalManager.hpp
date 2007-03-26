@@ -1,3 +1,4 @@
+/* -*- mode: C++; tab-width: 2 -*- */
 /* 
  * Copyright (C) 2007
  * Swiss Federal Institute of Technology, Zurich. All rights reserved.
