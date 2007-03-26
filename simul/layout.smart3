@@ -1,6 +1,6 @@
 View world
      Camera  world
-     Drawing Ter_estar_status
+     Drawing Ter_estar_value
      Drawing Ter_estar_queue
      Drawing world
      Drawing Ter_true_drawing
@@ -8,7 +8,7 @@ View world
      Drawing Ter_trajectory
      Drawing Ter_drive
      Drawing Ter_lidar_0
-     Window  0.0  0.0  0.5  0.5
+     Window  0.0  0.0  0.5  0.6
      Border  1
 
 View travmap
@@ -18,23 +18,12 @@ View travmap
      Drawing Ter_true_drawing
      Drawing Ter_trajectory
      Drawing Ter_drive
-     Window  0.0  0.5  0.5  1.0
-     Border  1
-
-View meta
-     Camera  world
-     Drawing Ter_estar_meta
-     Drawing world
-     Drawing Ter_true_drawing
-     Drawing Ter_trajectory
-     Drawing Ter_drive
-     Window  0.5  0.5  1.0  1.0
+     Window  0.0  0.6  0.5  1.0
      Border  1
 
 View ter
      Camera  Ter_true_zoom_camera
-     Drawing Ter_estar_value
-     Drawing Ter_estar_obst
+     Drawing Ter_estar_meta
      Drawing Ter_estar_queue
      Drawing Ter_carrot
      Drawing world
@@ -43,5 +32,5 @@ View ter
      Drawing Ter_trajectory
      Drawing Ter_drive
      Drawing Ter_lidar_0
-     Window  0.5  0.0  1.0  0.5
-     Border  0
+     Window  0.5  0.0  1.0  1.0
+     Border  1

@@ -114,34 +114,44 @@ public:
 
 class SmartColorScheme: public gfx::ColorScheme {
 public:
-	SmartColorScheme(): smart_value(0), queue_bottom(0) {}
+	SmartColorScheme(): m_smart_value(0), m_queue_bottom(0) {}
+	
+	void Update(const SmartAlgo * algo) {
+		const estar::Facade * estar(algo->GetEstar());
+		if( ! estar->GetLowestInconsistentValue(m_queue_bottom))
+			m_queue_bottom = estar::infinity;
+		shared_ptr<const Frame> pose(algo->GetPose());
+		m_smart_value = estar::infinity;
+		if(pose){
+			const TraversabilityMap * travmap(algo->GetTraversability());
+			const GridFrame::index_t
+				idx(travmap->gframe.GlobalIndex(pose->X(), pose->Y()));
+			shared_ptr<const array2d<int> > travdata(travmap->data);
+  		if((travdata)
+				 && ((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize)))
+				m_smart_value = estar->GetValue(idx.v0, idx.v1);
+		}
+		PDEBUG("smart: %g   bottom %g\n", m_smart_value, m_queue_bottom);
+	}
+	
 	virtual void Set(double value) const {
-		if(value >= estar::infinity)
-			glColor3d(0, 0, 0.4);
+		if(value <= 0)
+			glColor3d(0, 0, 0);
+		else if(value >= m_queue_bottom)
+			glColor3d(0.4, 0, 0);
 		else{
-			double green;
-			if(value <= smart_value)
-				green = sfl::minval(1.0, value / smart_value) * 0.4;
-			else
-				green = 0.5;
-			double red;
-			if(value <= queue_bottom){
-				if(smart_value > queue_bottom)
-					red = sfl::minval(1.0, value / queue_bottom) * 0.4;
-				else
-					red = 0;
-			}
-			else{
-				red = 0.5;
-				green = 0;
-			}
-			glColor3d(red, green, sfl::minval(1.0,
-																				value / sfl::maxval(estar::epsilon,
-																														smart_value)));
+			double green(value / m_smart_value);
+			if(green >= 1)
+				green = green - 1;
+			const double red(value / m_queue_bottom);
+			const double blue(1 - red);
+			glColor3d(red, green, blue);
 		}
 	}
-	double smart_value;
-	double queue_bottom;
+
+private:
+	double m_smart_value;
+	double m_queue_bottom;
 };
 
 
@@ -418,17 +428,9 @@ PrepareAction(double timestep)
 		exit(EXIT_FAILURE);
 	}
 	
-	//XXX rfct // 		const GridFrame::index_t idx(gframe.GlobalIndex(pose.X(), pose.Y()));
-	// // 		shared_ptr<const array2d<int> > travdata(m_travmap->data);
-	// // 		if(travdata){
-	// // 			if((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize))
-	// // 				m_smart_cs->smart_value = m_estar->GetValue(idx.v0, idx.v1);
-	// // 		}
-	
 	GetHAL()->speed_set(vtrans_want, steer_want);
 	
-	m_smart_cs->queue_bottom
-		= m_smart_algo->GetEstar()->GetAlgorithm().GetLastPoppedKey();
+	m_smart_cs->Update(m_smart_algo.get());
 }
 
 

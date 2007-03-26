@@ -106,7 +106,7 @@ namespace npm {
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 		
-		PDEBUG("mean value %g\n", dbgsum / dbgcount);
+		PVDEBUG("mean value %g\n", dbgsum / dbgcount);
   }
 
 }
