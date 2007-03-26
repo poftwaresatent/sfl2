@@ -248,8 +248,12 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		exit(EXIT_FAILURE);
 	}
 	
+	double wavefront_buffer(2);
+	string_to(descriptor->GetOption("wavefront_buffer"), wavefront_buffer);
+	
 	ostringstream err_os;
 	m_smart_algo.reset(SmartAlgo::Create(replan_distance,
+																			 wavefront_buffer,
 																			 carrot_distance,
 																			 carrot_stepsize,
 																			 carrot_maxnsteps,
