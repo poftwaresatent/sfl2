@@ -144,7 +144,7 @@ namespace sfl {
     if(m_goal.empty())
       return;
     ++m_current_goal;
-    if(m_current_goal <= m_goal.size())
+    if(m_current_goal < m_goal.size())
       return;
     switch(m_repeat){
     case LOOP: m_current_goal = 0; break;
