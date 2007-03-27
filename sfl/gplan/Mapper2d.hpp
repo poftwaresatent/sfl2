@@ -41,7 +41,6 @@ namespace sfl {
 	
 	
 	class Scan;
-	class TraversabilityMap;
 	class GridFrame;
 	
   
