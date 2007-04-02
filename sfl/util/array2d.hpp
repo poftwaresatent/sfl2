@@ -53,7 +53,7 @@ namespace sfl {
       for(size_t ix(0); ix < _xsize; ++ix)
 	data[ix].reset(new value_t[_ysize]); }
     
-    array2d(index_t _size)
+    explicit array2d(index_t _size)
       : size(_size), xsize(_size.v0), ysize(_size.v1),
 	data(new inner_t[_size.v0]) {
       for(size_t ix(0); ix < _size.v0; ++ix)
