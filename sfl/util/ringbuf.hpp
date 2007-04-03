@@ -43,39 +43,42 @@ namespace sfl {
     
     void push_back(const value_t & val){
       if(data.size() >= len){
-	data[oldest] = val;
-	youngest = oldest;
-	++oldest;
-	if(oldest >= len)
-	  oldest = 0;
+				data[oldest] = val;
+				youngest = oldest;
+				++oldest;
+				if(oldest >= len)
+					oldest = 0;
       }
       else if(data.empty()){
-	youngest = 0;
-	oldest = 0;
-	data.push_back(val);
+				youngest = 0;
+				oldest = 0;
+				data.push_back(val);
       }
       else{
-	youngest = data.size();
-	data.push_back(val);
+				youngest = data.size();
+				data.push_back(val);
       }
     }
     
     size_t size() const
     { return data.size(); }
     
+    bool empty() const
+    { return data.empty(); }
+    
     value_t & operator [] (size_t idx){
       if(youngest >= idx)
-	return data[youngest - idx];
+				return data[youngest - idx];
       if(data.size() >= len)
-	return data[len + youngest - idx];
+				return data[len + youngest - idx];
       return data[data.size() + youngest - idx - 1];
     }
     
     const value_t & operator [] (size_t idx) const {
       if(youngest >= idx)
-	return data[youngest - idx];
+				return data[youngest - idx];
       if(data.size() >= len)
-	return data[len + youngest - idx];
+				return data[len + youngest - idx];
       return data[data.size() + youngest - idx - 1];
     }
     
