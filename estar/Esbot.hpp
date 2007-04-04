@@ -62,7 +62,7 @@ public:
   Esbot(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	const npm::World & world);
   
-  virtual void PrepareAction(double timestep);
+  virtual bool PrepareAction(double timestep);
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
   virtual bool GoalReached();
 

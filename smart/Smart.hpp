@@ -27,32 +27,26 @@
 
 
 #include <npm/common/RobotClient.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <sfl/util/vec2d.hpp>
 #include <vector>
 
 
-namespace npm {
-  class CheatSheet;
-}
-
-
 namespace asl {
   class SmartAlgo;
-
+	class PlanningThread;
+  class ControlThread;
+	
   struct path_element;
   typedef std::vector<path_element> path_t;
 	typedef sfl::vec2d<double> path_point;
 	typedef std::vector<path_point> trajectory_t;
-	
 } 
 
 
 namespace sfl {
-  class Mapper2d;
   class Multiscanner;
   class Scanner;
-  class GoalManager;
+	class RWlock;
 }
 
 
@@ -67,9 +61,10 @@ private:
   
 public:
   Smart(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	const npm::World & world);
-  
-  virtual void PrepareAction(double timestep);
+				const npm::World & world);
+	~Smart();
+	
+  virtual bool PrepareAction(double timestep);
   virtual void InitPose(double x, double y, double theta);
   virtual void SetPose(double x, double y, double theta);
   virtual void GetPose(double & x, double & y, double & theta);
@@ -77,24 +72,27 @@ public:
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   virtual bool GoalReached();
 	
-	const asl::path_t * GetPath() const;
+	/** \note Can return null. */
+	void GetPaths(const asl::path_t ** clean, const asl::path_t ** dirty) const;
+
+	/** \note Can return null. */
 	const asl::trajectory_t * GetTrajectory() const;	
+
 	bool  GetRefpoint(asl::path_point &ref_point) const;
- 
-	
   
 protected:
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Multiscanner> m_mscan;
-  boost::shared_ptr<npm::CheatSheet> m_cheat;
   boost::shared_ptr<SmartColorScheme> m_smart_cs;
   
-  boost::scoped_ptr<asl::SmartAlgo> m_smart_algo;
-	boost::shared_ptr<sfl::Mapper2d> m_mapper;
-	boost::shared_ptr<const sfl::GoalManager> m_goal_manager;
+  boost::shared_ptr<asl::SmartAlgo> m_smart_algo;
+  boost::shared_ptr<sfl::RWlock> m_rwlock;
+  boost::shared_ptr<asl::PlanningThread> m_planning_thread;
+  boost::shared_ptr<asl::ControlThread> m_control_thread;
   
   int m_nscans, m_sick_channel;
-	bool m_enable_mapper;//RFCT// to do
+	bool m_error;
+	int m_planning_usecsleep, m_control_usecsleep;
 };
 
 #endif // NPM_SMART_HPP

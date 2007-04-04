@@ -36,7 +36,7 @@ public:
 	const npm::World & world);
   virtual ~Biron();
   
-  virtual void PrepareAction(double timestep);
+  virtual bool PrepareAction(double timestep);
   virtual void InitPose(double x, double y, double theta);
   virtual void SetPose(double x, double y, double theta);
   virtual void GetPose(double & x, double & y, double & theta);

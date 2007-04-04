@@ -54,7 +54,7 @@ Visitor(shared_ptr<RobotDescriptor> descriptor,
 }
 
 
-void Visitor::
+bool Visitor::
 PrepareAction(double timestep)
 {
   static const double dthetathresh(5 * M_PI / 180);
@@ -77,6 +77,8 @@ PrepareAction(double timestep)
   GetHAL()->speed_set(boundval(-sdmax, xd, sdmax),
 		      boundval(-sdmax, yd, sdmax),
 		      boundval(-thetadmax, thetad, thetadmax));
+
+  return true;
 }
 
 

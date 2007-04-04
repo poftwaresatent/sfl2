@@ -150,7 +150,7 @@ GoalReached()
 }
 
 
-void Biron::
+bool Biron::
 PrepareAction(double timestep)
 {
   LazyXCFInit();
@@ -271,6 +271,8 @@ PrepareAction(double timestep)
   }
   else
     PVDEBUG("m_position_status: %d\n", m_position_status);      
+
+  return true;
 }
 
 

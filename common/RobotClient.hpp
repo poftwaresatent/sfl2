@@ -68,8 +68,14 @@ namespace npm {
     /** Entry point for simulating the robot. It should calculate the
 	next action based on sensor readings (which are updated by the
 	simulator) and should end by assigning new motor commands to the
-	actuators. */
-    virtual void PrepareAction(double timestep) = 0;
+	actuators.
+	
+	\return true if the robot is in a runnable state. If you
+	return false, the simulator will switch to step-by-step
+	mode. It is up to subclasses to print appropriate error
+	message or try to recover.
+    */
+    virtual bool PrepareAction(double timestep) = 0;
     
     /** Hook for initially placing the robot, empty default implementation. */
     virtual void InitPose(double x, double y, double theta) {}

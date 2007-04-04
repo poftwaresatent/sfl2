@@ -310,7 +310,7 @@ SetGoal(double timestep, const Goal & goal)
 }
 
 
-void Esbot::
+bool Esbot::
 PrepareAction(double timestep)
 {
   m_pose->Set(*m_odometry->Get());
@@ -436,6 +436,8 @@ PrepareAction(double timestep)
   m_motionController->ProposeActuators(qdl, qdr);
   m_motionController->Update(timestep);
   m_odometry->Update();
+
+  return true;
 }
 
 

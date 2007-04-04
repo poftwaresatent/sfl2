@@ -220,16 +220,16 @@ InitRobots(const string & filename)
 	   << "   unknown model \"" << (*ir)->model << "\"\n";
       exit(EXIT_FAILURE);
     }
-    m_robot.push_back(rob);
+    m_robot.push_back(robot_s(rob));
     m_world->AddRobot(rob->m_server.get());
     shared_ptr<const Frame> pose((*ir)->GetInitialPose());
     rob->m_server->InitializeTruePose(*pose);
     rob->SetPose(pose->X(), pose->Y(), pose->Theta());
   }
   for(size_t ir(0); ir < m_robot.size(); ++ir){
-    rdesc_t rd(m_robot[ir]->GetDescriptor());
+    rdesc_t rd(m_robot[ir].robot->GetDescriptor());
     if(rd->HaveGoals())
-      m_robot[ir]->SetGoal(m_timestep, *rd->GetCurrentGoal());
+      m_robot[ir].robot->SetGoal(m_timestep, *rd->GetCurrentGoal());
   }
 }
 
@@ -393,7 +393,7 @@ void Simulator::
 UpdateAllSensors()
 {
   for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir)
-    (*ir)->m_server->UpdateAllSensors();
+    ir->robot->m_server->UpdateAllSensors();
 }
 
 
@@ -405,19 +405,27 @@ UpdateRobots()
   Mutex::sentry sentry(m_mutex);
 
   UpdateAllSensors();
+  for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir){
+    ir->runnable = ir->robot->PrepareAction(m_timestep);
+    if(( ! ir->runnable) && m_continuous){
+      m_continuous = false;
+      m_step = true;
+    }
+  }
   for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir)
-    (*ir)->PrepareAction(m_timestep);
-  for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir)
-    (*ir)->m_server->SimulateAction(m_timestep);
+    if(ir->runnable)
+      ir->robot->m_server->SimulateAction(m_timestep);
   
   for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir){
-    if( ! (*ir)->GoalReached())
+    if( ! ir->runnable)
       continue;
-    RobotDescriptor & desc(*(*ir)->GetDescriptor());
+    if( ! ir->robot->GoalReached())
+      continue;
+    RobotDescriptor & desc(*ir->robot->GetDescriptor());
     if( ! desc.HaveGoals())
       continue;
     desc.NextGoal();
-    (*ir)->SetGoal(m_timestep, *desc.GetCurrentGoal());
+    ir->robot->SetGoal(m_timestep, *desc.GetCurrentGoal());
   }
 }
 

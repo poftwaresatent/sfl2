@@ -191,7 +191,7 @@ SetGoal(double timestep, const Goal & goal)
 }
 
 
-void LAAS::
+bool LAAS::
 PrepareAction(double timestep)
 {
   m_front->Update();
@@ -232,6 +232,8 @@ PrepareAction(double timestep)
     if(0 != GetHAL()->speed_set(qdl, qdr))
       cerr << "WARNING speed_set() failed\n";
   }
+
+  return true;
 }
 
 

@@ -59,7 +59,14 @@ public:
 private:
   friend class SimulatorUpdateThread;
   
-  typedef std::vector<boost::shared_ptr<npm::RobotClient> > robot_t;
+  struct robot_s {
+    robot_s(boost::shared_ptr<npm::RobotClient> _robot)
+      : robot(_robot), runnable(true) {}
+    boost::shared_ptr<npm::RobotClient> robot;
+    bool runnable;
+  };
+  
+  typedef std::vector<robot_s> robot_t;
   
   void PrintScreen();
   void UpdateAllSensors();

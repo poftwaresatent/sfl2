@@ -369,7 +369,7 @@ SetGoal(double timestep, const Goal & goal)
 }
 
 
-void Robox::
+bool Robox::
 PrepareAction(double timestep)
 {
   m_front->Update();
@@ -377,4 +377,5 @@ PrepareAction(double timestep)
   m_motionPlanner->Update(timestep);
   m_motionController->Update(timestep);
   m_odometry->Update();
+  return true;
 }

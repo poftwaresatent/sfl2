@@ -17,7 +17,7 @@ Robot smart Ter
         Option model_phid_max      1.0
         Option model_sd_max        10.0
         Option model_sdd_max       1.0
-	Option controller_name     tadpf
+	Option controller_name     simple
 
         Option traversability_file  travmap.smart3
         Option robot_radius        2.0
@@ -31,3 +31,7 @@ Robot smart Ter
         Option estar_step         300
 
         Option slow_drawing_enabled false
+        Option gradplot_frequency   5
+
+        Option planning_usecsleep   -1000
+        Option control_usecsleep    -1000

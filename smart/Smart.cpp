@@ -24,12 +24,16 @@
 
 #include "Smart.hpp"
 #include "PathDrawing.hpp"
+#include "PlanningThreadDrawing.hpp"
 #include <smartsfl/SmartAlgo.hpp>
+#include <smartsfl/PlanningThread.hpp>
+#include <smartsfl/ControlThread.hpp>
 #include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/util/numeric.hpp>
+#include <sfl/util/Pthread.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <sfl/gplan/Mapper2d.hpp>
 #include <estar/Facade.hpp>
@@ -43,7 +47,6 @@
 #include <npm/common/RobotDescriptor.hpp>
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
-#include <npm/common/CheatSheet.hpp>
 #include <npm/common/World.hpp>
 #include <npm/common/util.hpp>
 #include <npm/common/wrap_gl.hpp>
@@ -131,7 +134,7 @@ public:
 				 && ((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize)))
 				m_smart_value = estar->GetValue(idx.v0, idx.v1);
 		}
-		PDEBUG("smart: %g   bottom %g\n", m_smart_value, m_queue_bottom);
+		PVDEBUG("smart: %g   bottom %g\n", m_smart_value, m_queue_bottom);
 	}
 	
 	virtual void Set(double value) const {
@@ -186,8 +189,8 @@ public:
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
-    m_cheat(new CheatSheet(&world, GetServer())),
-		m_smart_cs(new SmartColorScheme())
+		m_smart_cs(new SmartColorScheme()),
+		m_error(false)
 {
   expoparams params(descriptor);
   m_nscans = params.front_nscans;
@@ -219,8 +222,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
     exit(EXIT_FAILURE);
 	}
 	
-	m_enable_mapper = true;
-	string_to(descriptor->GetOption("enable_mapper"), m_enable_mapper);
+	if(descriptor->GetOption("enable_mapper") != ""){
+    cerr << "ERROR: Smart option 'enable_mapper' is deprecated.\n";
+    exit(EXIT_FAILURE);
+	}
+	
 	string traversability_file(descriptor->GetOption("traversability_file"));
 	if(traversability_file == ""){
     cerr << "ERROR: Smart needs an a-priori traversability map.\n"
@@ -231,12 +237,6 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	string_to(descriptor->GetOption("robot_radius"), robot_radius);
 	double buffer_zone(robot_radius);
 	string_to(descriptor->GetOption("buffer_zone"), buffer_zone);
-	m_mapper = Mapper2d::Create(robot_radius, buffer_zone,
-															traversability_file, &cerr);
-	if( ! m_mapper){
-    cerr << "ERROR: Could not create mapper, see error messages above.\n";
-    exit(EXIT_FAILURE);
-	}
 	
 	int estar_step(-1);
 	string_to(descriptor->GetOption("estar_step"), estar_step);
@@ -275,13 +275,15 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	}
 	
 	ostringstream err_os;
-	m_smart_algo.reset(SmartAlgo::Create(replan_distance,
+	m_smart_algo.reset(SmartAlgo::Create(robot_radius,
+																			 buffer_zone,
+																			 traversability_file,
+																			 replan_distance,
 																			 wavefront_buffer,
 																			 carrot_distance,
 																			 carrot_stepsize,
 																			 carrot_maxnsteps,
 																			 estar_step,
-																			 m_mapper,
 																			 controller,
 																			 goalmgr_filename,
 																			 &err_os));
@@ -289,7 +291,6 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		cerr << "ERROR asl::SmartAlgo::Create() failed\n " << err_os.str() << "\n";
 		exit(EXIT_FAILURE);
 	}
-	m_goal_manager = m_smart_algo->GetGoalManager();
 	
 	shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart")));	
 	m_mscan.reset(new Multiscanner(odo));
@@ -302,6 +303,40 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 											 params.front_phirange,
 											 params.front_channel)->GetScanner();
 	m_mscan->Add(m_sick);
+	
+	m_rwlock = RWlock::Create("npm::Smart");
+	if( ! m_rwlock){
+		cerr << "ERROR sfl::RWlock::Create() failed\n";
+		exit(EXIT_FAILURE);
+	}
+	m_rwlock->Wrlock();
+	
+	m_planning_thread.reset(new PlanningThread(m_smart_algo, m_mscan, GetHAL(),
+																						 m_rwlock));
+	if( ! string_to(descriptor->GetOption("planning_usecsleep"),
+									m_planning_usecsleep))
+		m_planning_usecsleep = -1;
+	if(0 <= m_planning_usecsleep){
+		PDEBUG("spawning planning thread with usecsleep %u\n",
+					 m_planning_usecsleep);
+		m_planning_thread->Start(m_planning_usecsleep);
+	}
+	else
+		PDEBUG("planning thread remains in synch with simulation\n");
+	
+	m_control_thread.reset(new ControlThread(0.1,	// XXX magic value
+																					 m_smart_algo, GetHAL(),
+																					 m_rwlock));
+	if( ! string_to(descriptor->GetOption("control_usecsleep"),
+									m_control_usecsleep))
+		m_control_usecsleep = -1;
+	if(0 <= m_control_usecsleep){
+		PDEBUG("spawning control thread with usecsleep %u\n",
+					 m_control_usecsleep);
+		m_control_thread->Start(m_control_usecsleep);
+	}
+	else
+		PDEBUG("control thread remains in synch with simulation\n");
 	
 	DefineBicycleDrive(wheelbase, wheelradius, axlewidth);
 
@@ -351,7 +386,21 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																				 smart_proxy));
 	}
 	
-  AddDrawing(new PathDrawing(name + "_carrot", this, 1));
+	size_t gradplot_frequency(1);
+	string_to(descriptor->GetOption("gradplot_frequency"), gradplot_frequency);
+  AddDrawing(new PathDrawing(name + "_carrot", this, gradplot_frequency));
+
+	AddDrawing(new PlanningThreadDrawing(name + "_planning_thread",
+																			 m_planning_thread.get()));
+}
+
+
+Smart::
+~Smart()
+{
+	m_rwlock->Unlock();
+	m_planning_thread.reset();
+	m_control_thread.reset();
 }
 
 
@@ -377,60 +426,43 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 // 	}
 
 
-void Smart::
+bool Smart::
 PrepareAction(double timestep)
 {
-  m_mscan->UpdateAll();
-	shared_ptr<const Scan> scan(m_mscan->CollectScans());
-	
-  double vtrans_cur, steer_cur;
-  GetHAL()->speed_get( & vtrans_cur, & steer_cur);
-	
-	//RFCT// to do: handle m_enable_mapper here (currently in SmartAlgo)
-	
-	double vtrans_want, steer_want;
-	ostringstream err_os;
-	const SmartPlanThread::status_t
-		status(m_smart_algo->ComputeAction(timestep,
-																			 GetServer()->GetTruePose(),
-																			 scan,
-																			 vtrans_cur, steer_cur,
-																			 vtrans_want, steer_want,
-																			 & err_os));
-	switch(status){
-	case SmartPlanThread::HAVE_PLAN: break;
-	case SmartPlanThread::PLANNING: break;
-	case SmartPlanThread::AT_GOAL:
-		if(m_goal_manager){
-			if( ! m_smart_algo->SetNextGoal()){
-				cerr << "\nERROR in Smart::PrepareAction():"
-						 << " m_smart_algo->SetNextGoal() failed\n";
-				exit(EXIT_FAILURE);
-			}
-		}
-		break;
-	case SmartPlanThread::UNREACHABLE:
-		cerr << "\nERROR in Smart::PrepareAction(): goal is unreachable\n";
-		exit(EXIT_FAILURE);
-	case SmartPlanThread::OUT_OF_GRID:
-		cerr << "\nERROR in Smart::PrepareAction(): robot is out of grid\n";
-		exit(EXIT_FAILURE);
-	case SmartPlanThread::IN_OBSTACLE:
-		cerr << "\nERROR in Smart::PrepareAction(): robot is in obstacle\n";
-		exit(EXIT_FAILURE);
-	case SmartPlanThread::ERROR:
-		cerr << "\nERROR in Smart::PrepareAction(): ComputeAction() says\""
-				 << err_os.str() << "\"\n";
-		exit(EXIT_FAILURE);
-	default:
-		cerr << "\nERROR in Smart::PrepareAction(): unhandled retval " << status
-				 << " from ComputeAction()\n";
-		exit(EXIT_FAILURE);
+	PDEBUG("\n\n==================================================\n");
+	if(m_error){
+		cerr << "Smart ERROR state, restart simulation\n";
+		GetHAL()->speed_set(0, 0);
+		return false;
 	}
 	
-	GetHAL()->speed_set(vtrans_want, steer_want);
+	m_mscan->UpdateAll();
 	
+	m_rwlock->Unlock();
+	
+	if(0 > m_planning_usecsleep)
+		m_planning_thread->Step();
+	if(m_planning_thread->error){
+		cerr << "ERROR in planning thread\n";
+		m_error = true;
+		m_rwlock->Wrlock();
+		return false;
+	}
 	m_smart_cs->Update(m_smart_algo.get());
+	
+	m_control_thread->timestep = timestep;
+	if(0 > m_control_usecsleep)
+		m_control_thread->Step();
+	if(m_control_thread->error){
+		cerr << "ERROR in control thread\n";
+		m_error = true;
+		m_rwlock->Wrlock();
+		return false;
+	}
+	
+	usleep(100000);
+	m_rwlock->Wrlock();
+	return true;
 }
 
 
@@ -477,10 +509,11 @@ GoalReached()
 }
 
 
-const asl::path_t * Smart::
-GetPath() const
+void Smart::
+GetPaths(const asl::path_t ** clean, const asl::path_t ** dirty) const
 {
-	return m_smart_algo->GetPath();
+	*clean = m_smart_algo->GetCleanPath();
+	*dirty = m_smart_algo->GetDirtyPath();
 }
 
 

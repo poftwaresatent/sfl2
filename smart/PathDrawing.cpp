@@ -49,12 +49,11 @@ PathDrawing(const std::string & name,
 }
 
 
-void PathDrawing::
-Draw()
+static void draw_path(const asl::path_t * path, size_t gradplot_frequency,
+		      double color_intensity)
 {
-  const asl::path_t * path(m_smart->GetPath());
   if(( ! path) || (path->empty())){
-    PDEBUG("carrot: invalid or empty path\n");    
+    PDEBUG("invalid or empty path\n");
     return;
   }
   
@@ -68,9 +67,13 @@ Draw()
     for(size_t ii(0); ii < path->size(); ++ii){
       const double blue((startval - (*path)[ii].value) / deltav);
       if((*path)[ii].degenerate)
-	glColor3d(1, 0.5, blue);
+	glColor3d(color_intensity,
+		  color_intensity * 0.5,
+		  color_intensity * blue);
       else
-	glColor3d(0.5, 1, blue);
+	glColor3d(color_intensity * 0.5,
+		  color_intensity,
+		  color_intensity * blue);
       glVertex2d((*path)[ii].point.v0, (*path)[ii].point.v1);
     }
     glEnd();
@@ -81,9 +84,13 @@ Draw()
     for(size_t ii(0); ii < path->size(); ii += gradplot_frequency){
       const double blue((startval - (*path)[ii].value) / deltav);
       if((*path)[ii].degenerate)
-	glColor3d(1, 0.5, blue);
+	glColor3d(color_intensity,
+		  color_intensity * 0.5,
+		  color_intensity * blue);
       else
-	glColor3d(0.5, 1, blue);
+	glColor3d(color_intensity * 0.5,
+		  color_intensity,
+		  color_intensity * blue);
       glVertex2d((*path)[ii].point.v0, (*path)[ii].point.v1);
     }
     glEnd();
@@ -92,9 +99,13 @@ Draw()
     for(size_t ii(0); ii < path->size(); ii += gradplot_frequency){
       const double blue((startval - (*path)[ii].value) / deltav);
       if((*path)[ii].degenerate)
-	glColor3d(1, 0.5, blue);
+	glColor3d(color_intensity,
+		  color_intensity * 0.5,
+		  color_intensity * blue);
       else
-	glColor3d(0.5, 1, blue);
+	glColor3d(color_intensity * 0.5,
+		  color_intensity,
+		  color_intensity * blue);
       glVertex2d((*path)[ii].point.v0, (*path)[ii].point.v1);
       glVertex2d((*path)[ii].point.v0 + (*path)[ii].gradient.v0,
 		 (*path)[ii].point.v1 + (*path)[ii].gradient.v1);
@@ -104,11 +115,24 @@ Draw()
   
   double carx(path->back().point.v0);
   double cary(path->back().point.v1);
-  glColor3d(1, 1, 0);
+  glColor3d(color_intensity,
+	    color_intensity,
+	    0);
   glPushMatrix();
   glTranslated(carx, cary, 0);
   gluDisk(wrap_glu_quadric_instance(), 0.2, 0.2, 36, 1);
   glPopMatrix();
+}
+
+
+void PathDrawing::
+Draw()
+{
+  const asl::path_t * clean;
+  const asl::path_t * dirty;
+  m_smart->GetPaths(&clean, &dirty);
+  draw_path(clean, gradplot_frequency, 1);
+  draw_path(dirty, 0, 0.5);
 
   /* trajectory and reference point drawings */
   asl::path_point ref_point;
@@ -125,7 +149,7 @@ Draw()
     }
 
   const asl::trajectory_t *current_traj=m_smart->GetTrajectory();
-  if(current_traj->size()>0)
+  if(current_traj && (current_traj->size()>0))
     {
       glPointSize(5);
       glBegin(GL_LINES);

@@ -36,7 +36,7 @@ public:
   Visitor(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	  const npm::World & world);
   
-  virtual void PrepareAction(double timestep);
+  virtual bool PrepareAction(double timestep);
   virtual void InitPose(double x, double y, double theta);
   virtual void SetPose(double x, double y, double theta);
   virtual void GetPose(double & x, double & y, double & theta);
