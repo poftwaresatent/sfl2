@@ -182,6 +182,7 @@ CXXFLAGS="$CFLAGS"
 
 dnl *** bit of a hack for smartflower 'meta' build
 AM_CONDITIONAL([SMARTFLOWER], [false])
+AM_CONDITIONAL([OPTPROGNAV], [false])
 
 AC_SUBST(PACKAGE_VERSION)
 AC_CONFIG_HEADERS(config.h)

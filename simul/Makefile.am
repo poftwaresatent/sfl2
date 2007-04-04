@@ -4,7 +4,13 @@ CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@
 if SMARTFLOWER
   LDFLAGS+= @GLUTLIBS@
 else
+
+if OPTPROGNAV
+  LDFLAGS+= @GLUTLIBS@
+else
   LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
+endif
+
 endif
 
 bin_PROGRAMS=      nepumuk dumpworld
@@ -19,7 +25,15 @@ if SMARTFLOWER
                  ../../sunflower/libsunflower.la \
                  ../../estar/libestar.la
 else
+if OPTPROGNAV
+  nepumuk_LDADD= ../libnepumuk.la \
+                 ../../sunflower/libsunflower.la \
+                 ../../src/liboptprognav.la \
+                 ../../estar/libestar.la
+else
   nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsmartsfl -lsunflower -lestar
+endif
+
 endif
 
 else
@@ -28,7 +42,14 @@ if SMARTFLOWER
   nepumuk_LDADD= ../libnepumuk.la \
                  ../../sunflower/libsunflower.la
 else
+if OPTPROGNAV
+  nepumuk_LDADD= ../libnepumuk.la \
+                 ../../sunflower/libsunflower.la \
+                 ../../src/liboptprognav.la
+else
   nepumuk_LDADD=   ../libnepumuk.la -lsunflower
+endif
+
 endif
 
 endif
@@ -39,7 +60,13 @@ if SMARTFLOWER
   dumpworld_LDADD= ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
+if OPTPROGNAV
+  dumpworld_LDADD= ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la
+else
   dumpworld_LDADD= ../libnepumuk.la -lsunflower
+endif
+
 endif
 
 dist_bin_SCRIPTS= birondemo.sh \
