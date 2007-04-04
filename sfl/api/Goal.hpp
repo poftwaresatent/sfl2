@@ -138,7 +138,7 @@ namespace sfl {
 			double & dheading) const;
     
     /**
-       Checks whether the goal ishas been reached. It relies on
+       Checks whether the goal has been reached. It relies on
        DistanceReached() and HeadingReached() for this purpose.
     */
     bool Reached(const Frame & position,
