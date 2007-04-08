@@ -24,7 +24,7 @@
 
 #include "Smart.hpp"
 #include "PathDrawing.hpp"
-#include "PlanningThreadDrawing.hpp"
+#include "ThreadDrawing.hpp"
 #include <smartsfl/SmartAlgo.hpp>
 #include <smartsfl/PlanningThread.hpp>
 #include <smartsfl/ControlThread.hpp>
@@ -186,6 +186,77 @@ public:
 };
 
 
+namespace foo {
+	
+	template<>
+	void set_bg_color(SmartPlanThread::status_t status)
+	{
+		switch(status){
+		case SmartPlanThread::HAVE_PLAN:   glColor3d(0,   1,   0  ); break;
+		case SmartPlanThread::BUFFERING:   glColor3d(0.5, 1,   0  ); break;
+		case SmartPlanThread::PLANNING:    glColor3d(1,   0.5, 0  ); break;
+		case SmartPlanThread::AT_GOAL:     glColor3d(0,   0,   1  ); break;
+		case SmartPlanThread::UNREACHABLE:
+		case SmartPlanThread::OUT_OF_GRID:
+		case SmartPlanThread::IN_OBSTACLE: glColor3d(1,   0,   0  ); break;
+		case SmartPlanThread::ERROR:       glColor3d(1,   0,   0.5); break;
+		default:                           glColor3d(1,   0,   1  );
+		}
+	}
+		
+	template<>
+	void set_fg_color(SmartPlanThread::status_t status)
+	{
+		switch(status){
+		case SmartPlanThread::HAVE_PLAN:   glColor3d(0.5, 0,   0  ); break;
+		case SmartPlanThread::BUFFERING:   glColor3d(0.5, 0,   0.5); break;
+		case SmartPlanThread::PLANNING:    glColor3d(0.5, 0,   0.5); break;
+		case SmartPlanThread::AT_GOAL:     glColor3d(0,   0.5, 0  ); break;
+		case SmartPlanThread::UNREACHABLE:
+		case SmartPlanThread::OUT_OF_GRID:
+		case SmartPlanThread::IN_OBSTACLE: glColor3d(0,   0,   0.5); break;
+		case SmartPlanThread::ERROR:       glColor3d(0,   0.5, 0.5); break;
+		default:                           glColor3d(0,   0.5, 0.5);
+		}
+	}
+	
+	template<>
+	struct stats_select<PlanningThread> {
+		typedef PlanningThread::stats_t stats_t;
+	};
+	
+	template<>
+	void set_bg_color(SmartAlgo::control_status_t status)
+	{
+		switch(status){
+		case SmartAlgo::SUCCESS: glColor3d(0,   1,   0  ); break;
+		case SmartAlgo::STARVED: glColor3d(1,   0,   1  ); break;
+		case SmartAlgo::FAILURE: glColor3d(1,   0,   0  ); break;
+		case SmartAlgo::ERROR:   glColor3d(1,   0,   0.5); break;
+		default:                 glColor3d(1,   0,   1  );
+		}
+	}
+	
+	template<>
+	void set_fg_color(SmartAlgo::control_status_t status)
+	{
+		switch(status){
+		case SmartAlgo::SUCCESS: glColor3d(1,   0,   1  ); break;
+		case SmartAlgo::STARVED: glColor3d(0,   0.5, 0  ); break;
+		case SmartAlgo::FAILURE: glColor3d(0,   1,   1  ); break;
+		case SmartAlgo::ERROR:   glColor3d(0,   1,   0.5); break;
+		default:                 glColor3d(0,   1,   0  );
+		}
+	}
+	
+	template<>
+	struct stats_select<ControlThread> {
+		typedef ControlThread::stats_t stats_t;
+	};
+
+}
+
+
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, true),
@@ -311,7 +382,12 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	}
 	m_rwlock->Wrlock();
 	
-	m_planning_thread.reset(new PlanningThread(m_smart_algo, m_mscan, GetHAL(),
+	size_t thread_statlen;
+	if( ! string_to(descriptor->GetOption("thread_statlen"), thread_statlen))
+		thread_statlen = 100;
+	
+	m_planning_thread.reset(new PlanningThread(m_smart_algo, m_mscan, 
+																						 GetHAL(), thread_statlen,
 																						 m_rwlock));
 	if( ! string_to(descriptor->GetOption("planning_usecsleep"),
 									m_planning_usecsleep))
@@ -326,7 +402,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	
 	m_control_thread.reset(new ControlThread(0.1,	// XXX magic value
 																					 m_smart_algo, GetHAL(),
-																					 m_rwlock));
+																					 thread_statlen, m_rwlock));
 	if( ! string_to(descriptor->GetOption("control_usecsleep"),
 									m_control_usecsleep))
 		m_control_usecsleep = -1;
@@ -390,8 +466,10 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	string_to(descriptor->GetOption("gradplot_frequency"), gradplot_frequency);
   AddDrawing(new PathDrawing(name + "_carrot", this, gradplot_frequency));
 
-	AddDrawing(new PlanningThreadDrawing(name + "_planning_thread",
-																			 m_planning_thread.get()));
+ 	AddDrawing(new ThreadDrawing<PlanningThread>(name + "_planning_thread",
+ 																							 m_planning_thread.get()));
+ 	AddDrawing(new ThreadDrawing<ControlThread>(name + "_control_thread",
+ 																							m_control_thread.get()));
 }
 
 
@@ -460,7 +538,7 @@ PrepareAction(double timestep)
 		return false;
 	}
 	
-	usleep(100000);
+	usleep(500);
 	m_rwlock->Wrlock();
 	return true;
 }

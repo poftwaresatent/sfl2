@@ -57,7 +57,7 @@ namespace npm {
   {
     shared_ptr<const BBox> bb(m_world.GetBounds());
     if( ! bb)
-      view.SetRange(0, 0, 1, 1);
+      view.SetBounds(0, 0, 1, 1);
     else
       view.SetBounds(*bb, 1);
   }

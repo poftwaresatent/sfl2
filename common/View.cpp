@@ -282,7 +282,19 @@ namespace npm {
     xmax = bbox.X1() + margin;
     ymin = bbox.Y0() - margin;
     ymax = bbox.Y1() + margin;
+    
+    CalculateViewport();
+  }
 
+
+  void View::
+  SetBounds(double x0, double y0, double x1, double y1, double margin)
+  {
+    xmin = x0 - margin;
+    xmax = x1 + margin;
+    ymin = y0 - margin;
+    ymax = y1 + margin;
+    
     CalculateViewport();
   }
 
