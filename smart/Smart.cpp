@@ -382,9 +382,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	}
 	m_rwlock->Wrlock();
 	
-	size_t thread_statlen;
+	int thread_statlen;
 	if( ! string_to(descriptor->GetOption("thread_statlen"), thread_statlen))
 		thread_statlen = 100;
+	if(thread_statlen < 1){
+		cerr << "ERROR invalid thread_statlen = " << thread_statlen << "< 1\n";
+		exit(EXIT_FAILURE);
+	}
 	
 	m_planning_thread.reset(new PlanningThread(m_smart_algo, m_mscan, 
 																						 GetHAL(), thread_statlen,

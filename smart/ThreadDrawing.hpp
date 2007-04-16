@@ -74,7 +74,7 @@ public:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			for(size_t ii(0); ii < stats.status.size(); ++ii){
 				foo::set_bg_color(stats.status[ii]);
-				glRectd(ii    , -100,////m_min_delta_ms,
+				glRectd(ii    , 0, ///m_min_delta_ms,
 								ii + 1, m_max_delta_ms);
 			}
 			glBegin(GL_LINE_STRIP);
@@ -90,7 +90,7 @@ public:
 		const stats_t & stats(m_thread->stats);
 		view.UnlockAspectRatio();
 		if(stats.comp_minmax(m_max_delta_ms, m_min_delta_ms))
-			view.SetBounds(0, -100, stats.length, m_max_delta_ms);
+			view.SetBounds(0, 0, stats.length, m_max_delta_ms);
 		//view.SetBounds(0, m_min_delta_ms, stats.length, m_max_delta_ms);
 		else
 			view.SetBounds(0, 0, 1, 1);
