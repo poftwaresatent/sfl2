@@ -145,15 +145,14 @@ Draw()
       glEnd();
        
     }else{
-      PDEBUG_OUT("No reference point could be queried!!!\n");
+      PDEBUG("No reference point could be queried!!!\n");
     }
 
   const asl::trajectory_t *current_traj=m_smart->GetTrajectory();
-  if(current_traj && (current_traj->size()>0))
+  if(current_traj && (current_traj->size()>1))
     {
-      glPointSize(5);
-      glBegin(GL_LINES);
-      glColor3d(1.0, 0.0, 0.0);
+      glBegin(GL_LINE_STRIP);
+      glColor3d(1.0, 1.0, 0.5);
       for(size_t ii(0); ii< current_traj->size();ii++){
 	glVertex2d((*current_traj)[ii].v0, (*current_traj)[ii].v1);
       }

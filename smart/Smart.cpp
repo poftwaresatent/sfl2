@@ -405,6 +405,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		PDEBUG("planning thread remains in synch with simulation\n");
 	
 	m_control_thread.reset(new ControlThread(0.1,	// XXX magic value
+																					 params.model_sdd_max,
 																					 m_smart_algo, GetHAL(),
 																					 thread_statlen, m_rwlock));
 	if( ! string_to(descriptor->GetOption("control_usecsleep"),

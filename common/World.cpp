@@ -28,6 +28,7 @@
 #include "WorldDrawing.hpp"
 #include "WorldCamera.hpp"
 #include "BBox.hpp"
+#include "Random.hpp"
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
@@ -456,6 +457,7 @@ namespace npm {
     string name("");
     vector<Line> line;
     string textline;
+    double probability(-1);
     while(getline(is, textline)){
       istringstream tls(textline);
       if(textline[0] == '#')
@@ -483,6 +485,15 @@ namespace npm {
 	line.push_back(Line(x0, y0, x1, y1));
 	PVDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
       }
+      else if(token == "probability"){
+	tls >> probability;
+	if( ! tls){
+	  if(os) *os << "ERROR: could not parse probability from \""
+		     << tls.str() << "\"\n";
+	  return shared_ptr<World>();
+	}
+	PVDEBUG("probability %g\n", probability);
+      }
       else{
 	if(os) *os << "ERROR: could not parse \""
 		   << tls.str() << "\"\n";
@@ -498,8 +509,13 @@ namespace npm {
       return shared_ptr<World>();
     }
     shared_ptr<World> world(new World(name));
-    for(size_t il(0); il < line.size(); ++il)
-      world->AddLine(line[il]);
+    if(probability < 0)
+      for(size_t il(0); il < line.size(); ++il)
+	world->AddLine(line[il]);
+    else
+      for(size_t il(0); il < line.size(); ++il)
+	if(Random::Uniform(probability))
+	  world->AddLine(line[il]);
     PVDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
 	    world->m_bbox->X1(), world->m_bbox->Y1());
     return world;
