@@ -144,7 +144,7 @@ namespace sfl {
   */
   class SimpleThread {
   public:
-    explicit SimpleThread(const std::string & _name): name(_name) {}
+    explicit SimpleThread(const std::string & name);
     virtual ~SimpleThread();
     
     /** Performs one fundamental step, to be provided by subclasses.

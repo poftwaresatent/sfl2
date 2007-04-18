@@ -264,6 +264,14 @@ namespace sfl {
   
   
   SimpleThread::
+  SimpleThread(const std::string & _name)
+    : name(_name),
+      thread(0)
+  {
+  }
+
+
+  SimpleThread::
   ~SimpleThread()
   {
     Stop();			// also deletes thread
