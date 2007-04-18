@@ -19,7 +19,8 @@ View planning_thread
 
 View ter
      Camera  Ter_true_zoom_camera
-     Drawing Ter_estar_meta
+     Drawing Ter_travmap
+#     Drawing Ter_estar_meta
      Drawing Ter_estar_queue
      Drawing Ter_carrot
      Drawing world
