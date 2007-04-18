@@ -69,9 +69,6 @@ namespace npm {
 		if( ! m_proxy->Enabled())
 			return;
 		
-		double dbgsum(0);
-		double dbgcount(0);
-		
 		const TraversabilityMap * tm(m_proxy->Get());
     if( ! tm)
       return;
@@ -89,24 +86,22 @@ namespace npm {
     for(size_t ix(0); ix < tm->data->xsize; ++ix)
       for(size_t iy(0); iy < tm->data->ysize; ++iy){
 				const int value((*tm->data)[ix][iy]);
-				
-				dbgsum += value;
-				dbgcount += 1;
-				
-				const double blue((value - tm->freespace) * cscale);
-				double green(blue);
-				if(value <= tm->freespace)
-					green = minval(1.0, green * 2 + 0.2);
-				double red(blue);
-				if(value >= tm->obstacle)
-					red = minval(1.0, red * 2);
-				glColor3d(red, green, blue);
+				if(value > tm->obstacle)
+					glColor3d(0.5, 0, 0.3);
+				else if(value == tm->obstacle)
+					glColor3d(0.5, 0, 0);
+				else if(value < tm->freespace)
+					glColor3d(0, 0, 0.5);
+				else if(value == tm->freespace)
+					glColor3d(0, 0.5, 0);
+				else{
+					const double grey((value - tm->freespace) * cscale);
+					glColor3d(grey, grey, grey);
+				}
 				glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
       }
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-		
-		PVDEBUG("mean value %g\n", dbgsum / dbgcount);
-  }
+	}
 
 }

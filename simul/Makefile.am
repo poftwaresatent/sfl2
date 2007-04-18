@@ -97,6 +97,8 @@ dist_bin_SCRIPTS= birondemo.sh \
                     layout.smart2 \
                     robots.smart2 \
                     travmap.smart2 \
+                    goals.smart2 \
+                    world.smart2 \
                   smart3.sh \
                     layout.smart3 \
                     robots.smart3 \

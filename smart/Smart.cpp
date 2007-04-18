@@ -25,6 +25,7 @@
 #include "Smart.hpp"
 #include "PathDrawing.hpp"
 #include "ThreadDrawing.hpp"
+#include "ArcDrawing.hpp"
 #include <smartsfl/SmartAlgo.hpp>
 #include <smartsfl/PlanningThread.hpp>
 #include <smartsfl/ControlThread.hpp>
@@ -315,15 +316,15 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	string controller_name(descriptor->GetOption("controller_name"));
 	if(controller_name == "")
 		controller_name = "simple";
-	shared_ptr<AckermannController>
-		controller(CreateAckermannController(controller_name,
-																				 AckermannModel(params.model_sd_max,
-																												params.model_sdd_max,
-																												params.model_phi_max,
-																												params.model_phid_max,
-																												wheelbase),
-																				 &cerr));
-  if( ! controller){
+	m_controller
+		.reset(CreateAckermannController(controller_name,
+																		 AckermannModel(params.model_sd_max,
+																										params.model_sdd_max,
+																										params.model_phi_max,
+																										params.model_phid_max,
+																										wheelbase),
+																		 &cerr));
+  if( ! m_controller){
 		cerr << "ERROR asl::CreateAckermannController() failed\n"
 				 << "  controller_name: \"" << controller_name << "\"\n";
 		exit(EXIT_FAILURE);
@@ -355,7 +356,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																			 carrot_stepsize,
 																			 carrot_maxnsteps,
 																			 estar_step,
-																			 controller,
+																			 m_controller,
 																			 goalmgr_filename,
 																			 &err_os));
 	if( ! m_smart_algo){
@@ -475,6 +476,16 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
  																							 m_planning_thread.get()));
  	AddDrawing(new ThreadDrawing<ControlThread>(name + "_control_thread",
  																							m_control_thread.get()));
+	
+	shared_ptr<ArcDrawing>
+		ad(new ArcDrawing(name + "_arcs_cached", this,
+											slow_drawing_enabled, false));
+ 	AddDrawing(ad);
+	world.AddKeyListener(ad);
+	ad.reset(new ArcDrawing(name + "_arcs_recomp", this,
+													slow_drawing_enabled, true));
+ 	AddDrawing(ad);
+	world.AddKeyListener(ad);
 }
 
 
@@ -612,3 +623,18 @@ GetRefpoint(asl::path_point &ref_point) const
 	return m_smart_algo->GetRefpoint(ref_point);
 }
 
+
+const asl::ArcControl * Smart::
+GetArcControl() const
+{
+	if( ! m_controller)
+		return 0;
+	return m_controller->GetArcControl();
+}
+
+
+boost::shared_ptr<const asl::NavFuncQuery> Smart::
+GetQuery() const
+{
+	return m_smart_algo->GetQuery();
+}

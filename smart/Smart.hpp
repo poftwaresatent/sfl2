@@ -35,6 +35,9 @@ namespace asl {
   class SmartAlgo;
 	class PlanningThread;
   class ControlThread;
+	class ArcControl;
+	class AckermannController;
+	class NavFuncQuery;
 	
   struct path_element;
   typedef std::vector<path_element> path_t;
@@ -78,7 +81,14 @@ public:
 	/** \note Can return null. */
 	const asl::trajectory_t * GetTrajectory() const;	
 
-	bool  GetRefpoint(asl::path_point &ref_point) const;
+	bool GetRefpoint(asl::path_point &ref_point) const;
+	
+	/** \note Can return null. */
+	const asl::ArcControl * GetArcControl() const;
+	
+	/** \note Can return null. */
+	boost::shared_ptr<const asl::NavFuncQuery> GetQuery() const;
+	
   
 protected:
   boost::shared_ptr<sfl::Scanner> m_sick;
@@ -89,7 +99,8 @@ protected:
   boost::shared_ptr<sfl::RWlock> m_rwlock;
   boost::shared_ptr<asl::PlanningThread> m_planning_thread;
   boost::shared_ptr<asl::ControlThread> m_control_thread;
-  
+	boost::shared_ptr<asl::AckermannController> m_controller;
+	
   int m_nscans, m_sick_channel;
 	bool m_error;
 	int m_planning_usecsleep, m_control_usecsleep;
