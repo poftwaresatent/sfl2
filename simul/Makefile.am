@@ -85,10 +85,14 @@ dist_bin_SCRIPTS= birondemo.sh \
                     layout.smart0 \
                     robots.smart0 \
                     travmap.smart0 \
+                    goals.smart0 \
+                    world.smart0 \
                   smart1.sh \
                     layout.smart1 \
                     robots.smart1 \
                     travmap.smart1 \
+                    goals.smart1 \
+                    world.smart1 \
                   smart2.sh \
                     layout.smart2 \
                     robots.smart2 \
@@ -98,16 +102,4 @@ dist_bin_SCRIPTS= birondemo.sh \
                     robots.smart3 \
                     travmap.smart3 \
                     goals.smart3 \
-                    world.smart3 \
-                  icra07-artificial.sh \
-                    layout.icra07-artificial \
-                    robots.icra07-artificial \
-                    travmap.icra07-artificial \
-                    goals.icra07-artificial \
-                    world.icra07-artificial \
-                  icra07-logreplay.sh \
-                    layout.icra07-logreplay \
-                    robots.icra07-logreplay \
-                    travmap.icra07-logreplay \
-                    goals.icra07-logreplay \
-                    world.icra07-logreplay
+                    world.smart3

@@ -1,6 +1,6 @@
 Robot smart Ter
 	Pose 35  32    0.2
-	Option goalmgr_filename goals.icra07-artificial
+	Option goalmgr_filename goals.smart0
 		
 	Option camera_zoom         15
 	Option front_channel       0
@@ -19,7 +19,7 @@ Robot smart Ter
         Option model_sdd_max       1.0
 
 	Option controller_name      tadpf
-        Option traversability_file  travmap.icra07-artificial
+        Option traversability_file  travmap.smart0
         Option robot_radius         2.0
         Option buffer_zone          4.5
 
