@@ -463,7 +463,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 			smart_proxy(new SmartTraversabilityProxy(m_smart_algo.get(),
 																							 slow_drawing_enabled));
 		world.AddKeyListener(smart_proxy);
-		AddDrawing(new TraversabilityDrawing(name + "_smart_travmap",
+		AddDrawing(new TraversabilityDrawing(name + "_travmap",
 																				 smart_proxy));
 	}
 	
