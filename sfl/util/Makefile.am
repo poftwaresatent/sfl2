@@ -6,10 +6,11 @@ include_HEADERS=    Point.hpp array2d.hpp functors.hpp Frame.hpp \
                     Polygon.hpp Hull.hpp numeric.hpp GoalManager.hpp
 includedir=         @includedir@/sfl/util
 
-check_PROGRAMS=       test-goalmgr test-ringbuf
+check_PROGRAMS=       test-goalmgr test-ringbuf test-pthread
 LDADD=                ../libsunflower.la
 test_goalmgr_SOURCES= test-goalmgr.cpp
 test_ringbuf_SOURCES= test-ringbuf.cpp
+test_pthread_SOURCES= test-pthread.cpp
 
 ../libsunflower.la:
 	$(MAKE) -C ..
