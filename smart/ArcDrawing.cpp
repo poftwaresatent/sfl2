@@ -38,9 +38,9 @@ using namespace boost;
 
 ArcDrawing::
 ArcDrawing(const std::string & name,
-	   Smart * smart,
-	   bool enabled,
-	   bool recomp_status)
+					 Smart * smart,
+					 bool enabled,
+					 bool recomp_status)
   : Drawing(name),
     m_smart(smart),
     m_enabled(enabled),
@@ -90,44 +90,50 @@ Draw()
     const int numpts(arc.GetNumPts());
     if(numpts < 1)
       continue;
+		const int last_good(arc.GetLastGoodState());
+		if(( ! m_recomp_status) && (last_good < 1))
+			continue;
     glPointSize(1);
     glBegin(GL_POINTS);
     for(int jj(1); jj < numpts; ++jj){
       const pt2d pt(arc.GetPoint(jj));
       NavFuncQuery::status_t status;
-      if(m_recomp_status){
-	const pt2d pt0(arc.GetPoint(jj-1));
-	double gx0(pt0.v0);
-	double gy0(pt0.v1);
-	double gx1(pt.v0);
-	double gy1(pt.v1);
-	pose.To(gx0, gy0);
-	pose.To(gx1, gy1);
-	double delta;
-	////	status = query->GetValue(gx, gy, value);
-	status = query->ComputeDeltaCost(gx0, gy0, gx1, gy1, delta);
+      if( ! m_recomp_status){
+				if(jj > last_good)
+					break;
+				status = arc.GetNavFuncStat();
+			}
+			else{
+				const pt2d pt0(arc.GetPoint(jj-1));
+				double gx0(pt0.v0);
+				double gy0(pt0.v1);
+				double gx1(pt.v0);
+				double gy1(pt.v1);
+				pose.To(gx0, gy0);
+				pose.To(gx1, gy1);
+				double delta;
+				////	status = query->GetValue(gx, gy, value);
+				status = query->ComputeDeltaCost(gx0, gy0, gx1, gy1, delta);
       }
-      else
-	status = arc.GetNavFuncStat();
       switch(status){
       case NavFuncQuery::SUCCESS:
-	glColor3d(0, 1, 0);	// green
-	break;
+				glColor3d(0, 1, 0);	// green
+				break;
       case NavFuncQuery::OUT_OF_BOUNDS:
-	glColor3d(0.5, 0, 0);	// dark red
-	break;
+				glColor3d(0.5, 0, 0);	// dark red
+				break;
       case NavFuncQuery::OBSTACLE:
-	glColor3d(1, 0.2, 0.2);	// bright red
-	break;
+				glColor3d(1, 0.2, 0.2);	// bright red
+				break;
       case NavFuncQuery::UNPROPAGATED:
-	glColor3d(1, 0.2, 1);	// bright magenta
-	break;
+				glColor3d(1, 0.2, 1);	// bright magenta
+				break;
       case NavFuncQuery::INVALID:
-	glColor3d(0, 1, 1);	// cyan
-	break;
+				glColor3d(0, 1, 1);	// cyan
+				break;
       default:
-	PVDEBUG("unhandled NavFuncQuery::status_t %d\n", status);
-	glColor3d(0.5, 0.5, 0.5); // grey
+				PVDEBUG("unhandled NavFuncQuery::status_t %d\n", status);
+				glColor3d(0.5, 0.5, 0.5); // grey
       }
       glVertex2d(pt.v0, pt.v1);
     }
