@@ -160,13 +160,24 @@ AC_ARG_WITH(genom,
   ],[
     AM_CONDITIONAL([HAVE_GENOM], [false])])
 
+AC_ARG_WITH(png,
+  AC_HELP_STRING([--with-png=PATH], [specify libpng install dir]),
+  [ if test "x$withval" != "x" ; then
+      CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}"
+      LDFLAGS="-L${withval}/lib -I${withval} $LDFLAGS"
+    fi ], [])
+oldCPPFLAGS="$CPPFLAGS"
+test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
+AC_CHECK_HEADERS([png.h], [LDFLAGS="$LDFLAGS -lpng -lz"], [
+  AC_MSG_NOTICE([PNG support disabled (CPPFLAGS=$CPPFLAGS)])])
+CPPFLAGS="$oldCPPFLAGS"
+
 case $host_os in
   darwin*) AC_DISABLE_SHARED;;
   *)       AC_DISABLE_STATIC;;
 esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
-AC_CHECK_HEADERS([png.h], [LDFLAGS="$LDFLAGS -lpng -lz"])
 
 ABSTOPBUILDDIR=`pwd`
 if test -z "$ABSTOPBUILDDIR" ; then
