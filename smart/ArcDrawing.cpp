@@ -91,8 +91,10 @@ Draw()
     if(numpts < 1)
       continue;
 		const int last_good(arc.GetLastGoodState());
-		if(( ! m_recomp_status) && (last_good < 1))
-			continue;
+		if( ! m_recomp_status){
+			if( ! arc.arc_valid)
+				continue;
+		}
     glPointSize(1);
     glBegin(GL_POINTS);
     for(int jj(1); jj < numpts; ++jj){
@@ -140,6 +142,44 @@ Draw()
     glEnd();
   }
   
+	if( ! m_recomp_status){
+		for(size_t ii(0); ii < arc_set.size(); ++ii){
+			const Arc & arc(arc_set[ii]);
+			const int last_good(arc.GetLastGoodState());
+			if( ! arc.arc_valid)
+				continue;
+			if(last_good < 1)
+				continue;
+			glPointSize(4);
+			glBegin(GL_POINTS);
+      const pt2d pt(arc.GetPoint(last_good));
+      NavFuncQuery::status_t status;
+			status = arc.GetNavFuncStat();
+      switch(status){
+      case NavFuncQuery::SUCCESS:
+				glColor3d(0, 1, 0);	// green
+				break;
+      case NavFuncQuery::OUT_OF_BOUNDS:
+				glColor3d(0.5, 0, 0);	// dark red
+				break;
+      case NavFuncQuery::OBSTACLE:
+				glColor3d(1, 0.2, 0.2);	// bright red
+				break;
+      case NavFuncQuery::UNPROPAGATED:
+				glColor3d(1, 0.2, 1);	// bright magenta
+				break;
+      case NavFuncQuery::INVALID:
+				glColor3d(0, 1, 1);	// cyan
+				break;
+      default:
+				PVDEBUG("unhandled NavFuncQuery::status_t %d\n", status);
+				glColor3d(0.5, 0.5, 0.5); // grey
+      }
+      glVertex2d(pt.v0, pt.v1);
+    }
+    glEnd();
+	}
+
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
