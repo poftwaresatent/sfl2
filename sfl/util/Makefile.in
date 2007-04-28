@@ -23,7 +23,7 @@ VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ../..
+top_builddir = ..
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = @INSTALL@
 install_sh_DATA = $(install_sh) -c -m 644
@@ -41,17 +41,15 @@ build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = test-goalmgr$(EXEEXT) test-ringbuf$(EXEEXT) \
 	test-pthread$(EXEEXT)
-subdir = sunflower/util
+subdir = util
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/sunflower/config.h \
-	$(top_builddir)/nepumuk/config.h \
-	$(top_builddir)/estar/config.h
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
@@ -70,7 +68,7 @@ am_test_ringbuf_OBJECTS = test-ringbuf.$(OBJEXT)
 test_ringbuf_OBJECTS = $(am_test_ringbuf_OBJECTS)
 test_ringbuf_LDADD = $(LDADD)
 test_ringbuf_DEPENDENCIES = ../libsunflower.la
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/sunflower -I$(top_builddir)/nepumuk -I$(top_builddir)/estar
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -123,26 +121,12 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
-ENABLE_GFX_FALSE = @ENABLE_GFX_FALSE@
-ENABLE_GFX_TRUE = @ENABLE_GFX_TRUE@
-ENABLE_NPM_FALSE = @ENABLE_NPM_FALSE@
-ENABLE_NPM_TRUE = @ENABLE_NPM_TRUE@
-ESTAR_CFLAGS = @ESTAR_CFLAGS@
-ESTAR_CPPFLAGS = @ESTAR_CPPFLAGS@
-ESTAR_CXXFLAGS = @ESTAR_CXXFLAGS@
-ESTAR_LDFLAGS = @ESTAR_LDFLAGS@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
-GFXLIBS = @GFXLIBS@
-GLUTLIBS = @GLUTLIBS@
 GREP = @GREP@
 HAVE_ESTAR_FALSE = @HAVE_ESTAR_FALSE@
 HAVE_ESTAR_TRUE = @HAVE_ESTAR_TRUE@
-HAVE_GENOM_FALSE = @HAVE_GENOM_FALSE@
-HAVE_GENOM_TRUE = @HAVE_GENOM_TRUE@
-HAVE_XCF_FALSE = @HAVE_XCF_FALSE@
-HAVE_XCF_TRUE = @HAVE_XCF_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -155,8 +139,6 @@ LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 OBJEXT = @OBJEXT@
-OPTPROGNAV_FALSE = @OPTPROGNAV_FALSE@
-OPTPROGNAV_TRUE = @OPTPROGNAV_TRUE@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -168,14 +150,9 @@ RANLIB = @RANLIB@
 ROBOX_FALSE = @ROBOX_FALSE@
 ROBOX_TRUE = @ROBOX_TRUE@
 SET_MAKE = @SET_MAKE@
-SFL_LDFLAGS = @SFL_LDFLAGS@
 SHELL = @SHELL@
-SMARTFLOWER_FALSE = @SMARTFLOWER_FALSE@
-SMARTFLOWER_TRUE = @SMARTFLOWER_TRUE@
 STRIP = @STRIP@
 VERSION = @VERSION@
-XCF_CPPFLAGS = @XCF_CPPFLAGS@
-XCF_LDFLAGS = @XCF_LDFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
@@ -248,9 +225,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  sunflower/util/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  util/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  sunflower/util/Makefile
+	  $(AUTOMAKE) --foreign  util/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
