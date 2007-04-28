@@ -28,11 +28,11 @@ Robot smart Ter
         Option carrot_maxnsteps   150
         Option replan_distance     10
         Option wavefront_buffer     6
-        Option estar_step         300
+        Option estar_step          50
 
         Option slow_drawing_enabled false
         Option gradplot_frequency   5
 
-        Option planning_usecsleep  -10000
-        Option control_usecsleep    -1000
-        Option thread_statlen       100
+        Option planning_usecsleep      0
+        Option control_usecsleep       0
+        Option thread_statlen        300

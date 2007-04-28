@@ -87,7 +87,7 @@ namespace npm {
       for(size_t iy(0); iy < tm->data->ysize; ++iy){
 				const int value((*tm->data)[ix][iy]);
 				if(value > tm->obstacle)
-					glColor3d(0.5, 0, 0.3);
+					glColor3d(0.5, 0, 0.6);
 				else if(value == tm->obstacle)
 					glColor3d(0.5, 0, 0);
 				else if(value < tm->freespace)

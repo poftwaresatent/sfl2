@@ -20,8 +20,8 @@ if HAVE_ESTAR
 
 if SMARTFLOWER
   nepumuk_LDADD= ../libnepumuk.la \
-                 ../../asl-mcontrol/libasl-mcontrol.la \
                  ../../smartsfl/libsmartsfl.la \
+                 ../../asl-mcontrol/libasl-mcontrol.la \
                  ../../sunflower/libsunflower.la \
                  ../../estar/libestar.la
 else
@@ -104,4 +104,10 @@ dist_bin_SCRIPTS= birondemo.sh \
                     robots.smart3 \
                     travmap.smart3 \
                     goals.smart3 \
-                    world.smart3
+                    world.smart3 \
+                  smart4.sh \
+                    layout.smart4 \
+                    robots.smart4 \
+                    travmap.smart4 \
+                    goals.smart4 \
+                    world.smart4

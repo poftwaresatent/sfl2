@@ -18,17 +18,7 @@ View arcs_cached
      Drawing Ter_arcs_cached
      Drawing Ter_true_drawing
      Drawing Ter_drive
-     Window  0.5  0.0  1.0  0.5
-     Border  1
-
-View arcs_recomp
-     Camera  Ter_true_zoom_camera
-     Drawing Ter_travmap
-     Drawing Ter_estar_queue
-     Drawing Ter_arcs_recomp
-     Drawing Ter_true_drawing
-     Drawing Ter_drive
-     Window  0.5  0.5  1.0  1.0
+     Window  0.5  0.0  1.0  1.0
      Border  1
 
 View meta

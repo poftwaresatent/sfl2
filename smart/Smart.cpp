@@ -51,6 +51,8 @@
 #include <npm/common/World.hpp>
 #include <npm/common/util.hpp>
 #include <npm/common/wrap_gl.hpp>
+#include <npm/common/MapperUpdateDrawing.hpp>
+#include <npm/common/MapperRefDrawing.hpp>
 #include <npm/estar/EstarDrawing.hpp>
 #include <iostream>
 
@@ -346,6 +348,12 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		exit(EXIT_FAILURE);
 	}
 	
+	bool use_simple_query(false);
+	string_to(descriptor->GetOption("use_simple_query"), use_simple_query);
+	
+	bool swiped_map_update(false);
+	string_to(descriptor->GetOption("swiped_map_update"), swiped_map_update);
+	
 	ostringstream err_os;
 	m_smart_algo.reset(SmartAlgo::Create(robot_radius,
 																			 buffer_zone,
@@ -358,6 +366,8 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																			 estar_step,
 																			 m_controller,
 																			 goalmgr_filename,
+																			 use_simple_query,
+																			 swiped_map_update,
 																			 &err_os));
 	if( ! m_smart_algo){
 		cerr << "ERROR asl::SmartAlgo::Create() failed\n " << err_os.str() << "\n";
@@ -486,6 +496,13 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 													slow_drawing_enabled, true));
  	AddDrawing(ad);
 	world.AddKeyListener(ad);
+	
+	AddDrawing(new MapperUpdateDrawing(name + "_mapper_update",
+																		 m_smart_algo->GetMapper()));
+	AddDrawing(new MapperRefDrawing(name + "_mapper_ref",
+																	m_smart_algo->GetMapper(), false));
+	AddDrawing(new MapperRefDrawing(name + "_mapper_link",
+																	m_smart_algo->GetMapper(), true));
 }
 
 
