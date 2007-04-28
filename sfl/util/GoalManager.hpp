@@ -50,10 +50,15 @@ namespace sfl {
 	instance is not well defined (you should throw it away).
     */
     bool ParseConfig(const std::string filename, std::ostream * os);
+		
     
     /** Like the other ParseConfig(), but takes an already opened
 	stream as input. */
     bool ParseConfig(std::istream & is, std::ostream * os);
+
+		/* parsing a simple goal file */
+		bool ParseConfigSimple(const std::string filename, std::ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff);
+		bool ParseConfigSimple(std::istream & is, std::ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff);
     
     /** \return 0 iff no goals are registered or the last goal has
 	been reached, a valid pointer otherwise. */

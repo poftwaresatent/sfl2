@@ -120,7 +120,7 @@ namespace sfl {
 
     const size_t nscans(scan->data.size());
     for(size_t is(0); is < nscans; ++is)
-      if(scan->data[is].rho >= ignore_radius){
+      if(scan->data[is].in_range && (scan->data[is].rho >= ignore_radius)){
 	const scan_data & gdata(scan->data[is]);
 	double dx(gdata.globx - _position.first);
 	double dy(gdata.globy - _position.second);

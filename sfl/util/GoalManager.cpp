@@ -121,6 +121,67 @@ namespace sfl {
     return true;
   }
   
+
+  /* quick & dirty solution to parsing simple waypoints files */
+  bool GoalManager::
+  ParseConfigSimple(const string filename, ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff)
+  {
+    ifstream config(filename.c_str());
+    if( ! config){
+      if(os)
+	*os << "ERROR opening config file \"" << filename << "\".\n";
+      return false;
+    }
+    return ParseConfigSimple(config, os, mode, goal_theta, goal_radius, goal_theta_diff);
+  }
+
+  /*this function assumes a set of x-y coordinates column-wise
+    so, an extremely simple parser */
+  bool GoalManager::
+  ParseConfigSimple(istream & is, ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff)
+  {
+    string token;
+    int num_goals(0);
+
+    //defining the mode first
+    if(mode == "none")
+      m_repeat = NONE;
+    else if(mode == "loop")
+      m_repeat = LOOP;
+    else{
+      if(os)
+	*os << "ERROR invalid repeat mode \"" << mode << "\"\n";
+      return false;
+    }
+
+    while(1)
+      {
+	double x;
+	if( ! (is >> x)){
+	  if(os)
+	    *os << "Ending reading goals! at  #" << m_goal.size() << " x\n";
+	  break;
+	}
+	
+	double y;
+	if( ! (is >> y)){
+	  if(os)
+	    *os << "Ending reading goals! at  #" << m_goal.size() << " y\n";
+	  break;
+	}
+	num_goals++;
+	AddGoal(x, y, goal_theta, goal_radius, goal_theta_diff);
+	if(os)
+	  *os << "Adding goal "<< num_goals<<":x="<<x<<" y="<<y<<"\n";
+      }
+
+    if(os){
+      *os << "Ended reading goals\n"<<"The mode is:"<<mode<<"\n";
+    }
+    return true;
+  }
+
+  
   
   shared_ptr<Goal> GoalManager::
   GetCurrentGoal() const

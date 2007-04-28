@@ -48,7 +48,11 @@ namespace sfl {
   class Multiscanner
   {
   public:
+    typedef std::vector<boost::shared_ptr<Scan> > raw_scan_collection_t;
+    
+    
     explicit Multiscanner(boost::shared_ptr<Odometry> odometry);
+    
     
     /** Appends a Scanner instance to the list of registered devices. */
     void Add(boost::shared_ptr<Scanner> scanner);
@@ -80,6 +84,14 @@ namespace sfl {
        the result mixes data from more than one acquisition cycle.
     */
     boost::shared_ptr<Scan> CollectScans() const;
+    
+    /**
+       Similar to CollectScans(), but it contains all scan data (also
+       OUT_OF_RANGE readings) and keeps the (phi, rho) values relative
+       to each sensor's frame. This is more appropriate e.g. for
+       "sweeped map updates".
+    */
+    boost::shared_ptr<raw_scan_collection_t> CollectRawScans() const;
     
     /** Mainly for debugging, returns the offset of a scanner's data
 	in the collected scan object. This is usually not needed and

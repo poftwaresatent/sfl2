@@ -46,6 +46,8 @@ namespace sfl {
     double globx;
     /** y-coordinates [m] in the global frame */      
     double globy;
+    /** true if the point is an actual point in the environment */
+    bool in_range;
   };
   
   /**

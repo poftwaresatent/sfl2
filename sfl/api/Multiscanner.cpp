@@ -33,6 +33,7 @@
 
 
 using namespace boost;
+using namespace std;
 
 
 namespace sfl {
@@ -92,11 +93,25 @@ namespace sfl {
 	if(scanner->GetData(iRay, data) == Scanner::SUCCESS){
 	  data.phi = atan2(data.locy, data.locx);
 	  data.rho = sqrt(sqr(data.locx) + sqr(data.locy));
+	  data.in_range = true;
 	  result->data.push_back(data);
 	}
       }
     }
     
+    return result;
+  }
+  
+  
+  boost::shared_ptr<Multiscanner::raw_scan_collection_t> Multiscanner::
+  CollectRawScans() const
+  {
+    boost::shared_ptr<raw_scan_collection_t>
+      result(new raw_scan_collection_t());
+    for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
+      shared_ptr<Scanner> scanner(m_scanner[iScanner]);
+      result->push_back(scanner->GetScanCopy());
+    }
     return result;
   }
   

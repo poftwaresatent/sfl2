@@ -97,6 +97,8 @@ namespace sfl {
       m_sinphi[i] = sin(m_clean->data[i].phi);
       m_clean->data[i].rho = rhomax;
       m_dirty->data[i].rho = rhomax;
+      m_clean->data[i].in_range = false;
+      m_dirty->data[i].in_range = false;
     }
   }
   
@@ -176,6 +178,7 @@ namespace sfl {
     m_dirty->pose.SetVar(sxx, syy, stt, sxy, sxt, syt);
     for(size_t ii(0); ii < nscans; ++ii){
       m_dirty->data[ii].rho = rho[ii];
+      m_dirty->data[ii].in_range = rho[ii] < rhomax;
       m_dirty->data[ii].locx = rho[ii] * m_cosphi[ii];
       m_dirty->data[ii].locy = rho[ii] * m_sinphi[ii];
       mount->To(m_dirty->data[ii].locx, m_dirty->data[ii].locy);
@@ -200,9 +203,9 @@ namespace sfl {
     
     Mutex::sentry sentry(m_mutex);
     data = m_clean->data[index];
-    if(data.rho >= rhomax)
-      return OUT_OF_RANGE;
-    return SUCCESS;
+    if(data.in_range)
+      return SUCCESS;
+    return OUT_OF_RANGE;
   }
   
   
