@@ -50,7 +50,7 @@ void GridLayerDrawing::
 Draw()
 {
   shared_ptr<const NF1::grid_t> layer(nf1.GetGridLayer());
-  if( ! layer->ValidIndex(0, 0))
+  if( ! layer->ValidIndex(static_cast<size_t>(0), static_cast<size_t>(0)))
     return;
   double scale((*layer)[0][0]);
   for(size_t ii(0); ii < layer->xsize; ++ii)
