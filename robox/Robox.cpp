@@ -40,6 +40,7 @@
 #include <npm/common/DiffDrive.hpp>
 #include <npm/common/RobotDescriptor.hpp>
 #include <npm/common/Lidar.hpp>
+#include <npm/common/util.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/api/Odometry.hpp>
@@ -151,6 +152,27 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
 						m_robotModel,
 						m_bubbleBand,
 						m_odometry));
+  
+  double dtheta_starthoming;
+  if( ! string_to(descriptor->GetOption("dtheta_starthoming"),
+		  dtheta_starthoming))
+    dtheta_starthoming = -1;
+  double dtheta_startaiming;
+  if( ! string_to(descriptor->GetOption("dtheta_startaiming"),
+		  dtheta_startaiming))
+    dtheta_startaiming = -1;
+  if((dtheta_starthoming > 0) && (dtheta_startaiming > 0)){
+    if( ! m_motionPlanner->SetAimingThresholds(dtheta_startaiming,
+					       dtheta_starthoming)){
+      cerr << "ERROR: m_motionPlanner->SetAimingThresholds("
+	   << dtheta_startaiming << ", " << dtheta_starthoming << ") failed\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+  else if((dtheta_starthoming <= 0) || (dtheta_startaiming <= 0))
+    cerr << "WARNING: you only set one of dtheta_starthoming or\n"
+	 << "         dtheta_startaiming but should set both...\n"
+	 << "         IGNORING WHATEVER YOU SET.\n";
   
   CreateGfxStuff(descriptor->name);
 }

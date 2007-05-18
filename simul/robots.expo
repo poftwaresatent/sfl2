@@ -14,6 +14,9 @@ Robot robox Robox
 	Option camera_zoom 4
         Option dwa_dimension       21
         Option dwa_grid_resolution 0.05
+#        Option dtheta_startaiming 0.10
+#        Option dtheta_starthoming 0.15
+
 
 Robot visitor visitor0
 	Pose  7  5.5  0
