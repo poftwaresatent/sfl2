@@ -193,4 +193,16 @@ namespace expo {
     dynamic_window->GoBackward();
   }
   
+  
+  bool MotionPlanner::
+  SetAimingThresholds(double aiming, double homing)
+  {
+    if((0 < aiming) && (aiming < homing)){
+      dtheta_starthoming = homing;
+      dtheta_startaiming = aiming;
+      return true;
+    }
+    return false;
+  }
+  
 }

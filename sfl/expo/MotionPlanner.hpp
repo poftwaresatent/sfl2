@@ -72,6 +72,20 @@ namespace expo {
     void GoForward();
     void GoBackward();
     
+    /**
+       If the angles are appropriate, sets the fields
+       dtheta_starthoming and dtheta_startaiming.
+       
+       \return true iff 0 < dtheta_aiming < dtheta_homing
+    */
+    bool SetAimingThresholds(/** angle [rad] at which we switch to
+				 'pure rotation until aligned with
+				 path' mode */
+			     double aiming,
+			     /** angle [rad] at which we switch to
+				 'follow path to goal' mode */
+			     double homing);
+    
     /** \note Hack for Cogniron, does ugly things like const_casts!
 	\return <ul><li>  0: success                        </li>
                     <li> -1: odometry update error          </li>
