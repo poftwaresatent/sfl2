@@ -46,6 +46,11 @@ namespace expo {
 }
 
 
+namespace local {
+  class NGKeyListener;
+}
+
+
 class Robox
   : public npm::RobotClient
 {
@@ -83,6 +88,7 @@ protected:
   boost::shared_ptr<sfl::Multiscanner> m_multiscanner;
   boost::shared_ptr<expo::MotionPlanner> m_motionPlanner;
   boost::shared_ptr<sfl::Hull> m_hull;
+  boost::shared_ptr<local::NGKeyListener> m_ngkl;
   
   void CreateGfxStuff(const std::string & name);
   bool StartThreads();

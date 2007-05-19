@@ -98,6 +98,17 @@ namespace local {
     bool stopped;
   };
   
+  
+  class NGKeyListener: public KeyListener {
+  public:
+    NGKeyListener(): next_goal(false) {}
+    
+    virtual void KeyPressed(unsigned char key)
+    { if('n' == key) next_goal = true; }
+    
+    bool next_goal;
+  };
+  
 }
 
 
@@ -119,7 +130,8 @@ CreateRobotParameters(expoparams & params)
 
 Robox::
 Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
-  : RobotClient(descriptor, world, true), m_hull(CreateHull())
+  : RobotClient(descriptor, world, true), m_hull(CreateHull()),
+    m_ngkl(new local::NGKeyListener())
 {
   for(HullIterator ih(*m_hull); ih.IsValid(); ih.Increment()){
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
@@ -205,6 +217,7 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
   CreateGfxStuff(descriptor->name);
   
+  world.AddKeyListener(m_ngkl);
   shared_ptr<KeyListener> listener(new local::MPKeyListener(m_motionPlanner));
   world.AddKeyListener(listener);
 }
@@ -412,6 +425,10 @@ StartThreads()
 bool Robox::
 GoalReached()
 {
+  if(m_ngkl->next_goal){
+    m_ngkl->next_goal = false;
+    return true;
+  }
   return m_motionPlanner->GoalReached();
 }
 
