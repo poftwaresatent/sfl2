@@ -26,7 +26,9 @@
 #define EXPO_MOTIONPLANNERSTATE_HPP
 
 
+#include <sfl/expo/MotionPlanner.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <string>
 
 
@@ -38,16 +40,18 @@ namespace sfl {
 namespace expo {
   
   
-  class MotionPlanner;
+  class MotionPlannerStateMachine;
   
   
   class MotionPlannerState
   {
   private:
-    MotionPlannerState(const MotionPlannerState &); // non-copyable
+    MotionPlannerState(const MotionPlannerState &); //!< non-copyable
     
   protected:
-    MotionPlannerState(const std::string & name, MotionPlanner * mp);
+    MotionPlannerState(const std::string & name,
+		       MotionPlanner * mp,
+		       MotionPlannerStateMachine * sm);
   
   public:
     virtual ~MotionPlannerState();
@@ -62,20 +66,14 @@ namespace expo {
     virtual MotionPlannerState * NextState(double timestep);
     
     const std::string & Name() const;
-    bool GoalReached() const;
-    void GoForward(bool b);
     
-    MotionPlannerState * GoalChangedState(double timestep);
-    MotionPlannerState * FollowTargetState();
-
   protected:
     typedef std::pair<double, double> direction_t;
     
     MotionPlanner * m_mp;
+    MotionPlannerStateMachine * m_sm;
     const std::string m_name;
 
-    virtual direction_t GetPathDirection() = 0;
-    
     void TurnToward(double timestep, direction_t local_direction,
 		    boost::shared_ptr<const sfl::Scan> scan) const;
     
@@ -89,100 +87,32 @@ namespace expo {
   };
   
   
-  class TakeAimState
-    : public MotionPlannerState
+  class MotionPlannerStateMachine
   {
-  private:
-    TakeAimState(const TakeAimState &); // non-copyable
-    
   public:
-    TakeAimState(MotionPlanner * mp);
-
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
-    MotionPlannerState * NextState(double timestep);
-
-  protected:
-    direction_t GetPathDirection();
-
+    explicit MotionPlannerStateMachine(MotionPlanner * mp);
+    
+    void Next(double timestep);
+    void GoalChanged(double timestep);
+    void FollowTarget();
+    void ManualStop();
+    void ManualResume();
+    
+    MotionPlanner::state_id_t GetStateId() const;
+    const char * GetStateName() const;
+    
+    boost::scoped_ptr<MotionPlannerState> manual_stop_state;
+    boost::scoped_ptr<MotionPlannerState> take_aim_state;
+    boost::scoped_ptr<MotionPlannerState> aimed_state;
+    boost::scoped_ptr<MotionPlannerState> adjust_goal_heading_state;
+    boost::scoped_ptr<MotionPlannerState> at_goal_state;
+    MotionPlannerState * current_state;
+    
   private:
-    double dheading;
+    MotionPlanner * m_mp;
+    MotionPlannerState * m_manual_state_latch;
+  };
   
-    bool StartHoming(double dtheta) const;
-  };
-
-
-  class AimedState
-    : public MotionPlannerState
-  {
-  private:
-    AimedState(const AimedState &); // non-copyable
-    
-  public:
-    AimedState(MotionPlanner * mp);
-
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
-    MotionPlannerState * NextState(double timestep);
-
-  protected:
-    direction_t GetPathDirection();
-
-  private:
-    double dheading;
-
-    bool StartAiming(double dtheta) const;
-    bool Replan() const;
-  };
-
-
-  class AdjustGoalHeadingState
-    : public MotionPlannerState
-  {
-  private:
-    AdjustGoalHeadingState(const AdjustGoalHeadingState &); // non-copyable
-    
-  public:
-    AdjustGoalHeadingState(MotionPlanner * mp);
-
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
-
-  protected:
-    direction_t GetPathDirection();
-  };
-
-
-  class AtGoalState
-    : public MotionPlannerState
-  {
-  private:
-    AtGoalState(const AtGoalState &); // non-copyable
-    
-  public:
-    AtGoalState(MotionPlanner * mp);
-
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
-    MotionPlannerState * NextState(double timestep);
-
-  protected:
-    direction_t GetPathDirection();
-  };
-
-
-  class NullState
-    : public MotionPlannerState
-  {
-  private:
-    NullState(const NullState &); // non-copyable
-    
-  public:
-    NullState(MotionPlanner * mp);
-
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
-    MotionPlannerState * NextState(double timestep);
-
-  protected:
-    direction_t GetPathDirection();
-  };
-
 }
 
 #endif // EXPO_MOTIONPLANNERSTATE_HPP

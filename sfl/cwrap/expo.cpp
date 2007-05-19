@@ -325,8 +325,10 @@ int expo_get_state(int handle)
     return EXPO_CWRAP_ADJUST_GOAL_HEADING;
   case MotionPlanner::at_goal:
     return EXPO_CWRAP_AT_GOAL;
-  case MotionPlanner::null:
-    return EXPO_CWRAP_NULL;
+  case MotionPlanner::manual_stop:
+    return EXPO_CWRAP_MANUAL_STOP;
+  case MotionPlanner::invalid:
+    return EXPO_CWRAP_INVALID;
   }
   CWRAP_PDEBUG(__FILE__": DEBUG expo_get_state(): unhandled state %d\n",
 	       state);

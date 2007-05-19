@@ -64,11 +64,6 @@ namespace expo {
       bubble_band(_bubble_band),
       odometry(_odometry),
       multiscanner(_multiscanner),
-      null_state(new NullState(this)),
-      take_aim_state(new TakeAimState(this)),
-      aimed_state(new AimedState(this)),
-      adjust_goal_heading_state(new AdjustGoalHeadingState(this)),
-      at_goal_state(new AtGoalState(this)),
       goal(new sfl::Goal()),
       go_forward(true),
       strict_dwa(true),
@@ -78,7 +73,7 @@ namespace expo {
       orig_alpha_distance(_dynamic_window->alpha_distance),
       orig_alpha_heading(_dynamic_window->alpha_heading),
       orig_alpha_speed(_dynamic_window->alpha_speed),
-      m_internal_state(null_state.get()),
+      m_state_machine(new MotionPlannerStateMachine(this)),
       m_replan_request(false)
   {
   }
@@ -89,8 +84,9 @@ namespace expo {
   {
     PDEBUG("\n==================================================\n");
     shared_ptr<const sfl::Pose> pose(odometry->Get());
-    m_internal_state = m_internal_state->NextState(timestep);
-    m_internal_state->Act(timestep, multiscanner->CollectScans());
+    m_state_machine->Next(timestep);
+    m_state_machine->current_state->Act(timestep,
+					multiscanner->CollectScans());
   }
   
   
@@ -100,7 +96,7 @@ namespace expo {
     goal->Set(_goal);
     if(bubble_band)
       bubble_band->SetGoal(_goal);
-    m_internal_state = m_internal_state->GoalChangedState(timestep);
+    m_state_machine->GoalChanged(timestep);
   }
   
   
@@ -114,7 +110,12 @@ namespace expo {
   bool MotionPlanner::
   GoalReached() const
   {
-    return m_internal_state->GoalReached();
+    shared_ptr<const sfl::Pose> pose(odometry->Get());
+    if( ! goal->Reached( * pose, go_forward))
+      return false;
+    if(goal->IsVia())
+      return true;
+    return ! motion_controller->Moving();
   }
   
   
@@ -145,43 +146,21 @@ namespace expo {
   MotionPlanner::state_id_t MotionPlanner::
   GetStateId() const
   {
-    if(m_internal_state == take_aim_state.get())
-      return take_aim;
-    if(m_internal_state == at_goal_state.get())
-      return at_goal;
-    if(m_internal_state == aimed_state.get())
-      return aimed;
-    if(m_internal_state == adjust_goal_heading_state.get())
-      return adjust_goal_heading;
-    if(m_internal_state == at_goal_state.get())
-      return at_goal;
-    if(m_internal_state == null_state.get())
-      return null;
-    return null;
+    return m_state_machine->GetStateId();
   }
   
   
   const char * MotionPlanner::
   GetStateName() const
   {
-    if(m_internal_state == null_state.get())
-      return "NULL";
-    if(m_internal_state == take_aim_state.get())
-      return "TAKE_AIM";
-    if(m_internal_state == aimed_state.get())
-      return "AIMED";
-    if(m_internal_state == adjust_goal_heading_state.get())
-      return "ADJUST_GOAL_HEADING";
-    if(m_internal_state == at_goal_state.get())
-      return "AT_GOAL";
-    return "<invalid>";
+    return m_state_machine->GetStateName();
   }
   
   
   void MotionPlanner::
   GoForward()
   {
-    m_internal_state->GoForward(true);
+    go_forward = true;
     dynamic_window->GoForward();
   }
   
@@ -189,7 +168,7 @@ namespace expo {
   void MotionPlanner::
   GoBackward()
   {
-    m_internal_state->GoForward(false);
+    go_forward = false;
     dynamic_window->GoBackward();
   }
   
@@ -203,6 +182,20 @@ namespace expo {
       return true;
     }
     return false;
+  }
+  
+  
+  void MotionPlanner::
+  ManualStop()
+  {
+    m_state_machine->ManualStop();
+  }
+  
+  
+  void MotionPlanner::
+  ManualResume()
+  {
+    m_state_machine->ManualResume();
   }
   
 }

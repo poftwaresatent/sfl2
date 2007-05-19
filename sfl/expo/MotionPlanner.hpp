@@ -44,7 +44,7 @@ namespace sfl {
 namespace expo {
   
   
-  class MotionPlannerState;
+  class MotionPlannerStateMachine;
   class MotionController;
   
   
@@ -53,7 +53,14 @@ namespace expo {
     public sfl::MotionPlanner
   {
   public:
-    enum state_id_t { take_aim, aimed, adjust_goal_heading, at_goal, null };
+    enum state_id_t {
+      take_aim,	           //!< rotate on spot until aligned with path
+      aimed,	           //!< follow path with forward or backward speed
+      adjust_goal_heading, //!< rotate on spot until aligned with goal theta
+      at_goal,		   //!< stand still (react if pushed away though)
+      manual_stop,	   //!< brake until standstill
+      invalid	           //!< something went wrong (bug in state machine)
+    };
     
     MotionPlanner(boost::shared_ptr<MotionController> motion_controller,
 		  boost::shared_ptr<sfl::DynamicWindow> dynamic_window,
@@ -76,7 +83,7 @@ namespace expo {
        If the angles are appropriate, sets the fields
        dtheta_starthoming and dtheta_startaiming.
        
-       \return true iff 0 < dtheta_aiming < dtheta_homing
+       \return true iff 0 < aiming < homing
     */
     bool SetAimingThresholds(/** angle [rad] at which we switch to
 				 'pure rotation until aligned with
@@ -86,6 +93,21 @@ namespace expo {
 				 'follow path to goal' mode */
 			     double homing);
     
+    /**
+       Triggers ManualStopState, which makes the robot brake with
+       maximum allowed acceleration. The robot resumes motion as soon
+       as a new goal is defined with SetGoal(), or if you call
+       ManualResume().
+    */
+    void ManualStop();
+    
+    /**
+       If we are in ManualStopState, this method makes the robot
+       resume to the goal it was aiming for at the time of
+       ManualStop().
+    */
+    void ManualResume();
+
     /** \note Hack for Cogniron, does ugly things like const_casts!
 	\return <ul><li>  0: success                        </li>
                     <li> -1: odometry update error          </li>
@@ -100,23 +122,17 @@ namespace expo {
     boost::shared_ptr<const sfl::Odometry> odometry;
     boost::shared_ptr<sfl::Multiscanner> multiscanner;
     
-    boost::scoped_ptr<MotionPlannerState> null_state;
-    boost::scoped_ptr<MotionPlannerState> take_aim_state;
-    boost::scoped_ptr<MotionPlannerState> aimed_state;
-    boost::scoped_ptr<MotionPlannerState> adjust_goal_heading_state;
-    boost::scoped_ptr<MotionPlannerState> at_goal_state;
-    
     boost::scoped_ptr<sfl::Goal> goal;
     bool go_forward, strict_dwa, auto_adapt_dwa;
     
-    double dtheta_starthoming; 	// default 10 * M_PI / 180
-    double dtheta_startaiming;	// default 45 * M_PI / 180;
+    double dtheta_starthoming; 	//!< default 10 * M_PI / 180
+    double dtheta_startaiming;	//!< default 45 * M_PI / 180;
     const double orig_alpha_distance;
     const double orig_alpha_heading;
     const double orig_alpha_speed;
     
   private:
-    MotionPlannerState * m_internal_state;
+    MotionPlannerStateMachine * m_state_machine;
     bool m_replan_request;
   };
 

@@ -52,9 +52,127 @@ using namespace std;
 namespace expo {
   
   
+  /**
+     Rotate on spot until aligned within
+     expo::MotionPlanner::dtheta_starthoming of path direction.
+  */
+  class TakeAimState
+    : public MotionPlannerState
+  {
+  private:
+    TakeAimState(const TakeAimState &); //!< non-copyable
+    
+  public:
+    explicit TakeAimState(MotionPlanner * mp,
+			  MotionPlannerStateMachine * sm);
+
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    MotionPlannerState * NextState(double timestep);
+
+  protected:
+    direction_t GetPathDirection();
+
+  private:
+    double dheading;
+  
+    bool StartHoming(double dtheta) const;
+  };
+
+
+  /**
+     Follow path with forward or backward speed, switched to
+     TakeAimState if the angle between the robot's translational
+     movement and the path becomes greater than
+     expo::MotionPlanner::dtheta_startaiming.
+  */
+  class AimedState
+    : public MotionPlannerState
+  {
+  private:
+    AimedState(const AimedState &); //!< non-copyable
+    
+  public:
+    explicit AimedState(MotionPlanner * mp,
+			MotionPlannerStateMachine * sm);
+
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    MotionPlannerState * NextState(double timestep);
+
+  protected:
+    direction_t GetPathDirection();
+
+  private:
+    double dheading;
+
+    bool StartAiming(double dtheta) const;
+    bool Replan() const;
+  };
+
+
+  /**
+     Rotate on spot until aligned with goal theta, within the goal's
+     dtheta parameter.
+  */
+  class AdjustGoalHeadingState
+    : public MotionPlannerState
+  {
+  private:
+    AdjustGoalHeadingState(const AdjustGoalHeadingState &); //!< non-copyable
+    
+  public:
+    explicit AdjustGoalHeadingState(MotionPlanner * mp,
+				    MotionPlannerStateMachine * sm);
+
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+
+  protected:
+    direction_t GetPathDirection();
+  };
+
+  
+  /**
+     Stand still, but react if pushed away: if necessary, switch back
+     to another state such as AdjustGoalHeadingState.
+  */
+  class AtGoalState
+    : public MotionPlannerState
+  {
+  private:
+    AtGoalState(const AtGoalState &); //!< non-copyable
+    
+  public:
+    explicit AtGoalState(MotionPlanner * mp,
+			 MotionPlannerStateMachine * sm);
+
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    MotionPlannerState * NextState(double timestep);
+  };
+  
+  
+  /**
+     Brake until standstill.
+  */
+  class ManualStopState
+    : public MotionPlannerState
+  {
+  private:
+    ManualStopState(const ManualStopState &); //!< non-copyable
+    
+  public:
+    explicit ManualStopState(MotionPlanner * mp,
+			     MotionPlannerStateMachine * sm);
+
+    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    MotionPlannerState * NextState(double timestep);
+  };
+  
+  
   MotionPlannerState::
-  MotionPlannerState(const string & name, MotionPlanner * mp)
+  MotionPlannerState(const string & name,
+		     MotionPlanner * mp,
+		     MotionPlannerStateMachine * sm)
     : m_mp(mp),
+      m_sm(sm),
       m_name(name)
   {
   }
@@ -71,27 +189,8 @@ namespace expo {
   {
     return m_name;
   }
-
-
-  bool MotionPlannerState::
-  GoalReached() const
-  {
-    shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());
-    if( ! m_mp->goal->Reached( * pose, m_mp->go_forward))
-      return false;
-    if(m_mp->goal->IsVia())
-      return true;
-    return ! m_mp->motion_controller->Moving();
-  }
-
-
-  void MotionPlannerState::
-  GoForward(bool b)
-  {
-    m_mp->go_forward = b;
-  }
-
-
+  
+  
   MotionPlannerState * MotionPlannerState::
   NextState(double timestep)
   {
@@ -101,43 +200,124 @@ namespace expo {
       if(m_mp->goal->HeadingReached( * pose, m_mp->go_forward, dheading)
 	 && (m_mp->motion_controller->Stoppable(timestep)
 	     || m_mp->goal->IsVia()))
-	return m_mp->at_goal_state.get();
-      return m_mp->adjust_goal_heading_state.get();      
+	return m_sm->at_goal_state.get();
+      return m_sm->adjust_goal_heading_state.get();      
     }
     return this;
   }
-
-
-  MotionPlannerState * MotionPlannerState::
-  FollowTargetState()
+  
+  
+  MotionPlannerStateMachine::
+  MotionPlannerStateMachine(MotionPlanner * mp)
+    : manual_stop_state(new ManualStopState(mp, this)),
+      take_aim_state(new TakeAimState(mp, this)),
+      aimed_state(new AimedState(mp, this)),
+      adjust_goal_heading_state(new AdjustGoalHeadingState(mp, this)),
+      at_goal_state(new AtGoalState(mp, this)),
+      current_state(at_goal_state.get()),
+      m_mp(mp),
+      m_manual_state_latch(current_state)
   {
-    return m_mp->aimed_state.get();
   }
-
-
-  MotionPlannerState * MotionPlannerState::
-  GoalChangedState(double timestep)
+  
+  
+  void MotionPlannerStateMachine::
+  FollowTarget()
+  {
+    current_state = aimed_state.get();
+  }
+  
+  
+  void MotionPlannerStateMachine::
+  Next(double timestep)
+  {
+    current_state = current_state->NextState(timestep);
+  }
+  
+  
+  void MotionPlannerStateMachine::
+  GoalChanged(double timestep)
   {
     shared_ptr<const sfl::Pose> pose(m_mp->odometry->Get());
     if(m_mp->goal->DistanceReached( * pose)){
       double dheading;
       if(m_mp->goal->HeadingReached( * pose, m_mp->go_forward, dheading)
 	 && (m_mp->motion_controller->Stoppable(timestep)
-	     || m_mp->goal->IsVia()))
-	return m_mp->at_goal_state.get();
-      return m_mp->adjust_goal_heading_state.get();      
+	     || m_mp->goal->IsVia())){
+	current_state = at_goal_state.get();
+	return;
+      }
+      current_state = adjust_goal_heading_state.get();
+      return;
     }
     const double dx(m_mp->goal->X() - pose->X());
     const double dy(m_mp->goal->Y() - pose->Y());
     double dtheta(sfl::mod2pi(atan2(dy, dx) - pose->Theta()));
     if( ! m_mp->go_forward)
       dtheta = M_PI - dtheta;
-    if(dtheta < m_mp->dtheta_startaiming)
-      return m_mp->aimed_state.get();
-    return m_mp->take_aim_state.get();
+    if(dtheta < m_mp->dtheta_startaiming){
+      current_state = aimed_state.get();
+      return;
+    }
+    current_state = take_aim_state.get();
   }
-
-
+  
+  
+  void MotionPlannerStateMachine::
+  ManualStop()
+  {
+    if(current_state == manual_stop_state.get())
+      return;
+    m_manual_state_latch = current_state;
+    current_state = manual_stop_state.get();
+  }
+  
+  
+  void MotionPlannerStateMachine::
+  ManualResume()
+  {
+    if(current_state != manual_stop_state.get())
+      return;
+    current_state = m_manual_state_latch;
+  }
+  
+  
+  MotionPlanner::state_id_t MotionPlannerStateMachine::
+  GetStateId() const
+  {
+    if(current_state == take_aim_state.get())
+      return MotionPlanner::take_aim;
+    if(current_state == at_goal_state.get())
+      return MotionPlanner::at_goal;
+    if(current_state == aimed_state.get())
+      return MotionPlanner::aimed;
+    if(current_state == adjust_goal_heading_state.get())
+      return MotionPlanner::adjust_goal_heading;
+    if(current_state == at_goal_state.get())
+      return MotionPlanner::at_goal;
+    if(current_state == manual_stop_state.get())
+      return MotionPlanner::manual_stop;
+    return MotionPlanner::invalid;
+  }
+  
+  
+  const char * MotionPlannerStateMachine::
+  GetStateName() const
+  {
+    if(current_state == manual_stop_state.get())
+      return "MANUAL_STOP";
+    if(current_state == take_aim_state.get())
+      return "TAKE_AIM";
+    if(current_state == aimed_state.get())
+      return "AIMED";
+    if(current_state == adjust_goal_heading_state.get())
+      return "ADJUST_GOAL_HEADING";
+    if(current_state == at_goal_state.get())
+      return "AT_GOAL";
+    return "<invalid>";
+  }
+  
+  
   void MotionPlannerState::
   TurnToward(double timestep, direction_t direction,
 	     shared_ptr<const sfl::Scan> global_scan) const
@@ -237,8 +417,9 @@ namespace expo {
 
 
   TakeAimState::
-  TakeAimState(MotionPlanner * mp):
-    MotionPlannerState("take aim", mp)
+  TakeAimState(MotionPlanner * mp,
+	       MotionPlannerStateMachine * sm):
+    MotionPlannerState("take aim", mp, sm)
   {
   }
 
@@ -258,7 +439,7 @@ namespace expo {
       return override;
 
     if(StartHoming(dheading))
-      return m_mp->aimed_state.get();
+      return m_sm->aimed_state.get();
 
     return this;
   }
@@ -286,8 +467,9 @@ namespace expo {
 
 
   AimedState::
-  AimedState(MotionPlanner * mp):
-    MotionPlannerState("aimed", mp)
+  AimedState(MotionPlanner * mp,
+	     MotionPlannerStateMachine * sm):
+    MotionPlannerState("aimed", mp, sm)
   {
   }
 
@@ -307,7 +489,7 @@ namespace expo {
       return override;
   
     if(StartAiming(dheading))
-      return m_mp->take_aim_state.get();
+      return m_sm->take_aim_state.get();
   
     return this;
   }
@@ -335,8 +517,9 @@ namespace expo {
 
 
   AdjustGoalHeadingState::
-  AdjustGoalHeadingState(MotionPlanner * mp):
-    MotionPlannerState("adjust goal heading", mp)
+  AdjustGoalHeadingState(MotionPlanner * mp,
+			 MotionPlannerStateMachine * sm):
+    MotionPlannerState("adjust goal heading", mp, sm)
   {
   }
 
@@ -359,8 +542,9 @@ namespace expo {
 
 
   AtGoalState::
-  AtGoalState(MotionPlanner * mp):
-    MotionPlannerState("at goal", mp)
+  AtGoalState(MotionPlanner * mp,
+	      MotionPlannerStateMachine * sm):
+    MotionPlannerState("at goal", mp, sm)
   {
   }
 
@@ -368,7 +552,8 @@ namespace expo {
   void AtGoalState::
   Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    TurnToward(timestep, GetPathDirection(), global_scan);
+    static const direction_t dir(1, 0);
+    TurnToward(timestep, dir, global_scan);
   }
 
 
@@ -381,40 +566,28 @@ namespace expo {
   
     return this;
   }
-
-
-  MotionPlannerState::direction_t AtGoalState::
-  GetPathDirection()
-  {
-    return direction_t(1, 0);
-  }
-
-
-  NullState::
-  NullState(MotionPlanner * mp):
-    MotionPlannerState("null", mp)
+  
+  
+  ManualStopState::
+  ManualStopState(MotionPlanner * mp,
+		  MotionPlannerStateMachine * sm):
+    MotionPlannerState("manual stop", mp, sm)
   {
   }
-
-
-  void NullState::
+  
+  
+  void ManualStopState::
   Act(double timestep, shared_ptr<const sfl::Scan> global_scan)
   {
-    m_mp->motion_controller->ProposeActuators(0, 0);
+    static const direction_t dir(1, 0);
+    TurnToward(timestep, dir, global_scan);
   }
-
-
-  MotionPlannerState * NullState::
+  
+  
+  MotionPlannerState * ManualStopState::
   NextState(double timestep)
   {
-    return m_mp->at_goal_state.get();
+    return this;
   }
-
-
-  MotionPlannerState::direction_t NullState::
-  GetPathDirection()
-  {
-    return direction_t(0, 0);
-  }
-
+  
 }

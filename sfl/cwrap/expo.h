@@ -40,11 +40,12 @@ extern "C" {
   /** retval of expo_get_state() */
   enum EXPO_CWRAP_STATE_ID {
     EXPO_CWRAP_INVALID             = -2,
-    EXPO_CWRAP_NULL                =  0,
+    EXPO_CWRAP_NULL                =  0, //!< deprecated, is never returned
     EXPO_CWRAP_TAKE_AIM            =  1,
     EXPO_CWRAP_AIMED               =  2,
     EXPO_CWRAP_ADJUST_GOAL_HEADING =  3,
-    EXPO_CWRAP_AT_GOAL             =  4
+    EXPO_CWRAP_AT_GOAL             =  4,
+    EXPO_CWRAP_MANUAL_STOP         =  5
   };
   
   
