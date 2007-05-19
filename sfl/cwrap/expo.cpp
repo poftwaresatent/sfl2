@@ -342,3 +342,41 @@ void expo_destroy_MotionController(int handle)
 
 void expo_destroy_MotionPlanner(int handle)
 { MotionPlanner_map.Erase(handle); }
+
+
+int expo_set_aiming_thresholds(int MotionPlanner_handle,
+			       double aiming, double homing)
+{
+  shared_ptr<MotionPlanner> mp(get_MotionPlanner(MotionPlanner_handle));
+  if( ! mp){
+    CWRAP_PDEBUG("DEBUG expo_set_aiming_thresholds(): invalid handle\n");
+    return -1;
+  }
+  if(mp->SetAimingThresholds(aiming, homing))
+    return 0;
+  return -2;
+}
+
+
+int expo_manual_stop(int MotionPlanner_handle)
+{
+  shared_ptr<MotionPlanner> mp(get_MotionPlanner(MotionPlanner_handle));
+  if( ! mp){
+    CWRAP_PDEBUG(__FILE__": DEBUG expo_manual_stop(): invalid handle\n");
+    return -1;
+  }
+  mp->ManualStop();
+  return 0;
+}
+
+
+int expo_manual_resume(int MotionPlanner_handle)
+{
+  shared_ptr<MotionPlanner> mp(get_MotionPlanner(MotionPlanner_handle));
+  if( ! mp){
+    CWRAP_PDEBUG(__FILE__": DEBUG expo_manual_resume(): invalid handle\n");
+    return -1;
+  }
+  mp->ManualResume();
+  return 0;
+}

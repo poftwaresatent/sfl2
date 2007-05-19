@@ -158,15 +158,43 @@ extern "C" {
   /* \return
      <ul><li> -1: invalid handle </li>
          <li> -2: EXPO_CWRAP_INVALID </li>
-         <li>  0: EXPO_CWRAP_NULL </li>
+         <li>  0: EXPO_CWRAP_NULL <em>(deprecated)</em></li>
          <li>  1: EXPO_CWRAP_TAKE_AIM </li>
          <li>  2: EXPO_CWRAP_AIMED </li>
          <li>  3: EXPO_CWRAP_ADJUST_GOAL_HEADING </li>
-         <li>  4: EXPO_CWRAP_AT_GOAL </li></ul>
+         <li>  4: EXPO_CWRAP_AT_GOAL </li>
+         <li>  5: EXPO_CWRAP_MANUAL_STOP </li></ul>
   */
   int expo_get_state(/** the handle from expo_create_MotionPlanner() */
 		     int MotionPlanner_handle);
   
+  /*
+    Calls expo::MotionPlanner::SetAimingThresholds().
+    
+    \return 0 on success, -1 if invalid handle, -2 if forwarded call failed
+  */
+  int expo_set_aiming_thresholds(int MotionPlanner_handle,
+				 /** angle [rad] at which we switch to
+				     'pure rotation until aligned with
+				     path' mode */
+				 double aiming,
+				 /** angle [rad] at which we switch to
+				     'follow path to goal' mode */
+				 double homing);
+  
+  /*
+    Calls expo::MotionPlanner::ManualStop().
+    
+    \return 0 on success, -1 if invalid handle
+  */
+  int expo_manual_stop(int MotionPlanner_handle);
+  
+  /*
+    Calls expo::MotionPlanner::ManualResume().
+    
+    \return 0 on success, -1 if invalid handle
+  */
+  int expo_manual_resume(int MotionPlanner_handle);
   
   /** \note Invalid handles are silently ignored. */
   void expo_destroy_MotionController(int handle);
