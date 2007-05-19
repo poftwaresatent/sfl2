@@ -33,6 +33,7 @@
 #include "BBDrawing.hpp"
 #include "GridLayerCamera.hpp"
 #include "GridLayerDrawing.hpp"
+#include <npm/common/World.hpp>
 #include <npm/common/Globals.hpp>
 #include <npm/common/OdometryDrawing.hpp>
 #include <npm/common/StillCamera.hpp>
@@ -70,6 +71,34 @@ using namespace std;
 static const double LIDAROFFSET = 0.15;
 static const double WHEELBASE = 0.521;
 static const double WHEELRADIUS = 0.088;
+
+
+namespace local {
+  
+  class MPKeyListener: public KeyListener {
+  public:
+    MPKeyListener(shared_ptr<expo::MotionPlanner> _mp)
+      : mp(_mp), stopped(false) {}
+    
+    virtual void KeyPressed(unsigned char key)
+    {
+      if('m' != key)
+	return;
+      if(stopped){
+	stopped = false;
+	mp->ManualResume();
+      }
+      else{
+	stopped = true;
+	mp->ManualStop();
+      }
+    }
+    
+    shared_ptr<expo::MotionPlanner> mp;
+    bool stopped;
+  };
+  
+}
 
 
 static RobotModel::Parameters
@@ -169,12 +198,15 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
       exit(EXIT_FAILURE);
     }
   }
-  else if((dtheta_starthoming <= 0) || (dtheta_startaiming <= 0))
+  else if((dtheta_starthoming > 0) || (dtheta_startaiming > 0))
     cerr << "WARNING: you only set one of dtheta_starthoming or\n"
 	 << "         dtheta_startaiming but should set both...\n"
 	 << "         IGNORING WHATEVER YOU SET.\n";
   
   CreateGfxStuff(descriptor->name);
+  
+  shared_ptr<KeyListener> listener(new local::MPKeyListener(m_motionPlanner));
+  world.AddKeyListener(listener);
 }
 
 
