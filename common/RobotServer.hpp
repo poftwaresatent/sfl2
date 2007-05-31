@@ -50,22 +50,25 @@ namespace npm {
   class DiffDrive;
   class HoloDrive;
   class BicycleDrive;
+  class NoiseModel;
   
   
   class RobotServer
   {
   private:
     RobotServer(const RobotServer &);
+    RobotServer(boost::shared_ptr<RobotDescriptor> descriptor,
+		const World & world, bool enable_trajectory);
     
   public:
     typedef std::vector<boost::shared_ptr<const sfl::Frame> > trajectory_t;
     
-    RobotServer(boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world, bool enable_trajectory);
+    static RobotServer * Create(boost::shared_ptr<RobotDescriptor> descriptor,
+				const World & world, bool enable_trajectory);
     
-    RobotServer(const HALFactory & hal_factory,
-		boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world, bool enable_trajectory);
+    static RobotServer * Create(const HALFactory & hal_factory,
+				boost::shared_ptr<RobotDescriptor> descriptor,
+				const World & world, bool enable_trajectory);
     
     void UpdateAllSensors();
     void UpdateSensor(Sensor & sensor) const;
@@ -136,6 +139,8 @@ namespace npm {
     boost::shared_ptr<trajectory_t> m_noisy_trajectory;
     boost::shared_ptr<sfl::Frame> m_true_pose;
     boost::shared_ptr<sfl::Frame> m_noisy_pose;
+    boost::shared_ptr<NoiseModel> m_scanner_noise_model;
+    boost::shared_ptr<NoiseModel> m_odometry_noise_model;
   };
   
 }

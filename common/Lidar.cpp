@@ -28,6 +28,7 @@
 #include "World.hpp"
 #include "HAL.hpp"
 #include "Random.hpp"
+#include "NoiseModel.hpp"
 #include <sfl/util/Ray.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/api/Scanner.hpp>
@@ -45,13 +46,15 @@ namespace npm {
   Lidar::
   Lidar(const RobotServer * owner, shared_ptr<HAL> hal,
 	const Frame & _mount, size_t _nscans, double _rhomax,
-	shared_ptr<Scanner> scanner)
+	shared_ptr<Scanner> scanner,
+	shared_ptr<NoiseModel> noise_model)
     : Sensor(owner),
       nscans(_nscans),
       rhomax(_rhomax),
       mount(new Frame(_mount)),
       m_hal(hal),
       m_scanner(scanner),
+      m_noise_model(noise_model),
       m_global_pose(new Frame(_mount)),
       m_drawing(new ScannerDrawing(this)),
       m_true_rho(nscans, _rhomax),
@@ -95,12 +98,17 @@ namespace npm {
       ray.SetAngle(m_global_pose->Theta() + phi);
 
       const double true_rr(ray.Intersect(line));
-      if((true_rr > 0) && (true_rr < m_true_rho[ir]))
+      if((true_rr > 0) && (true_rr < m_true_rho[ir])){
 	m_true_rho[ir] = true_rr;
+	if( ! m_noise_model)
+	  m_noisy_rho[ir] = true_rr;
+      }
 
-      const double noisy_rr(true_rr * Random::Uniform(0.95, 1.05));
-      if((noisy_rr > 0) && (noisy_rr < m_noisy_rho[ir]))
-	m_noisy_rho[ir] = noisy_rr;
+      if(m_noise_model){
+	const double noisy_rr((*m_noise_model)(true_rr));
+	if((noisy_rr > 0) && (noisy_rr < m_noisy_rho[ir]))
+	  m_noisy_rho[ir] = noisy_rr;
+      }
     }
   }
   

@@ -27,6 +27,7 @@
 #include "Lidar.hpp"
 #include "Random.hpp"
 #include "pdebug.hpp"
+#include "NoiseModel.hpp"
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -42,9 +43,7 @@ namespace npm {
   
   HAL::
   HAL(RobotServer * owner)
-    : m_owner(owner),
-      m_noisy_odometry(false),
-      m_noisy_scanners(false)
+    : m_owner(owner)
   {
     for(size_t ii(0); ii < 3; ++ii){
       m_current_speed[ii] = 0;
@@ -89,7 +88,7 @@ namespace npm {
       return res;
     
     const sfl::Frame * pose;
-    if(m_noisy_odometry){
+    if(m_odometry_noise){
       pose = m_owner->GetNoisyPose();
       PVDEBUG("noisy odometry baby!\n");
       if( ! pose){
@@ -123,16 +122,16 @@ namespace npm {
   
   int HAL::
   speed_get(double * qdl, double * qdr)
-  {
-    * qdl = m_current_speed[0];
-    * qdr = m_current_speed[1];
-    
-    if(m_noisy_odometry){
+  {    
+    if(m_odometry_noise){
       PVDEBUG("noisy speed baby!\n");
-      *qdl *= Random::Uniform(0.95, 1.05);
-      *qdr *= Random::Uniform(0.95, 1.05);
+      * qdl = (*m_odometry_noise)(m_current_speed[0]);
+      * qdr = (*m_odometry_noise)(m_current_speed[1]);
     }
-    
+    else{
+      * qdl = m_current_speed[0];
+      * qdr = m_current_speed[1];
+    }
     return 0;
   }
   
@@ -146,11 +145,9 @@ namespace npm {
       return -42;
     *rho_len = minval(*rho_len, lidar->nscans);
     
-    if(m_noisy_scanners){
-      PVDEBUG("noisy scanners baby!\n");
+    if(lidar->HaveNoiseModel())
       for(size_t is(0); is < *rho_len; ++is)
 	rho[is] = lidar->GetNoisyRho(is);
-    }
     else
       for(size_t is(0); is < *rho_len; ++is)
 	rho[is] = lidar->GetTrueRho(is);
@@ -173,15 +170,16 @@ namespace npm {
   void HAL::
   speed_get(double & vx, double & vy, double & omega)
   {
-    vx = m_wanted_speed[0];
-    vy = m_wanted_speed[1];
-    omega = m_wanted_speed[2];
-
-    if(m_noisy_odometry){
+    if(m_odometry_noise){
       PVDEBUG("noisy speed baby!\n");
-      vx *= Random::Uniform(0.95, 1.05);
-      vy *= Random::Uniform(0.95, 1.05);
-      omega *= Random::Uniform(0.95, 1.05);
+      vx = (*m_odometry_noise)(m_wanted_speed[0]);
+      vy = (*m_odometry_noise)(m_wanted_speed[1]);
+      omega = (*m_odometry_noise)(m_wanted_speed[2]);
+    }
+    else{
+      vx = m_wanted_speed[0];
+      vy = m_wanted_speed[1];
+      omega = m_wanted_speed[2];
     }
   }
   
@@ -195,31 +193,16 @@ namespace npm {
   
   
   void HAL::
-  EnableOdometryNoise()
+  EnableOdometryNoise(const NoiseModel * noise)
   {
-    m_noisy_odometry = true;
+    m_odometry_noise = noise;
   }
   
   
   void HAL::
   DisableOdometryNoise()
   {
-    m_noisy_odometry = false;
+    m_odometry_noise = 0;
   }
-  
-  
-  void HAL::
-  EnableScannerNoise()
-  {
-    m_noisy_scanners = true;
-  }
-  
-  
-  void HAL::
-  DisableScannerNoise()
-  {
-    m_noisy_scanners = false;
-  }
-  
   
 }

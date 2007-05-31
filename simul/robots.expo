@@ -18,7 +18,16 @@ Robot robox Robox
 #        Option dtheta_starthoming 0.15
 
         Option noisy_odometry true
+          Option odometry_noise_min_factor  0.8
+          Option odometry_noise_max_factor  1.2
+          Option odometry_noise_min_offset -0.01
+          Option odometry_noise_max_offset  0.01
+
         Option noisy_scanners true
+          Option scanner_noise_min_factor  0.9
+          Option scanner_noise_max_factor  1.1
+          Option scanner_noise_min_offset -0.2
+          Option scanner_noise_max_offset  0.2
 
 Robot visitor visitor0
 	Pose  7  5.5  0

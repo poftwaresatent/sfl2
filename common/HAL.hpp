@@ -34,6 +34,7 @@ namespace npm {
   
   
   class RobotServer;
+  class NoiseModel;
   
   
   class HAL
@@ -62,7 +63,7 @@ namespace npm {
     friend class RobotServer;
     
     virtual void UpdateSpeeds();
-    void EnableOdometryNoise();
+    void EnableOdometryNoise(const NoiseModel * noise);
     void DisableOdometryNoise();
     void EnableScannerNoise();
     void DisableScannerNoise();
@@ -71,7 +72,8 @@ namespace npm {
     RobotServer * m_owner;
     double m_wanted_speed[3];
     double m_current_speed[3];
-    bool m_noisy_odometry, m_noisy_scanners;
+    const NoiseModel * m_odometry_noise;
+    bool m_noisy_scanners;
   };
   
   

@@ -39,6 +39,7 @@ namespace npm {
   
   class ScannerDrawing;
   class HAL;
+  class NoiseModel;
   
   /**
      Simulates a range scanner.
@@ -47,14 +48,17 @@ namespace npm {
     : public Sensor
   {
   private:
-    /** The constructor is private such that only the friend Robot can
-	create lidars. This is accomplished through
-	Robot::DefineLidar().
+    friend class RobotServer;
+    
+    /** The constructor is private such that only friends can create
+	lidars. This is accomplished through
+	RobotServer::DefineLidar().
     */
     Lidar(const RobotServer * owner, boost::shared_ptr<HAL> hal,
 	  const sfl::Frame & mount,
 	  size_t nscans, double rhomax,
-	  boost::shared_ptr<sfl::Scanner> scanner);
+	  boost::shared_ptr<sfl::Scanner> scanner,
+	  boost::shared_ptr<NoiseModel> noise_model);
     
     /** non-copyable */
     Lidar(const Lidar &);
@@ -76,15 +80,16 @@ namespace npm {
     struct timespec GetT1() const { return m_t1; }
     const sfl::Frame & GetGlobalPose() const { return * m_global_pose; }
     
+    bool HaveNoiseModel() const { return m_noise_model.get() != 0; }
+    
     const size_t nscans;
     const double rhomax;
     const boost::shared_ptr<const sfl::Frame> mount;
     
   private:
-    friend class RobotServer;
-    
     boost::shared_ptr<HAL> m_hal;
     boost::shared_ptr<sfl::Scanner> m_scanner;
+    boost::shared_ptr<NoiseModel> m_noise_model;
     boost::shared_ptr<sfl::Frame> m_global_pose;
     boost::shared_ptr<ScannerDrawing> m_drawing;
     std::vector<double> m_true_rho;
