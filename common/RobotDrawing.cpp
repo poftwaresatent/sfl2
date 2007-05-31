@@ -47,11 +47,23 @@ namespace npm {
   void RobotDrawing::
   Draw()
   {
-    const Object & body(m_robot->GetBody());
+    const Object * body(m_robot->GetNoisyBody());
+    if(body){
+      glColor3d(0.6, 0.6, 0.6);
+      glBegin(GL_LINE_LOOP);
+      for(size_t ii(0); ii < body->GetNlines(); ++ii){
+	shared_ptr<const Line> line(body->GetGlobalLine(ii));
+	glVertex2d(line->X0(), line->Y0());
+	glVertex2d(line->X1(), line->Y1());
+      }
+      glEnd();
+    }
+    
+    body = & m_robot->GetBody();
     glColor3d(1, 1, 1);
     glBegin(GL_LINE_LOOP);
-    for(size_t ii(0); ii < body.GetNlines(); ++ii){
-      shared_ptr<const Line> line(body.GetGlobalLine(ii));
+    for(size_t ii(0); ii < body->GetNlines(); ++ii){
+      shared_ptr<const Line> line(body->GetGlobalLine(ii));
       glVertex2d(line->X0(), line->Y0());
       glVertex2d(line->X1(), line->Y1());
     }

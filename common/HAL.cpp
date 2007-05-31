@@ -25,6 +25,8 @@
 #include "HAL.hpp"
 #include "RobotServer.hpp"
 #include "Lidar.hpp"
+#include "Random.hpp"
+#include "pdebug.hpp"
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -40,7 +42,9 @@ namespace npm {
   
   HAL::
   HAL(RobotServer * owner)
-    : m_owner(owner)
+    : m_owner(owner),
+      m_noisy_odometry(false),
+      m_noisy_scanners(false)
   {
     for(size_t ii(0); ii < 3; ++ii){
       m_current_speed[ii] = 0;
@@ -67,9 +71,9 @@ namespace npm {
 	       double sxy, double sxt, double syt)
   {
     if(m_owner->GetTrueTrajectory().empty())
-      m_owner->InitializeTruePose(Frame(x, y, theta));
+      m_owner->InitializePose(Frame(x, y, theta));
     else
-      m_owner->AddTruePose(shared_ptr<Frame>(new Frame(x, y, theta)));
+      m_owner->AddPose(shared_ptr<Frame>(new Frame(x, y, theta)));
     return 0;
   }
   
@@ -83,7 +87,20 @@ namespace npm {
     int res(time_get(stamp));
     if(res != 0)
       return res;
-    m_owner->GetTruePose().Get(*x, *y, *theta);
+    
+    const sfl::Frame * pose;
+    if(m_noisy_odometry){
+      pose = m_owner->GetNoisyPose();
+      PDEBUG_OUT("noisy odometry baby!\n");
+      if( ! pose){
+	pose = & m_owner->GetTruePose();
+	PDEBUG_OUT("BUT IT'S BROKEN!\n");
+      }
+    }
+    else
+      pose = & m_owner->GetTruePose();
+    
+    pose->Get(*x, *y, *theta);
     *sxx = 1;
     *syy = 1;
     *stt = 1;
@@ -92,8 +109,8 @@ namespace npm {
     *syt = 0;
     return 0;
   }
-
-
+  
+  
   int HAL::
   speed_set(double qdl, double qdr)
   {
@@ -109,10 +126,17 @@ namespace npm {
   {
     * qdl = m_current_speed[0];
     * qdr = m_current_speed[1];
+    
+    if(m_noisy_odometry){
+      PDEBUG_OUT("noisy speed baby!\n");
+      *qdl *= Random::Uniform(0.95, 1.05);
+      *qdr *= Random::Uniform(0.95, 1.05);
+    }
+    
     return 0;
   }
-
-
+  
+  
   int HAL::
   scan_get(int channel, double * rho, size_t * rho_len,
 	   struct ::timespec * t0, struct ::timespec * t1)
@@ -121,8 +145,16 @@ namespace npm {
     if( ! lidar)
       return -42;
     *rho_len = minval(*rho_len, lidar->nscans);
-    for(size_t is(0); is < *rho_len; ++is)
-      rho[is] = lidar->GetRho(is);
+    
+    if(m_noisy_scanners){
+      PDEBUG_OUT("noisy scanners baby!\n");
+      for(size_t is(0); is < *rho_len; ++is)
+	rho[is] = lidar->GetRho(is) * Random::Uniform(0.95, 1.05);
+    }
+    else
+      for(size_t is(0); is < *rho_len; ++is)
+	rho[is] = lidar->GetRho(is);
+    
     *t0 = lidar->GetT0();
     *t1 = lidar->GetT1();
     return 0;
@@ -144,6 +176,13 @@ namespace npm {
     vx = m_wanted_speed[0];
     vy = m_wanted_speed[1];
     omega = m_wanted_speed[2];
+
+    if(m_noisy_odometry){
+      PDEBUG_OUT("noisy speed baby!\n");
+      vx *= Random::Uniform(0.95, 1.05);
+      vy *= Random::Uniform(0.95, 1.05);
+      omega *= Random::Uniform(0.95, 1.05);
+    }
   }
   
   
@@ -153,5 +192,34 @@ namespace npm {
     for(size_t ii(0); ii < 3; ++ii)
       m_current_speed[ii] = m_wanted_speed[ii];
   }
-
+  
+  
+  void HAL::
+  EnableOdometryNoise()
+  {
+    m_noisy_odometry = true;
+  }
+  
+  
+  void HAL::
+  DisableOdometryNoise()
+  {
+    m_noisy_odometry = false;
+  }
+  
+  
+  void HAL::
+  EnableScannerNoise()
+  {
+    m_noisy_scanners = true;
+  }
+  
+  
+  void HAL::
+  DisableScannerNoise()
+  {
+    m_noisy_scanners = false;
+  }
+  
+  
 }

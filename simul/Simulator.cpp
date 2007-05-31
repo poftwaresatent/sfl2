@@ -223,7 +223,7 @@ InitRobots(const string & filename)
     m_robot.push_back(robot_s(rob));
     m_world->AddRobot(rob->m_server.get());
     shared_ptr<const Frame> pose((*ir)->GetInitialPose());
-    rob->m_server->InitializeTruePose(*pose);
+    rob->m_server->InitializePose(*pose);
     rob->SetPose(pose->X(), pose->Y(), pose->Theta());
   }
   for(size_t ir(0); ir < m_robot.size(); ++ir){

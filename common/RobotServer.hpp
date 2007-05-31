@@ -70,13 +70,21 @@ namespace npm {
     void UpdateAllSensors();
     void UpdateSensor(Sensor & sensor) const;
     void SimulateAction(double timestep);
-    void InitializeTruePose(const sfl::Frame & pose);
+    void InitializePose(const sfl::Frame & pose);
+    void AddPose(boost::shared_ptr<const sfl::Frame> pose);
+    
+  private:
     void AddTruePose(boost::shared_ptr<const sfl::Frame> pose);
+    void AddNoisyPose(boost::shared_ptr<const sfl::Frame> pose);
+  public:
     
     const std::string & GetName() const;
     const sfl::Frame & GetTruePose() const;
+    const sfl::Frame * GetNoisyPose() const;
     const Object & GetBody() const;
+    const Object * GetNoisyBody() const;
     const trajectory_t & GetTrueTrajectory() const;
+    const trajectory_t * GetNoisyTrajectory() const;
     size_t GetIdentifier() const;
     const World & GetWorld() const;
     boost::shared_ptr<const Lidar> GetLidar(int channel) const;
@@ -122,9 +130,12 @@ namespace npm {
     boost::shared_ptr<Drive> m_drive;
     std::map<int, boost::shared_ptr<Lidar> > m_lidar;
     std::map<int, boost::shared_ptr<Sharp> > m_sharp;
-    boost::shared_ptr<Object> m_body;
+    boost::shared_ptr<Object> m_true_body;
+    boost::shared_ptr<Object> m_noisy_body;
     trajectory_t m_true_trajectory;
+    boost::shared_ptr<trajectory_t> m_noisy_trajectory;
     boost::shared_ptr<sfl::Frame> m_true_pose;
+    boost::shared_ptr<sfl::Frame> m_noisy_pose;
   };
   
 }

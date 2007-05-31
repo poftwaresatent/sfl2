@@ -25,6 +25,7 @@
 #include "TrajectoryDrawing.hpp"
 #include "RobotServer.hpp"
 #include "wrap_gl.hpp"
+#include "pdebug.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -42,20 +43,37 @@ namespace npm {
   void TrajectoryDrawing::
   Draw()
   {
-    const RobotServer::trajectory_t & traj(m_owner->GetTrueTrajectory());
-    if(traj.empty())
+    const RobotServer::trajectory_t * traj(m_owner->GetNoisyTrajectory());
+    if(traj && ( ! traj->empty())){
+      PDEBUG_OUT("noisy trajectory baby!\n");
+      glColor3d(0.6, 0.2, 0.2);
+      if(traj->size() == 1){
+	glPointSize(3);
+	glBegin(GL_POINTS);
+	glVertex2d((*traj)[0]->X(), (*traj)[0]->Y());
+	glEnd();
+	return;
+      }
+      glBegin(GL_LINE_STRIP);
+      for(unsigned int i(0); i < traj->size(); ++i)
+	glVertex2d((*traj)[i]->X(), (*traj)[i]->Y());
+      glEnd();
+    }
+    
+    traj = & m_owner->GetTrueTrajectory();
+    if(traj->empty())
       return;
     glColor3d(1, 0.3, 0.3);
-    if(traj.size() == 1){
+    if(traj->size() == 1){
       glPointSize(3);
       glBegin(GL_POINTS);
-      glVertex2d(traj[0]->X(), traj[0]->Y());
+      glVertex2d((*traj)[0]->X(), (*traj)[0]->Y());
       glEnd();
       return;
     }
     glBegin(GL_LINE_STRIP);
-    for(unsigned int i(0); i < traj.size(); ++i)
-      glVertex2d(traj[i]->X(), traj[i]->Y());
+    for(unsigned int i(0); i < traj->size(); ++i)
+      glVertex2d((*traj)[i]->X(), (*traj)[i]->Y());
     glEnd();
   }
   

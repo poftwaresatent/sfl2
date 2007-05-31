@@ -37,6 +37,8 @@
 #include "DiffDriveDrawing.hpp"
 #include "HoloDriveDrawing.hpp"
 #include "BicycleDriveDrawing.hpp"
+#include "util.hpp"
+#include "pdebug.hpp"
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/api/Scanner.hpp>
@@ -64,9 +66,22 @@ namespace npm {
       m_world(world),
       m_hal(new npm::HAL(this)),
       m_descriptor(descriptor),
-      m_body(new Object(descriptor->name)),
+      m_true_body(new Object(descriptor->name)),
       m_true_pose(new Frame())
   {
+    bool noisy_odometry(false);
+    string_to(descriptor->GetOption("noisy_odometry"), noisy_odometry);
+    if(noisy_odometry){
+      m_noisy_pose.reset(new Frame());
+      m_noisy_body.reset(new Object(descriptor->name));
+      m_noisy_trajectory.reset(new trajectory_t());
+    }
+    
+    bool noisy_scanners(false);
+    string_to(descriptor->GetOption("noisy_scanners"), noisy_scanners);
+    if(noisy_scanners)
+      m_hal->EnableScannerNoise();
+    
     AddDrawing(new RobotDrawing(this));
     AddDrawing(new TrajectoryDrawing(this));
     double zoom(2);
@@ -93,9 +108,22 @@ namespace npm {
       m_world(world),
       m_hal(hal_factory.Create(this)),
       m_descriptor(descriptor),
-      m_body(new Object(descriptor->name)),
+      m_true_body(new Object(descriptor->name)),
       m_true_pose(new Frame())
   {
+    bool noisy_odometry(false);
+    string_to(descriptor->GetOption("noisy_odometry"), noisy_odometry);
+    if(noisy_odometry){
+      m_noisy_pose.reset(new Frame());
+      m_noisy_body.reset(new Object(descriptor->name));
+      m_noisy_trajectory.reset(new trajectory_t());
+    }
+    
+    bool noisy_scanners(false);
+    string_to(descriptor->GetOption("noisy_scanners"), noisy_scanners);
+    if(noisy_scanners)
+      m_hal->EnableScannerNoise();
+    
     AddDrawing(new RobotDrawing(this));
     AddDrawing(new TrajectoryDrawing(this));
     double zoom(2);
@@ -195,7 +223,9 @@ namespace npm {
   void RobotServer::
   AddLine(const Line & line)
   {
-    m_body->AddLine(line);
+    m_true_body->AddLine(line);
+    if(m_noisy_body)
+      m_noisy_body->AddLine(line);      
   }
   
   
@@ -253,7 +283,7 @@ namespace npm {
   UpdateSensor(Sensor & sensor) const
   {
     if(sensor.owner != this)
-      m_body->UpdateSensor(sensor);
+      m_true_body->UpdateSensor(sensor);
   }
   
   
@@ -261,16 +291,35 @@ namespace npm {
   SimulateAction(double timestep)
   {
     m_hal->UpdateSpeeds();
-    if(m_drive)
-      AddTruePose(m_drive->NextPose( * m_true_pose, timestep));
+    if( ! m_drive)
+      return;
+    AddTruePose(m_drive->NextPose( * m_true_pose, timestep));
+    if( ! m_noisy_pose)
+      return;
+    m_hal->EnableOdometryNoise();
+    AddNoisyPose(m_drive->NextPose( * m_noisy_pose, timestep));
+    m_hal->DisableOdometryNoise();
   }
   
   
   void RobotServer::
-  InitializeTruePose(const Frame & pose)
+  InitializePose(const Frame & pose)
   {
     m_true_trajectory.clear();
     AddTruePose(shared_ptr<Frame>(new Frame(pose)));
+    if(m_noisy_trajectory)
+      m_noisy_trajectory->clear();
+    AddNoisyPose(shared_ptr<Frame>(new Frame(pose)));
+  }
+  
+  
+  void RobotServer::
+  AddPose(shared_ptr<const Frame> pose)
+  {
+    if(m_noisy_pose)
+      AddNoisyPose(pose);
+    else
+      AddTruePose(pose);
   }
   
   
@@ -280,7 +329,20 @@ namespace npm {
     m_true_pose->Set( * pose);
     if(m_enable_trajectory)
       m_true_trajectory.push_back(pose);
-    m_body->TransformTo( * m_true_pose);
+    m_true_body->TransformTo( * m_true_pose);
+  }
+  
+  
+  void RobotServer::
+  AddNoisyPose(shared_ptr<const Frame> pose)
+  {
+    if( ! m_noisy_pose)
+      return;
+    m_noisy_pose->Set( * pose);
+    if(m_enable_trajectory && m_noisy_trajectory)
+      m_noisy_trajectory->push_back(pose);
+    if(m_noisy_body)
+      m_noisy_body->TransformTo( * m_noisy_pose);
   }
   
   
@@ -298,10 +360,24 @@ namespace npm {
   }
   
   
+  const Frame * RobotServer::
+  GetNoisyPose() const
+  {
+    return m_noisy_pose.get();
+  }
+  
+  
   const Object & RobotServer::
   GetBody() const
   {
-    return * m_body;
+    return * m_true_body;
+  }
+  
+  
+  const Object * RobotServer::
+  GetNoisyBody() const
+  {
+    return m_noisy_body.get();
   }
   
   
@@ -309,6 +385,13 @@ namespace npm {
   GetTrueTrajectory() const
   {
     return m_true_trajectory;
+  }
+  
+  
+  const RobotServer::trajectory_t * RobotServer::
+  GetNoisyTrajectory() const
+  {
+    return m_noisy_trajectory.get();
   }
   
   
