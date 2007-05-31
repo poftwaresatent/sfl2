@@ -91,10 +91,10 @@ namespace npm {
     const sfl::Frame * pose;
     if(m_noisy_odometry){
       pose = m_owner->GetNoisyPose();
-      PDEBUG_OUT("noisy odometry baby!\n");
+      PVDEBUG("noisy odometry baby!\n");
       if( ! pose){
 	pose = & m_owner->GetTruePose();
-	PDEBUG_OUT("BUT IT'S BROKEN!\n");
+	PVDEBUG("BUT IT'S BROKEN!\n");
       }
     }
     else
@@ -128,7 +128,7 @@ namespace npm {
     * qdr = m_current_speed[1];
     
     if(m_noisy_odometry){
-      PDEBUG_OUT("noisy speed baby!\n");
+      PVDEBUG("noisy speed baby!\n");
       *qdl *= Random::Uniform(0.95, 1.05);
       *qdr *= Random::Uniform(0.95, 1.05);
     }
@@ -147,13 +147,13 @@ namespace npm {
     *rho_len = minval(*rho_len, lidar->nscans);
     
     if(m_noisy_scanners){
-      PDEBUG_OUT("noisy scanners baby!\n");
+      PVDEBUG("noisy scanners baby!\n");
       for(size_t is(0); is < *rho_len; ++is)
-	rho[is] = lidar->GetRho(is) * Random::Uniform(0.95, 1.05);
+	rho[is] = lidar->GetNoisyRho(is);
     }
     else
       for(size_t is(0); is < *rho_len; ++is)
-	rho[is] = lidar->GetRho(is);
+	rho[is] = lidar->GetTrueRho(is);
     
     *t0 = lidar->GetT0();
     *t1 = lidar->GetT1();
@@ -178,7 +178,7 @@ namespace npm {
     omega = m_wanted_speed[2];
 
     if(m_noisy_odometry){
-      PDEBUG_OUT("noisy speed baby!\n");
+      PVDEBUG("noisy speed baby!\n");
       vx *= Random::Uniform(0.95, 1.05);
       vy *= Random::Uniform(0.95, 1.05);
       omega *= Random::Uniform(0.95, 1.05);

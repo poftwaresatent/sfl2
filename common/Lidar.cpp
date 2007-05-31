@@ -27,6 +27,7 @@
 #include "RobotServer.hpp"
 #include "World.hpp"
 #include "HAL.hpp"
+#include "Random.hpp"
 #include <sfl/util/Ray.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/api/Scanner.hpp>
@@ -53,7 +54,8 @@ namespace npm {
       m_scanner(scanner),
       m_global_pose(new Frame(_mount)),
       m_drawing(new ScannerDrawing(this)),
-      m_rho(nscans, _rhomax)
+      m_true_rho(nscans, _rhomax),
+      m_noisy_rho(nscans, _rhomax)
   {
     if(0 != hal->time_get( & m_t0)){
       cerr << "ERROR in npm::Lidar ctor(): m_hal->time_get() failed.\n";
@@ -68,8 +70,10 @@ namespace npm {
   {
     *m_global_pose = *mount;
     owner->GetTruePose().To(*m_global_pose);
-    for(size_t ir(0); ir < nscans; ++ir)
-      m_rho[ir] = rhomax;
+    for(size_t ir(0); ir < nscans; ++ir){
+      m_true_rho[ir] = rhomax;
+      m_noisy_rho[ir] = rhomax;
+    }
     if(0 != m_hal->time_get(&m_t0)){
       cerr << "ERROR in npm::Lidar::InitUpdate(): m_hal->time_get() failed.\n";
       exit(EXIT_FAILURE);
@@ -89,9 +93,14 @@ namespace npm {
 	exit(EXIT_FAILURE);
       }
       ray.SetAngle(m_global_pose->Theta() + phi);
-      const double rr(ray.Intersect(line));
-      if((rr > 0) && (rr < m_rho[ir]))
-	m_rho[ir] = rr;
+
+      const double true_rr(ray.Intersect(line));
+      if((true_rr > 0) && (true_rr < m_true_rho[ir]))
+	m_true_rho[ir] = true_rr;
+
+      const double noisy_rr(true_rr * Random::Uniform(0.95, 1.05));
+      if((noisy_rr > 0) && (noisy_rr < m_noisy_rho[ir]))
+	m_noisy_rho[ir] = noisy_rr;
     }
   }
   

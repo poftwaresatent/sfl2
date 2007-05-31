@@ -69,7 +69,9 @@ namespace npm {
     { return m_scanner; }
     
     /** \pre index < nscans */
-    double GetRho(size_t index) const { return m_rho[index]; }
+    double GetTrueRho(size_t index) const { return m_true_rho[index]; }
+    /** \pre index < nscans */
+    double GetNoisyRho(size_t index) const { return m_noisy_rho[index]; }
     struct timespec GetT0() const { return m_t0; }
     struct timespec GetT1() const { return m_t1; }
     const sfl::Frame & GetGlobalPose() const { return * m_global_pose; }
@@ -85,7 +87,8 @@ namespace npm {
     boost::shared_ptr<sfl::Scanner> m_scanner;
     boost::shared_ptr<sfl::Frame> m_global_pose;
     boost::shared_ptr<ScannerDrawing> m_drawing;
-    std::vector<double> m_rho;
+    std::vector<double> m_true_rho;
+    std::vector<double> m_noisy_rho;
     struct timespec m_t0, m_t1;
   };
   

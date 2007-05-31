@@ -18,7 +18,7 @@ Robot robox Robox
 #        Option dtheta_starthoming 0.15
 
         Option noisy_odometry true
-#        Option noisy_scanners true
+        Option noisy_scanners true
 
 Robot visitor visitor0
 	Pose  7  5.5  0
