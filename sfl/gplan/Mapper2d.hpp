@@ -122,6 +122,9 @@ namespace sfl {
 		boost::shared_ptr<const TraversabilityMap> GetTravmap() const
 		{ return m_travmap; }
 		
+		boost::shared_ptr<TraversabilityMap> GetTravmap()
+		{ return m_travmap; }
+		
 		const link_t & GetFreespaceBuffer() const { return m_freespace_buffer; }
 		const link_t & GetObstacleBuffer() const { return m_obstacle_buffer; }
 		const GridFrame & GetGridFrame() const { return gridframe; }
