@@ -251,7 +251,7 @@ namespace sfl {
 	
 	
 	void TraversabilityMap::
-	DumpMap(ostream * os)
+	DumpMap(ostream * os) const
 	{
 		*os << "# resolution " << gframe.Delta() << "\n"
 				<< "# origin " << gframe.X() << " " << gframe.Y()

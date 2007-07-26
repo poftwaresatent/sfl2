@@ -114,7 +114,7 @@ namespace sfl {
 		bool IsFree(double global_x, double global_y) const;
 		bool IsFree(size_t index_x, size_t index_y) const;
 		
-		void DumpMap(std::ostream * os);
+		void DumpMap(std::ostream * os) const;
     
 		
     GridFrame gframe;		/**< default (0, 0, 0, 1) */
