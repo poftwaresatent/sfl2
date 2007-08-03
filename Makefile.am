@@ -13,8 +13,16 @@ if HAVE_GENOM
   LAAS_LIBADD= laas/liblaas.la
 endif
 
+if ENABLE_QT
+  QT_DIR= qt
+else
+  QT_DIR= qt
+endif
+
 SUBDIRS= common robox visitor \
-         $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) . simul
+         $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) \
+         . simul \
+         $(QT_DIR)
 
 noinst_LTLIBRARIES=    libnepumuk.la
 libnepumuk_la_SOURCES= 

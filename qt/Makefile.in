@@ -1,0 +1,8 @@
+all: Makefile QtNepumuk.qmake
+	$(MAKE) -f QtNepumuk.qmake
+
+QtNepumuk.qmake: QtNepumuk.pro
+	qmake -makefile -o QtNepumuk.qmake QtNepumuk.pro
+
+clean:
+	- rm -rf *~ *.qmake *.o *.app moc_*.cpp

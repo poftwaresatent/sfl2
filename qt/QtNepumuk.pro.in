@@ -1,0 +1,5 @@
+HEADERS  = @abs_top_srcdir@/nepumuk/qt/QtNepumuk.hpp
+SOURCES  = @abs_top_srcdir@/nepumuk/qt/QtNepumuk.cpp
+QT      += opengl
+LIBS    += -L@abs_top_builddir@/nepumuk/.libs -lnepumuk \
+           -L@abs_top_builddir@/nepumuk/simul/.libs -lsimul \
