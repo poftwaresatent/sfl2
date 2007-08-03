@@ -1,5 +1,16 @@
-###CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@ -I@abs_top_builddir@/include
 CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@
+
+noinst_LTLIBRARIES=  libsimul.la
+libsimul_la_SOURCES= RobotFactory.cpp Simulator.cpp
+
+bin_PROGRAMS=      nepumuk dumpworld
+nepumuk_SOURCES=   nepumuk.cpp Interlock.cpp
+dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
+
+# ===> see dist_bin_SCRIPTS for more stuff
+
+# ===> external libraries, depending on the build setup
+# three cases: SMARTFLOWER, OPTPROGNAV, and all others
 
 if SMARTFLOWER
   LDFLAGS+= @GLUTLIBS@
@@ -13,25 +24,44 @@ endif
 
 endif
 
-bin_PROGRAMS=      nepumuk dumpworld
-nepumuk_SOURCES=   nepumuk.cpp RobotFactory.cpp Interlock.cpp Simulator.cpp
+# ===> internal libraries, depending on the build setup
+# six cases for nepumuk: the same as for external libraries, but
+#                        multiplied by two because of HAVE_ESTAR
+# two cases for dumpworld: it only depends on libsunflower, which
+#                          might be external or part of a meta-build
 
 if HAVE_ESTAR
 
 if SMARTFLOWER
-  nepumuk_LDADD= ../libnepumuk.la \
-                 ../../smartsfl/libsmartsfl.la \
-                 ../../asl-mcontrol/libasl-mcontrol.la \
-                 ../../sunflower/libsunflower.la \
-                 ../../estar/libestar.la
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   ../../smartsfl/libsmartsfl.la \
+                   ../../asl-mcontrol/libasl-mcontrol.la \
+                   ../../sunflower/libsunflower.la \
+                   ../../estar/libestar.la
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la
 else
 if OPTPROGNAV
-  nepumuk_LDADD= ../libnepumuk.la \
-                 ../../sunflower/libsunflower.la \
-                 ../../src/liboptprognav.la \
-                 ../../estar/libestar.la
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la \
+                   ../../src/liboptprognav.la \
+                   ../../estar/libestar.la
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la
 else
-  nepumuk_LDADD=   ../libnepumuk.la -lasl-mcontrol -lsmartsfl -lsunflower -lestar
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   -lasl-mcontrol \
+                   -lsmartsfl \
+                   -lsunflower \
+                   -lestar
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
+                   -lsunflower
 endif
 
 endif
@@ -39,35 +69,35 @@ endif
 else
 
 if SMARTFLOWER
-  nepumuk_LDADD= ../libnepumuk.la \
-                 ../../sunflower/libsunflower.la
-else
-if OPTPROGNAV
-  nepumuk_LDADD= ../libnepumuk.la \
-                 ../../sunflower/libsunflower.la \
-                 ../../src/liboptprognav.la
-else
-  nepumuk_LDADD=   ../libnepumuk.la -lsunflower
-endif
-
-endif
-
-endif
-
-dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
-
-if SMARTFLOWER
-  dumpworld_LDADD= ../libnepumuk.la \
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
 if OPTPROGNAV
-  dumpworld_LDADD= ../libnepumuk.la \
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   ../../sunflower/libsunflower.la \
+                   ../../src/liboptprognav.la
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
-  dumpworld_LDADD= ../libnepumuk.la -lsunflower
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   -lsunflower
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
+                   -lsunflower
 endif
 
 endif
+
+endif
+
+# ===> scripts and config files
 
 dist_bin_SCRIPTS= birondemo.sh \
                   estardemo.sh \
