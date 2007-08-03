@@ -22,8 +22,8 @@
  */
 
 
-#ifndef SIMULATOR_HPP
-#define SIMULATOR_HPP
+#ifndef NPM_SIMULATOR_HPP
+#define NPM_SIMULATOR_HPP
 
 
 #include <sfl/util/Pthread.hpp>
@@ -33,53 +33,54 @@
 
 
 namespace npm {
+
+
   class World;
   class RobotClient;
+
+
+  class Simulator
+  {
+  public:
+    Simulator(boost::shared_ptr<npm::World> world, double timestep,
+	      boost::shared_ptr<sfl::Mutex> mutex);
+    ~Simulator();
+  
+    void InitRobots(const std::string & filename);
+    void InitLayout(const std::string & filename, bool fatal_warnings);
+    void Init();
+    bool Idle();
+    void Reshape(int width, int height);
+    void Draw();
+    void Keyboard(unsigned char key, int x, int y);
+  
+    void SetContinuous(bool printscreen = false);
+  
+  private:
+  
+    struct robot_s {
+      robot_s(boost::shared_ptr<npm::RobotClient> _robot)
+	: robot(_robot), runnable(true) {}
+      boost::shared_ptr<npm::RobotClient> robot;
+      bool runnable;
+    };
+  
+    typedef std::vector<robot_s> robot_t;
+  
+    void PrintScreen();
+    void UpdateAllSensors();
+    void UpdateRobots();
+  
+    boost::shared_ptr<npm::World> m_world;  
+    robot_t m_robot;
+    bool m_step;
+    bool m_continuous;
+    bool m_printscreen;
+    int m_width, m_height;
+    double m_timestep;
+    boost::shared_ptr<sfl::Mutex> m_mutex;  
+  };
+
 }
 
-
-class Simulator
-{
-public:
-  Simulator(boost::shared_ptr<npm::World> world, double timestep,
-	    boost::shared_ptr<sfl::Mutex> mutex);
-  ~Simulator();
-  
-  void InitRobots(const std::string & filename);
-  void InitLayout(const std::string & filename, bool fatal_warnings);
-  void Init();
-  bool Idle();
-  void Reshape(int width, int height);
-  void Draw();
-  void Keyboard(unsigned char key, int x, int y);
-  
-  void SetContinuous(bool printscreen = false);
-  
-  
-private:
-  friend class SimulatorUpdateThread;
-  
-  struct robot_s {
-    robot_s(boost::shared_ptr<npm::RobotClient> _robot)
-      : robot(_robot), runnable(true) {}
-    boost::shared_ptr<npm::RobotClient> robot;
-    bool runnable;
-  };
-  
-  typedef std::vector<robot_s> robot_t;
-  
-  void PrintScreen();
-  void UpdateAllSensors();
-  void UpdateRobots();
-  
-  boost::shared_ptr<npm::World> m_world;  
-  robot_t m_robot;
-  bool m_step;
-  bool m_continuous;
-  bool m_printscreen;
-  int m_width, m_height;
-  double m_timestep;
-  boost::shared_ptr<sfl::Mutex> m_mutex;  
-};
-
-#endif // SIMULATOR_HPP
+#endif // NPM_SIMULATOR_HPP

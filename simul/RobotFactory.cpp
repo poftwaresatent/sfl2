@@ -44,39 +44,43 @@
 ////#include <npm/braitenberg/Braitenberg.hpp>
 
 
-using namespace npm;
 using namespace boost;
 
 
-shared_ptr<RobotClient> RobotFactory::
-Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
-{
-  RobotClient * rob(0);
+namespace npm {
 
-  if(descriptor->model == "robox")
-    rob = Robox::Create(descriptor, world);
 
-  else if(descriptor->model == "visitor")
-    rob = new Visitor(descriptor, world);
+  shared_ptr<RobotClient> RobotFactory::
+  Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
+  {
+    RobotClient * rob(0);
+
+    if(descriptor->model == "robox")
+      rob = Robox::Create(descriptor, world);
+
+    else if(descriptor->model == "visitor")
+      rob = new Visitor(descriptor, world);
 
 #ifdef HAVE_XCF
-  else if(descriptor->model == "biron")
-    rob = new Biron(descriptor, world);
+    else if(descriptor->model == "biron")
+      rob = new Biron(descriptor, world);
 #endif // HAVE_XCF
 
 #ifdef HAVE_ESTAR
-  else if(descriptor->model == "esbot")
-    rob = new Esbot(descriptor, world);
-  else if (descriptor->model == "smart")
-    rob = new Smart(descriptor, world);
+    else if(descriptor->model == "esbot")
+      rob = new Esbot(descriptor, world);
+    else if (descriptor->model == "smart")
+      rob = new Smart(descriptor, world);
 #endif // HAVE_ESTAR
 
 #ifdef HAVE_GENOM
-  else if(descriptor->model == "jido")
-    rob = new Jido(descriptor, world);
-  else if(descriptor->model == "rackham")
-    rob = new Rackham(descriptor, world);
+    else if(descriptor->model == "jido")
+      rob = new Jido(descriptor, world);
+    else if(descriptor->model == "rackham")
+      rob = new Rackham(descriptor, world);
 #endif // HAVE_GENOM
 
-  return shared_ptr<RobotClient>(rob);
+    return shared_ptr<RobotClient>(rob);
+  }
+
 }

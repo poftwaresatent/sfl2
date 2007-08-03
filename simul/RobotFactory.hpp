@@ -22,27 +22,30 @@
  */
 
 
-#ifndef ROBOTFACTORY_HPP
-#define ROBOTFACTORY_HPP
+#ifndef NPM_ROBOTFACTORY_HPP
+#define NPM_ROBOTFACTORY_HPP
 
 
 #include <boost/shared_ptr.hpp>
 
 
 namespace npm {
+
+
   class RobotDescriptor;
   class RobotClient;
   class World;
+  
+  
+  class RobotFactory
+  {
+  public:
+    /** \return 0 if unknown model or other errors. */
+    static boost::shared_ptr<npm::RobotClient>
+    Create(boost::shared_ptr<npm::RobotDescriptor> descriptor,
+	   const npm::World & world);
+  };
+
 }
 
-
-class RobotFactory
-{
-public:
-  /** \return 0 if unknown model or other errors. */
-  static boost::shared_ptr<npm::RobotClient>
-  Create(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	 const npm::World & world);
-};
-
-#endif // ROBOTFACTORY_HPP
+#endif // NPM_ROBOTFACTORY_HPP
