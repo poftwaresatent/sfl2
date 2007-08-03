@@ -82,19 +82,4 @@ private:
   boost::shared_ptr<sfl::Mutex> m_mutex;  
 };
 
-
-class SimulatorUpdateThread
-  : public sfl::SimpleThread
-{
-public:
-  SimulatorUpdateThread(const std::string & name,
-			boost::shared_ptr<Simulator> simulator);
-  virtual void Step();  
-  bool Changed();
-  
-private:
-  boost::shared_ptr<Simulator> m_simulator;
-  bool m_changed;
-};
-
 #endif // SIMULATOR_HPP

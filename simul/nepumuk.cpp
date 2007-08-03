@@ -65,21 +65,11 @@ public:
 };
 
 
-class RawTraversibilityProxy: public TraversabilityProxy {
-public:
-	RawTraversibilityProxy(TraversabilityMap * foo): m_foo(foo) {}
-	virtual sfl::TraversabilityMap * Get() { return m_foo; }
-	TraversabilityMap * m_foo;
-};
-
-
 static Parameters params;
 static const unsigned int glut_timer_ms(50);
 static const unsigned int timestep_usec(100000);
 static int handle;
 static shared_ptr<Simulator> simulator;
-static shared_ptr<SimulatorUpdateThread> update_thread;
-static shared_ptr<TraversabilityDrawing> travdrawing;
 
 static void parse_options(int argc, char ** argv);
 static void init_glut(int argc, char** argv, int width, int height);
@@ -224,8 +214,7 @@ void keyboard(unsigned char key,
 
 void timer(int handle)
 {
-  if((update_thread && update_thread->Changed())
-      || simulator->Idle()){
+  if(simulator->Idle()){
     glutSetWindow(handle);
     glutPostRedisplay();
   }
@@ -269,8 +258,6 @@ void parse_options(int argc,
 
 void cleanup()
 {
-  cerr << "cleanup: resetting update_thread\n";
-  update_thread.reset();
   cerr << "cleanup: resetting simulator\n";
   simulator.reset();
 }

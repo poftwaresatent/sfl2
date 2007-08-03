@@ -495,25 +495,3 @@ PrintScreen()
   image.read_framebuf(0, 0);
   image.write_png(filename.str());
 }
-
-
-SimulatorUpdateThread::
-SimulatorUpdateThread(const string & name,
-		      shared_ptr<Simulator> simulator)
-  : SimpleThread(name), m_simulator(simulator), m_changed(true)
-{
-}
-
-
-bool SimulatorUpdateThread::
-Changed()
-{
-  return m_changed;
-}
-
-
-void SimulatorUpdateThread::
-Step()
-{
-  m_changed = m_simulator->Idle();
-}
