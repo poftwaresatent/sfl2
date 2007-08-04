@@ -24,7 +24,7 @@
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
-  NepumukWindow window;
+  NepumukWindow window(&app);
   window.show();
   return app.exec();
 }
@@ -85,7 +85,36 @@ resizeGL(int width, int height)
 }
 
 
+//////////////////////////////////////////////////
+
+
 NepumukWindow::
-NepumukWindow()
+NepumukWindow(QCoreApplication * app)
 {
+	QHBoxLayout * hbox(new QHBoxLayout(this));
+	QVBoxLayout * vbox(new QVBoxLayout(this));
+	hbox->addLayout(vbox);
+	
+	NepumukWidget * npm(new NepumukWidget(this));
+	hbox->addWidget(npm);
+	
+	QGroupBox * world_group(new QGroupBox("World", this));
+	QRadioButton * world_boiler(new QRadioButton("use boilerplate"));
+	QRadioButton * world_file(new QRadioButton("use config file"));
+	QRadioButton * world_travmap(new QRadioButton("use travmap file"));
+	world_boiler->setChecked(true);
+	QVBoxLayout * world_vbox(new QVBoxLayout(this));
+	world_vbox->addWidget(world_boiler);
+	world_vbox->addWidget(world_file);
+	world_vbox->addWidget(world_travmap);
+	world_vbox->addStretch(1);
+	world_group->setLayout(world_vbox);
+	vbox->addWidget(world_group);
+	
+	QPushButton * b_quit(new QPushButton("QUIT", this));
+	vbox->addWidget(b_quit);
+	connect(b_quit, SIGNAL(clicked()), app, SLOT(quit()));
+	
+	setLayout(hbox);
+	setWindowTitle("Nepumuk");
 }

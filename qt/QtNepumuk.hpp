@@ -30,14 +30,30 @@
 #include <boost/shared_ptr.hpp>
 
 
+namespace npm {
+	class World;
+	class Simulator;
+}
+
+
 class NepumukWidget
   : public QGLWidget
 {
   Q_OBJECT
   
 public:
-  NepumukWidget(QWidget *parent = 0);
+  NepumukWidget(QWidget * parent);
   
+	bool InitWorldFromBoilerplate(const QString & name);
+	bool InitWorldFromFile(const QString & filename);
+	bool InitWorldFromTraversability(const QString & filename);
+	bool HaveWorld() const;
+	
+	/** \pre HaveWorld() */
+	bool InitSimulator(const QString & robot_config_filename,
+										 const QString & layout_config_filename);
+	
+	
   QSize minimumSizeHint() const;
   QSize sizeHint() const;
   
@@ -51,9 +67,12 @@ protected:
   void initializeGL();
   void paintGL();
   void resizeGL(int width, int height);
-
+	
 private:
 	int m_foo;
+	
+  boost::shared_ptr<npm::World> m_world;
+	boost::shared_ptr<npm::Simulator> m_simulator;
 };
 
 
@@ -62,7 +81,7 @@ class NepumukWindow
 {
   Q_OBJECT
 public:
-  NepumukWindow();
+  NepumukWindow(QCoreApplication * app);
 };
 
 #endif // NPM_QT_NEPUMUK_HPP
