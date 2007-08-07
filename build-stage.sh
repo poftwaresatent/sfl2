@@ -14,6 +14,8 @@ echo '  [-w|--work]    <DIR>        build work directory ($WORKDIR)'
 echo '  [-b|--boost]   <DIR>        BOOST library install directory'
 echo '  [-n|--png]     <DIR>        PNG install library directory'
 echo '  [-f|--sfl]     <DIR>        libsunflower install directory'
+echo '  [-e|--estar]   <DIR>        E* install directory'
+echo '  [-a|--asl]     <DIR>        ASL install directory'
 echo '  [-d|--debug]                enable debug messages and symbols'
 echo '  [-s|--skipbs]               do not bootstrap build system'
 echo '  [-q|--qt]                   enable Qt support (experimental)'
@@ -32,6 +34,12 @@ echo '  [-q|--qt]                   enable Qt support (experimental)'
 	    shift; shift; continue;;
 	-f|--sfl)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-sfl=$2"
+	    shift; shift; continue;;
+	-e|--estar)
+	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-estar=$2"
+	    shift; shift; continue;;
+	-a|--asl)
+	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-asl=$2"
 	    shift; shift; continue;;
 	-d|--debug)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-debug"

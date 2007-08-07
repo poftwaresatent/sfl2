@@ -25,12 +25,12 @@ NPM_LDFLAGS=""
 
 AC_CANONICAL_HOST
 case $host_os in
-  linux*)  AC_MSG_RESULT([detected Linux])
+  linux*)  AC_MSG_NOTICE([detected Linux])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DLINUX"
 	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
            NPM_GLUTLIBS="-lglut -lGLU -lGL"
            AC_DISABLE_SHARED;;
-  darwin*) AC_MSG_RESULT([detected Darwin (OS X)])
+  darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -Wno-long-double"
            NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
            AC_DISABLE_STATIC;;
