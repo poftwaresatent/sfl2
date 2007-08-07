@@ -25,10 +25,10 @@ SFL_LDFLAGS=""
 
 AC_CANONICAL_HOST
 case $host_os in
-  linux*)  AC_MSG_RESULT([detected Linux])
+  linux*)  AC_MSG_NOTICE([detected Linux])
 	   SFL_LDFLAGS="-lpthread $SFL_LDFLAGS"
            AC_DISABLE_SHARED;;
-  darwin*) AC_MSG_RESULT([detected Darwin (OS X)])
+  darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
            SFL_CPPFLAGS="$SFL_CPPFLAGS -Wno-long-double"
            AC_DISABLE_STATIC;;
   *)       AC_MSG_WARN([Unknown host_os $host_os, build will probably break.])
