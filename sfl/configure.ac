@@ -55,7 +55,11 @@ AC_ARG_WITH(boost,
       SFL_LDFLAGS="-L${withval}/lib -I${withval} $SFL_LDFLAGS"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
-test "$prefix" != "NONE" && CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+if test "$prefix" = "NONE"; then
+   CPPFLAGS="$SFL_CPPFLAGS"
+else
+   CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+fi
 AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
   AC_MSG_ERROR([cannot compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])])
 CPPFLAGS="$oldCPPFLAGS"
@@ -67,7 +71,11 @@ AC_ARG_WITH(robox,
       SFL_CPPFLAGS="$SFL_CPPFLAGS -I${withval}/include -I${withval}"
     fi
     oldCPPFLAGS="$CPPFLAGS"
-    test "$prefix" != "NONE" && CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+    if test "$prefix" = "NONE"; then
+      CPPFLAGS="$SFL_CPPFLAGS"
+    else
+      CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+    fi
     AC_CHECK_HEADER([hal.h], [], [
       AC_MSG_ERROR([cannot find/compile hal.h (adjust --with-robox)])])
     CPPFLAGS="$oldCPPFLAGS" ],

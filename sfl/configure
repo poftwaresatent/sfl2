@@ -19300,7 +19300,11 @@ if test "${with_boost+set}" = set; then
 fi
 
 oldCPPFLAGS="$CPPFLAGS"
-test "$prefix" != "NONE" && CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+if test "$prefix" = "NONE"; then
+   CPPFLAGS="$SFL_CPPFLAGS"
+else
+   CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+fi
 
 if test "${ac_cv_header_boost_shared_ptr_hpp+set}" = set; then
   { echo "$as_me:$LINENO: checking for boost/shared_ptr.hpp" >&5
@@ -19461,7 +19465,11 @@ fi
       SFL_CPPFLAGS="$SFL_CPPFLAGS -I${withval}/include -I${withval}"
     fi
     oldCPPFLAGS="$CPPFLAGS"
-    test "$prefix" != "NONE" && CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+    if test "$prefix" = "NONE"; then
+      CPPFLAGS="$SFL_CPPFLAGS"
+    else
+      CPPFLAGS="$SFL_CPPFLAGS -I$prefix/include"
+    fi
     if test "${ac_cv_header_hal_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for hal.h" >&5
 echo $ECHO_N "checking for hal.h... $ECHO_C" >&6; }
