@@ -1,4 +1,9 @@
-if ! HAVE_GENOM
+CPPFLAGS= @NPM_CPPFLAGS@
+CFLAGS=   @NPM_CFLAGS@
+CXXFLAGS= @NPM_CXXFLAGS@
+LDFLAGS=  @NPM_LDFLAGS@
+
+if ! NPM_HAVE_GENOM
   BUILT_SOURCES= genom_config_error
 endif
 
@@ -10,8 +15,6 @@ pread_LDADD=     liblaas.la
 
 noinst_LTLIBRARIES= liblaas.la
 liblaas_la_SOURCES= LAAS.cpp GenomBridge.cpp phelp.cpp
-
-###CPPFLAGS+=           -I@abs_top_builddir@/include
 
 genom_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"

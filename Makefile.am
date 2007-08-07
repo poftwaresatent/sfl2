@@ -1,22 +1,27 @@
-if HAVE_XCF
+CPPFLAGS= @NPM_CPPFLAGS@
+CFLAGS=   @NPM_CFLAGS@
+CXXFLAGS= @NPM_CXXFLAGS@
+LDFLAGS=  @NPM_LDFLAGS@
+
+if NPM_HAVE_XCF
   BIRON_DIR=    biron
   BIRON_LIBADD= biron/libbiron.la
 endif
 
-if HAVE_ESTAR
+if NPM_HAVE_ESTAR
   ESTAR_DIR=    estar smart
   ESTAR_LIBADD= estar/libestar.la smart/libsmart.la
 endif 
 
-if HAVE_GENOM
+if NPM_HAVE_GENOM
   LAAS_DIR=    laas
   LAAS_LIBADD= laas/liblaas.la
 endif
 
-if ENABLE_QT
+if NPM_ENABLE_QT
   QT_DIR= qt
 else
-  QT_DIR= qt
+  QT_DIR=
 endif
 
 SUBDIRS= common robox visitor \

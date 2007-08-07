@@ -1,8 +1,12 @@
-if ! HAVE_XCF
-  BUILT_SOURCES=xcf_config_error
+CPPFLAGS= @NPM_CPPFLAGS@ @NPM_XCF_CPPFLAGS@
+CFLAGS=   @NPM_CFLAGS@
+CXXFLAGS= @NPM_CXXFLAGS@
+LDFLAGS=  @NPM_LDFLAGS@
+
+if ! NPM_HAVE_XCF
+  BUILT_SOURCES= xcf_config_error
 endif
-###CPPFLAGS+= @XCF_CPPFLAGS@ -I@abs_top_builddir@/include
-CPPFLAGS+= @XCF_CPPFLAGS@
+
 noinst_LTLIBRARIES=  libbiron.la
 libbiron_la_SOURCES= Biron.cpp
 

@@ -1,140 +1,171 @@
 AC_REVISION($Id$)
-AC_INIT(nepumuk, 0.0pre, libsunflower-devel AT lists DOT sourceforge DOT net)
+AC_INIT([nepumuk],
+        [0.0pre],
+        [libsunflower-devel AT lists DOT sourceforge DOT net])
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_LANG(C++)
+
+AC_PROG_CC
+if test "x${GCC}" != "xyes"; then
+   AC_MSG_WARN([Looks like a non-GNU C compiler, build might break.])
+   AC_MSG_WARN([Update configure.ac with compiler-vendor detection.])
+fi
+
 AC_PROG_CXX
-test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pipe"
+if test "x${GXX}" != "xyes"; then
+   AC_MSG_WARN([Looks like a non-GNU C++ compiler, build might break.])
+   AC_MSG_WARN([Update configure.ac with compiler-vendor detection.])
+fi
 
-AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O2)]),
-  [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -DNPM_DEBUG -g -O0" ],
-  [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -O2" ])
-
-AC_ARG_ENABLE(pedantic,
-  AC_HELP_STRING([--enable-pedantic], [GCC option -pedantic (else -Wall)]),
-  [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -pedantic" ],
-  [ test "x${GXX}" = "xyes" && CXXFLAGS="$CXXFLAGS -Wall" ])
+NPM_CPPFLAGS=""
+NPM_CFLAGS="-pipe"
+NPM_LDFLAGS=""
 
 AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_RESULT([detected Linux])
-           CPPFLAGS="$CPPFLAGS -DLINUX"
-           LDFLAGS="$LDFLAGS -lpthread"
-	   AC_SUBST(GLUTLIBS, "-lglut -lGLU -lGL");;
+           NPM_CPPFLAGS="$NPM_CPPFLAGS -DLINUX"
+	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
+           NPM_GLUTLIBS="-lglut -lGLU -lGL"
+           AC_DISABLE_SHARED;;
   darwin*) AC_MSG_RESULT([detected Darwin (OS X)])
-           CPPFLAGS="$CPPFLAGS -DOSX"
-           LDFLAGS="$LDFLAGS -lobjc"
-           CXXFLAGS="$CXXFLAGS -Wno-long-double"
-	   AC_SUBST(GLUTLIBS, "-framework OpenGL -framework GLUT -lobjc");;
-  *)       AC_MSG_ERROR([unknown host_os $host_os, update configure.ac]);;
+           NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -Wno-long-double"
+           NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
+           AC_DISABLE_STATIC;;
+  *)       AC_MSG_WARN([Unknown host_os $host_os, build will probably break.])
+           AC_MSG_WARN([Please update configure.ac.]);;
 esac
+AC_PROG_LIBTOOL
+AC_PROG_INSTALL
+
+AC_ARG_ENABLE(debug,
+  AS_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O3)]),
+  [ NPM_CPPFLAGS="$NPM_CPPFLAGS -DNPM_DEBUG"
+    NPM_CFLAGS="$NPM_CFLAGS -g -O0" ],
+  [ NPM_CFLAGS="$NPM_CFLAGS -O3" ])
+
+AC_ARG_ENABLE(pedantic,
+  AS_HELP_STRING([--enable-pedantic], [GCC options -pedantic (else -Wall)]),
+  [ NPM_CFLAGS="$NPM_CFLAGS -pedantic" ],
+  [ NPM_CFLAGS="$NPM_CFLAGS -Wall" ])
+
+AC_ARG_ENABLE(qt,
+  AC_HELP_STRING([--enable-qt], [enable QtNepumuk (experimental)]),
+  [ AM_CONDITIONAL([NPM_ENABLE_QT], [true]) ],
+  [ AM_CONDITIONAL([NPM_ENABLE_QT], [false]) ])
 
 AC_ARG_WITH(boost,
-  AC_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
+  AS_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
   [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}"
-      LDFLAGS="$LDFLAGS -L${withval}/lib -I${withval}"
+      NPM_CPPFLAGS="$NPM_CPPFLAGS -I${withval}/include -I${withval}"
+      NPM_LDFLAGS="-L${withval}/lib -I${withval} $NPM_LDFLAGS"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
-test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
+if test "$prefix" = "NONE"; then
+   CPPFLAGS="$NPM_CPPFLAGS"
+else
+   CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+fi
 AC_CHECK_HEADER([boost/shared_ptr.hpp], [], [
-  AC_MSG_ERROR([cannot compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+  AC_MSG_ERROR([cannot compile boost/shared_ptr.hpp (CPPFLAGS=$CPPFLAGS)])])
 CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(sfl,
-  AC_HELP_STRING([--with-sfl=PATH], [specify libsunflower install dir]),
+  AS_HELP_STRING([--with-sfl=PATH], [specify libsunflower install dir]),
   [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -I${withval}/include"
-      LDFLAGS="$LDFLAGS -L${withval}/lib"
+      NPM_CPPFLAGS="$NPM_CPPFLAGS -I${withval}/include -I${withval}"
+      NPM_LDFLAGS="-L${withval}/lib -I${withval} $NPM_LDFLAGS"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
-test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
+if test "$prefix" = "NONE"; then
+   CPPFLAGS="$NPM_CPPFLAGS"
+else
+   CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+fi
 AC_CHECK_HEADER([sfl/util/numeric.hpp], [], [
-  AC_MSG_ERROR([cannot compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+  AC_MSG_ERROR([cannot compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])])
 CPPFLAGS="$oldCPPFLAGS"
 
+NPM_XCF_CPPFLAGS=""
+NPM_XCF_LDFLAGS=""
 AC_ARG_WITH(xcf,
   AC_HELP_STRING([--with-xcf=PATH], [enable XCF (installed in PATH)]),
   [ if test "x$withval" = "x" ; then
       if test "$prefix" != "NONE"; then
-        AC_SUBST(XCF_CPPFLAGS, "-I$prefix/include/sigc++-1.2 -I$prefix/lib/sigc++-1.2/include")
-      else
-        AC_SUBST(XCF_CPPFLAGS, "")
+        NPM_XCF_CPPFLAGS="-I$prefix/include/sigc++-1.2 -I$prefix/lib/sigc++-1.2/include"
       fi
-      AC_SUBST(XCF_LDFLAGS, "-lsigc-1.2 -lxcf -lxmltio")
+      NPM_XCF_LDFLAGS="-lsigc-1.2 -lxcf -lxmltio"
     else
-      AC_SUBST(XCF_CPPFLAGS, "-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include")
-      AC_SUBST(XCF_LDFLAGS, "-lsigc-1.2 -lxcf -lxmltio -L${withval}/lib")
+      NPM_XCF_CPPFLAGS="-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include -I${withval}"
+      NPM_XCF_LDFLAGS="-lsigc-1.2 -lxcf -lxmltio -L${withval}/lib -L${withval}"
     fi
-    CPPFLAGS="$CPPFLAGS -DHAVE_XCF"
+    NPM_CPPFLAGS="$NPM_CPPFLAGS -DNPM_HAVE_XCF"
     oldCPPFLAGS="$CPPFLAGS"
-    if test "$prefix" != "NONE"; then
-      CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
+    if test "$prefix" = "NONE"; then
+      CPPFLAGS="$NPM_CPPFLAGS $XCF_CPPFLAGS"
     else
-      CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS"
+      CPPFLAGS="$NPM_CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
     fi
     AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
       AC_MSG_ERROR([cannot compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
     CPPFLAGS="$oldCPPFLAGS"
-    AM_CONDITIONAL([HAVE_XCF], [true]) ],
-  [ AC_SUBST(XCF_CPPFLAGS, "")
-    AC_SUBST(XCF_LDFLAGS, "")
-    AM_CONDITIONAL([HAVE_XCF], [false]) ])
+    AM_CONDITIONAL([NPM_HAVE_XCF], [true]) ],
+  [ AM_CONDITIONAL([NPM_HAVE_XCF], [false]) ])
 
 AC_ARG_WITH(xcfglue,
   AC_HELP_STRING([--with-xcfglue=PATH], [special XCFGLUE install PATH]),
-  [ if test ! -z "$HAVE_XCF_TRUE"; then
+  [ if test ! -z "$NPM_HAVE_XCF_TRUE"; then
       AC_MSG_ERROR([--with-xcfglue requires --with-xcf])
     fi
     if test "x$withval" != "x" ; then
-      XCF_CPPFLAGS="$XCF_CPPFLAGS -I${withval}/include"
-      XCF_LDFLAGS="-lxcfglue $XCF_LDFLAGS -L${withval}/lib"
+      NPM_XCF_CPPFLAGS="$NPM_XCF_CPPFLAGS -I${withval}/include -I${withval}"
+      NPM_XCF_LDFLAGS="-lxcfglue -L${withval}/lib -L${withval} $NPM_XCF_LDFLAGS"
     fi ], [])
 
-if test -z "$HAVE_XCF_TRUE"; then
+if test -z "$NPM_HAVE_XCF_TRUE"; then
   oldCPPFLAGS="$CPPFLAGS"
-  if test "$prefix" != "NONE"; then
-    CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
+  if test "$prefix" = "NONE"; then
+    CPPFLAGS="$NPM_CPPFLAGS $NPM_XCF_CPPFLAGS"
   else
-    CPPFLAGS="$CPPFLAGS $XCF_CPPFLAGS"
+    CPPFLAGS="$NPM_CPPFLAGS $NPM_XCF_CPPFLAGS -I$prefix/include"
   fi
   AC_CHECK_HEADER([xcfwrap/xcfglue.h], [], [
     AC_MSG_ERROR([cannot compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
   CPPFLAGS="$oldCPPFLAGS"
 fi
 
+NPM_ESTAR_CPPFLAGS=""
+NPM_ESTAR_LDFLAGS=""
 AC_ARG_WITH(estar,
   AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
   [ if test "x$withval" = "x" ; then
-      AC_SUBST(ESTAR_CPPFLAGS, "-DHAVE_ESTAR")
-      AC_SUBST(ESTAR_LDFLAGS, "-lestar")
+      NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR"
+      NPM_ESTAR_LDFLAGS="-lasl-mcontrol -lestar"
     else
-      AC_SUBST(ESTAR_CPPFLAGS, "-DHAVE_ESTAR -I${withval}/include")
-      AC_SUBST(ESTAR_LDFLAGS, "-lasl-mcontrol -lestar -L${withval}/lib")
+      NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR -I${withval}/include -I${withval}"
+      NPM_ESTAR_LDFLAGS="-lasl-mcontrol -lestar -L${withval}/lib -L${withval}"
     fi
-    AM_CONDITIONAL([HAVE_ESTAR], [true]) ],
-  [ AC_SUBST(ESTAR_CPPFLAGS, "")
-    AC_SUBST(ESTAR_LDFLAGS, "")
-    AM_CONDITIONAL([HAVE_ESTAR], [false]) ])
+    AM_CONDITIONAL([NPM_HAVE_ESTAR], [true]) ],
+  [ AM_CONDITIONAL([NPM_HAVE_ESTAR], [false]) ])
 
 AC_ARG_WITH(asl,
   AC_HELP_STRING([--with-asl=PATH], [ASL 'standard software' install PATH]),
-  [ if test ! -z "$HAVE_ESTAR_TRUE"; then
+  [ if test ! -z "$NPM_HAVE_ESTAR_TRUE"; then
       AC_MSG_ERROR([--with-asl makes no sense without --with-estar])
     fi
     if test "x$withval" != "x" ; then
-      ESTAR_CPPFLAGS="$ESTAR_CPPFLAGS -I${withval}/include"
-      ESTAR_LDFLAGS="-L${withval}/lib $ESTAR_LDFLAGS"
+      NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -I${withval}/include -I${withval}"
+      NPM_ESTAR_LDFLAGS="-L${withval}/lib -L${withval} $NPM_ESTAR_LDFLAGS"
     fi ], [])
 
-if test -z "$HAVE_ESTAR_TRUE"; then
+if test -z "$NPM_HAVE_ESTAR_TRUE"; then
   oldCPPFLAGS="$CPPFLAGS"
-  if test "$prefix" != "NONE"; then
-    CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS -I$prefix/include"
+  if test "$prefix" = "NONE"; then
+    CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS"
   else
-    CPPFLAGS="$CPPFLAGS $ESTAR_CPPFLAGS"
+    CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS -I$prefix/include"
   fi
   AC_CHECK_HEADER([estar/Facade.hpp], [], [
     AC_MSG_ERROR([cannot compile estar/Facade.hpp (CPPFLAGS=$CPPFLAGS)])], [])
@@ -146,58 +177,68 @@ fi
 AC_ARG_WITH(genom,
   AC_HELP_STRING([--with-genom=PATH], [specify openrobots install dir]),
   [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -DHAVE_GENOM -I${withval}/include"
-      LDFLAGS="-L${withval}/lib -lposterLib $LDFLAGS"
+      NPM_CPPFLAGS="$NPM_CPPFLAGS -DNPM_HAVE_GENOM -I${withval}/include -I${withval}"
+      NPM_LDFLAGS="-L${withval}/lib -L${withval} -lposterLib $NPM_LDFLAGS"
     else
-      LDFLAGS="-lposterLib $LDFLAGS"
+      NPM_LDFLAGS="-lposterLib $NPM_LDFLAGS"
     fi
-    AM_CONDITIONAL([HAVE_GENOM], [true])
+    AM_CONDITIONAL([NPM_HAVE_GENOM], [true])
     oldCPPFLAGS="$CPPFLAGS"
-    test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
+    if test "$prefix" = "NONE"; then
+      CPPFLAGS="$NPM_CPPFLAGS"
+    else
+      CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+    fi
     AC_CHECK_HEADER([posterLib.h], [], [
       AC_MSG_ERROR([cannot compile posterLib.h (CPPFLAGS=$CPPFLAGS)])], [])
     CPPFLAGS="$oldCPPFLAGS"
   ],[
-    AM_CONDITIONAL([HAVE_GENOM], [false])])
+    AM_CONDITIONAL([NPM_HAVE_GENOM], [false])])
 
 AC_ARG_WITH(png,
   AC_HELP_STRING([--with-png=PATH], [specify libpng install dir]),
   [ if test "x$withval" != "x" ; then
-      CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}"
-      LDFLAGS="-L${withval}/lib -I${withval} $LDFLAGS"
+      NPM_CPPFLAGS="$NPM_CPPFLAGS -I${withval}/include -I${withval}"
+      NPM_LDFLAGS="-L${withval}/lib -L${withval} $NPM_LDFLAGS"
     fi ], [])
 oldCPPFLAGS="$CPPFLAGS"
-test "$prefix" != "NONE" && CPPFLAGS="$CPPFLAGS -I$prefix/include"
-AC_CHECK_HEADERS([png.h], [LDFLAGS="$LDFLAGS -lpng -lz"], [
-  AC_MSG_NOTICE([PNG support disabled (CPPFLAGS=$CPPFLAGS)])])
+if test "$prefix" = "NONE"; then
+  CPPFLAGS="$NPM_CPPFLAGS"
+else
+  CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+fi
+AC_CHECK_HEADERS([png.h],
+  [ NPM_LDFLAGS="-lpng -lz $NPM_LDFLAGS" ],
+  [ AC_MSG_NOTICE([PNG support disabled (CPPFLAGS=$CPPFLAGS)]) ])
 CPPFLAGS="$oldCPPFLAGS"
-
-case $host_os in
-  darwin*) AC_DISABLE_SHARED;;
-  *)       AC_DISABLE_STATIC;;
-esac
-AC_PROG_LIBTOOL
-AC_PROG_INSTALL
 
 ABSTOPBUILDDIR=`pwd`
 if test -z "$ABSTOPBUILDDIR" ; then
   AC_MSG_ERROR([could not determine current working directory])
 fi
 if test "$prefix" = "NONE" ; then
-  CPPFLAGS="-I${ABSTOPBUILDDIR}/include $CPPFLAGS"
+  NPM_CPPFLAGS="-I${ABSTOPBUILDDIR}/include $NPM_CPPFLAGS"
 else
-  CPPFLAGS="-I${ABSTOPBUILDDIR}/include $CPPFLAGS -I${prefix}/include"
-  LDFLAGS="$LDFLAGS -L$prefix/lib"
+  NPM_CPPFLAGS="-I${ABSTOPBUILDDIR}/include $NPM_CPPFLAGS -I${prefix}/include"
+  NPM_LDFLAGS="$NPM_LDFLAGS -L$prefix/lib"
 fi
-CXXFLAGS="$CFLAGS"
+NPM_CXXFLAGS="$NPM_CFLAGS"
 
-dnl *** bit of a hack for smartflower 'meta' build
-AM_CONDITIONAL([SMARTFLOWER], [false])
-AM_CONDITIONAL([OPTPROGNAV], [false])
+AM_CONDITIONAL([NPM_SMARTFLOWER], [false])
+AM_CONDITIONAL([NPM_OPTPROGNAV], [false])
 
 AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(NPM_CPPFLAGS)
+AC_SUBST(NPM_CFLAGS)
+AC_SUBST(NPM_CXXFLAGS)
+AC_SUBST(NPM_LDFLAGS)
+AC_SUBST(NPM_GLUTLIBS)
+AC_SUBST(NPM_XCF_CPPFLAGS)
+AC_SUBST(NPM_XCF_LDFLAGS)
+AC_SUBST(NPM_ESTAR_CPPFLAGS)
+AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
                 laas/Makefile biron/Makefile estar/Makefile smart/Makefile
-                simul/Makefile])
+                simul/Makefile qt/Makefile])
 AC_OUTPUT

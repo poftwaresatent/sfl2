@@ -1,4 +1,7 @@
-CPPFLAGS+= @XCF_CPPFLAGS@ @ESTAR_CPPFLAGS@
+CPPFLAGS= @NPM_CPPFLAGS@ @NPM_XCF_CPPFLAGS@ @NPM_ESTAR_CPPFLAGS@
+CFLAGS=   @NPM_CFLAGS@
+CXXFLAGS= @NPM_CXXFLAGS@
+LDFLAGS=  @NPM_LDFLAGS@ @NPM_GLUTLIBS@
 
 noinst_LTLIBRARIES=  libsimul.la
 libsimul_la_SOURCES= RobotFactory.cpp Simulator.cpp
@@ -9,30 +12,15 @@ dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
 
 # ===> see dist_bin_SCRIPTS for more stuff
 
-# ===> external libraries, depending on the build setup
-# three cases: SMARTFLOWER, OPTPROGNAV, and all others
-
-if SMARTFLOWER
-  LDFLAGS+= @GLUTLIBS@
-else
-
-if OPTPROGNAV
-  LDFLAGS+= @GLUTLIBS@
-else
-  LDFLAGS+= @GLUTLIBS@ @XCF_LDFLAGS@ @ESTAR_LDFLAGS@
-endif
-
-endif
-
 # ===> internal libraries, depending on the build setup
 # six cases for nepumuk: the same as for external libraries, but
 #                        multiplied by two because of HAVE_ESTAR
 # two cases for dumpworld: it only depends on libsunflower, which
 #                          might be external or part of a meta-build
 
-if HAVE_ESTAR
+if NPM_HAVE_ESTAR
 
-if SMARTFLOWER
+if NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    ../../smartsfl/libsmartsfl.la \
@@ -43,7 +31,7 @@ if SMARTFLOWER
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
-if OPTPROGNAV
+if NPM_OPTPROGNAV
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la \
@@ -68,7 +56,7 @@ endif
 
 else
 
-if SMARTFLOWER
+if NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
@@ -76,7 +64,7 @@ if SMARTFLOWER
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
-if OPTPROGNAV
+if NPM_OPTPROGNAV
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la \
