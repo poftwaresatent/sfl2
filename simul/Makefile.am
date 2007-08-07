@@ -12,12 +12,6 @@ dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
 
 # ===> see dist_bin_SCRIPTS for more stuff
 
-# ===> internal libraries, depending on the build setup
-# six cases for nepumuk: the same as for external libraries, but
-#                        multiplied by two because of HAVE_ESTAR
-# two cases for dumpworld: it only depends on libsunflower, which
-#                          might be external or part of a meta-build
-
 if NPM_HAVE_ESTAR
 
 if NPM_SMARTFLOWER
@@ -31,16 +25,7 @@ if NPM_SMARTFLOWER
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
-if NPM_OPTPROGNAV
-  nepumuk_LDADD=   libsimul.la \
-                   ../libnepumuk.la \
-                   ../../sunflower/libsunflower.la \
-                   ../../src/liboptprognav.la \
-                   ../../estar/libestar.la
-  dumpworld_LDADD= libsimul.la \
-                   ../libnepumuk.la \
-                   ../../sunflower/libsunflower.la
-else
+# ! NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    -lasl-mcontrol \
@@ -51,10 +36,10 @@ else
                    ../libnepumuk.la \
                    -lsunflower
 endif
-
-endif
+# NPM_SMARTFLOWER
 
 else
+# ! NPM_HAVE_ESTAR
 
 if NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
@@ -64,15 +49,7 @@ if NPM_SMARTFLOWER
                    ../libnepumuk.la \
                    ../../sunflower/libsunflower.la
 else
-if NPM_OPTPROGNAV
-  nepumuk_LDADD=   libsimul.la \
-                   ../libnepumuk.la \
-                   ../../sunflower/libsunflower.la \
-                   ../../src/liboptprognav.la
-  dumpworld_LDADD= libsimul.la \
-                   ../libnepumuk.la \
-                   ../../sunflower/libsunflower.la
-else
+# ! NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    -lsunflower
@@ -80,10 +57,10 @@ else
                    ../libnepumuk.la \
                    -lsunflower
 endif
+# NPM_SMARTFLOWER
 
 endif
-
-endif
+# NPM_HAVE_ESTAR
 
 # ===> scripts and config files
 
