@@ -42,8 +42,8 @@ host_triplet = @host@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Doxyfile.in \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in $(srcdir)/sunflower.pc.in \
-	$(top_srcdir)/configure COPYING TODO config.guess config.sub \
-	depcomp install-sh ltmain.sh missing mkinstalldirs
+	$(top_srcdir)/configure COPYING ChangeLog TODO config.guess \
+	config.sub depcomp install-sh ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -112,13 +112,13 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@
+CFLAGS = @SFL_CFLAGS@
 CPP = @CPP@
-CPPFLAGS = @CPPFLAGS@
+CPPFLAGS = @SFL_CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
+CXXFLAGS = @SFL_CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -131,13 +131,11 @@ EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
-HAVE_ESTAR_FALSE = @HAVE_ESTAR_FALSE@
-HAVE_ESTAR_TRUE = @HAVE_ESTAR_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LDFLAGS = @LDFLAGS@
+LDFLAGS = @SFL_LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -153,9 +151,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
-ROBOX_FALSE = @ROBOX_FALSE@
-ROBOX_TRUE = @ROBOX_TRUE@
 SET_MAKE = @SET_MAKE@
+SFL_CFLAGS = @SFL_CFLAGS@
+SFL_CPPFLAGS = @SFL_CPPFLAGS@
+SFL_CXXFLAGS = @SFL_CXXFLAGS@
+SFL_HAVE_ESTAR_FALSE = @SFL_HAVE_ESTAR_FALSE@
+SFL_HAVE_ESTAR_TRUE = @SFL_HAVE_ESTAR_TRUE@
+SFL_HAVE_ROBOX_FALSE = @SFL_HAVE_ROBOX_FALSE@
+SFL_HAVE_ROBOX_TRUE = @SFL_HAVE_ROBOX_TRUE@
+SFL_LDFLAGS = @SFL_LDFLAGS@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
@@ -221,6 +225,13 @@ libsunflower_la_LIBADD = api/libapi.la \
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = sunflower.pc
+EXTRA_DIST = LICENSE.BSD \
+                     bootstrap-buildsystem.sh \
+                     build-stage.sh \
+                     doxylogo.png \
+                     footer.html \
+                     mainpage.dox
+
 SRCDIR = @abs_top_srcdir@
 BUILDDIR = @abs_top_builddir@
 BUILT_SOURCES = incsym
@@ -719,6 +730,9 @@ uninstall-info: uninstall-info-recursive
 incsym:
 	test -d $(BUILDDIR)/include || mkdir -p $(BUILDDIR)/include
 	test -L $(BUILDDIR)/include/sfl || ln -s $(SRCDIR) $(BUILDDIR)/include/sfl
+
+ChangeLog:
+	- echo 'see http://libsunflower.svn.sourceforge.net/viewvc/libsunflower/trunk/sunflower/' > ChangeLog
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
