@@ -19,6 +19,10 @@ if test "x${GXX}" != "xyes"; then
    AC_MSG_WARN([Update configure.ac with compiler-vendor detection.])
 fi
 
+SFL_CPPFLAGS=""
+SFL_CFLAGS="-pipe"
+SFL_LDFLAGS=""
+
 AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_RESULT([detected Linux])
@@ -33,14 +37,11 @@ esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
-SFL_CFLAGS="-pipe"
-
 AC_ARG_ENABLE(debug,
   AS_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O3)]),
-  [ SFL_CPPFLAGS="-DSFL_DEBUG"
+  [ SFL_CPPFLAGS="$SFL_CPPFLAGS -DSFL_DEBUG"
     SFL_CFLAGS="$SFL_CFLAGS -g -O0" ],
-  [ SFL_CPPFLAGS=""
-    SFL_CFLAGS="$SFL_CFLAGS -O3" ])
+  [ SFL_CFLAGS="$SFL_CFLAGS -O3" ])
 
 AC_ARG_ENABLE(pedantic,
   AS_HELP_STRING([--enable-pedantic], [GCC options -pedantic (else -Wall)]),
