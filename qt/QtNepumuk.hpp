@@ -39,8 +39,8 @@ namespace npm {
 class NepumukWidget
   : public QGLWidget
 {
-  Q_OBJECT
-  
+  Q_OBJECT  
+
 public:
   NepumukWidget(QWidget * parent);
   
@@ -76,12 +76,45 @@ private:
 };
 
 
+class WorldGroup
+	: public QGroupBox
+{
+  Q_OBJECT
+
+public:
+	WorldGroup(QWidget * parent);
+
+public slots:
+  void rBoilerToggled(bool on);
+	void rFileToggled(bool on);
+	void rTravmapToggled(bool on);
+	void bConfigClicked();	
+	void dConfigAccepted();	
+	void bTravmapClicked();	
+	void dTravmapAccepted();	
+	void bCreateClicked();
+	
+private:
+	QGridLayout * grid;
+	QRadioButton * r_boiler, * r_config, * r_travmap;
+	QLineEdit * e_config, * e_travmap;
+	QPushButton * b_config, * b_travmap, * b_create;
+	QFileDialog * d_config, * d_travmap;
+};
+
+
 class NepumukWindow
   : public QWidget
 {
   Q_OBJECT
+
 public:
   NepumukWindow(QCoreApplication * app);
+
+private:
+	NepumukWidget * npm;
+	WorldGroup * world;
+	QPushButton * b_quit;
 };
 
 #endif // NPM_QT_NEPUMUK_HPP
