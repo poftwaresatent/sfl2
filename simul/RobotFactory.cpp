@@ -27,18 +27,21 @@
 #include <npm/visitor/Visitor.hpp>
 #include <npm/robox/Robox.hpp>
 
-#ifdef HAVE_GENOM
+#ifdef NPM_HAVE_GENOM
 # include <npm/laas/LAAS.hpp>
-#endif // HAVE_GENOM
+#endif // NPM_HAVE_GENOM
 
-#ifdef HAVE_XCF
+#ifdef NPM_HAVE_XCF
 # include <npm/biron/Biron.hpp>
-#endif // HAVE_XCF
+#endif // NPM_HAVE_XCF
 
-#ifdef HAVE_ESTAR
+#ifdef NPM_HAVE_ESTAR
 # include <npm/estar/Esbot.hpp>
+#endif // NPM_HAVE_ESTAR
+
+#ifdef NPM_HAVE_ASL
 # include <npm/smart/Smart.hpp>
-#endif // HAVE_ESTAR
+#endif // NPM_HAVE_ASL
 
 //#include <npm/theater/TheaterRobot.hpp>
 ////#include <npm/braitenberg/Braitenberg.hpp>
@@ -61,24 +64,27 @@ namespace npm {
     else if(descriptor->model == "visitor")
       rob = new Visitor(descriptor, world);
 
-#ifdef HAVE_XCF
+#ifdef NPM_HAVE_XCF
     else if(descriptor->model == "biron")
       rob = new Biron(descriptor, world);
-#endif // HAVE_XCF
+#endif // NPM_HAVE_XCF
 
-#ifdef HAVE_ESTAR
+#ifdef NPM_HAVE_ESTAR
     else if(descriptor->model == "esbot")
       rob = new Esbot(descriptor, world);
+#endif // NPM_HAVE_ESTAR
+
+#ifdef NPM_HAVE_ASL
     else if (descriptor->model == "smart")
       rob = new Smart(descriptor, world);
-#endif // HAVE_ESTAR
+#endif // NPM_HAVE_ASL
 
-#ifdef HAVE_GENOM
+#ifdef NPM_HAVE_GENOM
     else if(descriptor->model == "jido")
       rob = new Jido(descriptor, world);
     else if(descriptor->model == "rackham")
       rob = new Rackham(descriptor, world);
-#endif // HAVE_GENOM
+#endif // NPM_HAVE_GENOM
 
     return shared_ptr<RobotClient>(rob);
   }

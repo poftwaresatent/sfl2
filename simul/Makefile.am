@@ -28,8 +28,6 @@ else
 # ! NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
-                   -lasl-mcontrol \
-                   -lsmartsfl \
                    -lsunflower \
                    -lestar
   dumpworld_LDADD= libsimul.la \

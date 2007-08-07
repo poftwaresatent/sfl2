@@ -55,6 +55,7 @@ case $host_os in
 esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
+AC_PROG_EGREP
 
 AC_ARG_ENABLE(debug,
   AS_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O3)]),
