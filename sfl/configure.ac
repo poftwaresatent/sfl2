@@ -2,6 +2,7 @@ AC_REVISION($Id$)
 AC_INIT([libsunflower],
         [1.0pre],
         [libsunflower-devel AT lists DOT sourceforge DOT net])
+AC_CONFIG_AUX_DIR([.])
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
