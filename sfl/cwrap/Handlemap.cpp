@@ -21,13 +21,13 @@
 #include <fcntl.h>
 
 
-#ifdef DEBUG
+#ifdef SFL_DEBUG
 # define PDEBUG PDEBUG_ERR
 # define PVDEBUG PDEBUG_OFF
-#else // ! DEBUG
+#else // ! SFL_DEBUG
 # define PDEBUG PDEBUG_OFF
 # define PVDEBUG PDEBUG_OFF
-#endif // DEBUG
+#endif // SFL_DEBUG
 
 
 using namespace boost;

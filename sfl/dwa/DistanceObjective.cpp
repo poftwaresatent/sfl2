@@ -31,11 +31,11 @@
 #include <iomanip>
 
 
-#ifdef DEBUG
+#ifdef SFL_DEBUG
 # define PDEBUG PDEBUG_ERR
-#else // ! DEBUG
+#else // ! SFL_DEBUG
 # define PDEBUG PDEBUG_OFF
-#endif // DEBUG
+#endif // SFL_DEBUG
 #define PVDEBUG PDEBUG_OFF
 
 
