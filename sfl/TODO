@@ -1,6 +1,3 @@
-Aim: Release 1.0
-     - use Automake/libtool
-
 Aim: Tweaks, cleanups, features
      - use measured timestep to predict pose in DWA
      - make use of (compressed) lookup optional in DWA (but KEEP it,
