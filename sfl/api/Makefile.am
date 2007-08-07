@@ -1,3 +1,8 @@
+CPPFLAGS= @SFL_CPPFLAGS@
+CFLAGS=   @SFL_CFLAGS@
+CXXFLAGS= @SFL_CXXFLAGS@
+LDFLAGS=  @SFL_LDFLAGS@
+
 noinst_LTLIBRARIES= libapi.la
 libapi_la_SOURCES=  Scan.cpp Goal.cpp Timestamp.cpp MotionController.cpp \
                     Pose.cpp RobotModel.cpp Scanner.cpp Odometry.cpp \

@@ -1,9 +1,14 @@
+CPPFLAGS= @SFL_CPPFLAGS@
+CFLAGS=   @SFL_CFLAGS@
+CXXFLAGS= @SFL_CXXFLAGS@
+LDFLAGS=  @SFL_LDFLAGS@
+
 noinst_LTLIBRARIES=    libcontrib.la
 libcontrib_la_SOURCES= DummyHAL.cpp
 include_HEADERS=       DummyHAL.hpp
 includedir=            @includedir@/sfl/contrib
 
-if ROBOX
+if SFL_HAVE_ROBOX
 libcontrib_la_SOURCES+= asl_hal.cpp
 include_HEADERS+=       asl_hal.hpp
 endif
@@ -16,8 +21,6 @@ tpthread_SOURCES=                tpthread.cpp
 xcomp_test_c___boost_SOURCES=    xcomp-test-c++-boost.cpp
 LDADD=                           ../libsunflower.la
 xcomp_test_c_LDADD=              -lstdc++
-
-###CPPFLAGS+=                       -I@top_builddir@/include
 
 ../libsunflower.la:
 	$(MAKE) -C ..

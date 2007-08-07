@@ -1,3 +1,8 @@
+CPPFLAGS= @SFL_CPPFLAGS@
+CFLAGS=   @SFL_CFLAGS@
+CXXFLAGS= @SFL_CXXFLAGS@
+LDFLAGS=  @SFL_LDFLAGS@
+
 noinst_LTLIBRARIES= libutil.la
 libutil_la_SOURCES= Point.cpp Ray.cpp Frame.cpp Line.cpp Pthread.cpp \
                     Hull.cpp numeric.cpp Polygon.cpp GoalManager.cpp
