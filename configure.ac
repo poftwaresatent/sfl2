@@ -29,10 +29,26 @@ case $host_os in
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DLINUX"
 	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
            NPM_GLUTLIBS="-lglut -lGLU -lGL"
+	   oldCPPFLAGS="$CPPFLAGS"
+	   if test "$prefix" = "NONE"; then
+	     CPPFLAGS="$NPM_CPPFLAGS"
+	   else
+	     CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+	   fi
+	   AC_CHECK_HEADER([GL/glut.h], [],
+	     [ AC_MSG_ERROR([cannot find GL/glut.h]) ])
            AC_DISABLE_SHARED;;
   darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -Wno-long-double"
            NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
+	   oldCPPFLAGS="$CPPFLAGS"
+	   if test "$prefix" = "NONE"; then
+	     CPPFLAGS="$NPM_CPPFLAGS"
+	   else
+	     CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+	   fi
+	   AC_CHECK_HEADER([GLUT/glut.h], [],
+	     [ AC_MSG_ERROR([cannot find GLUT/glut.h]) ])
            AC_DISABLE_STATIC;;
   *)       AC_MSG_WARN([Unknown host_os $host_os, build will probably break.])
            AC_MSG_WARN([Please update configure.ac.]);;
