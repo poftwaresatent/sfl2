@@ -174,7 +174,20 @@ AC_ARG_WITH(asl,
     if test "x$withval" != "x" ; then
       NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -I${withval}/include -I${withval}"
       NPM_ESTAR_LDFLAGS="-L${withval}/lib -L${withval} $NPM_ESTAR_LDFLAGS"
-    fi ], [])
+    fi
+    oldCPPFLAGS="$CPPFLAGS"
+    if test "$prefix" = "NONE"; then
+      CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS"
+    else
+      CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS -I$prefix/include"
+    fi
+    AC_CHECK_HEADER([asl/path_tracking.hpp], [], [
+      AC_MSG_ERROR([cannot compile asl/path_tracking.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([smartsfl/SmartAlgo.hpp], [], [
+      AC_MSG_ERROR([cannot compile smartsfl/SmartAlgo.hpp (CPPFLAGS=$CPPFLAGS)])], [])
+    CPPFLAGS="$oldCPPFLAGS"
+    AM_CONDITIONAL([NPM_HAVE_ASL], [true]) ],
+  [ AM_CONDITIONAL([NPM_HAVE_ASL], [false]) ])
 
 if test -z "$NPM_HAVE_ESTAR_TRUE"; then
   oldCPPFLAGS="$CPPFLAGS"
@@ -185,8 +198,6 @@ if test -z "$NPM_HAVE_ESTAR_TRUE"; then
   fi
   AC_CHECK_HEADER([estar/Facade.hpp], [], [
     AC_MSG_ERROR([cannot compile estar/Facade.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-  AC_CHECK_HEADER([asl/path_tracking.hpp], [], [
-    AC_MSG_ERROR([cannot compile asl/path_tracking.hpp (CPPFLAGS=$CPPFLAGS)])], [])
   CPPFLAGS="$oldCPPFLAGS"
 fi
 

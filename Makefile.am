@@ -9,8 +9,13 @@ if NPM_HAVE_XCF
 endif
 
 if NPM_HAVE_ESTAR
-  ESTAR_DIR=    estar smart
-  ESTAR_LIBADD= estar/libestar.la smart/libsmart.la
+  ESTAR_DIR=    estar
+  ESTAR_LIBADD= estar/libestar.la
+endif 
+
+if NPM_HAVE_ASL
+  ESTAR_DIR=    smart
+  ESTAR_LIBADD= smart/libsmart.la
 endif 
 
 if NPM_HAVE_GENOM
