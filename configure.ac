@@ -38,7 +38,7 @@ case $host_os in
 	   fi
 	   AC_CHECK_HEADER([GL/glut.h], [],
 	     [ AC_MSG_ERROR([cannot find GL/glut.h]) ])
-           AC_DISABLE_SHARED;;
+           AC_DISABLE_STATIC;;
   darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -Wno-long-double"
            NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
@@ -50,7 +50,7 @@ case $host_os in
 	   fi
 	   AC_CHECK_HEADER([GLUT/glut.h], [],
 	     [ AC_MSG_ERROR([cannot find GLUT/glut.h]) ])
-           AC_DISABLE_STATIC;;
+           AC_DISABLE_SHARED;;
   *)       AC_MSG_WARN([Unknown host_os $host_os, build will probably break.])
            AC_MSG_WARN([Please update configure.ac.]);;
 esac
