@@ -1,0 +1,21 @@
+DIGEST OF CHANGES in /branches/sunflower--smartsfl-rfct-0
+
+------------------------------------------------------------------------
+r630 | poftwaresatent | 2007-07-26 15:53:53 -0700 (Thu, 26 Jul 2007) | 12 lines
+
+TraversabilityMap can now (optionally) be accessed via POSIX rwlocks,
+useful in cases (like smartflower) where the traversability data is
+shared between several threads. The RWTravmap header defines two
+proxies: RDTravmap for read-only, and WRTravmap for read-write, access
+of TraversabilityMap instances. The relevant API of TraversabilityMap
+is forwarded.
+Mapper2d still uses the legacy TraversabilityMap internally, but adds
+a RWlock to protect access to it blockwise. However, clients are now
+constrained to using either Mapper2d::CreateRDTravmap() or
+Mapper2d::CreateWRTravmap() to access the data, which ensures that it
+does not get inconsistent.
+
+------------------------------------------------------------------------
+r629 | poftwaresatent | 2007-07-26 15:46:13 -0700 (Thu, 26 Jul 2007) | 1 line
+
+branch for refactoring shared resource access in smartsfl

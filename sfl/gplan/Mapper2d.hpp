@@ -27,9 +27,8 @@
 #define SFL_MAPPER2D_HPP
 
 
-#include <sfl/gplan/TraversabilityMap.hpp>
+#include <sfl/gplan/RWTravmap.hpp>
 #include <sfl/api/Multiscanner.hpp>
-#include <boost/shared_ptr.hpp>
 #include <map>
 #include <set>
 
@@ -54,7 +53,8 @@ namespace sfl {
 		
 		Mapper2d(double robot_radius,
 						 double buffer_zone,
-						 boost::shared_ptr<TraversabilityMap> travmap);
+						 boost::shared_ptr<TraversabilityMap> travmap,
+						 boost::shared_ptr<RWlock> trav_rwlock);
 		
   public:
 		typedef GridFrame::index_t index_t;
@@ -77,7 +77,8 @@ namespace sfl {
 						 double buffer_zone,
 						 int freespace,
 						 int obstacle,
-						 const std::string & name);
+						 const std::string & name,
+						 boost::shared_ptr<RWlock> trav_rwlock);
 		
 		static boost::shared_ptr<Mapper2d>
 		Create(double robot_radius, double buffer_zone,
@@ -119,11 +120,8 @@ namespace sfl {
 									size_t length, double * locx, double * locy,
 									draw_callback * cb = 0);
 		
-		boost::shared_ptr<const TraversabilityMap> GetTravmap() const
-		{ return m_travmap; }
-		
-		boost::shared_ptr<TraversabilityMap> GetTravmap()
-		{ return m_travmap; }
+		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
+		boost::shared_ptr<WRTravmap> CreateWRTravmap();
 		
 		const link_t & GetFreespaceBuffer() const { return m_freespace_buffer; }
 		const link_t & GetObstacleBuffer() const { return m_obstacle_buffer; }
@@ -181,6 +179,7 @@ namespace sfl {
 				expanded obstacles, to distinguish them from obstacle cells
 				that do not contain any actual workspace points. */
 		boost::shared_ptr<TraversabilityMap> m_travmap;
+		boost::shared_ptr<RWlock> m_trav_rwlock;
 		boost::shared_ptr<estar::Sprite> m_sprite;
 		
 		linkmap_t m_linkmap;				// lists all targets of a given source

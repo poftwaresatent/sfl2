@@ -20,6 +20,7 @@ include_HEADERS=       GridFrame.hpp \
                        NF1Wave.hpp \
                        NF1.hpp \
                        TraversabilityMap.hpp \
+                       RWTravmap.hpp \
                        $(OPTHDR)
 
 includedir=            @includedir@/sfl/gplan

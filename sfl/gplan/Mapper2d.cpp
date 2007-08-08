@@ -91,7 +91,8 @@ namespace sfl {
 					 double _buffer_zone,
 					 int _freespace,
 					 int _obstacle,
-					 const std::string & name)
+					 const std::string & name,
+					 boost::shared_ptr<RWlock> trav_rwlock)
 		: xsize(grid_ncells_x),
 			ysize(grid_ncells_y),
 			freespace(_freespace),
@@ -104,6 +105,7 @@ namespace sfl {
 			grown_robot_radius(robot_radius + _gridframe.Delta() * sqrt_of_two),
 			m_travmap(new TraversabilityMap(_gridframe, grid_ncells_x, grid_ncells_y,
 																			freespace, obstacle, name)),
+			m_trav_rwlock(trav_rwlock),
 			m_sprite(new Sprite(grown_safe_distance, _gridframe.Delta())),
 			m_linkmap(grid_ncells_x, grid_ncells_y),
 			m_refmap(grid_ncells_x, grid_ncells_y)
@@ -114,7 +116,8 @@ namespace sfl {
 	Mapper2d::
 	Mapper2d(double robot_radius,
 					 double _buffer_zone,
-					 boost::shared_ptr<TraversabilityMap> travmap)
+					 boost::shared_ptr<TraversabilityMap> travmap,
+					 boost::shared_ptr<RWlock> trav_rwlock)
 		: xsize(travmap->data->xsize),
 			ysize(travmap->data->ysize),
 			freespace(travmap->freespace),
@@ -126,6 +129,7 @@ namespace sfl {
 														+ gridframe.Delta() * sqrt_of_two),
 			grown_robot_radius(robot_radius + gridframe.Delta() * sqrt_of_two),
 			m_travmap(travmap),
+			m_trav_rwlock(trav_rwlock),
 			m_sprite(new Sprite(grown_safe_distance, gridframe.Delta())),
 			m_linkmap(xsize, ysize),
 			m_refmap(xsize, ysize)
@@ -138,6 +142,13 @@ namespace sfl {
 				 const std::string & traversability_file,
 				 std::ostream * err_os)
 	{
+		shared_ptr<RWlock> rwl(RWlock::Create("sfl::Mapper2d::m_trav_rwlock"));
+		if( ! rwl){
+      if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
+												 << "  sfl::RWlock::Create() failed\n";
+      return boost::shared_ptr<Mapper2d>();
+    }
+		
 		ifstream trav(traversability_file.c_str());
     if( ! trav){
       if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
@@ -159,9 +170,9 @@ namespace sfl {
 												 << traversability_file << "\".\n";
       return boost::shared_ptr<Mapper2d>();
 		}
-		boost::shared_ptr<Mapper2d> result(new Mapper2d(robot_radius,
-																										buffer_zone,
-																										traversability));
+		
+		boost::shared_ptr<Mapper2d>
+			result(new Mapper2d(robot_radius, buffer_zone, traversability, rwl));
 		return result;
 	}
 	
@@ -170,6 +181,7 @@ namespace sfl {
 	Update(const Frame & pose, size_t length, double * locx, double * locy,
 				 draw_callback * cb)
 	{
+		RWlock::wrsentry sentry(m_trav_rwlock);
 		size_t count(0);
 		for(size_t ii(0); ii < length; ++ii){
 			double xw(locx[ii]);
@@ -185,6 +197,7 @@ namespace sfl {
 	Update(const Frame & pose, const Scan & scan,
 				 draw_callback * cb)
 	{
+		RWlock::wrsentry sentry(m_trav_rwlock);
 		const Scan::array_t & scan_data(scan.data);
 		size_t count(0);		
 		for(size_t ii(0); ii < scan_data.size(); ++ii)
@@ -385,6 +398,8 @@ namespace sfl {
 							 const Multiscanner::raw_scan_collection_t & scans,
 							 draw_callback * cb)
 	{
+		RWlock::wrsentry sentry(m_trav_rwlock);
+		
 		// compute sets of swiped and obstacle cells
 		m_freespace_buffer.clear();
 		m_obstacle_buffer.clear();
@@ -422,6 +437,22 @@ namespace sfl {
 			count += AddBufferedObstacle(*il, cb);
 		
 		return count;
+	}
+	
+	
+	shared_ptr<RDTravmap> Mapper2d::
+	CreateRDTravmap() const
+	{
+		shared_ptr<RDTravmap> rdt(new RDTravmap(m_travmap, m_trav_rwlock));
+		return rdt;
+	}
+	
+	
+	shared_ptr<WRTravmap> Mapper2d::
+	CreateWRTravmap()
+	{
+		shared_ptr<WRTravmap> wrt(new WRTravmap(m_travmap, m_trav_rwlock));
+		return wrt;
 	}
 	
 }

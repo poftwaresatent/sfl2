@@ -121,7 +121,10 @@ namespace sfl {
     int freespace;		/**< default 0 */
     int obstacle;		/**< default 127 */
     std::string name;		/**< default "world" */
-    boost::shared_ptr<array2d<int> >  data; /**< default NULL */
+		
+		typedef boost::shared_ptr<const array2d<const int> >  const_data_t;
+		typedef boost::shared_ptr<array2d<int> >  data_t;
+		data_t data; /**< default NULL */
   };
   
 }
