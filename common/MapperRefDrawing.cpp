@@ -68,7 +68,7 @@ namespace npm {
     glRotated(180 * gframe.Theta() / M_PI, 0, 0, 1);
     glScaled(gframe.Delta(), gframe.Delta(), 1);
 
-		shared_ptr<const TraversabilityMap> travmap(m_mapper->GetTravmap());
+		shared_ptr<RDTravmap> rdtravmap(m_mapper->CreateRDTravmap());
 		vector<vec2d<double> > pts;
 		
 		if(m_draw_link){
@@ -78,7 +78,7 @@ namespace npm {
 			for(ssize_t ix(0); ix < m_mapper->xsize; ++ix)
 				for(ssize_t iy(0); iy < m_mapper->ysize; ++iy){
 					int val;
-					if( ! travmap->GetValue(ix, iy, val))
+					if( ! rdtravmap->GetValue(ix, iy, val))
 						continue;
 					const Mapper2d::link_t & link(linkmap[ix][iy]);
 					if(link.empty())
@@ -100,7 +100,7 @@ namespace npm {
 			for(ssize_t ix(0); ix < m_mapper->xsize; ++ix)
 				for(ssize_t iy(0); iy < m_mapper->ysize; ++iy){
 					int val;
-					if( ! travmap->GetValue(ix, iy, val))
+					if( ! rdtravmap->GetValue(ix, iy, val))
 						continue;
 					const Mapper2d::ref_s & ref(refmap[ix][iy]);
 					for(Mapper2d::rev_t::const_iterator ii(ref.reverse.begin());

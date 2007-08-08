@@ -31,10 +31,14 @@
 #include <vector>
 
 
-namespace asl {
-  class SmartAlgo;
+namespace smart {
+  class Algorithm;
+	class MappingThread;
 	class PlanningThread;
   class ControlThread;
+}
+
+namespace asl {
 	class ArcControl;
 	class AckermannController;
 	class NavFuncQuery;
@@ -48,6 +52,7 @@ namespace asl {
 
 namespace sfl {
   class Multiscanner;
+  class Odometry;
   class Scanner;
 	class RWlock;
 }
@@ -71,13 +76,15 @@ public:
   virtual void InitPose(double x, double y, double theta);
   virtual void SetPose(double x, double y, double theta);
   virtual void GetPose(double & x, double & y, double & theta);
+	const sfl::Frame & GetPose() const;
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   virtual bool GoalReached();
 	
 	/** \note Can return null. */
-	void GetPaths(const asl::path_t ** clean, const asl::path_t ** dirty) const;
-
+	void CopyPaths(boost::shared_ptr<asl::path_t> & clean,
+								 boost::shared_ptr<asl::path_t> & dirty) const;
+	
 	/** \note Can return null. */
 	const asl::trajectory_t * GetTrajectory() const;	
 
@@ -94,16 +101,21 @@ protected:
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Multiscanner> m_mscan;
   boost::shared_ptr<SmartColorScheme> m_smart_cs;
+	boost::shared_ptr<sfl::Odometry> m_odo;
   
-  boost::shared_ptr<asl::SmartAlgo> m_smart_algo;
-  boost::shared_ptr<sfl::RWlock> m_rwlock;
-  boost::shared_ptr<asl::PlanningThread> m_planning_thread;
-  boost::shared_ptr<asl::ControlThread> m_control_thread;
-	boost::shared_ptr<asl::AckermannController> m_controller;
+  boost::shared_ptr<smart::Algorithm> m_smart_algo;
+  boost::shared_ptr<sfl::RWlock> m_simul_rwlock;
+  boost::shared_ptr<smart::MappingThread> m_mapping_thread;
+  boost::shared_ptr<smart::PlanningThread> m_planning_thread;
+  boost::shared_ptr<smart::ControlThread> m_control_thread;
+	boost::shared_ptr<const asl::AckermannController> m_acntrl;
 	
   int m_nscans, m_sick_channel;
 	bool m_error;
-	int m_planning_usecsleep, m_control_usecsleep;
+	int m_simul_usecsleep;
+	int m_mapping_usecsleep;
+	int m_planning_usecsleep;
+	int m_control_usecsleep;
 };
 
 #endif // NPM_SMART_HPP

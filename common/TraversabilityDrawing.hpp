@@ -28,29 +28,62 @@
 
 
 #include <npm/common/Drawing.hpp>
-
-
-namespace sfl {
-  class TraversabilityMap;
-}
+#include <sfl/gplan/RWTravmap.hpp>
 
 
 namespace npm {
   
-  class TraversabilityProxy {
+  class TravProxyAPI {
 	public:
-		virtual ~TraversabilityProxy() {}
-		virtual const sfl::TraversabilityMap * Get() = 0;
-		virtual bool Enabled() const { return true; }
+		TravProxyAPI(): enable(true) {}
+		virtual ~TravProxyAPI() {}
+		virtual bool Enabled() const = 0;
+		virtual double GetX() const = 0;
+		virtual double GetY() const = 0;
+		virtual double GetTheta() const = 0;
+		virtual double GetDelta() const = 0;
+		virtual int GetObstacle() const = 0;
+		virtual int GetFreespace() const = 0;
+		virtual size_t GetXSize() const = 0;
+		virtual size_t GetYSize() const = 0;
+		virtual int GetValue(size_t ix, size_t iy) const = 0;
+		bool enable;
 	};
   
 	
-  class DirectTraversabilityProxy: public TraversabilityProxy {
+  class PtrTravProxy: public TravProxyAPI {
 	public:
-		DirectTraversabilityProxy(const sfl::TraversabilityMap * _travmap)
-			: travmap(_travmap) {}
-		virtual const sfl::TraversabilityMap * Get() { return travmap; }
-		const sfl::TraversabilityMap * travmap;
+		PtrTravProxy(boost::shared_ptr<sfl::TraversabilityMap const> travmap);
+		virtual bool Enabled() const;
+		virtual double GetX() const;
+		virtual double GetY() const;
+		virtual double GetTheta() const;
+		virtual double GetDelta() const;
+		virtual int GetObstacle() const;
+		virtual int GetFreespace() const;
+		virtual size_t GetXSize() const;
+		virtual size_t GetYSize() const;
+		virtual int GetValue(size_t ix, size_t iy) const;
+	protected:
+		boost::shared_ptr<sfl::TraversabilityMap const> m_travmap;
+	};
+  
+	
+  class RDTravProxy: public TravProxyAPI {
+	public:
+		RDTravProxy(boost::shared_ptr<sfl::RDTravmap> rdtravmap);
+		virtual bool Enabled() const;
+		virtual double GetX() const;
+		virtual double GetY() const;
+		virtual double GetTheta() const;
+		virtual double GetDelta() const;
+		virtual int GetObstacle() const;
+		virtual int GetFreespace() const;
+		virtual size_t GetXSize() const;
+		virtual size_t GetYSize() const;
+		virtual int GetValue(size_t ix, size_t iy) const;
+	protected:
+		boost::shared_ptr<sfl::RDTravmap> m_rdtravmap;
 	};
 	
 	
@@ -59,18 +92,18 @@ namespace npm {
   {
   public:
     TraversabilityDrawing(const std::string & name,
-													boost::shared_ptr<TraversabilityProxy> proxy);
+													boost::shared_ptr<TravProxyAPI> proxy);
 		
 		/** \note Packs proxy into a boost::shared_ptr<>, so only use this
 				if you have a raw pointer that will NOT be deleted in your
 				code. */
     TraversabilityDrawing(const std::string & name,
-													TraversabilityProxy * proxy);
+													TravProxyAPI * proxy);
     
     virtual void Draw();
     
   private:
-    boost::shared_ptr<TraversabilityProxy> m_proxy;
+    boost::shared_ptr<TravProxyAPI> m_proxy;
   };
 
 }

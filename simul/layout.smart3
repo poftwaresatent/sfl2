@@ -8,7 +8,13 @@ View world
      Drawing Ter_trajectory
      Drawing Ter_drive
      Drawing Ter_lidar_0
-     Window  0.0  0.0  0.4  0.8
+     Window  0.0  0.0  0.4  0.7
+     Border  1
+
+View mapping_thread
+     Camera  Ter_mapping_thread
+     Drawing Ter_mapping_thread
+     Window  0.0  0.7  0.4  0.8
      Border  1
 
 View planning_thread

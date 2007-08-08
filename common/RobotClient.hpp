@@ -110,6 +110,9 @@ namespace npm {
     /** using this means you're cheating... */
     boost::shared_ptr<RobotServer> GetServer() { return m_server; }
     
+    /** using this means you're cheating... */
+    boost::shared_ptr<const RobotServer> GetServer() const { return m_server; }
+    
   protected:
     /** Add a line to the robot's body. */
     void AddLine(const sfl::Line & line);

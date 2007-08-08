@@ -33,6 +33,8 @@ Robot smart Ter
         Option slow_drawing_enabled false
         Option gradplot_frequency   5
 
-        Option planning_usecsleep      0
-        Option control_usecsleep       0
+        Option simul_usecsleep      1000
+        Option mapping_usecsleep     500
+        Option planning_usecsleep    500
+        Option control_usecsleep     500
         Option thread_statlen        300

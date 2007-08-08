@@ -49,7 +49,7 @@ namespace npm {
   
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
-												shared_ptr<TraversabilityProxy> proxy)
+												shared_ptr<TravProxyAPI> proxy)
     : Drawing(name), m_proxy(proxy)
   {
   }
@@ -57,7 +57,7 @@ namespace npm {
   
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
-												TraversabilityProxy * proxy)
+												TravProxyAPI * proxy)
     : Drawing(name), m_proxy(proxy)
   {
   }
@@ -68,40 +68,201 @@ namespace npm {
   {
 		if( ! m_proxy->Enabled())
 			return;
-		
-		const TraversabilityMap * tm(m_proxy->Get());
-    if( ! tm)
-      return;
-    if( ! tm->data)
-      return;
     
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    glTranslated(tm->gframe.X(), tm->gframe.Y(), 0);
-    glRotated(180 * tm->gframe.Theta() / M_PI, 0, 0, 1);
-    glScaled(tm->gframe.Delta(), tm->gframe.Delta(), 1);
+    glTranslated(m_proxy->GetX(), m_proxy->GetY(), 0);
+    glRotated(180 * m_proxy->GetTheta() / M_PI, 0, 0, 1);
+    glScaled(m_proxy->GetDelta(), m_proxy->GetDelta(), 1);
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    const double cscale(1.0 / (tm->obstacle - tm->freespace));
-    for(size_t ix(0); ix < tm->data->xsize; ++ix)
-      for(size_t iy(0); iy < tm->data->ysize; ++iy){
-				const int value((*tm->data)[ix][iy]);
-				if(value > tm->obstacle)
+    const double
+			cscale(1.0 / (m_proxy->GetObstacle() - m_proxy->GetFreespace()));
+    for(size_t ix(0); ix < m_proxy->GetXSize(); ++ix)
+      for(size_t iy(0); iy < m_proxy->GetYSize(); ++iy){
+				const int value(m_proxy->GetValue(ix, iy));
+				if(value > m_proxy->GetObstacle())
 					glColor3d(0.5, 0, 0.6);
-				else if(value == tm->obstacle)
+				else if(value == m_proxy->GetObstacle())
 					glColor3d(0.5, 0, 0);
-				else if(value < tm->freespace)
+				else if(value < m_proxy->GetFreespace())
 					glColor3d(0, 0, 0.5);
-				else if(value == tm->freespace)
+				else if(value == m_proxy->GetFreespace())
 					glColor3d(0, 0.5, 0);
 				else{
-					const double grey((value - tm->freespace) * cscale);
+					const double grey((value - m_proxy->GetFreespace()) * cscale);
 					glColor3d(grey, grey, grey);
 				}
 				glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
       }
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+	}
+	
+	
+	PtrTravProxy::
+	PtrTravProxy(shared_ptr<TraversabilityMap const> travmap)
+		: m_travmap(travmap)
+	{
+	}
+	
+	
+	bool PtrTravProxy::
+	Enabled() const
+	{
+		if( ! enable)
+			return false;
+    if( ! m_travmap)
+      return false;
+    if( ! m_travmap->data)
+      return false;
+		return true;
+	}
+	
+	
+	double PtrTravProxy::
+	GetX() const
+	{
+		return m_travmap->gframe.X();
+	}
+	
+	
+	double PtrTravProxy::
+	GetY() const
+	{
+		return m_travmap->gframe.Y();
+	}
+	
+	
+	double PtrTravProxy::
+	GetTheta() const
+	{
+		return m_travmap->gframe.Theta();
+	}
+	
+	
+	double PtrTravProxy::
+	GetDelta() const
+	{
+		return m_travmap->gframe.Delta();
+	}
+	
+	
+	int PtrTravProxy::
+	GetObstacle() const
+	{
+		return m_travmap->obstacle;
+	}
+	
+	
+	int PtrTravProxy::
+	GetFreespace() const
+	{
+		return m_travmap->freespace;
+	}
+	
+	
+	size_t PtrTravProxy::
+	GetXSize() const
+	{
+		return m_travmap->data->xsize;
+	}
+	
+	
+	size_t PtrTravProxy::
+	GetYSize() const
+	{
+		return m_travmap->data->ysize;
+	}
+	
+	
+	int PtrTravProxy::
+	GetValue(size_t ix, size_t iy) const
+	{
+		return (*m_travmap->data)[ix][iy];
+	}
+  
+	
+	RDTravProxy::
+	RDTravProxy(boost::shared_ptr<sfl::RDTravmap> rdtravmap)
+		: m_rdtravmap(rdtravmap)
+	{
+	}
+	
+	
+	bool RDTravProxy::
+	Enabled() const
+	{
+		if( ! enable)
+			return false;
+    if( ! m_rdtravmap->GetData())
+      return false;
+		return true;
+	}
+	
+	
+	double RDTravProxy::
+	GetX() const
+	{
+		return m_rdtravmap->GetGridFrame().X();
+	}
+	
+	
+	double RDTravProxy::
+	GetY() const
+	{
+		return m_rdtravmap->GetGridFrame().Y();
+	}
+	
+	
+	double RDTravProxy::
+	GetTheta() const
+	{
+		return m_rdtravmap->GetGridFrame().Theta();
+	}
+	
+	
+	double RDTravProxy::
+	GetDelta() const
+	{
+		return m_rdtravmap->GetGridFrame().Delta();
+	}
+	
+	
+	int RDTravProxy::
+	GetObstacle() const
+	{
+		return m_rdtravmap->GetObstacle();
+	}
+	
+	
+	int RDTravProxy::
+	GetFreespace() const
+	{
+		return m_rdtravmap->GetFreespace();
+	}
+	
+	
+	size_t RDTravProxy::
+	GetXSize() const
+	{
+		return m_rdtravmap->GetData()->xsize;
+	}
+	
+	
+	size_t RDTravProxy::
+	GetYSize() const
+	{
+		return m_rdtravmap->GetData()->ysize;
+	}
+	
+	
+	int RDTravProxy::
+	GetValue(size_t ix, size_t iy) const
+	{
+		int result(0);
+		m_rdtravmap->GetValue(ix, iy, result);
+		return result;
 	}
 
 }

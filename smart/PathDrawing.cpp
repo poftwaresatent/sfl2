@@ -128,11 +128,11 @@ static void draw_path(const asl::path_t * path, size_t gradplot_frequency,
 void PathDrawing::
 Draw()
 {
-  const asl::path_t * clean;
-  const asl::path_t * dirty;
-  m_smart->GetPaths(&clean, &dirty);
-  draw_path(clean, gradplot_frequency, 1);
-  draw_path(dirty, 0, 0.5);
+  boost::shared_ptr<asl::path_t> clean;
+  boost::shared_ptr<asl::path_t> dirty;
+  m_smart->CopyPaths(clean, dirty);
+  draw_path(clean.get(), gradplot_frequency, 1);
+  draw_path(dirty.get(), 0, 0.5);
 
   /* trajectory and reference point drawings */
   asl::path_point ref_point;
