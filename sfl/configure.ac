@@ -28,10 +28,10 @@ AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_NOTICE([detected Linux])
 	   SFL_LDFLAGS="-lpthread $SFL_LDFLAGS"
-           AC_DISABLE_SHARED;;
+           AC_DISABLE_STATIC;;
   darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
            SFL_CPPFLAGS="$SFL_CPPFLAGS -Wno-long-double"
-           AC_DISABLE_STATIC;;
+           AC_DISABLE_SHARED;;
   *)       AC_MSG_WARN([Unknown host_os $host_os, build will probably break.])
            AC_MSG_WARN([Please update configure.ac.]);;
 esac
