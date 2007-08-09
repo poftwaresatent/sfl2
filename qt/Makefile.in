@@ -11,3 +11,7 @@ clean:
 
 distdir:
 	@ echo "nepumuk/qt is too experimental for packaging" > README.qt
+
+distclean:
+	@ echo "fake distclean target, just cleaning..."
+	$(MAKE) clean
