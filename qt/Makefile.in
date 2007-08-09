@@ -6,3 +6,8 @@ QtNepumuk.qmake: QtNepumuk.pro
 
 clean:
 	- rm -rf *~ *.qmake *.o *.app moc_*.cpp
+
+# fake targets to sort of integrate with the Automake setup
+
+distdir:
+	@ echo "nepumuk/qt is too experimental for packaging" > README.qt
