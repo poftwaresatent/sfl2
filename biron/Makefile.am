@@ -9,6 +9,8 @@ endif
 
 noinst_LTLIBRARIES=  libbiron.la
 libbiron_la_SOURCES= Biron.cpp
+include_HEADERS=     Biron.hpp
+includedir=          @includedir@/npm/biron
 
 xcf_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"

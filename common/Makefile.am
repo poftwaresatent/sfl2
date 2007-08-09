@@ -18,3 +18,23 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                       TraversabilityDrawing.cpp BicycleDriveDrawing.cpp \
                       Random.cpp MapperUpdateDrawing.cpp MapperRefDrawing.cpp \
                       NoiseModel.cpp
+
+include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
+                      Camera.hpp CheatSheet.hpp DiffDrive.hpp \
+                      DiffDriveDrawing.hpp Drawer.hpp Drawing.hpp \
+                      Drive.hpp Globals.hpp GoalInstanceDrawing.hpp \
+                      HAL.hpp HoloDrive.hpp HoloDriveDrawing.hpp \
+                      Lidar.hpp Manageable.hpp Manager.hpp \
+                      MapperRefDrawing.hpp MapperUpdateDrawing.hpp \
+                      NoiseModel.hpp Object.hpp OdometryDrawing.hpp \
+                      Random.hpp RobotClient.hpp RobotDescriptor.hpp \
+                      RobotDrawing.hpp RobotServer.hpp \
+                      RobotZoomCamera.hpp ScannerDrawing.hpp \
+                      Sensor.hpp Sharp.hpp SharpDrawing.hpp \
+                      SimpleImage.hpp StillCamera.hpp \
+                      TrajectoryDrawing.hpp TraversabilityDrawing.hpp \
+                      View.hpp World.hpp WorldCamera.hpp \
+                      WorldDrawing.hpp pdebug.hpp util.hpp wrap_gl.hpp \
+                      wrap_glu.hpp wrap_glut.hpp
+
+includedir=           @includedir@/npm/common

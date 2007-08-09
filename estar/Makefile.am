@@ -10,6 +10,9 @@ endif
 noinst_LTLIBRARIES=  libestar.la
 libestar_la_SOURCES= CarrotDrawing.cpp Esbot.cpp PNF.cpp \
                      PNFCamera.cpp PNFDrawing.cpp EstarDrawing.cpp
+include_HEADERS=     CarrotDrawing.hpp Esbot.hpp EstarDrawing.hpp \
+                     PNF.hpp PNFCamera.hpp PNFDrawing.hpp
+includedir=          @includedir@/npm/estar
 
 estar_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"

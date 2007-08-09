@@ -5,3 +5,5 @@ LDFLAGS=  @NPM_LDFLAGS@
 
 noinst_LTLIBRARIES=    libvisitor.la
 libvisitor_la_SOURCES= Visitor.cpp
+include_HEADERS=       Visitor.hpp
+includedir=            @includedir@/npm/visitor

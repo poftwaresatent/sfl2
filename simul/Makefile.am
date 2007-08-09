@@ -10,6 +10,9 @@ bin_PROGRAMS=      nepumuk dumpworld
 nepumuk_SOURCES=   nepumuk.cpp Interlock.cpp
 dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
 
+include_HEADERS=   Interlock.hpp RobotFactory.hpp Simulator.hpp
+includedir=        @includedir@/npm/simul
+
 # ===> see dist_bin_SCRIPTS for more stuff
 
 if NPM_HAVE_ESTAR
