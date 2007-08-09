@@ -268,5 +268,5 @@ AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
                 laas/Makefile biron/Makefile estar/Makefile smart/Makefile
-                simul/Makefile qt/Makefile])
+                simul/Makefile qt/Makefile qt/QtNepumuk.pro])
 AC_OUTPUT
