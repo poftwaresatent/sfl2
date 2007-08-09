@@ -31,13 +31,6 @@
 #include <vector>
 
 
-namespace smart {
-  class Algorithm;
-	class MappingThread;
-	class PlanningThread;
-  class ControlThread;
-}
-
 namespace asl {
 	class ArcControl;
 	class AckermannController;
@@ -47,6 +40,11 @@ namespace asl {
   typedef std::vector<path_element> path_t;
 	typedef sfl::vec2d<double> path_point;
 	typedef std::vector<path_point> trajectory_t;
+
+  class Algorithm;
+	class MappingThread;
+	class PlanningThread;
+  class ControlThread;
 } 
 
 
@@ -103,11 +101,11 @@ protected:
   boost::shared_ptr<SmartColorScheme> m_smart_cs;
 	boost::shared_ptr<sfl::Odometry> m_odo;
   
-  boost::shared_ptr<smart::Algorithm> m_smart_algo;
+  boost::shared_ptr<asl::Algorithm> m_smart_algo;
   boost::shared_ptr<sfl::RWlock> m_simul_rwlock;
-  boost::shared_ptr<smart::MappingThread> m_mapping_thread;
-  boost::shared_ptr<smart::PlanningThread> m_planning_thread;
-  boost::shared_ptr<smart::ControlThread> m_control_thread;
+  boost::shared_ptr<asl::MappingThread> m_mapping_thread;
+  boost::shared_ptr<asl::PlanningThread> m_planning_thread;
+  boost::shared_ptr<asl::ControlThread> m_control_thread;
 	boost::shared_ptr<const asl::AckermannController> m_acntrl;
 	
   int m_nscans, m_sick_channel;

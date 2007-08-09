@@ -17,7 +17,7 @@ if NPM_HAVE_ESTAR
 if NPM_SMARTFLOWER
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
-                   ../../smartsfl/libsmartsfl.la \
+                   ../../asl-mplan/libasl-mplan.la \
                    ../../asl-mcontrol/libasl-mcontrol.la \
                    ../../sunflower/libsunflower.la \
                    ../../estar/libestar.la

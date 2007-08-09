@@ -26,10 +26,10 @@
 #include "PathDrawing.hpp"
 #include "ThreadDrawing.hpp"
 #include "ArcDrawing.hpp"
-#include <smartsfl/Algorithm.hpp>
-#include <smartsfl/MappingThread.hpp>
-#include <smartsfl/PlanningThread.hpp>
-#include <smartsfl/ControlThread.hpp>
+#include <asl/Algorithm.hpp>
+#include <asl/MappingThread.hpp>
+#include <asl/PlanningThread.hpp>
+#include <asl/ControlThread.hpp>
 #include <asl/path_tracking.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Pose.hpp>
@@ -80,7 +80,7 @@ class SmartPlanProxy:
 	public KeyListener
 {
 public:
-  SmartPlanProxy(const smart::Algorithm * smart_algo, bool enabled)
+  SmartPlanProxy(const asl::Algorithm * smart_algo, bool enabled)
 		: m_smart_algo(smart_algo), m_enabled(enabled) {}
 	
   virtual const estar::Facade * GetFacade()
@@ -94,7 +94,7 @@ public:
 	virtual void KeyPressed(unsigned char key)
 	{ if('o' == key) m_enabled = ! m_enabled; }
 	
-  const smart::Algorithm * m_smart_algo;
+  const asl::Algorithm * m_smart_algo;
 	bool m_enabled;
 };
 
@@ -116,7 +116,7 @@ class SmartColorScheme: public gfx::ColorScheme {
 public:
 	SmartColorScheme(): m_smart_value(0), m_queue_bottom(0) {}
 	
-	void Update(const smart::Algorithm * algo, const Smart & smart) {
+	void Update(const asl::Algorithm * algo, const Smart & smart) {
 		shared_ptr<const estar::Facade> estar(algo->GetEstar());
 		if( ! estar){								// using "fake" planner
 			m_queue_bottom = 2;				// whatever... never used in this case?
@@ -174,7 +174,7 @@ public:
 
 class SmartGoalDrawing: public GoalInstanceDrawing {
 public:
-	SmartGoalDrawing(const std::string name, const smart::Algorithm * smart_algo)
+	SmartGoalDrawing(const std::string name, const asl::Algorithm * smart_algo)
 		: GoalInstanceDrawing(name, Goal()), m_smart_algo(smart_algo) {}
 	
 	virtual void Draw() {
@@ -183,81 +183,81 @@ public:
 			GoalInstanceDrawing::Draw(*goal);
 	}
 	
-  const smart::Algorithm * m_smart_algo;
+  const asl::Algorithm * m_smart_algo;
 };
 
 
 namespace foo {
 	
 	template<>
-	void set_bg_color(smart::Planner::status_t status)
+	void set_bg_color(asl::Planner::status_t status)
 	{
 		switch(status){
-		case smart::Planner::HAVE_PLAN:   glColor3d(0,   1,   0  ); break;
-		case smart::Planner::BUFFERING:   glColor3d(0.5, 1,   0  ); break;
-		case smart::Planner::PLANNING:    glColor3d(1,   0.5, 0  ); break;
-		case smart::Planner::AT_GOAL:     glColor3d(0,   0,   1  ); break;
-		case smart::Planner::UNREACHABLE:
-		case smart::Planner::OUT_OF_GRID:
-		case smart::Planner::IN_OBSTACLE: glColor3d(1,   0,   0  ); break;
-		case smart::Planner::ERROR:       glColor3d(1,   0,   0.5); break;
+		case asl::Planner::HAVE_PLAN:   glColor3d(0,   1,   0  ); break;
+		case asl::Planner::BUFFERING:   glColor3d(0.5, 1,   0  ); break;
+		case asl::Planner::PLANNING:    glColor3d(1,   0.5, 0  ); break;
+		case asl::Planner::AT_GOAL:     glColor3d(0,   0,   1  ); break;
+		case asl::Planner::UNREACHABLE:
+		case asl::Planner::OUT_OF_GRID:
+		case asl::Planner::IN_OBSTACLE: glColor3d(1,   0,   0  ); break;
+		case asl::Planner::ERROR:       glColor3d(1,   0,   0.5); break;
 		default:                           glColor3d(1,   0,   1  );
 		}
 	}
 		
 	template<>
-	void set_fg_color(smart::Planner::status_t status)
+	void set_fg_color(asl::Planner::status_t status)
 	{
 		switch(status){
-		case smart::Planner::HAVE_PLAN:   glColor3d(0.5, 0,   0  ); break;
-		case smart::Planner::BUFFERING:   glColor3d(0.5, 0,   0.5); break;
-		case smart::Planner::PLANNING:    glColor3d(0.5, 0,   0.5); break;
-		case smart::Planner::AT_GOAL:     glColor3d(0,   0.5, 0  ); break;
-		case smart::Planner::UNREACHABLE:
-		case smart::Planner::OUT_OF_GRID:
-		case smart::Planner::IN_OBSTACLE: glColor3d(0,   0,   0.5); break;
-		case smart::Planner::ERROR:       glColor3d(0,   0.5, 0.5); break;
+		case asl::Planner::HAVE_PLAN:   glColor3d(0.5, 0,   0  ); break;
+		case asl::Planner::BUFFERING:   glColor3d(0.5, 0,   0.5); break;
+		case asl::Planner::PLANNING:    glColor3d(0.5, 0,   0.5); break;
+		case asl::Planner::AT_GOAL:     glColor3d(0,   0.5, 0  ); break;
+		case asl::Planner::UNREACHABLE:
+		case asl::Planner::OUT_OF_GRID:
+		case asl::Planner::IN_OBSTACLE: glColor3d(0,   0,   0.5); break;
+		case asl::Planner::ERROR:       glColor3d(0,   0.5, 0.5); break;
 		default:                           glColor3d(0,   0.5, 0.5);
 		}
 	}
 	
 	template<>
-	struct stats_select<smart::MappingThread> {
-		typedef smart::MappingThread::stats_t stats_t;
+	struct stats_select<asl::MappingThread> {
+		typedef asl::MappingThread::stats_t stats_t;
 	};
 	
 	template<>
-	struct stats_select<smart::PlanningThread> {
-		typedef smart::PlanningThread::stats_t stats_t;
+	struct stats_select<asl::PlanningThread> {
+		typedef asl::PlanningThread::stats_t stats_t;
 	};
 	
 	template<>
-	void set_bg_color(smart::Controller::status_t status)
+	void set_bg_color(asl::Controller::status_t status)
 	{
 		switch(status){
-		case smart::Controller::SUCCESS: glColor3d(0,   1,   0  ); break;
-		case smart::Controller::STARVED: glColor3d(1,   0,   1  ); break;
-		case smart::Controller::FAILURE: glColor3d(1,   0,   0  ); break;
-		case smart::Controller::ERROR:   glColor3d(1,   0,   0.5); break;
+		case asl::Controller::SUCCESS: glColor3d(0,   1,   0  ); break;
+		case asl::Controller::STARVED: glColor3d(1,   0,   1  ); break;
+		case asl::Controller::FAILURE: glColor3d(1,   0,   0  ); break;
+		case asl::Controller::ERROR:   glColor3d(1,   0,   0.5); break;
 		default:                 glColor3d(1,   0,   1  );
 		}
 	}
 	
 	template<>
-	void set_fg_color(smart::Controller::status_t status)
+	void set_fg_color(asl::Controller::status_t status)
 	{
 		switch(status){
-		case smart::Controller::SUCCESS: glColor3d(1,   0,   1  ); break;
-		case smart::Controller::STARVED: glColor3d(0,   0.5, 0  ); break;
-		case smart::Controller::FAILURE: glColor3d(0,   1,   1  ); break;
-		case smart::Controller::ERROR:   glColor3d(0,   1,   0.5); break;
+		case asl::Controller::SUCCESS: glColor3d(1,   0,   1  ); break;
+		case asl::Controller::STARVED: glColor3d(0,   0.5, 0  ); break;
+		case asl::Controller::FAILURE: glColor3d(0,   1,   1  ); break;
+		case asl::Controller::ERROR:   glColor3d(0,   1,   0.5); break;
 		default:                 glColor3d(0,   1,   0  );
 		}
 	}
 	
 	template<>
-	struct stats_select<smart::ControlThread> {
-		typedef smart::ControlThread::stats_t stats_t;
+	struct stats_select<asl::ControlThread> {
+		typedef asl::ControlThread::stats_t stats_t;
 	};
 
 }
@@ -347,7 +347,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	m_odo.reset(new Odometry(GetHAL(), RWlock::Create("smart")));	
 
 	ostringstream err_os;
-	m_smart_algo.reset(smart::Algorithm::
+	m_smart_algo.reset(asl::Algorithm::
 										 Create(robot_radius,
 														buffer_zone,
 														traversability_file,
@@ -368,7 +368,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 														goalmgr_filename,
 														&err_os));
 	if( ! m_smart_algo){
-		cerr << "ERROR smart::Algorithm::Create() failed\n "
+		cerr << "ERROR asl::Algorithm::Create() failed\n "
 				 << err_os.str() << "\n";
 		exit(EXIT_FAILURE);
 	}
@@ -409,10 +409,10 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 									m_simul_usecsleep))
 		m_simul_usecsleep = -1;
 	
-	m_mapping_thread.reset(new smart::MappingThread(m_smart_algo->GetMapper(),
-																									m_odo, m_mscan,
- 																									thread_statlen,
-																									m_simul_rwlock));
+	m_mapping_thread.reset(new asl::MappingThread(m_smart_algo->GetMapper(),
+																								m_odo, m_mscan,
+																								thread_statlen,
+																								m_simul_rwlock));
 	if( ! string_to(descriptor->GetOption("mapping_usecsleep"),
 									m_mapping_usecsleep))
 		m_mapping_usecsleep = -1;
@@ -424,11 +424,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	else
 		PDEBUG("mapping thread remains in synch with simulation\n");
 	
-	m_planning_thread.reset(new smart::PlanningThread(m_smart_algo->GetPlanner(),
-																										m_mscan, 
-																										GetHAL(),
-																										thread_statlen,
-																										m_simul_rwlock));
+	m_planning_thread.reset(new asl::PlanningThread(m_smart_algo->GetPlanner(),
+																									m_mscan, 
+																									GetHAL(),
+																									thread_statlen,
+																									m_simul_rwlock));
 	if( ! string_to(descriptor->GetOption("planning_usecsleep"),
 									m_planning_usecsleep))
 		m_planning_usecsleep = -1;
@@ -441,11 +441,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		PDEBUG("planning thread remains in synch with simulation\n");
 	
 	m_control_thread.
-		reset(new smart::ControlThread(0.1,	// XXX magic value
-																	 params.model_sdd_max,
-																	 m_smart_algo->GetController(),
-																	 GetHAL(),
-																	 thread_statlen, m_simul_rwlock));
+		reset(new asl::ControlThread(0.1,	// XXX magic value
+																 params.model_sdd_max,
+																 m_smart_algo->GetController(),
+																 GetHAL(),
+																 thread_statlen, m_simul_rwlock));
 	if( ! string_to(descriptor->GetOption("control_usecsleep"),
 									m_control_usecsleep))
 		m_control_usecsleep = -1;
@@ -509,11 +509,11 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	string_to(descriptor->GetOption("gradplot_frequency"), gradplot_frequency);
   AddDrawing(new PathDrawing(name + "_carrot", this, gradplot_frequency));
 
- 	AddDrawing(new ThreadDrawing<smart::MappingThread>
+ 	AddDrawing(new ThreadDrawing<asl::MappingThread>
 						 (name + "_mapping_thread", m_mapping_thread.get()));
- 	AddDrawing(new ThreadDrawing<smart::PlanningThread>
+ 	AddDrawing(new ThreadDrawing<asl::PlanningThread>
 						 (name + "_planning_thread", m_planning_thread.get()));
- 	AddDrawing(new ThreadDrawing<smart::ControlThread>
+ 	AddDrawing(new ThreadDrawing<asl::ControlThread>
 						 (name + "_control_thread", m_control_thread.get()));
 	
 	shared_ptr<ArcDrawing>
