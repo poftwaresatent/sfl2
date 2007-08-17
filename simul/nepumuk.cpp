@@ -34,6 +34,10 @@
 #include <fstream>
 #include <signal.h>
 
+#ifdef OPENBSD
+# include <unistd.h>
+#endif // OPENBSD
+
 
 using namespace npm;
 using namespace sfl;

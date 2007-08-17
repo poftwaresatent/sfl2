@@ -25,7 +25,7 @@
 #ifndef WRAP_GLU_HPP
 #define WRAP_GLU_HPP
 
-#if defined(LINUX)
+#if defined(LINUX) | defined(OPENBSD)
 # include <GL/glu.h>
 #elif defined(OSX)
 # include <OpenGL/glu.h>

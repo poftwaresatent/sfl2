@@ -25,7 +25,7 @@
 #ifndef WRAP_GL_HPP
 #define WRAP_GL_HPP
 
-#if defined(LINUX)
+#if defined(LINUX) | defined(OPENBSD)
 # include <GL/gl.h>
 #elif defined(OSX)
 # include <OpenGL/gl.h>

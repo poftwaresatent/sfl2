@@ -25,7 +25,7 @@
 #ifndef WRAP_GLUT_HPP
 #define WRAP_GLUT_HPP
 
-#if defined(LINUX)
+#if defined(LINUX) || defined(OPENBSD)
 # include <GL/glut.h>
 #elif defined(OSX)
 # include <GLUT/glut.h>
