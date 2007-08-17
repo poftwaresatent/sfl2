@@ -23,6 +23,10 @@
 #include <pthread.h>
 #include <errno.h>
 
+#ifdef OPENBSD
+# include <unistd.h>
+#endif // OPENBSD
+
 
 using namespace boost;
 using namespace std;
@@ -84,6 +88,7 @@ namespace sfl {
       else
 	pthread_testcancel();
     }
+    return 0;
   }
   
   

@@ -20,6 +20,10 @@
 #include <iostream>
 #include <fcntl.h>
 
+#ifdef OPENBSD
+# include <unistd.h>
+#endif // OPENBSD
+
 
 #ifdef SFL_DEBUG
 # define PDEBUG PDEBUG_ERR

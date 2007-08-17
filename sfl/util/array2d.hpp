@@ -25,6 +25,11 @@
 #include <sfl/util/vec2d.hpp>
 #include <boost/scoped_array.hpp>
 
+#ifdef OPENBSD
+// is this a bug or a feature?
+typedef __ssize_t ssize_t;
+#endif // OPENBSD
+
 
 namespace sfl {
   

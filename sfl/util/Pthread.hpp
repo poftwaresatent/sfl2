@@ -25,6 +25,10 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 
+#ifdef OPENBSD
+# include <pthread.h>
+#endif // OPENBSD
+
 
 namespace sfl {
   
