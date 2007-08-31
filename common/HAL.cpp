@@ -43,7 +43,8 @@ namespace npm {
   
   HAL::
   HAL(RobotServer * owner)
-    : m_owner(owner)
+    : m_owner(owner),
+      m_odometry_noise(0) // not all compilers seem to do this automatically
   {
     for(size_t ii(0); ii < 3; ++ii){
       m_current_speed[ii] = 0;
