@@ -4,17 +4,21 @@ PREFIX="$PWD/stage"
 EXTRA_CFGOPTS=""
 RUN_BOOTSTRAP="yes"
 WORKDIR="build"
+EXTRA_MAKEOPTS=""
+MAKE="make"
 
 while [ ! -z "$1" ]; do
     case $1 in
 	-h|--help)
-echo 'build-stage.sh command line options:'
-echo '  [-p|--prefix]  <PREFIX>     install prefix ($PREFIX)'
-echo '  [-w|--work]    <DIR>        build work directory ($WORKDIR)'
-echo '  [-b|--boost]   <DIR>        BOOST library install directory'
-echo '  [-e|--estar]   <DIR>        E* library install directory'
-echo '  [-d|--debug]                enable debug messages and symbols'
-echo '  [-s|--skipbs]               do not bootstrap build system'
+echo "build-stage.sh command line options:"
+echo "  [-p|--prefix]  <PREFIX>     install prefix ($PREFIX)"
+echo "  [-w|--work]    <DIR>        build work directory ($WORKDIR)"
+echo "  [-b|--boost]   <DIR>        BOOST library install directory"
+echo "  [-e|--estar]   <DIR>        E* library install directory"
+echo "  [-j|--jobs]    <NUM>        number of parallel make jobs"
+echo "  [-m|--make]    <PATH>       GNU Make executable (name or path)"
+echo "  [-d|--debug]                enable debug messages and symbols"
+echo "  [-s|--skipbs]               do not bootstrap build system"
         exit 0;;
 	-p|--prefix)
 	    PREFIX=$2;
@@ -27,6 +31,12 @@ echo '  [-s|--skipbs]               do not bootstrap build system'
 	    shift; shift; continue;;
 	-e|--estar)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-estar=$2"
+	    shift; shift; continue;;
+	-j|--jobs)
+	    EXTRA_MAKEOPTS="$EXTRA_MAKEOPTS -j $2"
+	    shift; shift; continue;;
+	-m|--make)
+	    MAKE="$2"
 	    shift; shift; continue;;
 	-d|--debug)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-debug"
@@ -69,14 +79,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-make
+$MAKE $EXTRA_MAKEOPTS
 if [ $? -ne 0 ]; then
-    echo "ERROR make"
+    echo "ERROR $MAKE $EXTRA_MAKEOPTS"
     exit 1
 fi
 
-make install
+$MAKE $EXTRA_MAKEOPTS install
 if [ $? -ne 0 ]; then
-    echo "ERROR make install"
+    echo "ERROR $MAKE $EXTRA_MAKEOPTS install"
     exit 1
 fi
