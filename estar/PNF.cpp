@@ -36,10 +36,10 @@
 #include <estar/Grid.hpp>
 #include <estar/Kernel.hpp>
 
-// debugging
-#include <estar/util.hpp>
-#define PDEBUG PDEBUG_ERR
-#define PVDEBUG PDEBUG_OFF
+// this must be included last (or at least pretty late), otherwise it
+// breaks... did not analyse why though, must be some preprocessor
+// issues
+#include <npm/common/pdebug.hpp>
 
 
 using sfl::GridFrame;
@@ -50,39 +50,46 @@ using pnf::Flow;
 using std::cerr;
 
 
-static void * run(void * arg);
-
-
 namespace local {
+  
+  static void * run(void * arg);
   
   typedef enum { IDLE, RUNNING, WAIT, QUIT } state_t;
   
   class poster
   {
-  public:
     pthread_t thread_id;
+    
+  public:
     pthread_mutex_t mutex;
     state_t state;
     PNF::step_t step;
     pnf::Flow * flow;
     const double robot_r;
-
-    poster(pnf::Flow * _flow, double _robot_r)
-      : state(WAIT), step(PNF::NONE), flow(_flow), robot_r(_robot_r)
+    const bool enable_thread;
+    
+    poster(pnf::Flow * _flow, double _robot_r,
+	   bool _enable_thread)
+      : state(WAIT), step(PNF::NONE), flow(_flow),
+	robot_r(_robot_r), enable_thread(_enable_thread)
     {
+      // actually, we could skip even the mutexing if !enable_thread
       pthread_mutexattr_t attr;
       pthread_mutexattr_init(&attr);
       pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
       pthread_mutex_init(&mutex, &attr);
       pthread_mutexattr_destroy(&attr);
-      switch(pthread_create(&thread_id, 0, run, this)){
-      case EAGAIN:
-	cerr << __func__ << "(): insufficient resources for thread.\n";
-	exit(EXIT_FAILURE);
-      case EINVAL:
-	cerr << __func__ << "(): BUG [invalid attr for pthread_create()]\n";
-	exit(EXIT_FAILURE);
-      }
+      if( ! enable_thread)
+	thread_id = 0;
+      else
+	switch(pthread_create(&thread_id, 0, run, this)){
+	case EAGAIN:
+	  cerr << __func__ << "(): insufficient resources for thread.\n";
+	  exit(EXIT_FAILURE);
+	case EINVAL:
+	  cerr << __func__ << "(): BUG [invalid attr for pthread_create()]\n";
+	  exit(EXIT_FAILURE);
+	}
     }
     
     ~poster()
@@ -96,9 +103,13 @@ namespace local {
 	PDEBUG("WARNING pthread_mutex_unlock() failed ==> stale poster\n");
 	return;
       }
-      pthread_join(thread_id, 0);
+      if(enable_thread)
+	pthread_join(thread_id, 0);
       pthread_mutex_destroy(&mutex);
     }
+    
+    /** \return TRUE iff we should keep running the 'thread' */
+    bool do_step();
   };
   
 }
@@ -108,7 +119,8 @@ PNF::
 PNF(double _robot_x, double _robot_y,
     double _robot_r, double _robot_v,
     double _goal_x, double _goal_y, double _goal_r,
-    double _grid_width, size_t _grid_wdim)
+    double _grid_width, size_t _grid_wdim,
+    bool enable_thread)
   : robot_x(_robot_x),
     robot_y(_robot_y),
     robot_r(_robot_r),
@@ -156,7 +168,7 @@ PNF(double _robot_x, double _robot_y,
   PVDEBUG("SetGoal(%g   %g   %g) on flow %lu\n",
 	  _goal_x, _goal_y, goal_r, m_flow.get());
   
-  m_poster.reset(new local::poster(m_flow.get(), robot_r));
+  m_poster.reset(new local::poster(m_flow.get(), robot_r, enable_thread));
 }
 
 
@@ -233,8 +245,11 @@ StartPlanning()
 
 
 PNF::step_t PNF::
-GetStep() const
+GetStep(bool fake_thread) const
 {
+  if(( ! m_poster->enable_thread)
+     && fake_thread)		// fake it!
+    m_poster->do_step();	// ignore retval (indicates keep_running)
   if(EINVAL == pthread_mutex_lock(&m_poster->mutex)){
     cerr << __func__ << "(): pthread_mutex_lock() error\n";
     exit(EXIT_FAILURE);
@@ -266,107 +281,126 @@ Wait()
 }
 
 
-void * run(void * arg)
-{
-  static const pnf::Sigma riskmap(0.95, 1.5); // TO DO: Magic numbers stink!
-  local::poster * poster(reinterpret_cast<local::poster*>(arg));
-  bool quit(false);
-  local::state_t prevstate(static_cast<local::state_t>(-1));
-  while(!quit){
-    if(EINVAL == pthread_mutex_lock(&poster->mutex)){
+namespace local {
+  
+  
+  bool poster::do_step()
+  {
+    static const pnf::Sigma riskmap(0.95, 1.5); // TO DO: Magic numbers stink!
+    state_t prevstate(static_cast<state_t>(-1));
+    
+    if(EINVAL == pthread_mutex_lock(&mutex)){
       cerr << __func__ << "(): pthread_mutex_lock() error\n";
       exit(EXIT_FAILURE);
     }
     
-    if(local::WAIT == poster->state){
-      if(prevstate != poster->state)
-	PDEBUG("0x%08X waiting\n", poster->thread_id);
-      prevstate = poster->state;
+    if(WAIT == state){
+      if(prevstate != state)
+	PDEBUG("0x%08X waiting\n", thread_id);
+      prevstate = state;
       // do nothing
     }
-    else if(local::QUIT == poster->state){
-      PDEBUG("0x%08X quit\n", poster->thread_id);
-      quit = true;
+    
+    else if(QUIT == state){
+      PDEBUG("0x%08X quit\n", thread_id);
+      if(EINVAL == pthread_mutex_unlock(&mutex)){
+	cerr << __func__ << "(): pthread_mutex_unlock() error\n";
+	exit(EXIT_FAILURE);
+      }
+      return false;
     }
+    
     else{
-      PVDEBUG("poster->flow is instance %lu\n", poster->flow);
+      PVDEBUG("flow is instance %lu\n", flow);
       
-      if( ! poster->flow->HaveEnvdist()){
+      if( ! flow->HaveEnvdist()){
 	PDEBUG("PropagateEnvdist()...\n");
-	poster->flow->PropagateEnvdist(false);
-	if( ! poster->flow->HaveEnvdist()){
+	flow->PropagateEnvdist(false);
+	if( ! flow->HaveEnvdist()){
 	  PDEBUG("PropagateEnvdist() failed\n");
-	  poster->step = PNF::NONE;
+	  step = PNF::NONE;
 	}
 	else{
 	  PDEBUG("PropagateEnvdist() succeeded\n");
-	  poster->flow->MapEnvdist();
-	  poster->step = PNF::ENVDIST;
+	  flow->MapEnvdist();
+	  step = PNF::ENVDIST;
 	}
       }
       
-      else if( ! poster->flow->HaveAllObjdist()){
+      else if( ! flow->HaveAllObjdist()){
 	// could use PropagateObjdist(size_t id) for granularity...
 	PVDEBUG("PropagateAllObjdist()...\n");
-	poster->flow->PropagateAllObjdist();
-	if( ! poster->flow->HaveAllObjdist()){
+	flow->PropagateAllObjdist();
+	if( ! flow->HaveAllObjdist()){
 	  PDEBUG("PropagateAllObjdist() failed\n");
-	  poster->step = PNF::ENVDIST;
+	  step = PNF::ENVDIST;
 	}
 	else{
 	  PDEBUG("PropagateAllObjdist() succeeded\n");
-	  poster->step = PNF::OBJDIST;
+	  step = PNF::OBJDIST;
 	}
       }
       
-      else if( ! poster->flow->HaveRobdist()){
+      else if( ! flow->HaveRobdist()){
 	PVDEBUG("PropagateRobdist()...\n");
-	poster->flow->PropagateRobdist();
-	if( ! poster->flow->HaveRobdist()){
+	flow->PropagateRobdist();
+	if( ! flow->HaveRobdist()){
 	  PDEBUG("PropagateRobdist() failed\n");
-	  poster->step = PNF::OBJDIST;
+	  step = PNF::OBJDIST;
 	}
 	else{
 	  PDEBUG("PropagateRobdist() succeeded\n");
 	  const double static_buffer_factor(1);	// multiplies robot_radius (?)
 	  const double static_buffer_degree(2);
-	  poster->flow->ComputeAllCooc(static_buffer_factor,
-				       static_buffer_degree);
-	  poster->flow->ComputeRisk(riskmap);
-	  poster->step = PNF::ROBDIST;
+	  flow->ComputeAllCooc(static_buffer_factor, static_buffer_degree);
+	  flow->ComputeRisk(riskmap);
+	  step = PNF::ROBDIST;
 	}
       }
       
-      else if( ! poster->flow->HavePNF()){
+      else if( ! flow->HavePNF()){
 	PVDEBUG("PropagatePNF()...\n");
-	poster->flow->PropagatePNF();
-	if( ! poster->flow->HavePNF()){
+	flow->PropagatePNF();
+	if( ! flow->HavePNF()){
 	  PDEBUG("PropagatePNF() failed\n");
-	  poster->step = PNF::ROBDIST;
+	  step = PNF::ROBDIST;
 	}
 	else{
 	  PDEBUG("PropagatePNF() succeeded\n");
-	  poster->step = PNF::DONE;
+	  step = PNF::DONE;
 	}
       }
       
-      if(PNF::DONE == poster->step)
-	poster->state = local::IDLE;
+      if(PNF::DONE == step)
+	state = IDLE;
       else
-	poster->state = local::RUNNING;
-
-      if(prevstate != poster->state)
-	PDEBUG("0x%08X %s\n", poster->thread_id,
-	       (local::IDLE == poster->state) ? "idle" : "running");
-      prevstate = poster->state;
+	state = RUNNING;
+      
+      if(prevstate != state)
+	PDEBUG("0x%08X %s\n", thread_id, 
+	       (IDLE == state) ? "idle" : "running");
+      prevstate = state;
     }
     
-    if(EINVAL == pthread_mutex_unlock(&poster->mutex)){
+    if(EINVAL == pthread_mutex_unlock(&mutex)){
       cerr << __func__ << "(): pthread_mutex_unlock() error\n";
       exit(EXIT_FAILURE);
     }
+    
+    return true;
   }
-  return 0;
+  
+  
+  void * run(void * arg)
+  {
+    poster * poster(reinterpret_cast<poster*>(arg));
+    bool keep_running(true);
+    while(keep_running)
+      keep_running  = poster->do_step();
+    return 0;
+  }
+  
+  
 }
 
 

@@ -59,7 +59,8 @@ public:
   PNF(double robot_x, double robot_y,
       double robot_r, double robot_v,
       double goal_x, double goal_y, double goal_r,
-      double grid_width, size_t grid_wdim);
+      double grid_width, size_t grid_wdim,
+      bool enable_thread);
 
   bool AddStaticLine(double globx0, double globy0,
 		     double globx1, double globy1);
@@ -70,7 +71,7 @@ public:
   void RemoveDynamicObject(size_t id);
   
   void StartPlanning();
-  step_t GetStep() const;
+  step_t GetStep(bool fake_thread) const;
   
   boost::shared_ptr<const sfl::GridFrame> GetGridFrame() const
   { return m_frame; }

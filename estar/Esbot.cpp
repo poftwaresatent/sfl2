@@ -30,6 +30,7 @@
 #include <npm/robox/DWDrawing.hpp>
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/util.hpp>
+#include <npm/common/pdebug.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/GoalInstanceDrawing.hpp>
 #include <npm/common/OdometryDrawing.hpp>
@@ -49,12 +50,6 @@
 #include <pnf/Flow.hpp>
 #include <iostream>
 #include <set>
-
-// debugging
-#include <estar/util.hpp>
-#define PDEBUG PDEBUG_ERR
-#define PVDEBUG PDEBUG_OFF
-//#define PVDEBUG PDEBUG_ERR
 
 
 using namespace npm;
@@ -154,6 +149,9 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   size_t bar;
   if(string_to(descriptor->GetOption("pnf_grid_wdim"), bar))
     m_grid_wdim = bar;
+  
+  if( ! string_to(descriptor->GetOption("pnf_enable_thread"), m_enable_thread))
+    m_enable_thread = false;
   
   expoparams params(descriptor);
   
@@ -322,7 +320,7 @@ PrepareAction(double timestep)
     
     m_pnf.reset(new PNF(m_pose->X(), m_pose->Y(), m_radius, m_speed,
 			m_goal->X(), m_goal->Y(), m_goal->Dr(),
-			m_grid_width, m_grid_wdim));
+			m_grid_width, m_grid_wdim, m_enable_thread));
     PVDEBUG("static lines...\n");
     m_cheat->UpdateLines();
     bool ok(false);
@@ -359,7 +357,7 @@ PrepareAction(double timestep)
   
   static PNF::step_t prevstep(static_cast<PNF::step_t>(PNF::DONE + 1));
   
-  const PNF::step_t step(m_pnf->GetStep());
+  const PNF::step_t step(m_pnf->GetStep(true));
   if(step != prevstep)
     cerr << "**************************************************\n"
 	 << __func__ << "(): step " << prevstep << " ==> " << step << "\n";

@@ -98,7 +98,7 @@ protected:
   boost::shared_ptr<estar::carrot_trace> m_carrot_trace;
   boost::shared_ptr<sfl::Frame> m_pose;
   
-  bool m_replan_request;
+  bool m_replan_request, m_enable_thread;
   
   void CreateGfxStuff(const std::string & name);
 };

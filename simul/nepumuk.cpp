@@ -28,7 +28,6 @@
 #include <npm/common/World.hpp>
 #include <npm/common/wrap_glut.hpp>
 #include <npm/common/TraversabilityDrawing.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <fstream>

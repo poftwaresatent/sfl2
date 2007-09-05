@@ -110,7 +110,7 @@ Draw()
     glScaled(pnf->resolution, pnf->resolution, 1);
   }
   
-  const PNF::step_t step(pnf->GetStep());
+  const PNF::step_t step(pnf->GetStep(false));
   boost::shared_ptr<pnf::Flow> flow(pnf->GetFlow());
   const estar::Facade * facade(0);
   const gfx::ColorScheme * cs(gfx::ColorScheme::Get(gfx::GREY_WITH_SPECIAL));
