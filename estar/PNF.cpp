@@ -393,10 +393,10 @@ namespace local {
   
   void * run(void * arg)
   {
-    poster * poster(reinterpret_cast<poster*>(arg));
+    poster * posterp(reinterpret_cast<poster*>(arg));
     bool keep_running(true);
     while(keep_running)
-      keep_running  = poster->do_step();
+      keep_running  = posterp->do_step();
     return 0;
   }
   
