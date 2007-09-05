@@ -32,8 +32,12 @@ case $host_os in
   darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
            SFL_CPPFLAGS="$SFL_CPPFLAGS -Wno-long-double"
            AC_DISABLE_SHARED;;
+  *openbsd*) AC_MSG_NOTICE([detected OpenBSD])
+             SFL_CPPFLAGS="$SFL_CPPFLAGS -DOPENBSD -I/usr/local/include"
+	     SFL_LDFLAGS="-lpthread $SFL_LDFLAGS -L/usr/local/lib"
+             AC_DISABLE_STATIC;;
   *)       AC_MSG_WARN([Unknown host_os $host_os, build will probably break.])
-           AC_MSG_WARN([Please update configure.ac.]);;
+           AC_MSG_ERROR([Please update configure.ac.]);;
 esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
