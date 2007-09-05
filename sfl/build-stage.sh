@@ -7,6 +7,14 @@ WORKDIR="build"
 EXTRA_MAKEOPTS=""
 MAKE="make"
 
+function abspath {
+    if [ foo`echo $1 | sed 's:\(.\).*:\1:'` = "foo/" ]; then
+	RETVAL=$1
+    else
+	RETVAL=`pwd`/$1
+    fi
+}
+
 while [ ! -z "$1" ]; do
     case $1 in
 	-h|--help)
@@ -21,16 +29,20 @@ echo "  [-d|--debug]                enable debug messages and symbols"
 echo "  [-s|--skipbs]               do not bootstrap build system"
         exit 0;;
 	-p|--prefix)
-	    PREFIX=$2;
+	    abspath $2
+	    PREFIX=$RETVAL;
 	    shift; shift; continue;;
 	-w|--work)
-	    WORKDIR=$2;
+	    abspath $2
+	    WORKDIR=$RETVAL;
 	    shift; shift; continue;;
 	-b|--boost)
-	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-boost=$2"
+	    abspath $2
+	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-boost=$RETVAL"
 	    shift; shift; continue;;
 	-e|--estar)
-	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-estar=$2"
+	    abspath $2
+	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-estar=$RETVAL"
 	    shift; shift; continue;;
 	-j|--jobs)
 	    EXTRA_MAKEOPTS="$EXTRA_MAKEOPTS -j $2"
