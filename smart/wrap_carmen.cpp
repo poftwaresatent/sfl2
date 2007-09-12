@@ -28,89 +28,12 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 
-
-#ifdef HAVE_CARMEN
-# error Include the actual Carmen headers for Elrob here.
-#else
-# warning Using copy-pasted declarations.
-
-extern "C" {
-  
-  //////////////////////////////////////////////////
-  // copy-pasted from mapping/3dmapping/src/global/point.h
-  // in revision 1734 of https://lsa1pc12.ethz.ch/svn/elrob/trunk
-  
-  typedef struct elrob_point_6d_t {
-    double x;         /**< x cooordinate **/
-    double y;         /**< y cooordinate **/
-    double z;         /**< z cooordinate **/
-    double phi;       /**< roll **/
-    double theta;     /**< pitch **/
-    double psi;       /**< yaw **/
-  } elrob_point_6d_t;
-  
-  //////////////////////////////////////////////////
-  // copy-pasted from mapping/3dmapping/src/interfaces/smart_messages.h
-  // in revision 1734 of https://lsa1pc12.ethz.ch/svn/elrob/trunk
-  
-  typedef struct {
-    elrob_point_6d_t pose;
-    double velocity;
-    double steering_angle;
-    double timestamp;
-    char* host;
-  } elrob_smart_pos_message;
-  
-  typedef struct {
-    double velocity;
-    double steeringangle;
-    double timestamp;
-    char* host;
-  } elrob_smart_steering_message;
-  
-  //////////////////////////////////////////////////
-  // copy-pasted from carmen-elrob/src/laser/laser_messages.h
-  // in revision 1734 of https://lsa1pc12.ethz.ch/svn/elrob/trunk
-  
-  typedef enum {
-    SICK_LMS                  = 0, 
-    SICK_PLS                  = 1, 
-    HOKUYO_URG                = 2, 
-    SIMULATED_LASER           = 3, 
-    SICK_S300                 = 4, 
-    UMKNOWN_PROXIMITY_SENSOR  = 99
-  } carmen_laser_laser_type_t;
-  
-  typedef enum {
-    REMISSION_NONE       = 0, 
-    REMISSION_DIRECT     = 1, 
-    REMISSION_NORMALIZED = 2
-  } carmen_laser_remission_type_t;
-  
-  typedef struct {
-    carmen_laser_laser_type_t  laser_type;
-    double start_angle;
-    double fov;
-    double angular_resolution;
-    double maximum_range;
-    double accuracy;
-    carmen_laser_remission_type_t remission_mode;
-  } carmen_laser_laser_config_t;
-  
-  typedef struct {
-    int id;
-    carmen_laser_laser_config_t config;
-    int num_readings;
-    float *range;
-    int num_remissions;
-    float *remission;
-    double timestamp;
-    char *host;
-  } carmen_laser_laser_message;
-  
-}
-
-#endif // HAVE_CARMEN
+#ifdef NPM_HAVE_CARMEN_ELROB
+#include <carmen/carmen.h>
+#include <smart_interface.h>
+#include <axt_interface.h>
+#include <smart_messages.h>
+#endif
 
 
 using namespace sfl;
@@ -120,57 +43,76 @@ using namespace std;
 
 namespace wrap_carmen {
   
-#ifdef HAVE_CARMEN
-# error Implement the actual Carmen communication here.
-#else  
-# warning Using dummy implementations of Carmen communication.
-  
-  
+#ifdef NPM_HAVE_CARMEN_ELROB
+
+	/* in order to handle the incoming carmen messages independently of the
+		 requests from the nepumuk side, internal buffers are
+		 needed. at the moment using static variables. better:
+		 write a CarmenProxy that handles the communication 
+		 and time stamping */
+
+	/* NOTE: currently there is no error handling from 
+		 the carmen framework.  Some functions like
+		 carmen_ipc_initialize are handled internally by central */
+	
+	static elrob_smart_steering_message steering_msg;
+	AXT_SCAN_STR alascaxt_scan;
+
+
+	/* MESSAGE HANDLERS */
+	void smart_ipc_smart_steering_handler(elrob_smart_steering_message* msg) {
+		steering_msg.velocity=msg->velocity;
+		steering_msg.steeringangle=msg->steeringangle;
+		steering_msg.timestamp=msg->timestamp;
+	}
+
+	bool init_carmen(ostream *err){
+	
+		std::cout << "Initializing CARMEN Connection\n";
+		char* tmpname = "nepumuk";
+		carmen_ipc_initialize(1, &tmpname);
+		return true;
+	}
+
+	bool cleanup_carmen(ostream *err)
+	{
+
+		carmen_ipc_disconnect();
+		return true;
+	}
+	
   bool init_receive_steering(ostream * err)
   {
-    // The real implementation has to set up the connection and
-    // probably return a handle of some kind. In case of an error,
-    // print a message on the optional err stream and return false,
-    // like this:
-    static const bool some_error_happened(false);
-    if(some_error_happened){
-      if(err)
-	*err << "ERROR in init_receive_steering(): blah blah blah\n";
-      return false;
-    }
-    return true;
+		
+		elrob_smart_steering_subscribe_message(NULL, 
+																					 (carmen_handler_t) smart_ipc_smart_steering_handler,
+																					 CARMEN_SUBSCRIBE_LATEST);  
+		return true;
   }
   
+
   
   bool receive_steering(double & velocity,
 			double & steeringangle,
 			ostream * err)
   {
-    // In the real implementation, you'll get the actual values from
-    // Carmen communication. Here we just fill with fixed values that
-    // make the car go round in circles. Also, Nepumuk doesn't care
-    // about the timestamp or the host name, so we just ignore it.
-    elrob_smart_steering_message msg;
-    msg.velocity = 0.5;
-    msg.steeringangle = 0.17;
-    // msg.timestamp = 42;
-    // msg.host = "dummy.wrap_carmen.nepumuk";
-    
-    velocity = msg.velocity;
-    steeringangle = msg.steeringangle;
+		velocity=steering_msg.velocity;
+		steeringangle=steering_msg.steeringangle;
     return true;
   }
   
   
   bool cleanup_receive_steering(ostream * err)
   {
-    // Here you'll have to disconnect and clean up.
-    return true;
+		return true;
   }
   
   
   bool init_send_pos(ostream * err)
   {    
+
+		elrob_smart_pos_define_message();
+
     return true;
   }
   
@@ -188,11 +130,24 @@ namespace wrap_carmen {
     msg.pose.psi = theta;	/**< yaw **/
     msg.velocity = velocity;
     msg.steering_angle = steering;
-    msg.timestamp = 42;		// this should probably change each tick
-    msg.host = "dummy.wrap_carmen.nepumuk";
+    msg.timestamp = -1;		// this should probably change each tick
+
+		char host[8]="nepumuk";
+		msg.host=host;
     
-    // here you should send it...
-    
+		//currently only some of the data is supported by the elrob carmen framework
+		//(should be upgraded)
+
+		elrob_smart_pos_send_message(msg.pose.x, 
+																 msg.pose.y, 
+																 msg.pose.z,
+																 msg.pose.phi,
+																 msg.pose.theta,
+																 msg.pose.psi,
+																 msg.velocity,
+																 msg.steering_angle,
+																 msg.timestamp);
+
     return true;
   }
   
@@ -205,6 +160,8 @@ namespace wrap_carmen {
   
   bool init_send_laser(ostream * err)
   {
+		axt_define_message();
+
     return true;
   }
   
@@ -212,27 +169,48 @@ namespace wrap_carmen {
   bool send_laser(const Scanner & scanner,
 		  ostream * err)
   {
-    shared_ptr<Scan> scan(scanner.GetScanCopy());
-    carmen_laser_laser_message msg;
-    msg.id =                        scanner.hal_channel;
-    msg.config.laser_type =         SICK_LMS;
-    msg.config.start_angle =        scanner.phi0;
-    msg.config.fov =                scanner.phirange;
-    msg.config.angular_resolution = scanner.dphi;
-    msg.config.maximum_range =      scanner.rhomax;
-    msg.config.accuracy =           0.01; // well... hardcoded stuff...
-    msg.config.remission_mode =     REMISSION_NONE;
-    msg.num_readings =              scan->data.size();
-    for(size_t ii(0); ii < scan->data.size(); ++ii)
-      msg.range[ii] =               scan->data[ii].rho;
-    msg.num_remissions =            0;
-    // msg.remission[ii] = 0;
-    msg.timestamp = 42;	      // use scan.tlower and/or scan.tupper...
-    msg.host = "dummy.wrap_carmen.nepumuk";
-    
-    // here you should send it...
-    
-    return true;
+
+		shared_ptr<Scan> scan(scanner.GetScanCopy());
+		
+		//ALASCAXT based message is currently sent
+
+		//currently not handled values
+		alascaxt_scan.header.version=0;
+		alascaxt_scan.header.scanner_type=0;
+		alascaxt_scan.header.ecu_id=0;
+		alascaxt_scan.header.time_stamp=-1;
+		alascaxt_scan.header.timestamp_sinc=-1;
+
+		alascaxt_scan.header.start_angle=scanner.phi0;
+		alascaxt_scan.header.end_angle=scanner.phi0+scanner.phirange;
+		alascaxt_scan.header.scan_counter=scan->data.size();
+
+		int num_valid_pts(0);
+		for(size_t ii(0); ii < scan->data.size() && ii<AXT_MAX_SCAN_POINTS; ++ii){
+			if(scan->data[ii].in_range){
+				alascaxt_scan.points[ii].point_status=AXT_PT_STATUS_OK;
+				alascaxt_scan.points[ii].x=scan->data[ii].globx;
+				alascaxt_scan.points[ii].y=scan->data[ii].globy;
+				//for z is a hard coded stuff to appear as a "big obstacle"
+				//because nepumuk currenly is a 2D simulation
+				alascaxt_scan.points[ii].z=100; 
+
+				/*
+				fprintf(stderr, "[%d]: x=%f, y=%f, locx=%f, locy=%f, rho=%f, phi=%f\n",
+								ii, scan->data[ii].globx, scan->data[ii].globy,
+								scan->data[ii].locx, scan->data[ii].locy, scan->data[ii].rho, scan->data[ii].phi);
+				*/				
+			}else{
+				alascaxt_scan.points[ii].point_status=AXT_PT_STATUS_INVALID;
+			}
+				num_valid_pts++;
+		}
+		
+		alascaxt_scan.header.num_points=num_valid_pts;
+		
+		axt_send_message(&alascaxt_scan);
+		
+		return true;
   }
   
   
@@ -241,6 +219,90 @@ namespace wrap_carmen {
     return true;
   }
 
-#endif // HAVE_CARMEN
+
+
+#else  
+# warning Using dummy implementations of Carmen communication.
+  
+
+	bool init_carmen(ostream *err){		
+		*err << "dummy implementation\n";
+		return true;
+	}
+
+	bool cleanup_carmen(ostream *err){
+		*err << "dummy implementation\n";
+		return true;
+	}
+	
+  bool init_receive_steering(ostream * err)
+  {
+		*err << "dummy implementation\n";
+		return true;
+  }
+  
+
+  
+  bool receive_steering(double & velocity,
+			double & steeringangle,
+			ostream * err)
+  {
+		*err << "dummy implementation\n";
+    return true;
+  }
+  
+  
+  bool cleanup_receive_steering(ostream * err)
+  {
+		*err << "dummy implementation\n";
+		return true;
+  }
+  
+  
+  bool init_send_pos(ostream * err)
+  {    
+		*err << "dummy implementation\n";
+    return true;
+  }
+  
+  
+  bool send_pos(double x, double y, double theta,
+		double velocity, double steering,
+		ostream * err)
+  {
+		*err << "dummy implementation\n";
+		return true;
+  }
+  
+  
+  bool cleanup_send_pos(ostream * err)
+  {
+		*err << "dummy implementation\n";
+    return true;
+  }
+  
+  
+  bool init_send_laser(ostream * err)
+  {
+		*err << "dummy implementation\n";
+    return true;
+  }
+  
+  
+  bool send_laser(const Scanner & scanner,
+		  ostream * err)
+  {
+		*err << "dummy implementation\n";
+    return true;
+  }
+  
+  
+  bool cleanup_send_laser(ostream * err)
+  {
+		*err << "dummy implementation\n";
+    return true;
+  }
+
+#endif // NPM_HAVE_CARMEN_ELROB
   
 }

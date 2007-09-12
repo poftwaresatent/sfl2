@@ -41,6 +41,9 @@
 
 #ifdef NPM_HAVE_ASL
 # include <npm/smart/Smart.hpp>
+#ifdef NPM_HAVE_CARMEN_ELROB
+# include <npm/smart/SmartCarmen.hpp>
+#endif
 #endif // NPM_HAVE_ASL
 
 //#include <npm/theater/TheaterRobot.hpp>
@@ -77,6 +80,10 @@ namespace npm {
 #ifdef NPM_HAVE_ASL
     else if (descriptor->model == "smart")
       rob = new Smart(descriptor, world);
+#ifdef NPM_HAVE_CARMEN_ELROB
+    else if (descriptor->model == "smart-carmen")
+      rob = new SmartCarmen(descriptor, world);
+#endif
 #endif // NPM_HAVE_ASL
 
 #ifdef NPM_HAVE_GENOM

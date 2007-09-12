@@ -33,6 +33,8 @@ namespace sfl {
   class Multiscanner;
   class Scanner;
 	class Goal;
+	class Odometry;
+	class RWlock;
 }
 
 
@@ -60,6 +62,8 @@ protected:
   boost::shared_ptr<sfl::Scanner> m_sick;
   boost::shared_ptr<sfl::Multiscanner> m_mscan;
 	boost::shared_ptr<sfl::Goal> m_goal;
+	boost::shared_ptr<sfl::Odometry> m_odo;
+  boost::shared_ptr<sfl::RWlock> m_simul_rwlock;
 	
   int m_nscans, m_sick_channel;
 };

@@ -1,0 +1,15 @@
+View world
+     Camera  world
+     Drawing world
+     Drawing Ter_true_drawing
+#     Drawing Ter_carrot
+#     Drawing Ter_true_drawing
+#     Drawing Ter_goaldrawing
+#     Drawing Ter_trajectory
+     Drawing Ter_drive
+     Drawing Ter_lidar_0
+     Window  0.0  0.0  0.5  0.5
+     Border  1
+
+
+

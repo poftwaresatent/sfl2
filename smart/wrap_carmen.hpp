@@ -40,6 +40,9 @@ namespace wrap_carmen {
   // You probably need to add some parameters in order to hook these
   // functions into Carmen, but the easiest generic interface that
   // seems possible.
+
+	bool init_carmen(std::ostream *err);
+	bool cleanup_carmen(std::ostream *err);
   
   bool init_receive_steering(std::ostream * err);
   
