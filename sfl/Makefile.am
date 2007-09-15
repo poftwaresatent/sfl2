@@ -7,7 +7,7 @@ SUBDIRS=                 api bband contrib cwrap dwa expo gplan util
 
 lib_LTLIBRARIES=         libsunflower.la
 libsunflower_la_SOURCES= 
-libsunflower_la_LDFLAGS= -version-info 3:0:0
+libsunflower_la_LDFLAGS= -version-info 3:0:1
 libsunflower_la_LIBADD=  api/libapi.la \
                          bband/libbband.la \
                          contrib/libcontrib.la \
