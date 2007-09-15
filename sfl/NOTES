@@ -1,0 +1,151 @@
+SUMMARY OF CHANGES SINCE libsunflower-0.9
+
+------------------------------------------------------------------------
+r319 | poftwaresatent | 2006-10-26 11:46:37 -0700 (Thu, 26 Oct 2006) | 6 lines
+
+Merged branch sunflower--automake. Summary of changes:
+* converted the build system to GNU Automake
+* removed XCF support (now in XCFWRAP module elsewhere)
+* static libs are disabled by default (can be added in using
+  --enable-static configure option)
+
+------------------------------------------------------------------------
+r371 | poftwaresatent | 2006-11-29 08:02:46 -0800 (Wed, 29 Nov 2006) | 4 lines
+
+bump -version-info to 3:0:1 on next release
+new class gplan/TraversabilityMap (integer-based with some meta information)
+new method GridFrame::Delta()
+
+------------------------------------------------------------------------
+r377 | poftwaresatent | 2006-11-29 11:01:05 -0800 (Wed, 29 Nov 2006) | 1 line
+
+finally implemented the nf1 width doubling and reset depending on
+planning success or failure
+
+------------------------------------------------------------------------
+r386 | poftwaresatent | 2006-12-06 09:30:57 -0800 (Wed, 06 Dec 2006) | 1 line
+
+extended API to 'draw' line segments on grids, using a callback
+functor (so that clients can plug in their own functionality) and
+relying on a relatively efficient algorithm (differential analyzer)
+
+------------------------------------------------------------------------
+r394 | poftwaresatent | 2006-12-07 10:05:32 -0800 (Thu, 07 Dec 2006) | 1 line
+
+added Odometry::Get(const Timestamp &), which returns the 'best
+matching' pose from the history... to be tested by Sascha :o)
+
+------------------------------------------------------------------------
+r417 | saschakolski | 2006-12-12 02:43:54 -0800 (Tue, 12 Dec 2006) | 5 lines
+
+Added Configuration Space extended Version of the Traversability Map
+Configuration Space extension is done automatically on adding and
+removal of obstacle cells.  This is pure configuration space
+extension, not a riskmap biassing the robot away from obstacles what
+will be implemented in another subclass of TraversabilityMap
+
+------------------------------------------------------------------------
+r419 | poftwaresatent | 2006-12-12 09:24:07 -0800 (Tue, 12 Dec 2006) | 7 lines
+
+The new gplan/TraversabilityMapCS depends on estar.sourceforge.net and
+this has to be properly taken into account during configure time: if
+you specify --with-estar (or --with-estar=PATH) on your configure
+command line, this code will be included in your built of
+libsunflower. These changes showed the deficiency of autogen.sh, which
+was replaced by bootstrap-buildsystem.sh.
+
+------------------------------------------------------------------------
+r426 | saschakolski | 2006-12-12 17:35:04 -0800 (Tue, 12 Dec 2006) | 3 lines
+
+Added Mapper2d, a class to update TraversabilityMap from Scanners
+
+------------------------------------------------------------------------
+r427 | poftwaresatent | 2006-12-12 17:39:05 -0800 (Tue, 12 Dec 2006) | 3 lines
+
+killed the goal bug, it's due to old broken quick hacks:
+DynamicWindow::GoStrictXXX() caused bad behavior.
+
+------------------------------------------------------------------------
+r431 | poftwaresatent | 2006-12-14 07:31:11 -0800 (Thu, 14 Dec 2006) | 5 lines
+
+Most important: killed some memory leaks (beware of
+boost::shared_ptr<> and non-const & misuse). Also moved recent
+additions into the sfl namespace, added some copyright notes, adapted
+some data types, added some casts...
+
+------------------------------------------------------------------------
+r475 | poftwaresatent | 2007-03-07 07:49:30 -0800 (Wed, 07 Mar 2007) | 1 line
+
+added GoalManager (guess what it does) and some simple unit tests (run
+'make check' to compile, and util/test-goalmgr to run)
+
+------------------------------------------------------------------------
+r479 | poftwaresatent | 2007-03-15 07:46:34 -0700 (Thu, 15 Mar 2007) | 4 lines
+
+Finally debugged the DDA line drawing algorithm: Instead of trying to
+be smart and draw non-integer lines (which didn't work), just draw
+lines with purely cell-centered endpoints.
+
+------------------------------------------------------------------------
+r560 | poftwaresatent | 2007-04-02 12:40:55 -0700 (Mon, 02 Apr 2007) | 1 line
+
+ring-buffer utility template
+
+------------------------------------------------------------------------
+r605 | poftwaresatent | 2007-04-28 11:00:02 -0700 (Sat, 28 Apr 2007) | 10 lines
+
+Merged branch --ruag-demo:
+* Added Mapper2d::SwipedUpdate() to remove WS obstacles when a laser
+  ray traverses them.
+* Extended scan_data with a boolean in_range which helps client code
+  to decide if a laser point corresponds to an actual measurement.
+* Added Multiscanner::CollectRawScans() which does not filter out
+  readings that are out of range (useful for swiped map updates).
+* Kristijan added GoalManager::ParseConfigSimple() which allows to
+  parse the log replay files used on ASL's SmartTer robot.
+
+------------------------------------------------------------------------
+r610 | poftwaresatent | 2007-05-18 09:42:22 -0700 (Fri, 18 May 2007) | 3 lines
+
+Added MotionPlanner::SetAimingThresholds() to influence the behavior
+of the path-following.
+
+------------------------------------------------------------------------
+r612 | poftwaresatent | 2007-05-19 03:21:46 -0700 (Sat, 19 May 2007) | 17 lines
+
+Added expo::MotionPlanner::ManualStop() and ManualResume(), which
+allows users to halt the robot while it is executing normal path
+following behavior, and later resume the path to the same goal.
+
+Also made a refactoring of the expo::MotionPlanner state machine,
+because the NullState was replaced by ManualStopState and I grabbed
+the opportunity to clean up some old crufty code. It's still not
+spotless, but at least now most of the dirty stuff lives within the
+new expo::MotioPlannerStateMachine class, which is defined in
+expo/MotionPlannerState.{h,c}pp.
+
+Note that the cwrap/expo.h was extended: the new
+EXPO_CWRAP_MANUAL_STOP value was added to the enum
+EXPO_CWRAP_STATE_ID, so you might have to update your C-wrapper client
+code. I kept the EXPO_CWRAP_NULL value in there, even though it will
+never be returned, just to break fewer old code.
+
+------------------------------------------------------------------------
+r615 | poftwaresatent | 2007-05-19 10:04:34 -0700 (Sat, 19 May 2007) | 4 lines
+
+Added wrapper functions expo_set_aiming_thresholds(),
+expo_manual_stop(), and expo_manual_resume() which get forwarded to
+the corresponding lately added methods in expo::MotionPlanner.
+
+------------------------------------------------------------------------
+r651 | poftwaresatent | 2007-08-06 17:55:24 -0700 (Mon, 06 Aug 2007) | 1 line
+
+more powerful build script, run './build-stage.sh --help' to list its options
+
+------------------------------------------------------------------------
+r680 | poftwaresatent | 2007-08-08 16:03:26 -0700 (Wed, 08 Aug 2007) | 5 lines
+
+Merged branch smartsfl-rfct-0 for cleaner design in ASL's smartflower
+project. The most important changes are summarized in
+CHANGELOG--smartsfl-rfct-0. Basically, we now have POSIX
+rwlock-protected access to traversability maps.
