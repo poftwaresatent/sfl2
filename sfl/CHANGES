@@ -1,0 +1,449 @@
+------------------------------------------------------------------------
+r311 | poftwaresatent | 2006-10-26 05:18:56 -0700 (Thu, 26 Oct 2006) | 1 line
+
+bumped version to 1.0pre, updated TODO list
+------------------------------------------------------------------------
+r312 | poftwaresatent | 2006-10-26 05:22:30 -0700 (Thu, 26 Oct 2006) | 1 line
+
+regen
+------------------------------------------------------------------------
+r319 | poftwaresatent | 2006-10-26 11:46:37 -0700 (Thu, 26 Oct 2006) | 6 lines
+
+Merged branch sunflower--automake. Summary of changes:
+* converted the build system to GNU Automake
+* removed XCF support (now in XCFWRAP module elsewhere)
+* static libs are disabled by default (can be added in using
+  --enable-static configure option)
+
+------------------------------------------------------------------------
+r320 | poftwaresatent | 2006-10-26 11:48:54 -0700 (Thu, 26 Oct 2006) | 1 line
+
+regen
+------------------------------------------------------------------------
+r321 | poftwaresatent | 2006-10-26 12:13:18 -0700 (Thu, 26 Oct 2006) | 1 line
+
+added back libtool version info
+------------------------------------------------------------------------
+r322 | poftwaresatent | 2006-10-26 12:19:59 -0700 (Thu, 26 Oct 2006) | 1 line
+
+build system is no longer (C) LAAS, but obviously other stuff still is
+------------------------------------------------------------------------
+r324 | poftwaresatent | 2006-10-26 12:24:36 -0700 (Thu, 26 Oct 2006) | 1 line
+
+added devel mailing list as support email
+------------------------------------------------------------------------
+r336 | poftwaresatent | 2006-11-02 03:27:13 -0800 (Thu, 02 Nov 2006) | 1 line
+
+having problems on darwin, seemigly because of libtool (afer introducing automake)... cannot run executables that link with libsunflower
+------------------------------------------------------------------------
+r337 | poftwaresatent | 2006-11-02 03:39:02 -0800 (Thu, 02 Nov 2006) | 1 line
+
+disabling shared libs on darwin makes it work
+------------------------------------------------------------------------
+r338 | poftwaresatent | 2006-11-02 04:46:28 -0800 (Thu, 02 Nov 2006) | 1 line
+
+disable shared on darwin, disable static on all other platforms
+------------------------------------------------------------------------
+r342 | poftwaresatent | 2006-11-05 04:27:13 -0800 (Sun, 05 Nov 2006) | 1 line
+
+installing sunflower.pc in lib/pkgconfig again (had been last in switch to automake)
+------------------------------------------------------------------------
+r343 | poftwaresatent | 2006-11-05 05:03:00 -0800 (Sun, 05 Nov 2006) | 1 line
+
+the sfl/ include-subdir should NOT be defined in configure.ac because it then interferes with the include flags given in sunflower.pc
+------------------------------------------------------------------------
+r344 | poftwaresatent | 2006-11-05 05:03:37 -0800 (Sun, 05 Nov 2006) | 1 line
+
+regen (michelangelo)
+------------------------------------------------------------------------
+r371 | poftwaresatent | 2006-11-29 08:02:46 -0800 (Wed, 29 Nov 2006) | 4 lines
+
+bump -version-info to 3:0:1 on next release
+new class gplan/TraversabilityMap (integer-based with some meta information)
+new method GridFrame::Delta()
+
+------------------------------------------------------------------------
+r373 | poftwaresatent | 2006-11-29 10:12:43 -0800 (Wed, 29 Nov 2006) | 1 line
+
+made min and max traversability values accessible for clients, debugged the file parser (y-axis was inverted)
+------------------------------------------------------------------------
+r374 | poftwaresatent | 2006-11-29 10:22:25 -0800 (Wed, 29 Nov 2006) | 1 line
+
+oops forgot to apply grid-frame changes when parsing a traversability map
+------------------------------------------------------------------------
+r375 | poftwaresatent | 2006-11-29 10:33:59 -0800 (Wed, 29 Nov 2006) | 1 line
+
+oops in whitespace handling when parsing traversability files
+------------------------------------------------------------------------
+r377 | poftwaresatent | 2006-11-29 11:01:05 -0800 (Wed, 29 Nov 2006) | 1 line
+
+finally implemented the nf1 width doubling and reset depending on planning success or failure
+------------------------------------------------------------------------
+r384 | poftwaresatent | 2006-12-06 07:45:32 -0800 (Wed, 06 Dec 2006) | 1 line
+
+added TraversabilityMap::GetValue()
+------------------------------------------------------------------------
+r385 | poftwaresatent | 2006-12-06 07:51:01 -0800 (Wed, 06 Dec 2006) | 1 line
+
+regen
+------------------------------------------------------------------------
+r386 | poftwaresatent | 2006-12-06 09:30:57 -0800 (Wed, 06 Dec 2006) | 1 line
+
+extended API to 'draw' line segments on grids, using a callback functor (so that clients can plug in their own functionality) and relying on a relatively efficient algorithm (differential analyzer)
+------------------------------------------------------------------------
+r394 | poftwaresatent | 2006-12-07 10:05:32 -0800 (Thu, 07 Dec 2006) | 1 line
+
+added Odometry::Get(const Timestamp &), which returns the 'best matching' pose from the history... to be tested by Sascha :o)
+------------------------------------------------------------------------
+r408 | saschakolski | 2006-12-11 01:39:22 -0800 (Mon, 11 Dec 2006) | 3 lines
+
+Extended Traversability Map for more general usage then for the file load it was used for before
+
+
+------------------------------------------------------------------------
+r409 | saschakolski | 2006-12-11 01:40:47 -0800 (Mon, 11 Dec 2006) | 3 lines
+
+History function implemented
+
+
+------------------------------------------------------------------------
+r410 | saschakolski | 2006-12-11 03:20:38 -0800 (Mon, 11 Dec 2006) | 3 lines
+
+Added example map created from Testruns at EPFL
+
+
+------------------------------------------------------------------------
+r417 | saschakolski | 2006-12-12 02:43:54 -0800 (Tue, 12 Dec 2006) | 5 lines
+
+Added Configuration Space extended Version of the Traversability Map
+Configuration Space extension is done automatically on adding and removal of obstacle cells. 
+This is pure configuration space extension, not a riskmap biassing the robot away from obstacles what will be implemented in another subclass of TraversabilityMap
+
+
+------------------------------------------------------------------------
+r419 | poftwaresatent | 2006-12-12 09:24:07 -0800 (Tue, 12 Dec 2006) | 7 lines
+
+The new gplan/TraversabilityMapCS depends on estar.sourceforge.net and
+this has to be properly taken into account during configure time: if
+you specify --with-estar (or --with-estar=PATH) on your configure
+command line, this code will be included in your built of
+libsunflower. These changes showed the deficiency of autogen.sh, which
+was replaced by bootstrap-buildsystem.sh.
+
+------------------------------------------------------------------------
+r420 | poftwaresatent | 2006-12-12 09:24:27 -0800 (Tue, 12 Dec 2006) | 1 line
+
+regen
+------------------------------------------------------------------------
+r421 | poftwaresatent | 2006-12-12 09:28:38 -0800 (Tue, 12 Dec 2006) | 1 line
+
+stupid copy-paste mistake installed .cpp instead of .hpp in gplan directory
+------------------------------------------------------------------------
+r426 | saschakolski | 2006-12-12 17:35:04 -0800 (Tue, 12 Dec 2006) | 3 lines
+
+Added Mapper2d, a class to update TraversabilityMap from Scanners
+
+
+------------------------------------------------------------------------
+r427 | poftwaresatent | 2006-12-12 17:39:05 -0800 (Tue, 12 Dec 2006) | 3 lines
+
+killed the goal bug, it's due to old broken quick hacks:
+DynamicWindow::GoStrictXXX() caused bad behavior.
+
+------------------------------------------------------------------------
+r430 | poftwaresatent | 2006-12-14 07:25:23 -0800 (Thu, 14 Dec 2006) | 1 line
+
+added convenience ctor from Frame and a double
+------------------------------------------------------------------------
+r431 | poftwaresatent | 2006-12-14 07:31:11 -0800 (Thu, 14 Dec 2006) | 5 lines
+
+Most important: killed some memory leaks (beware of
+boost::shared_ptr<> and non-const & misuse). Also moved recent
+additions into the sfl namespace, added some copyright notes, adapted
+some data types, added some casts...
+
+------------------------------------------------------------------------
+r440 | poftwaresatent | 2006-12-14 20:07:49 -0800 (Thu, 14 Dec 2006) | 1 line
+
+mapper update now takes a scan object instead of a scanner, this makes it easier to support multiple sicks and avoids the check for rhomax
+------------------------------------------------------------------------
+r453 | poftwaresatent | 2006-12-15 11:33:27 -0800 (Fri, 15 Dec 2006) | 1 line
+
+merged sunflower--smart-deadline-drive@446
+------------------------------------------------------------------------
+r462 | saschakolski | 2007-01-11 11:35:28 -0800 (Thu, 11 Jan 2007) | 2 lines
+
+- Modified Mapper to update map from pointcloud
+
+------------------------------------------------------------------------
+r463 | poftwaresatent | 2007-01-18 02:12:17 -0800 (Thu, 18 Jan 2007) | 1 line
+
+some installs of boost do not require an extra /include in -I flags
+------------------------------------------------------------------------
+r467 | poftwaresatent | 2007-03-02 05:09:45 -0800 (Fri, 02 Mar 2007) | 1 line
+
+better include symlinks (under the build dir) to improve CPP search order and building as part of a bigger project (ie smartflower@ASL)
+------------------------------------------------------------------------
+r468 | poftwaresatent | 2007-03-02 05:44:39 -0800 (Fri, 02 Mar 2007) | 1 line
+
+need abs_top_builddir on some versions of AC/AM
+------------------------------------------------------------------------
+r469 | poftwaresatent | 2007-03-02 05:44:53 -0800 (Fri, 02 Mar 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r473 | poftwaresatent | 2007-03-04 03:00:22 -0800 (Sun, 04 Mar 2007) | 1 line
+
+build include flags now set in configure instead of Makefiles
+------------------------------------------------------------------------
+r475 | poftwaresatent | 2007-03-07 07:49:30 -0800 (Wed, 07 Mar 2007) | 1 line
+
+added GoalManager (guess what it does) and some simple unit tests (run 'make check' to compile, and util/test-goalmgr to run)
+------------------------------------------------------------------------
+r476 | poftwaresatent | 2007-03-07 07:49:54 -0800 (Wed, 07 Mar 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r479 | poftwaresatent | 2007-03-15 07:46:34 -0700 (Thu, 15 Mar 2007) | 4 lines
+
+Finally debugged the DDA line drawing algorithm: Instead of trying to
+be smart and draw non-integer lines (which didn't work), just draw
+lines with purely cell-centered endpoints.
+
+------------------------------------------------------------------------
+r482 | poftwaresatent | 2007-03-15 09:48:48 -0700 (Thu, 15 Mar 2007) | 5 lines
+
+Modified the ctors of TraversabilityMap, TraversabilityMapCS, and
+Mapper2d in order to make them more configurable. No hard-coded values
+are left (except for OPTIONAL use of default values in simplified
+ctors).
+
+------------------------------------------------------------------------
+r501 | poftwaresatent | 2007-03-20 07:28:19 -0700 (Tue, 20 Mar 2007) | 6 lines
+
+Added optional 'dimension' configuration line to config file
+parsing. This forces the dimension of the traversability to the
+provided values, regardless of the number of data lines and columns
+actually in the file.
+...not very thoroughly tested yet, but it seems to do the right thing.
+
+------------------------------------------------------------------------
+r535 | poftwaresatent | 2007-03-22 15:20:01 -0700 (Thu, 22 Mar 2007) | 1 line
+
+merged branch sunflower--smart-mapper-rfct-0 into trunk
+------------------------------------------------------------------------
+r542 | poftwaresatent | 2007-03-26 11:44:48 -0700 (Mon, 26 Mar 2007) | 3 lines
+
+Improved TraversabilityMap API to easily check for obstacle or
+freespace cells.
+
+------------------------------------------------------------------------
+r543 | poftwaresatent | 2007-03-26 12:36:50 -0700 (Mon, 26 Mar 2007) | 1 line
+
+bug (index limit off by one)
+------------------------------------------------------------------------
+r549 | poftwaresatent | 2007-03-27 09:44:31 -0700 (Tue, 27 Mar 2007) | 1 line
+
+fwd decl tweak
+------------------------------------------------------------------------
+r560 | poftwaresatent | 2007-04-02 12:40:55 -0700 (Mon, 02 Apr 2007) | 1 line
+
+ring-buffer utility template
+------------------------------------------------------------------------
+r561 | poftwaresatent | 2007-04-03 10:04:34 -0700 (Tue, 03 Apr 2007) | 1 line
+
+added empty()
+------------------------------------------------------------------------
+r564 | poftwaresatent | 2007-04-04 07:39:48 -0700 (Wed, 04 Apr 2007) | 1 line
+
+typo
+------------------------------------------------------------------------
+r573 | poftwaresatent | 2007-04-18 04:48:51 -0700 (Wed, 18 Apr 2007) | 1 line
+
+merged branch sunflower--icra07
+------------------------------------------------------------------------
+r577 | poftwaresatent | 2007-04-18 06:04:58 -0700 (Wed, 18 Apr 2007) | 1 line
+
+little test prog to see why threads don't work under linux
+------------------------------------------------------------------------
+r605 | poftwaresatent | 2007-04-28 11:00:02 -0700 (Sat, 28 Apr 2007) | 10 lines
+
+Merged branch --ruag-demo:
+* Added Mapper2d::SwipedUpdate() to remove WS obstacles when a laser
+  ray traverses them.
+* Extended scan_data with a boolean in_range which helps client code
+  to decide if a laser point corresponds to an actual measurement.
+* Added Multiscanner::CollectRawScans() which does not filter out
+  readings that are out of range (useful for swiped map updates).
+* Kristijan added GoalManager::ParseConfigSimple() which allows to
+  parse the log replay files used on ASL's SmartTer robot.
+
+------------------------------------------------------------------------
+r606 | poftwaresatent | 2007-04-28 11:01:40 -0700 (Sat, 28 Apr 2007) | 1 line
+
+script for building and installing under the CWD
+------------------------------------------------------------------------
+r610 | poftwaresatent | 2007-05-18 09:42:22 -0700 (Fri, 18 May 2007) | 3 lines
+
+Added MotionPlanner::SetAimingThresholds() to influence the behavior
+of the path-following.
+
+------------------------------------------------------------------------
+r612 | poftwaresatent | 2007-05-19 03:21:46 -0700 (Sat, 19 May 2007) | 17 lines
+
+Added expo::MotionPlanner::ManualStop() and ManualResume(), which
+allows users to halt the robot while it is executing normal path
+following behavior, and later resume the path to the same goal.
+
+Also made a refactoring of the expo::MotionPlanner state machine,
+because the NullState was replaced by ManualStopState and I grabbed
+the opportunity to clean up some old crufty code. It's still not
+spotless, but at least now most of the dirty stuff lives within the
+new expo::MotioPlannerStateMachine class, which is defined in
+expo/MotionPlannerState.{h,c}pp.
+
+Note that the cwrap/expo.h was extended: the new
+EXPO_CWRAP_MANUAL_STOP value was added to the enum
+EXPO_CWRAP_STATE_ID, so you might have to update your C-wrapper client
+code. I kept the EXPO_CWRAP_NULL value in there, even though it will
+never be returned, just to break fewer old code.
+
+------------------------------------------------------------------------
+r615 | poftwaresatent | 2007-05-19 10:04:34 -0700 (Sat, 19 May 2007) | 4 lines
+
+Added wrapper functions expo_set_aiming_thresholds(),
+expo_manual_stop(), and expo_manual_resume() which get forwarded to
+the corresponding lately added methods in expo::MotionPlanner.
+
+------------------------------------------------------------------------
+r620 | poftwaresatent | 2007-07-05 19:33:01 -0700 (Thu, 05 Jul 2007) | 1 line
+
+added non-const accessor for travmap
+------------------------------------------------------------------------
+r627 | poftwaresatent | 2007-07-25 13:43:45 -0700 (Wed, 25 Jul 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r628 | poftwaresatent | 2007-07-26 14:50:42 -0700 (Thu, 26 Jul 2007) | 1 line
+
+made Dump() const
+------------------------------------------------------------------------
+r647 | poftwaresatent | 2007-08-06 17:41:43 -0700 (Mon, 06 Aug 2007) | 4 lines
+
+Overhaul buildsys: all relevant config vars are now refixed with SFL_
+to make it easier to incorporate libsunflower in various
+meta-projects.
+
+------------------------------------------------------------------------
+r648 | poftwaresatent | 2007-08-06 17:46:08 -0700 (Mon, 06 Aug 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r649 | poftwaresatent | 2007-08-06 17:53:56 -0700 (Mon, 06 Aug 2007) | 3 lines
+
+Finally renamed DEBUG => SFL_DEBUG to reduce CPP clashes with other
+packages.
+
+------------------------------------------------------------------------
+r650 | poftwaresatent | 2007-08-06 17:54:34 -0700 (Mon, 06 Aug 2007) | 1 line
+
+minor update (already using AM/LT)
+------------------------------------------------------------------------
+r651 | poftwaresatent | 2007-08-06 17:55:24 -0700 (Mon, 06 Aug 2007) | 1 line
+
+more powerful build script, run './build-stage.sh --help' to list its options
+------------------------------------------------------------------------
+r652 | poftwaresatent | 2007-08-06 18:04:46 -0700 (Mon, 06 Aug 2007) | 1 line
+
+removed empty svn:externals property
+------------------------------------------------------------------------
+r653 | poftwaresatent | 2007-08-06 18:20:03 -0700 (Mon, 06 Aug 2007) | 1 line
+
+better initialization of SFL_fooFLAGS variables
+------------------------------------------------------------------------
+r654 | poftwaresatent | 2007-08-06 18:21:05 -0700 (Mon, 06 Aug 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r655 | poftwaresatent | 2007-08-06 19:17:06 -0700 (Mon, 06 Aug 2007) | 1 line
+
+forgot SFL_ variable prefix in header tests
+------------------------------------------------------------------------
+r658 | poftwaresatent | 2007-08-07 11:19:05 -0700 (Tue, 07 Aug 2007) | 1 line
+
+AC_MSG_RESULT => AC_MSG_NOTICE
+------------------------------------------------------------------------
+r660 | poftwaresatent | 2007-08-07 11:21:18 -0700 (Tue, 07 Aug 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r669 | poftwaresatent | 2007-08-07 15:34:49 -0700 (Tue, 07 Aug 2007) | 1 line
+
+added AC_CONFIG_AUX_DIR([.])
+------------------------------------------------------------------------
+r673 | poftwaresatent | 2007-08-07 18:39:58 -0700 (Tue, 07 Aug 2007) | 1 line
+
+oops, had inverted AC_DISABLE_SHARED and AC_DISABLE_STATIC
+------------------------------------------------------------------------
+r680 | poftwaresatent | 2007-08-08 16:03:26 -0700 (Wed, 08 Aug 2007) | 5 lines
+
+Merged branch smartsfl-rfct-0 for cleaner design in ASL's smartflower
+project. The most important changes are summarized in
+CHANGELOG--smartsfl-rfct-0. Basically, we now have POSIX
+rwlock-protected access to traversability maps.
+
+------------------------------------------------------------------------
+r681 | poftwaresatent | 2007-08-08 16:04:32 -0700 (Wed, 08 Aug 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r682 | poftwaresatent | 2007-08-08 19:46:02 -0700 (Wed, 08 Aug 2007) | 1 line
+
+forgot to install util/ringbuf.hpp
+------------------------------------------------------------------------
+r690 | poftwaresatent | 2007-08-17 14:06:16 -0700 (Fri, 17 Aug 2007) | 1 line
+
+extensions for OpenBSD
+------------------------------------------------------------------------
+r691 | poftwaresatent | 2007-08-17 14:07:22 -0700 (Fri, 17 Aug 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r693 | poftwaresatent | 2007-09-04 16:14:54 -0700 (Tue, 04 Sep 2007) | 3 lines
+
+More useful Libs in sunflower.pc, and updated build-stage.sh to
+OpenBSD requirements.
+
+------------------------------------------------------------------------
+r694 | poftwaresatent | 2007-09-04 16:15:21 -0700 (Tue, 04 Sep 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r695 | poftwaresatent | 2007-09-04 17:46:12 -0700 (Tue, 04 Sep 2007) | 1 line
+
+improved handling of relative paths in build-stage options
+------------------------------------------------------------------------
+r696 | poftwaresatent | 2007-09-04 21:16:26 -0700 (Tue, 04 Sep 2007) | 1 line
+
+on OpenBSD, add /usr/local/include to std paths
+------------------------------------------------------------------------
+r697 | poftwaresatent | 2007-09-04 21:24:32 -0700 (Tue, 04 Sep 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r702 | poftwaresatent | 2007-09-14 21:26:06 -0700 (Fri, 14 Sep 2007) | 1 line
+
+bumped version to 1.0
+------------------------------------------------------------------------
+r703 | poftwaresatent | 2007-09-14 21:26:17 -0700 (Fri, 14 Sep 2007) | 1 line
+
+regen
+------------------------------------------------------------------------
+r704 | poftwaresatent | 2007-09-14 21:27:09 -0700 (Fri, 14 Sep 2007) | 1 line
+
+Update quick-start, mention nepumuk, update contributors, mention libsunflower-users list as main contact.
+------------------------------------------------------------------------
+r705 | poftwaresatent | 2007-09-14 21:27:31 -0700 (Fri, 14 Sep 2007) | 1 line
+
+outdated
+------------------------------------------------------------------------
