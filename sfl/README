@@ -1,16 +1,21 @@
-README for sunflower
+README for http://libsunflower.sourceforge.net/
 
 
 For the impatient:
-                $ mkdir build
-                $ cd build
-                $ ../configure
-                $ make
- maybe as root: $ make install
+ $ ./build-stage.sh -h
 
-Documentation (if not included):
- in build dir:  $ make doc
-                open doc/html/index.html in your favorite browser
+By default, this builds the software underneath the build/ directory
+and installs it under the stage/ directory. If you want to install it
+somewhere else, use the -p <prefix> option of ./build-stage.sh.
+
+Documentation (if not included in the tarball you downloaded) can be
+created if you have doxygen installed:
+ $ cd build
+ $ doxygen Doxyfile
+Then open html/index.html in your favorite browser.
+
+If you want to try out libsunflower, check out the Nepumuk simulator
+that is available from the libsunflower home page.
 
 
 ------------------------------------------------------------
@@ -19,14 +24,19 @@ Copyright (C) 2004, Autonomous Systems Lab,
                     Ecole Polytechnique Federale de Lausanne
 		    (Swiss Federal Institute of Technology).
 		    All rights reserved.
+Copyright (C) 2007, Autonomous Systems Lab,
+                    Eidgenoessische Technische Hochschule Zuerich
+		    (Swiss Federal Institute of Technology).
+		    All rights reserved.
 
 Some stuff (mostly the C-wrapper code) is
 Copyright (C) 2005, LAAS/CNRS. All rights reserved.
 
-Maintainer: Roland Philippsen <roland dot philippsen at gmx dot net>
-Authors:    Viet Nguyen <viet dot nguyen at mavt dot ethz dot ch>
-            Frederic Pont <frederic dot pont at mavt dot ethz dot ch>
-            Agostino Martinelli <agostino dot martinelli at inrialpes dot fr>
+Contact: libsunflower-users at lists dot sourceforge dot net
+
+Author: Roland Philippsen
+Contributors: Viet Nguyen, Frederic Pont, Sascha Kolski, Agostino
+              Martinelli, Kristijan Macek, and others
 
 The sunflower library is released under the GNU General Public
 License. The C-wrapper and some other files are released under the new
@@ -48,11 +58,11 @@ chapter 3 of [1].
 
 2. COMPILING
 
-This software has been compiled under Linux and Mac OS X, but as it is
-relatively pure C++ it should not be hard to port to other POSIX
-platforms. Sunflower requires C and C++ compilers (tested with GCC-3),
-the Boost smart_ptr library [2], and some additional components that
-depend on how you want to build it.
+This software has been compiled under Linux, Mac OS X, and OpenBSD. As
+it is relatively pure C++ it should not be hard to port to other POSIX
+platforms. Sunflower requires C and C++ compilers (tested with GCC 3
+and 4), the Boost smart_ptr library [2], and some additional
+components that depend on how you want to build it.
 
 The sunflower library comes with a configure script that will do it's
 best to detect how the build will work on your system. The recommended
