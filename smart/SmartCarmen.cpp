@@ -56,11 +56,9 @@ SmartCarmen(shared_ptr<RobotDescriptor> descriptor, const World & world)
   double wheelbase(params.model_wheelbase);
   double wheelradius(params.model_wheelradius);
   double axlewidth(params.model_axlewidth);
-
-	m_odo.reset(new Odometry(GetHAL(), RWlock::Create("smart-carmen")));	
 	
-	//shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart-carmen")));	
-	m_mscan.reset(new Multiscanner(m_odo));
+	shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart")));	
+	m_mscan.reset(new Multiscanner(odo));
 	m_sick = DefineLidar(Frame(params.front_mount_x,
 														 params.front_mount_y,
 														 params.front_mount_theta),
@@ -69,16 +67,7 @@ SmartCarmen(shared_ptr<RobotDescriptor> descriptor, const World & world)
 											 params.front_phi0,
 											 params.front_phirange,
 											 params.front_channel)->GetScanner();
-
 	m_mscan->Add(m_sick);
-
-	m_simul_rwlock = RWlock::Create("npm::SmartCarmen");
-
-	if( ! m_simul_rwlock){
-		cerr << "ERROR sfl::RWlock::Create() failed\n";
-		exit(EXIT_FAILURE);
-	}
-	m_simul_rwlock->Wrlock();
 	
 	DefineBicycleDrive(wheelbase, wheelradius, axlewidth);
 
@@ -90,24 +79,18 @@ SmartCarmen(shared_ptr<RobotDescriptor> descriptor, const World & world)
 							 wheelbase +wheelradius, -axlewidth/2 -wheelradius));
   AddLine(Line(-wheelradius,  axlewidth/2 +wheelradius,
 							 wheelbase +wheelradius,  axlewidth/2 +wheelradius));
-
-	if( ! wrap_carmen::init_carmen(&cerr)){
-		cerr << "ERROR in SmartCarmen ctor:\n"
-				 << "  wrap_carmen::init_carmen() failed.\n";
-		exit(EXIT_FAILURE);
-	}
 	
-	if( ! wrap_carmen::init_receive_steering(&cerr)){
+	if( ! init_receive_steering(&cerr)){
 		cerr << "ERROR in SmartCarmen ctor:\n"
 				 << "  wrap_carmen::init_receive_steering() failed.\n";
 		exit(EXIT_FAILURE);
 	}
-	if( ! wrap_carmen::init_send_pos(&cerr)){
+	if( ! init_send_pos(&cerr)){
 		cerr << "ERROR in SmartCarmen ctor:\n"
 				 << "  wrap_carmen::init_send_pos() failed.\n";
 		exit(EXIT_FAILURE);
 	}
-	if( ! wrap_carmen::init_send_laser(&cerr)){
+	if( ! init_send_laser(&cerr)){
 		cerr << "ERROR in SmartCarmen ctor:\n"
 				 << "  wrap_carmen::init_send_laser() failed.\n";
 		exit(EXIT_FAILURE);
@@ -127,10 +110,6 @@ SmartCarmen::
 	if( ! cleanup_send_laser(&cerr))
 		cerr << "WARNING in SmartCarmen dtor:\n"
 				 << "  wrap_carmen::cleanup_send_laser() failed.\n";
-	if( ! cleanup_carmen(&cerr))
-		cerr << "WARNING in SmartCarmen dtor:\n"
-				 << "  wrap_carmen::cleanup_carmen() failed.\n";
-	m_simul_rwlock->Unlock();
 }
 
 
@@ -140,9 +119,6 @@ PrepareAction(double timestep)
 	PDEBUG("\n\n==================================================\n");
 
 	m_mscan->UpdateAll();
-
-	m_simul_rwlock->Unlock();
-
 	if( ! send_laser(*m_sick, &cerr)){
 		cerr << "ERROR in SmartCarmen ctor:\n"
 				 << "  wrap_carmen::send_laser() failed.\n";
@@ -152,7 +128,6 @@ PrepareAction(double timestep)
 	double x, y, theta, velocity, steering;
 	GetPose(x, y, theta);
 	GetHAL()->speed_get(&velocity, &steering);
-
 	if( ! send_pos(x, y, theta, velocity, steering, &cerr)){
 		cerr << "ERROR in SmartCarmen ctor:\n"
 				 << "  wrap_carmen::send_pos() failed.\n";
@@ -164,9 +139,8 @@ PrepareAction(double timestep)
 				 << "  wrap_carmen::receive_steering() failed.\n";
 		return false;
 	}
-
 	GetHAL()->speed_set(velocity, steering);
-	m_simul_rwlock->Wrlock();
+	
 	return true;
 }
 
