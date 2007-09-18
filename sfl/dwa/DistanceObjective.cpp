@@ -60,7 +60,7 @@ namespace sfl {
       m_qdd_max(robot_model->QdMax()),
       m_max_brake_time(robot_model->QdMax() / m_qdd_max),
       m_robot_model(robot_model),
-      m_hull(robot_model->GetHull()),
+      m_hull(robot_model->GetSafetyHull()),
       m_x0( - grid_width  / 2),
       m_y0( - grid_height / 2),
       m_x1(   grid_width  / 2),
