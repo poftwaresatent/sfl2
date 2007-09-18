@@ -105,6 +105,7 @@ Draw()
     DrawHull(HullIterator(*m_distobj.GetHull()),           1, 0, 0  , false);
   DrawHull(HullIterator(*m_distobj.GetPaddedHull()),       1, 0, 0.5, false);
   DrawHull(HullIterator(*m_distobj.GetEvaluationHull()),   0, 0, 1  , false);
+  DrawHull(HullIterator(*m_rm.GetHull()),                0.5, 0.5, 1, false);
   
   if((m_dwa.QdlOptIndex() >= 0) &&
      (m_dwa.QdrOptIndex() >= 0)){
