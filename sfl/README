@@ -2,11 +2,13 @@ README for http://libsunflower.sourceforge.net/
 
 
 For the impatient:
- $ ./build-stage.sh -h
+ $ ./build-stage.sh -s
 
 By default, this builds the software underneath the build/ directory
 and installs it under the stage/ directory. If you want to install it
-somewhere else, use the -p <prefix> option of ./build-stage.sh.
+somewhere else, use the -p <prefix> option of ./build-stage.sh. The -s
+parameter makes it skip the GNU Automake step, which should be fine
+for most people.
 
 Documentation (if not included in the tarball you downloaded) can be
 created if you have doxygen installed:
