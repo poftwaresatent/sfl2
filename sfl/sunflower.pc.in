@@ -6,6 +6,6 @@ includedir=  @includedir@
 Name:        sunflower
 Description: Mobile Robot Abstraction and Navigation Library
 Version:     @PACKAGE_VERSION@
-URL:         http://libbsunflower.sourceforge.net/
+URL:         http://libsunflower.sourceforge.net/
 Libs:        -L${libdir} -lsunflower
 Cflags:      -I${includedir}
