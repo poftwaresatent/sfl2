@@ -43,6 +43,7 @@
 #include <estar/Algorithm.hpp>
 #include <estar/graphics.hpp>
 #include <estar/numeric.hpp>
+#include <estar/pdebug.hpp>
 #include <npm/robox/expoparams.hpp>
 #include <npm/common/Lidar.hpp>
 #include <npm/common/HAL.hpp>

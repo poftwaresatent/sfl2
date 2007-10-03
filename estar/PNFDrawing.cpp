@@ -26,6 +26,7 @@
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
 #include <estar/util.hpp>
+#include <estar/pdebug.hpp>
 #include <estar/Facade.hpp>
 #include <pnf/Flow.hpp>
 #include <boost/shared_ptr.hpp>
