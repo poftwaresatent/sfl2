@@ -58,6 +58,7 @@
 #include <npm/common/MapperRefDrawing.hpp>
 #include <npm/estar/EstarDrawing.hpp>
 #include <iostream>
+#include <unistd.h>
 
 
 #ifdef NPM_DEBUG
@@ -483,10 +484,18 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		shared_ptr<SmartPlanProxy>
 			fast_proxy(new SmartPlanProxy(m_smart_algo.get(), true));
 		shared_ptr<MetaColorScheme> mcs(new MetaColorScheme());
+
+		shared_ptr<gfx::ColorCycle>
+			color_cycle(new gfx::ColorCycle(gfx::ColorScheme::Get(gfx::GREEN_PINK_BLUE),
+																			2*robot_radius,
+																			0.5*robot_radius));
+		
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
 																slow_proxy, EstarDrawing::META, mcs));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
 																slow_proxy, EstarDrawing::VALUE, m_smart_cs));
+		AddDrawing(new EstarDrawing(name + "_estar_value_cycle",
+																slow_proxy, EstarDrawing::VALUE, color_cycle));
 		AddDrawing(new EstarDrawing(name + "_estar_queue",
 																fast_proxy, EstarDrawing::QUEUE));
 		AddDrawing(new EstarDrawing(name + "_estar_upwind",
