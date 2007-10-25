@@ -259,15 +259,12 @@ namespace npm {
 	}
 	unsigned char const key(foo[0]);
 	m_active_layout.reset(new layout_t());
-	if ( ! m_default_layout) {
-	  cout << "setting default layout " << key << "\n";
+	if ( ! m_default_layout)
 	  m_default_layout = m_active_layout;
-	}
 	m_layout[key] = m_active_layout;
       }
       else if(token == "View"){
 	if ( ! m_active_layout) {
-	  cout << "setting un-named default layout\n";
 	  m_active_layout.reset(new layout_t());
 	  m_default_layout = m_active_layout;
 	}
@@ -513,7 +510,8 @@ namespace npm {
     default:
       layout_map_t::const_iterator il(m_layout.find(key));
       if (il != m_layout.end()) {
-	if (m_active_layout == m_default_layout)
+	if ((m_active_layout == m_default_layout)
+	    || (m_active_layout != il->second))
 	  m_active_layout = il->second;
 	else
 	  m_active_layout = m_default_layout;

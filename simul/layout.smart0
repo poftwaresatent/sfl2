@@ -63,6 +63,7 @@ Layout 3
      View planner
           Camera  Ter_true_zoom_camera
           Drawing Ter_estar_value
+          Drawing Ter_estar_queue
           Drawing world
           Drawing Ter_true_drawing
           Drawing Ter_goaldrawing
@@ -77,12 +78,13 @@ Layout 4
      View controller
           Camera  Ter_true_zoom_camera
           Drawing Ter_estar_meta
+          Drawing Ter_estar_queue
           Drawing world
           Drawing Ter_true_drawing
           Drawing Ter_goaldrawing
           Drawing Ter_trajectory
           Drawing Ter_carrot
           Drawing Ter_drive
-          Drawing Ter_arcs_cached
+          Drawing Ter_arcs_cachedKSUEHFD
           Window  0.0  0.0  1.0 1.0
           Border  0
