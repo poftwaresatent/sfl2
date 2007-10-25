@@ -30,7 +30,7 @@ Robot smart Ter
         Option wavefront_buffer     4
         Option estar_step         400
 
-        Option slow_drawing_enabled false
+        Option slow_drawing_enabled true
         Option gradplot_frequency   5
 
         Option planning_usecsleep  -10000

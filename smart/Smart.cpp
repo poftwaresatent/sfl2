@@ -161,6 +161,25 @@ private:
 };
 
 
+class CycleColorScheme: public gfx::ColorScheme {
+public:
+	CycleColorScheme(double period, double width)
+		: m_cc(new gfx::ColorCycle(gfx::ColorScheme::Get(gfx::INVERTED_GREY),
+															 period, width))
+	{}
+	
+	virtual void Set(double value) const {
+		if (value >= estar::infinity)
+			glColor3d(0.4, 0, 0);
+		else
+			m_cc->Set(value);
+	}
+	
+private:
+	shared_ptr<gfx::ColorCycle> m_cc;
+};
+
+
 class MetaColorScheme: public gfx::ColorScheme {
 public:
 	virtual void Set(double value) const {
@@ -484,18 +503,14 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		shared_ptr<SmartPlanProxy>
 			fast_proxy(new SmartPlanProxy(m_smart_algo.get(), true));
 		shared_ptr<MetaColorScheme> mcs(new MetaColorScheme());
-
-		shared_ptr<gfx::ColorCycle>
-			color_cycle(new gfx::ColorCycle(gfx::ColorScheme::Get(gfx::GREEN_PINK_BLUE),
-																			2*robot_radius,
-																			0.5*robot_radius));
-		
+		shared_ptr<CycleColorScheme> ccs(new CycleColorScheme(2*robot_radius,
+																													0.5*robot_radius));
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
 																slow_proxy, EstarDrawing::META, mcs));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
 																slow_proxy, EstarDrawing::VALUE, m_smart_cs));
 		AddDrawing(new EstarDrawing(name + "_estar_value_cycle",
-																slow_proxy, EstarDrawing::VALUE, color_cycle));
+																slow_proxy, EstarDrawing::VALUE, ccs));
 		AddDrawing(new EstarDrawing(name + "_estar_queue",
 																fast_proxy, EstarDrawing::QUEUE));
 		AddDrawing(new EstarDrawing(name + "_estar_upwind",
