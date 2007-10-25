@@ -23,6 +23,7 @@
 
 #include "BicycleDriveDrawing.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 #include <math.h>
 
@@ -36,12 +37,12 @@ namespace npm {
 
   BicycleDriveDrawing::
   BicycleDriveDrawing(const string & name,
-		      shared_ptr<const BicycleDrive> drive):
-    Drawing(name),
-    m_drive(drive),
-    m_wheelbase(drive->wheelbase),
-    m_wheelradius(drive->wheelradius),
-    m_axlewidth(drive->axlewidth)
+		      shared_ptr<const BicycleDrive> drive)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+      m_drive(drive),
+      m_wheelbase(drive->wheelbase),
+      m_wheelradius(drive->wheelradius),
+      m_axlewidth(drive->axlewidth)
   {
   }
 

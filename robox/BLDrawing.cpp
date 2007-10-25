@@ -23,13 +23,15 @@
 
 
 #include "BLDrawing.hpp"
-#include <npm/common/wrap_glu.hpp>
+#include "../common/wrap_glu.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/bband/Bubble.hpp>
 #include <iostream>
 
 
 using sfl::Bubble;
 using namespace std;
+using namespace npm;
 
 
 BLDrawing::
@@ -37,7 +39,7 @@ BLDrawing(const std::string & name,
 	    const sfl::BubbleList * bubble_list,
 	    mode_t mode,
 	    double intensity):
-  Drawing(name),
+  Drawing(name, Instance<UniqueManager<Drawing> >()),
   _bubble_list(bubble_list),
   _mode(mode),
   _intensity(intensity)

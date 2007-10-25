@@ -41,8 +41,10 @@ namespace npm {
     : public Camera
   {
   public:
-    StillCamera(const std::string & name, double x0, double y0,
-		double x1, double y1, bool autoregister);
+    StillCamera(const std::string & name,
+		double x0, double y0,
+		double x1, double y1,
+		boost::shared_ptr<Manager> manager);
     virtual void ConfigureView(View & view);
     double x0, y0, x1, y1;
   };

@@ -24,20 +24,21 @@
 #include "EstarDrawing.hpp"
 #include "PNFCamera.hpp"
 #include "CarrotDrawing.hpp"
-#include <npm/robox/OCamera.hpp>
-#include <npm/robox/ODrawing.hpp>
-#include <npm/robox/DODrawing.hpp>
-#include <npm/robox/DWDrawing.hpp>
-#include <npm/robox/expoparams.hpp>
-#include <npm/common/util.hpp>
-#include <npm/common/pdebug.hpp>
-#include <npm/common/Lidar.hpp>
-#include <npm/common/GoalInstanceDrawing.hpp>
-#include <npm/common/OdometryDrawing.hpp>
-#include <npm/common/StillCamera.hpp>
-#include <npm/common/HAL.hpp>
-#include <npm/common/CheatSheet.hpp>
-#include <npm/common/DiffDrive.hpp>
+#include "../robox/OCamera.hpp"
+#include "../robox/ODrawing.hpp"
+#include "../robox/DODrawing.hpp"
+#include "../robox/DWDrawing.hpp"
+#include "../robox/expoparams.hpp"
+#include "../common/util.hpp"
+#include "../common/pdebug.hpp"
+#include "../common/Lidar.hpp"
+#include "../common/GoalInstanceDrawing.hpp"
+#include "../common/OdometryDrawing.hpp"
+#include "../common/StillCamera.hpp"
+#include "../common/HAL.hpp"
+#include "../common/CheatSheet.hpp"
+#include "../common/DiffDrive.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
@@ -246,11 +247,12 @@ CreateGfxStuff(const std::string & name)
 			    0,
 			    m_dynamicWindow->Dimension(),
 			    m_dynamicWindow->Dimension(),
-			    true));
+			    Instance<UniqueManager<Camera> >()));
   AddCamera(new OCamera(name + "_ocamera", *m_dynamicWindow));
   double a, b, c, d;
   m_dynamicWindow->GetDistanceObjective().GetRange(a, b, c, d);
-  AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d, true));
+  AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
+			    Instance<UniqueManager<Camera> >()));
   AddCamera(new PNFCamera(name + "_pnfcamera", this));
 }
 

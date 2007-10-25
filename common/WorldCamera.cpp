@@ -36,6 +36,7 @@
 #include "World.hpp"
 #include "BBox.hpp"
 #include "View.hpp"
+#include "Manager.hpp"
 
 
 using namespace boost;
@@ -47,7 +48,7 @@ namespace npm {
   
   WorldCamera::
   WorldCamera(const string & name, const World & world)
-    : Camera(name, true), m_world(world)
+    : Camera(name, Instance<UniqueManager<Camera> >()), m_world(world)
   {
   }
   

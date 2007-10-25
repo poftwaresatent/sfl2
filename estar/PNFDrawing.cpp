@@ -21,7 +21,8 @@
 #include "PNFDrawing.hpp"
 #include "PNF.hpp"
 #include "Esbot.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
@@ -42,6 +43,7 @@
 
 
 using namespace sfl;
+using namespace npm;
 using namespace boost;
 
 
@@ -83,7 +85,7 @@ PNFDrawing(const std::string & name,
 	   Esbot * bot,
 	   mode_t _mode,
 	   what_t _what)
-  : Drawing(name),
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
     mode(_mode),
     what(_what),
     draw_trace(false),

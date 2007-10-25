@@ -45,17 +45,9 @@ namespace npm {
   
   
   Drawing::
-  Drawing(const string & name):
-    Manageable(name)
+  Drawing(const string & name, boost::shared_ptr<Manager> manager)
+    : Manageable(name, manager)
   {
-    Instance<UniqueManager<Drawing> >()->Attach(this);
-  }
-  
-  
-  Drawing::
-  ~Drawing()
-  {
-    Instance<UniqueManager<Drawing> >()->Detach(this);
   }
   
 }

@@ -38,7 +38,13 @@ namespace npm {
   class Manageable
   {
   public:
-    Manageable(const std::string & name);
+    explicit Manageable(const std::string & name);
+    
+    /** Automatically registers itself with the given Manager, and
+	will deregister upon destruction. */
+    Manageable(const std::string & name,
+	       boost::shared_ptr<Manager> manager);
+    
     virtual ~Manageable();
     
     virtual std::ostream & Print(std::ostream & os) const;
@@ -47,7 +53,9 @@ namespace npm {
     std::ostream & operator << (std::ostream & os, const Manageable & m);
     
     const std::string name;
-    boost::shared_ptr<Manager> manager;	// avoid calling destroyed singletons
+
+  protected:
+    boost::shared_ptr<Manager> const m_manager;
   };
   
 }

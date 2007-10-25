@@ -54,21 +54,13 @@ namespace npm {
     
   
   View::
-  View(const std::string & name):
-    Manageable(name),
-    camera(0),
-    savecount(0),
-    mv_enable(false)
+  View(const std::string & name, boost::shared_ptr<Manager> manager)
+    : Manageable(name, manager),
+      camera(0),
+      savecount(0),
+      mv_enable(false)
   {
     Configure(0, 0, 1, 1);
-    Instance<UniqueManager<View> >()->Attach(this);
-  }
-  
-  
-  View::
-  ~View()
-  {
-    Instance<UniqueManager<View> >()->Detach(this);
   }
   
   

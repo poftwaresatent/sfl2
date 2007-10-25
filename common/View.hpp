@@ -58,8 +58,8 @@ namespace npm {
   public:
     typedef enum { N, NE, E, SE, S, SW, W, NW, CENTER } anchor_t;
     
-    View(const std::string & name);
-    ~View();
+    /** View instances always need a Manager. */
+    View(const std::string & name, boost::shared_ptr<Manager> manager);
     
     void Configure(/// x-coordinate of lower-left corner, range = 0 to 1
 		   double x,

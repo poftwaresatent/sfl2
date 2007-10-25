@@ -24,21 +24,23 @@
 
 #include "BBDrawing.hpp"
 #include "BLDrawing.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <iostream>
 
 
 using sfl::BubbleBand;
 using namespace std;
+using namespace npm;
 
 
 BBDrawing::
 BBDrawing(const std::string & name,
 	  const BubbleBand & bubble_band,
-	  mode_t mode):
-  Drawing(name),
-  _bubble_band(bubble_band),
-  _mode(mode)
+	  mode_t mode)
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    _bubble_band(bubble_band),
+    _mode(mode)
 {
 }
 

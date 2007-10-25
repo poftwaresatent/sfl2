@@ -23,15 +23,19 @@
 
 
 #include "DWDrawing.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/dwa/DynamicWindow.hpp>
+
+
+using namespace npm;
 
 
 DWDrawing::
 DWDrawing(const std::string & name,
-	  const sfl::DynamicWindow & dwa):
-  Drawing(name),
-  m_dwa(dwa)
+	  const sfl::DynamicWindow & dwa)
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    m_dwa(dwa)
 {
 }
 

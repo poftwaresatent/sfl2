@@ -23,17 +23,19 @@
 
 
 #include "MPDrawing.hpp"
-#include <npm/common/GoalInstanceDrawing.hpp>
+#include "../common/GoalInstanceDrawing.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/api/MotionPlanner.hpp>
 
 
 using sfl::Goal;
+using namespace npm;
 
 
 MPDrawing::
 MPDrawing(const std::string & name,
 	  const sfl::MotionPlanner & mp):
-  Drawing(name),
+  Drawing(name, Instance<UniqueManager<Drawing> >()),
   m_mp(mp)
 {
 }

@@ -26,10 +26,14 @@
 #define NPM_THREAD_DRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
-#include <npm/common/Camera.hpp>
-#include <npm/common/wrap_gl.hpp>
-#include <npm/common/View.hpp>
+#include "../common/Drawing.hpp"
+#include "../common/Camera.hpp"
+#include "../common/wrap_gl.hpp"
+#include "../common/View.hpp"
+#include "../common/Manager.hpp"
+
+
+using namespace npm;
 
 
 namespace foo {
@@ -58,7 +62,9 @@ public:
 	double m_max_delta_ms, m_min_delta_ms;
 	
 	ThreadDrawing(const std::string & name, const Thread * thread)
-		: Drawing(name), Camera(name, true), m_thread(thread)
+		: Drawing(name, Instance<UniqueManager<Drawing> >()),
+			Camera(name, Instance<UniqueManager<Camera> >()),
+			m_thread(thread)
 	{ }
 	
 	virtual void Draw() {

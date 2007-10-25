@@ -54,9 +54,7 @@ namespace npm {
       return 0;
     }
     Manageable * oldentry(ic->second);
-    catalog.insert(make_pair(entry->name, entry));
-    if(oldentry == entry)
-      return 0;
+    ic->second = entry;
     return oldentry;
   }
   

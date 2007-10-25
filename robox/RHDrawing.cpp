@@ -24,19 +24,21 @@
 
 #include "RHDrawing.hpp"
 #include "BLDrawing.hpp"
+#include "../common/Manager.hpp"
 #include <iostream>
 
 
 using sfl::ReplanHandler;
 using sfl::BubbleList;
 using namespace std;
+using namespace npm;
 
 
 RHDrawing::
 RHDrawing(const string & name,
 	  const ReplanHandler * replan_handler,
 	  mode_t mode):
-  Drawing(name),
+  Drawing(name, Instance<UniqueManager<Drawing> >()),
   _replan_handler(replan_handler),
   _mode(mode)
 {

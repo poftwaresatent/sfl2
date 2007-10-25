@@ -252,7 +252,7 @@ namespace npm {
       if(token == "View"){
 	string foo;
 	config >> foo;
-	view = new View(foo);
+	view = new View(foo, Instance<UniqueManager<View> >());
       }
       else if(token == "Camera"){
 	string foo;

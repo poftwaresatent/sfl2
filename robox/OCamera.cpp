@@ -23,7 +23,8 @@
 
 
 #include "OCamera.hpp"
-#include <npm/common/View.hpp>
+#include "../common/View.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/dwa/DynamicWindow.hpp>
 
 
@@ -32,9 +33,9 @@ using namespace npm;
 
 OCamera::
 OCamera(const std::string & name,
-	const sfl::DynamicWindow & dwa):
-  Camera(name, true),
-  m_dwa(dwa)
+	const sfl::DynamicWindow & dwa)
+  : Camera(name, Instance<UniqueManager<Camera> >()),
+    m_dwa(dwa)
 {
 }
 

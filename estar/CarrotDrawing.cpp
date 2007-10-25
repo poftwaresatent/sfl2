@@ -20,8 +20,9 @@
 
 #include "CarrotDrawing.hpp"
 #include "PNF.hpp"
-#include <npm/common/wrap_gl.hpp>
-#include <npm/common/wrap_glu.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/wrap_glu.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/util.hpp>
@@ -34,6 +35,7 @@
 
 
 using namespace sfl;
+using namespace npm;
 using namespace estar;
 using namespace boost;
 
@@ -42,7 +44,7 @@ CarrotDrawing::
 CarrotDrawing(const std::string & name,
 	      shared_ptr<CarrotProxy> proxy,
 	      size_t _gradplot_frequency)
-  : Drawing(name),
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
     gradplot_frequency(_gradplot_frequency),
     m_proxy(proxy)
 {

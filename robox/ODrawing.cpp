@@ -23,17 +23,21 @@
 
 
 #include "ODrawing.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/dwa/DynamicWindow.hpp>
+
+
+using namespace npm;
 
 
 ODrawing::
 ODrawing(const std::string & name,
 	 const sfl::Objective & obj,
-	 const sfl::DynamicWindow & dwa):
-  Drawing(name),
-  m_obj(obj),
-  m_dwa(dwa)
+	 const sfl::DynamicWindow & dwa)
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    m_obj(obj),
+    m_dwa(dwa)
 {
 }
 

@@ -33,9 +33,15 @@ namespace npm {
   
   
   StillCamera::
-  StillCamera(const string & name, double _x0, double _y0,
-	      double _x1, double _y1, bool autoregister)
-    : Camera(name, autoregister), x0(_x0), y0(_y0), x1(_x1), y1(_y1)
+  StillCamera(const string & name,
+	      double _x0, double _y0,
+	      double _x1, double _y1,
+	      boost::shared_ptr<Manager> manager)
+    : Camera(name, manager),
+      x0(_x0),
+      y0(_y0),
+      x1(_x1),
+      y1(_y1)
   {
   }
   

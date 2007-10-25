@@ -27,6 +27,7 @@
 
 
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <string>
 #include <map>
 #include <iosfwd>
@@ -49,8 +50,10 @@ namespace npm {
     virtual ~Manager() {}
     
     /**
-       \note entries with empty names "" are silently ignored   
-       \return any different entity previously attached under the same name
+       \note entries with empty names "" are silently ignored
+       
+       \return any (different or same) entity previously attached
+       under the same name
     */
     Manageable * Attach(Manageable * entry);
     
@@ -65,6 +68,19 @@ namespace npm {
     Manageable * Retrieve(const std::string & name) const;
     
     void PrintCatalog(std::ostream & os) const;
+    
+    /** Apply a functor to all managed objects which are of the
+	specified Subclass type (specializing by subclass allows
+	Walker to use e.g. method overloading). The Walker class has
+	to provide a method 'void Walk(Subclass *)'. */
+    template<class Walker, class Subclass>
+    void Walk(Walker walker) {
+      for(catalog_t::iterator ic(catalog.begin()); ic != catalog.end(); ++ic) {
+	Subclass * sc(dynamic_cast<Subclass *>(ic->second));
+	if (sc)
+	  walker.Walk(sc);
+      }
+    }
     
   protected:
     typedef std::map<std::string, Manageable *> catalog_t;
@@ -94,10 +110,8 @@ namespace npm {
     { return dynamic_cast<Subclass *>(Manager::Retrieve(name)); }
     
     template<class Walker>
-    void Walk(Walker walker){
-      for(catalog_t::iterator ic(catalog.begin()); ic != catalog.end(); ++ic)
-	walker.Walk(dynamic_cast<Subclass *>(ic->second));
-    }
+    void Walk(Walker walker)
+    { Manager::Walk<Walker, Subclass>(walker); }
   };
   
 }

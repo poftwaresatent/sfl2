@@ -23,7 +23,8 @@
 
 
 #include "GridLayerDrawing.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/gplan/NF1.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
 #include <sfl/gplan/GridFrame.hpp>
@@ -33,11 +34,13 @@
 using namespace sfl;
 using namespace boost;
 using namespace std;
+using namespace npm;
 
 
 GridLayerDrawing::
 GridLayerDrawing(const string & name, const NF1 & _nf1, bool _global)
-  : Drawing(name), nf1(_nf1), global(_global)
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    nf1(_nf1), global(_global)
 {
 }
 

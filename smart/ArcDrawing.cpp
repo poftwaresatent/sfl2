@@ -25,14 +25,15 @@
 
 #include "ArcDrawing.hpp"
 #include "Smart.hpp"
-#include <npm/common/wrap_gl.hpp>
-#include <npm/common/pdebug.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/pdebug.hpp"
+#include "../common/Manager.hpp"
 #include <asl/ArcControl.hpp>
-//#include <sfl/util/Frame.hpp>
 
 
 using namespace asl;
 using namespace sfl;
+using namespace npm;
 using namespace boost;
 
 
@@ -41,7 +42,7 @@ ArcDrawing(const std::string & name,
 					 Smart * smart,
 					 bool enabled,
 					 bool recomp_status)
-  : Drawing(name),
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
     m_smart(smart),
     m_enabled(enabled),
     m_recomp_status(recomp_status)

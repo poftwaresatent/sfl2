@@ -25,6 +25,7 @@
 
 #include "TraversabilityDrawing.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
@@ -50,7 +51,8 @@ namespace npm {
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
 												shared_ptr<TravProxyAPI> proxy)
-    : Drawing(name), m_proxy(proxy)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+			m_proxy(proxy)
   {
   }
   
@@ -58,7 +60,7 @@ namespace npm {
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
 												TravProxyAPI * proxy)
-    : Drawing(name), m_proxy(proxy)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()), m_proxy(proxy)
   {
   }
   

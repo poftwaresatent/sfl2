@@ -24,6 +24,7 @@
 
 #include "OdometryDrawing.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Pose.hpp>
 
@@ -39,10 +40,10 @@ namespace npm {
   OdometryDrawing::
   OdometryDrawing(const string & name,
 		  const Odometry & odometry,
-		  double size):
-    Drawing(name),
-    m_odometry(odometry),
-    m_size(size)
+		  double size)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+      m_odometry(odometry),
+      m_size(size)
   {
   }
 

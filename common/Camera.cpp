@@ -45,21 +45,9 @@ namespace npm {
   
   
   Camera::
-  Camera(const string & name,
-	 bool autoregister):
-    Manageable(name),
-    _autoregister(autoregister)
+  Camera(const string & name, boost::shared_ptr<Manager> manager)
+    : Manageable(name, manager)
   {
-    if(autoregister)
-      Instance<UniqueManager<Camera> >()->Attach(this);
-  }
-  
-
-  Camera::
-  ~Camera()
-  {
-    if(_autoregister)
-      Instance<UniqueManager<Camera> >()->Detach(this);
   }
 
 }

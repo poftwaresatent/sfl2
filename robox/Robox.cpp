@@ -33,15 +33,16 @@
 #include "BBDrawing.hpp"
 #include "GridLayerCamera.hpp"
 #include "GridLayerDrawing.hpp"
-#include <npm/common/World.hpp>
-#include <npm/common/Globals.hpp>
-#include <npm/common/OdometryDrawing.hpp>
-#include <npm/common/StillCamera.hpp>
-#include <npm/common/HAL.hpp>
-#include <npm/common/DiffDrive.hpp>
-#include <npm/common/RobotDescriptor.hpp>
-#include <npm/common/Lidar.hpp>
-#include <npm/common/util.hpp>
+#include "../common/World.hpp"
+#include "../common/Globals.hpp"
+#include "../common/OdometryDrawing.hpp"
+#include "../common/StillCamera.hpp"
+#include "../common/HAL.hpp"
+#include "../common/DiffDrive.hpp"
+#include "../common/RobotDescriptor.hpp"
+#include "../common/Lidar.hpp"
+#include "../common/util.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/api/Odometry.hpp>
@@ -274,13 +275,14 @@ CreateGfxStuff(const string & name)
 			    0,
 			    m_dynamicWindow->Dimension(),
 			    m_dynamicWindow->Dimension(),
-			    true));
+			    Instance<UniqueManager<Camera> >()));
   AddCamera(new OCamera(name + "_ocamera", *m_dynamicWindow));
   AddCamera(new GridLayerCamera(name + "_local_glcamera",
 				m_bubbleBand->GetReplanHandler()->GetNF1()));
   double a, b, c, d;
   m_dynamicWindow->GetDistanceObjective().GetRange(a, b, c, d);
-  AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d, true));
+  AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
+			    Instance<UniqueManager<Camera> >()));
 }
 
 

@@ -20,7 +20,8 @@
 
 
 #include "EstarDrawing.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
@@ -35,6 +36,7 @@
 
 
 using namespace sfl;
+using namespace npm;
 using namespace boost;
 using namespace std;
 
@@ -43,7 +45,7 @@ EstarDrawing::
 EstarDrawing(const std::string & name,
 	     shared_ptr<PlanProxy> proxy,
 	     what_t _what)
-  : Drawing(name),
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
     what(_what),
     m_proxy(proxy)
 {
@@ -55,7 +57,7 @@ EstarDrawing(const std::string & name,
 	     shared_ptr<PlanProxy> proxy,
 	     what_t _what,
 	     shared_ptr<gfx::ColorScheme> custom_cs)
-  : Drawing(name),
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
     what(_what),
     m_proxy(proxy),
     m_custom_cs(custom_cs)

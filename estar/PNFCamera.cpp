@@ -21,7 +21,8 @@
 #include "PNFCamera.hpp"
 #include "Esbot.hpp"
 #include "PNF.hpp"
-#include <npm/common/View.hpp>
+#include "../common/View.hpp"
+#include "../common/Manager.hpp"
 #include <pnf/Flow.hpp>
 
 
@@ -31,7 +32,7 @@ using namespace npm;
 PNFCamera::
 PNFCamera(const std::string & name,
 	  Esbot * bot)
-  : Camera(name, true),
+  : Camera(name, Instance<UniqueManager<Camera> >()),
     m_bot(bot)
 {
 }

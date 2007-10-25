@@ -25,6 +25,7 @@
 #include "SharpDrawing.hpp"
 #include "Sharp.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/util/Ray.hpp>
 
 
@@ -38,7 +39,7 @@ namespace npm {
 
   SharpDrawing::
   SharpDrawing(const string & name, const Sharp & sharp)
-    : Drawing(name), m_sharp(sharp)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()), m_sharp(sharp)
   {
   }
 

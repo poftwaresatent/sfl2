@@ -23,8 +23,9 @@
 
 
 #include "GridLayerCamera.hpp"
+#include "../common/View.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/gplan/NF1.hpp>
-#include <npm/common/View.hpp>
 
 
 using namespace npm;
@@ -35,7 +36,7 @@ using namespace std;
 
 GridLayerCamera::
 GridLayerCamera(const string & name, const NF1 & _nf1)
-  : Camera(name, true),
+  : Camera(name, Instance<UniqueManager<Camera> >()),
     nf1(_nf1)
 {
 }

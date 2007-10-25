@@ -43,13 +43,18 @@ namespace npm {
     : public Manageable
   {
   public:
-    Camera(const std::string & name,
-	   /** Whether to automatically register with the
-	       CameraManager. This can be problematic if you use proxies
-	       e.g. for lazy initialization, because all cameras have to
-	       be registered before the layout config file is parsed. */
-	   bool autoregister);
-    virtual ~Camera();
+    /**
+       Camera instances always need a Manager. You can typically just
+       use the singleton instance by passing in
+       'Instance<UniqueManager<Camera> >()'.
+       
+       \note Well, you can pass in a smart null pointer to avoid that
+       if you must. Automatically registering can be problematic if
+       you use proxies e.g. for lazy initialization, because all
+       cameras have to be registered before the layout config file is
+       parsed.
+    */
+    Camera(const std::string & name, boost::shared_ptr<Manager> manager);
     
     /**
        Configure a View to the Camera's bounding box.
@@ -60,9 +65,6 @@ namespace npm {
        adjustable zoom.
     */
     virtual void ConfigureView(View & view) = 0;
-    
-  protected:
-    const bool _autoregister;
   };
 
 }

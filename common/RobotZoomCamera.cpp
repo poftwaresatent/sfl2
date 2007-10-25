@@ -25,6 +25,7 @@
 #include "RobotZoomCamera.hpp"
 #include "RobotServer.hpp"
 #include "View.hpp"
+#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -36,7 +37,8 @@ namespace npm {
 
   RobotZoomCamera::
   RobotZoomCamera(const RobotServer * robot, double radius)
-    : Camera(robot->GetName() + "_true_zoom_camera", true),
+    : Camera(robot->GetName() + "_true_zoom_camera",
+	     Instance<UniqueManager<Camera> >()),
       m_robot(robot),
       m_radius(radius)
   {

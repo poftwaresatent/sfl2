@@ -26,6 +26,7 @@
 #include "World.hpp"
 #include "Object.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/util/Line.hpp>
 
 
@@ -39,7 +40,8 @@ namespace npm {
   
   WorldDrawing::
   WorldDrawing(const string & name, const World & world)
-    : Drawing(name), m_world(world)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+      m_world(world)
   {
   }
   

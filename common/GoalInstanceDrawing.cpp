@@ -24,6 +24,7 @@
 
 #include "GoalInstanceDrawing.hpp"
 #include "wrap_glu.hpp"
+#include "Manager.hpp"
 #include <sfl/api/Goal.hpp>
 
 
@@ -36,7 +37,7 @@ namespace npm {
   GoalInstanceDrawing::
   GoalInstanceDrawing(const std::string & name,
 		      const sfl::Goal & goal)
-    : Drawing(name),
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
       m_goal(goal)
   {
   }

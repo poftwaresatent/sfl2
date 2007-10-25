@@ -20,8 +20,9 @@
 
 #include "PathDrawing.hpp"
 #include "Smart.hpp"
-#include <npm/common/wrap_gl.hpp>
-#include <npm/common/wrap_glu.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/wrap_glu.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <asl/path_tracking.hpp>
@@ -34,6 +35,7 @@
 
 
 using namespace sfl;
+using namespace npm;
 using namespace estar;
 using namespace boost;
 
@@ -42,7 +44,7 @@ PathDrawing::
 PathDrawing(const std::string & name,
 	    const Smart * smart,
 	    size_t _gradplot_frequency)
-  : Drawing(name),
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
     gradplot_frequency(_gradplot_frequency),
     m_smart(smart)
 {

@@ -25,6 +25,7 @@
 #include "MapperRefDrawing.hpp"
 #include "Random.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/gplan/Mapper2d.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/vec2d.hpp>
@@ -51,7 +52,7 @@ namespace npm {
   MapperRefDrawing(const std::string & name,
 									 boost::shared_ptr<const sfl::Mapper2d> mapper,
 									 bool draw_link)
-    : Drawing(name),
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
       m_mapper(mapper),
 			m_draw_link(draw_link)
   {

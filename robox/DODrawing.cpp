@@ -23,7 +23,8 @@
 
 
 #include "DODrawing.hpp"
-#include <npm/common/wrap_gl.hpp>
+#include "../common/wrap_gl.hpp"
+#include "../common/Manager.hpp"
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
@@ -32,6 +33,7 @@
 
 
 using namespace sfl;
+using namespace npm;
 
 
 static void DrawHull(sfl::HullIterator ihull,
@@ -43,11 +45,11 @@ DODrawing::
 DODrawing(const std::string & name,
 	  const sfl::DistanceObjective & distobj,
 	  const sfl::DynamicWindow & dwa,
-	  const sfl::RobotModel & rm):
-  Drawing(name),
-  m_distobj(distobj),
-  m_dwa(dwa),
-  m_rm(rm)
+	  const sfl::RobotModel & rm)
+  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    m_distobj(distobj),
+    m_dwa(dwa),
+    m_rm(rm)
 {
 }
 

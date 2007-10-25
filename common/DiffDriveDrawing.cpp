@@ -24,6 +24,7 @@
 
 #include "DiffDriveDrawing.hpp"
 #include "wrap_gl.hpp"
+#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -37,10 +38,10 @@ namespace npm {
 
   DiffDriveDrawing::
   DiffDriveDrawing(const string & name,
-		   shared_ptr<const DiffDrive> drive):
-    Drawing(name),
-    m_drive(drive),
-    m_halfwheelbase(drive->wheelbase / 2)
+		   shared_ptr<const DiffDrive> drive)
+    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+      m_drive(drive),
+      m_halfwheelbase(drive->wheelbase / 2)
   {
   }
 

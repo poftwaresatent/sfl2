@@ -23,6 +23,7 @@
 
 
 #include "Manageable.hpp"
+#include "Manager.hpp"
 #include <iostream>
 
 
@@ -37,11 +38,23 @@ namespace npm {
     : name(_name)
   {
   }
+
+
+  Manageable::
+  Manageable(const string & _name,
+	     boost::shared_ptr<Manager> manager)
+    : name(_name),
+      m_manager(manager)
+  {
+    manager->Attach(this);
+  }
   
   
   Manageable::
   ~Manageable()
   {
+    if (m_manager)
+      m_manager->Detach(this);
   }
   
   
@@ -50,7 +63,7 @@ namespace npm {
   {
     return os << name;
   }
-
+  
   
   ostream & operator << (ostream & os, const Manageable & m)
   {

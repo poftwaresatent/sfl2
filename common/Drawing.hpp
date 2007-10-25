@@ -46,8 +46,13 @@ namespace npm {
     : public Manageable
   {
   public:
-    Drawing(const std::string & name);
-    virtual ~Drawing();
+    /**
+       Drawing instances always need a Manager. You can typically just
+       use the singleton instance by passing in
+       'Instance<UniqueManager<Drawing> >()' which is declared in
+       Manager.hpp.
+    */
+    Drawing(const std::string & name, boost::shared_ptr<Manager> manager);
     
     /**
        The whole idea of this class is to have subclasses define this
