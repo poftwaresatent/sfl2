@@ -88,23 +88,13 @@ namespace npm {
   };
   
   
-  template<class MgrSingleton>
-  boost::shared_ptr<MgrSingleton> Instance();
-  
-  
   template<class Subclass>
-  class UniqueManager
+  class SubManager
     : public Manager
   {
-  private:
-    friend boost::shared_ptr<UniqueManager> Instance<UniqueManager>();
-    UniqueManager() {}
-    
   public:
-    Subclass * Attach(Subclass * entry){
-      entry->manager = Instance<UniqueManager>();
-      return dynamic_cast<Subclass *>(Manager::Attach(entry));
-    }
+    Subclass * Attach(Subclass * entry)
+    { return dynamic_cast<Subclass *>(Manager::Attach(entry)); }
     
     Subclass * Retrieve(const std::string & name) const
     { return dynamic_cast<Subclass *>(Manager::Retrieve(name)); }
@@ -112,6 +102,20 @@ namespace npm {
     template<class Walker>
     void Walk(Walker walker)
     { Manager::Walk<Walker, Subclass>(walker); }
+  };
+  
+  
+  template<class MgrSingleton>
+  boost::shared_ptr<MgrSingleton> Instance();
+  
+  
+  template<class Subclass>
+  class UniqueManager
+    : public SubManager<Subclass>
+  {
+  private:
+    friend boost::shared_ptr<UniqueManager> Instance<UniqueManager>();
+    UniqueManager() {}
   };
   
 }

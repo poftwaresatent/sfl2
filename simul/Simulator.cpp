@@ -241,7 +241,7 @@ namespace npm {
   {
     ifstream config(filename.c_str());
     string token;
-    View * view(0);
+    view_ptr view;
     ostringstream warnings;
   
     while(config >> token){
@@ -249,10 +249,32 @@ namespace npm {
 	config.ignore(numeric_limits<streamsize>::max(), '\n');
 	continue;
       }
-      if(token == "View"){
+      if (token == "Layout") {
 	string foo;
 	config >> foo;
-	view = new View(foo, Instance<UniqueManager<View> >());
+	if (foo.empty()) {
+	  cerr << "ERROR in Simulator::InitLayout(): empty key for Layout \""
+	       << token << "\"\n";
+	  exit(EXIT_FAILURE);
+	}
+	unsigned char const key(foo[0]);
+	m_active_layout.reset(new layout_t());
+	if ( ! m_default_layout) {
+	  cout << "setting default layout " << key << "\n";
+	  m_default_layout = m_active_layout;
+	}
+	m_layout[key] = m_active_layout;
+      }
+      else if(token == "View"){
+	if ( ! m_active_layout) {
+	  cout << "setting un-named default layout\n";
+	  m_active_layout.reset(new layout_t());
+	  m_default_layout = m_active_layout;
+	}
+	string foo;
+	config >> foo;
+	view.reset(new View(foo, m_active_layout));
+	m_views.push_back(view);
       }
       else if(token == "Camera"){
 	string foo;
@@ -337,15 +359,26 @@ namespace npm {
 	cerr << "ERROR in Simulator::InitLayout():\n";
       else
 	cerr << "WARNING in Simulator::InitLayout():\n";
-      cerr << warnings.str();
-      Instance<UniqueManager<Drawing> >()->PrintCatalog(cerr);
+      cerr << warnings.str()
+	   << "\n==================================================\n"
+	   << "CAMERAS:\n\n";
       Instance<UniqueManager<Camera> >()->PrintCatalog(cerr);
+      cerr << "\n==================================================\n"
+	   << "DRAWINGS:\n\n";
+      Instance<UniqueManager<Drawing> >()->PrintCatalog(cerr);
       if(fatal_warnings)
 	exit(EXIT_FAILURE);
     }
+    
+    if ( ! m_default_layout) {
+      cerr << "ERROR in Simulator::InitLayout(): no default layout\n"
+	   << "  you must specify at least one View\n";
+      exit(EXIT_FAILURE);
+    }    
+    m_active_layout = m_default_layout;
   }
-
-
+  
+  
   void Simulator::
   Init()
   {
@@ -360,15 +393,23 @@ namespace npm {
     Mutex::sentry sentry(m_mutex);
     m_width = width;
     m_height = height;
-    Instance<UniqueManager<View> >()->Walk(View::ReshapeWalker(width, height));
+    
+    View::ReshapeWalker const walker(width, height);
+    for (layout_map_t::iterator il(m_layout.begin());
+	 il != m_layout.end(); ++il)
+      il->second->Walk(walker);
+    // It's a bit inefficient to reshape m_default_layout possibly
+    // twice, but in case there is only a default layout it never gets
+    // put into the m_layout map and we still have to update it.
+    m_default_layout->Walk(walker);
   }
-
-
+  
+  
   void Simulator::
   Draw()
   {
     Mutex::sentry sentry(m_mutex);
-    Instance<UniqueManager<View> >()->Walk(View::DrawWalker());
+    m_active_layout->Walk(View::DrawWalker());
   }
 
 
@@ -469,6 +510,14 @@ namespace npm {
     case 'q':
       cout << "\nthanks, see you!\n";
       exit(EXIT_SUCCESS);
+    default:
+      layout_map_t::const_iterator il(m_layout.find(key));
+      if (il != m_layout.end()) {
+	if (m_active_layout == m_default_layout)
+	  m_active_layout = il->second;
+	else
+	  m_active_layout = m_default_layout;
+      }
     }
   }
 

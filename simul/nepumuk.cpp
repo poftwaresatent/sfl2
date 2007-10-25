@@ -212,6 +212,7 @@ void keyboard(unsigned char key,
 	      int y)
 {
   simulator->Keyboard(key, x, y);
+  glutPostRedisplay();
 }
 
 

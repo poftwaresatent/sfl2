@@ -26,6 +26,8 @@
 #define NPM_SIMULATOR_HPP
 
 
+#include <npm/common/Manager.hpp>
+#include <npm/common/View.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -79,6 +81,19 @@ namespace npm {
     int m_width, m_height;
     double m_timestep;
     boost::shared_ptr<sfl::Mutex> m_mutex;  
+    
+    typedef SubManager<View> layout_t;
+    typedef boost::shared_ptr<layout_t> layout_ptr;
+    typedef std::map<unsigned char, layout_ptr> layout_map_t;
+    
+    layout_map_t m_layout;
+    layout_ptr m_active_layout;
+    layout_ptr m_default_layout;
+    
+    typedef boost::shared_ptr<View> view_ptr;
+    typedef std::vector<view_ptr> views_t;
+    
+    views_t m_views;
   };
 
 }
