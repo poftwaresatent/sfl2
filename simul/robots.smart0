@@ -27,7 +27,7 @@ Robot smart Ter
         Option carrot_stepsize      0.4
         Option carrot_maxnsteps   150
         Option replan_distance      5
-        Option wavefront_buffer     4
+        Option wavefront_buffer   100
         Option estar_step         400
 
         Option slow_drawing_enabled true
