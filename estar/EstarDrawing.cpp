@@ -83,19 +83,22 @@ Draw()
   glScaled(gframe->Delta(), gframe->Delta(), 1);
   
   const gfx::ColorScheme * cs;
-  bool autoscale_value;
+	bool autoscale_value;
   if(m_custom_cs){
     cs = m_custom_cs.get();
-    autoscale_value = false;
+		autoscale_value = false;
   }
   else{
     cs = gfx::ColorScheme::Get(gfx::GREY_WITH_SPECIAL);
-    autoscale_value = true;
+		autoscale_value = true;
   }
   
   switch(what){
   case VALUE:
     gfx::draw_grid_value(*facade, cs, autoscale_value);
+    break;
+  case RHS:
+    gfx::draw_grid_rhs(*facade, cs);
     break;
   case META:
     gfx::draw_grid_meta(*facade, cs);

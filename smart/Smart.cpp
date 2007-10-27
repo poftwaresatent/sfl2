@@ -511,6 +511,10 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																slow_proxy, EstarDrawing::VALUE, m_smart_cs));
 		AddDrawing(new EstarDrawing(name + "_estar_value_cycle",
 																slow_proxy, EstarDrawing::VALUE, ccs));
+		AddDrawing(new EstarDrawing(name + "_estar_rhs",
+																slow_proxy, EstarDrawing::RHS, m_smart_cs));
+		AddDrawing(new EstarDrawing(name + "_estar_rhs_cycle",
+																slow_proxy, EstarDrawing::RHS, ccs));
 		AddDrawing(new EstarDrawing(name + "_estar_queue",
 																fast_proxy, EstarDrawing::QUEUE));
 		AddDrawing(new EstarDrawing(name + "_estar_upwind",

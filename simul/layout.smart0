@@ -88,3 +88,29 @@ Layout 4
           Drawing Ter_arcs_cached
           Window  0.0  0.0  1.0 1.0
           Border  0
+
+Layout 5
+     View value
+          Camera  world
+          Drawing Ter_estar_value
+          Drawing Ter_estar_queue
+          Window  0.0  0.0  0.5  0.5
+          Border  1
+     View rhs
+          Camera  world
+          Drawing Ter_estar_rhs
+          Drawing Ter_estar_queue
+          Window  0.0  0.5  0.5  1.0
+          Border  1
+     View value_cycle
+          Camera  world
+          Drawing Ter_estar_value_cycle
+          Drawing Ter_estar_queue
+          Window  0.5  0.0  1.0  0.5
+          Border  1
+     View rhs_cycle
+          Camera  world
+          Drawing Ter_estar_rhs_cycle
+          Drawing Ter_estar_queue
+          Window  0.5  0.5  1.0  1.0
+          Border  1

@@ -53,7 +53,7 @@ class EstarDrawing
   : public npm::Drawing
 {
 public:
-  typedef enum { VALUE, META, QUEUE, UPWIND, OBST, STATUS } what_t;
+  typedef enum { VALUE, RHS, META, QUEUE, UPWIND, OBST, STATUS } what_t;
   
   what_t what;
   
