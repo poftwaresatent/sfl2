@@ -1,5 +1,6 @@
 Robot smart Ter
-	Pose 35  32    0.2
+	Pose 40  40    0.2
+#	Pose 35  32    0.2
 	Option goalmgr_filename goals.smart0
 		
 	Option camera_zoom         15
@@ -8,7 +9,8 @@ Robot smart Ter
         Option front_mount_y       0.0
         Option front_mount_theta   0.0
         Option front_nscans      180
-        Option front_rhomax       50
+        Option front_rhomax       80
+#        Option front_rhomax       50
 
         Option model_wheelbase     1.812
         Option model_axlewidth     1.354

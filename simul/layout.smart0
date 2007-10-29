@@ -9,6 +9,7 @@ Camera  world
 View concentrics
      Camera  world
      Drawing Ter_estar_value_cycle
+          Drawing Ter_estar_queue
      Drawing world
      Drawing Ter_true_drawing
      Drawing Ter_drive
