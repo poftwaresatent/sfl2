@@ -31,6 +31,7 @@
 #include <asl/PlanningThread.hpp>
 #include <asl/ControlThread.hpp>
 #include <asl/path_tracking.hpp>
+#include <asl/ControlParams.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Pose.hpp>
 #include <sfl/api/Multiscanner.hpp>
@@ -367,6 +368,23 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	
 	m_odo.reset(new Odometry(GetHAL(), RWlock::Create("smart")));	
 
+	shared_ptr<ControlParams> control_params(new ControlParams());
+	bool use_default_control_params(false);
+	string_to(descriptor->GetOption("use_default_control_params"),
+						use_default_control_params);
+	if ( ! use_default_control_params) {
+		control_params->max_longitudinal_speed = params.model_sd_max;
+		double control_sd_min_factor(0.5);
+		string_to(descriptor->GetOption("control_sd_min_factor"),
+							control_sd_min_factor);
+		control_params->min_longitudinal_speed =
+			control_sd_min_factor * params.model_sd_max;
+		control_params->longitudinal_acc = params.model_sdd_max;
+		control_params->min_steering_angle = - params.model_phi_max;
+		control_params->max_steering_angle = params.model_phi_max;
+		control_params->max_steering_rate = params.model_phid_max;
+	}
+	
 	ostringstream err_os;
 	m_smart_algo.reset(asl::Algorithm::
 										 Create(robot_radius,
@@ -381,6 +399,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 														! use_simple_query,	// use_estar = ! use_simple_q
 														swiped_map_update,
 														controller_name,
+														control_params,
 														AckermannModel(params.model_sd_max,
 																					 params.model_sdd_max,
 																					 params.model_phi_max,
@@ -503,8 +522,17 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		shared_ptr<SmartPlanProxy>
 			fast_proxy(new SmartPlanProxy(m_smart_algo.get(), true));
 		shared_ptr<MetaColorScheme> mcs(new MetaColorScheme());
-		shared_ptr<CycleColorScheme> ccs(new CycleColorScheme(2*robot_radius,
-																													0.5*robot_radius));
+
+		double estar_drawing_cycle_period(2 * robot_radius);
+		string_to(descriptor->GetOption("estar_drawing_cycle_period"),
+							estar_drawing_cycle_period);
+		double estar_drawing_cycle_width(0.5 * robot_radius);
+		string_to(descriptor->GetOption("estar_drawing_cycle_width"),
+							estar_drawing_cycle_width);
+		shared_ptr<CycleColorScheme>
+					ccs(new CycleColorScheme(estar_drawing_cycle_period,
+																	 estar_drawing_cycle_width));
+		
 		AddDrawing(new EstarDrawing(name + "_estar_meta",
 																slow_proxy, EstarDrawing::META, mcs));
 		AddDrawing(new EstarDrawing(name + "_estar_value",
