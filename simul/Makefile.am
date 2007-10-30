@@ -70,11 +70,11 @@ dist_bin_SCRIPTS= birondemo.sh \
                   expodemo.sh \
                   testestar.sh \
                   layout.biron \
-                  layout.config \
+                  layout.laas \
                   layout.estar \
                   layout.expo \
                   robots.biron \
-                  robots.config \
+                  robots.laas \
                   robots.estar \
                   robots.expo \
                   smart0.sh \
@@ -106,4 +106,10 @@ dist_bin_SCRIPTS= birondemo.sh \
                     robots.smart4 \
                     travmap.smart4 \
                     goals.smart4 \
-                    world.smart4
+                    world.smart4 \
+                  smart5.sh \
+                    layout.smart5 \
+                    robots.smart5 \
+                    travmap.smart5 \
+                    goals.smart5 \
+                    world.smart5

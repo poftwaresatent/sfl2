@@ -54,7 +54,9 @@ public:
     world_filename(""),
     world_from_trav(""),
     no_glut(false),
-    fatal_warnings(false)
+    fatal_warnings(false),
+    dump(false),
+    help(false)
   {
   }
   
@@ -65,6 +67,8 @@ public:
   string world_from_trav;
   bool no_glut;
   bool fatal_warnings;
+  bool dump;
+  bool help;
 };
 
 
@@ -88,15 +92,15 @@ int main(int argc, char ** argv)
 {
   atexit(cleanup);
   if(signal(SIGINT, sighandle) == SIG_ERR){
-    perror("signal(SIGINT) failed");
+    perror("ERROR: signal(SIGINT) failed");
     exit(EXIT_FAILURE);
   }
   if(signal(SIGHUP, sighandle) == SIG_ERR){
-    perror("signal(SIGHUP) failed");
+    perror("ERROR: signal(SIGHUP) failed");
     exit(EXIT_FAILURE);
   }
   if(signal(SIGTERM, sighandle) == SIG_ERR){
-    perror("signal(SIGTERM) failed");
+    perror("ERROR: signal(SIGTERM) failed");
     exit(EXIT_FAILURE);
   }
   
@@ -106,7 +110,7 @@ int main(int argc, char ** argv)
   if( ! params.world_name.empty()){
     world = World::Create(params.world_name);
     if( ! world){
-      cerr << "Invalid world name \"" << params.world_name << "\"\n";
+      cerr << "ERROR: invalid world name \"" << params.world_name << "\"\n";
       exit(EXIT_FAILURE);
     }
   }
@@ -120,8 +124,8 @@ int main(int argc, char ** argv)
     }
     world = World::Parse(is, &cerr);
     if( ! world){
-      cerr << "Error in world config file \"" << params.world_filename
-	   << "\"\n";
+      cerr << "ERROR: parsing world file \"" << params.world_filename
+	   << "\" failed\n";
       exit(EXIT_FAILURE);
     }
   }
@@ -136,8 +140,8 @@ int main(int argc, char ** argv)
     shared_ptr<TraversabilityMap>
       traversability(TraversabilityMap::Parse(trav, &cerr));
     if( ! traversability){
-      cerr << "ERROR: parsing traversability file \""
-	   << params.world_from_trav << "\".\n";
+      cerr << "ERROR: parsing of traversability file \""
+	   << params.world_from_trav << "\" failed.\n";
       exit(EXIT_FAILURE);
     }
     if( ! world)
@@ -146,13 +150,24 @@ int main(int argc, char ** argv)
   }
   
   if( ! world){
-    cerr << "No world creation method specified.\n";
+    cerr << "ERROR: no world creation method specified.\n"
+	 << "  use one of -w, -W, or -M\n"
+	 << "  see -h for more help\n";
     exit(EXIT_FAILURE);
   }
   
   simulator.
     reset(new Simulator(world, 0.000001 * timestep_usec, SimulatorMutex()));
   simulator->InitRobots(params.robot_config_filename);
+  if (params.dump) {
+    cout << "==================================================\n"
+	 << "CAMERAS:\n";
+    Instance<UniqueManager<Camera> >()->PrintCatalog(cout);
+    cerr << "\n==================================================\n"
+	 << "DRAWINGS:\n";
+    Instance<UniqueManager<Drawing> >()->PrintCatalog(cout);
+    exit(EXIT_SUCCESS);
+  }
   simulator->InitLayout(params.layout_config_filename, params.fatal_warnings);
   simulator->Init();
   
@@ -181,7 +196,7 @@ void init_glut(int argc, char ** argv, int width, int height)
 
   handle = glutCreateWindow("nepumuk");
   if(handle == 0){
-    cerr << "init_glut(): glutCreateWindow() failed\n";
+    cerr << "ERROR: glutCreateWindow() failed\n";
     exit(EXIT_FAILURE);
   }
   
@@ -226,11 +241,16 @@ void timer(int handle)
 }
 
 
-void parse_options(int argc,
-		   char ** argv)
+void parse_options(int argc, char ** argv)
 {
+  cout << "command line:";
+  for (int ii(0); ii < argc; ++ii)
+    cout << " " << argv[ii];
+  cout << "\n  use -h to display some help\n";
+  
   typedef Interlock::Callback<string> StringCB;
-
+  typedef Interlock::BoolCallback BoolCB;
+  
   Interlock ilock;
   ilock.Add(new StringCB(params.layout_config_filename,
 			 'l', "layout", "Name of the layout config file."));
@@ -242,27 +262,33 @@ void parse_options(int argc,
 			 'W', "worldfile", "World file."));
   ilock.Add(new StringCB(params.world_from_trav,
 			 'M', "world-trav", "Add travmap lines to world."));
-  ilock.
-    Add(new Interlock::BoolCallback(params.no_glut, 'n', "no-glut",
-				    "Disable graphic output."));
-  ilock.
-    Add(new Interlock::BoolCallback(params.fatal_warnings, 'f', "fwarn",
-				    "Fatal warnings."));
+  ilock.Add(new BoolCB(params.no_glut,
+		       'n', "no-glut", "Disable graphic output."));
+  ilock.Add(new BoolCB(params.fatal_warnings,
+		       'f', "fwarn", "Fatal warnings."));
+  ilock.Add(new BoolCB(params.dump,
+		       'd', "dump", "Dump available drawings and cameras."));
+  ilock.Add(new BoolCB(params.help,
+		       'h', "help", "Print a help message."));
   
-  ilock.UsageMessage(cerr, string(argv[0]) + " <options>");
   try {
     ilock.Parse(argc, argv, 0);
   }
   catch(runtime_error e){
-    cerr << "ERROR in parse_options():\n  " << e.what() << "\n";
+    cerr << "ERROR: parse_options() failed:\n  " << e.what() << "\n"
+	 << "  use -h for help\n";
     exit(EXIT_FAILURE);
+  }
+  
+  if (params.help) {
+    ilock.UsageMessage(cout, string(argv[0]) + " <options>");
+    exit(EXIT_SUCCESS);
   }
 }
 
 
 void cleanup()
 {
-  cerr << "cleanup: resetting simulator\n";
   simulator.reset();
 }
 
