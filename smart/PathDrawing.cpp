@@ -44,7 +44,9 @@ PathDrawing::
 PathDrawing(const std::string & name,
 	    const Smart * smart,
 	    size_t _gradplot_frequency)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "(current and maybe previous) planned path (gradient descent)",
+	    Instance<UniqueManager<Drawing> >()),
     gradplot_frequency(_gradplot_frequency),
     m_smart(smart)
 {

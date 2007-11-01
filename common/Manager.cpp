@@ -77,8 +77,12 @@ namespace npm {
   PrintCatalog(ostream & os) const
   {
     for(catalog_t::const_iterator ic(catalog.begin());
-	ic != catalog.end(); ++ic)
-      os << ic->second->name << "\n";
+	ic != catalog.end(); ++ic) {
+      os << ic->second->name;
+      if ( ! ic->second->comment.empty())
+	os << ":\n  " << ic->second->comment;
+      os << "\n";
+    }
   }
   
 }

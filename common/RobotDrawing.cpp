@@ -40,13 +40,14 @@ namespace npm {
   RobotDrawing::
   RobotDrawing(const RobotServer * robot)
     : Drawing(robot->GetName() + "_true_drawing",
+	      "true (and noisy if available) outline of \""
+	      + robot->GetName() + "\"",
 	      Instance<UniqueManager<Drawing> >()),
       m_robot(robot)
   {
   }
-
-
-
+  
+  
   void RobotDrawing::
   Draw()
   {

@@ -39,15 +39,15 @@ namespace npm {
   
   
   Object::
-  Object(const string & name)
-    : Manageable(name)
+  Object(const string & name, const std::string & comment)
+    : Manageable(name, comment, shared_ptr<Manager>())
   {
   }
   
   
   Object::
   Object(const Object & original)
-    : Manageable(original.name),
+    : Manageable(original.name, original.comment, shared_ptr<Manager>()),
       m_radius(original.m_radius)
   {
     for(size_t il(0); il < original.m_local.size(); ++il)

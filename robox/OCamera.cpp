@@ -34,7 +34,9 @@ using namespace npm;
 OCamera::
 OCamera(const std::string & name,
 	const sfl::DynamicWindow & dwa)
-  : Camera(name, Instance<UniqueManager<Camera> >()),
+  : Camera(name,
+	   "fixed on the range of a DWA objective grid",
+	   Instance<UniqueManager<Camera> >()),
     m_dwa(dwa)
 {
 }

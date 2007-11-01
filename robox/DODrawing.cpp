@@ -46,7 +46,9 @@ DODrawing(const std::string & name,
 	  const sfl::DistanceObjective & distobj,
 	  const sfl::DynamicWindow & dwa,
 	  const sfl::RobotModel & rm)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "sfl::DistanceObjective (greyscale with special colors)",
+	    Instance<UniqueManager<Drawing> >()),
     m_distobj(distobj),
     m_dwa(dwa),
     m_rm(rm)

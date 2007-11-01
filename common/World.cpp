@@ -58,7 +58,7 @@ namespace npm {
     : m_drawing(new WorldDrawing(name, * this)),
       m_camera(new WorldCamera(name, * this))
   {
-    m_object.push_back(shared_ptr<Object>(new Object(name)));
+    m_object.push_back(shared_ptr<Object>(new Object(name, "THE world")));
   }
   
   
@@ -113,7 +113,7 @@ namespace npm {
     expo->AddLine(Line(11.4,  9.9, 11  ,  8.6));
     expo->AddLine(Line(11  ,  8.6,  5.1, 10.3));
 
-    Object column("column");
+    Object column("column", "");
     column.AddLine(Line(-0.2, -0.2,  0.2, -0.2));
     column.AddLine(Line( 0.2, -0.2,  0.2,  0.2));
     column.AddLine(Line( 0.2,  0.2, -0.2,  0.2));
@@ -125,7 +125,7 @@ namespace npm {
 	expo->AddObject(col);
       }
 
-    Object biotop("biotop");
+    Object biotop("biotop", "");
     biotop.AddLine(Line(-1.3, 0, 0, -1.3));
     biotop.AddLine(Line(0, -1.3, 3.6, 0));
     biotop.AddLine(Line(3.6, 0, 0, 1.3));
@@ -228,7 +228,7 @@ namespace npm {
     //////////////////////////////////////////////////
     // H columns
     {
-      Object column("H column");
+      Object column("H column", "");
       
       static const double width(0.303);
       static const double height(0.15);
@@ -282,7 +282,7 @@ namespace npm {
     //////////////////////////////////////////////////
     // round columns
     {
-      Object column("round column");
+      Object column("round column", "");
     
       static const double radius(0.04);
       static const int nlines(16);
@@ -315,7 +315,7 @@ namespace npm {
     //////////////////////////////////////////////////  
     // square columns
     {
-      Object column("square column");
+      Object column("square column", "");
     
       static const double width(0.25);
       column.AddLine(Line(    0,     0, width,     0));

@@ -38,7 +38,9 @@ BBDrawing::
 BBDrawing(const std::string & name,
 	  const BubbleBand & bubble_band,
 	  mode_t mode)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "sfl::BubbleBand in global frame",
+	    Instance<UniqueManager<Drawing> >()),
     _bubble_band(bubble_band),
     _mode(mode)
 {

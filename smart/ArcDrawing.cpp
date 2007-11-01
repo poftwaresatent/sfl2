@@ -42,7 +42,9 @@ ArcDrawing(const std::string & name,
 					 Smart * smart,
 					 bool enabled,
 					 bool recomp_status)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+						"arcs of TADPF cntrl (cached or recomputed)",
+						Instance<UniqueManager<Drawing> >()),
     m_smart(smart),
     m_enabled(enabled),
     m_recomp_status(recomp_status)

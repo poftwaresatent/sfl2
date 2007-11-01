@@ -40,7 +40,9 @@ namespace npm {
   
   WorldDrawing::
   WorldDrawing(const string & name, const World & world)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+	      "all lines in the world, including objects and robots",
+	      Instance<UniqueManager<Drawing> >()),
       m_world(world)
   {
   }

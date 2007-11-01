@@ -38,7 +38,9 @@ namespace npm {
   BicycleDriveDrawing::
   BicycleDriveDrawing(const string & name,
 		      shared_ptr<const BicycleDrive> drive)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+	      "schematic of BicycleDrive at current true robot pose",
+	      Instance<UniqueManager<Drawing> >()),
       m_drive(drive),
       m_wheelbase(drive->wheelbase),
       m_wheelradius(drive->wheelradius),

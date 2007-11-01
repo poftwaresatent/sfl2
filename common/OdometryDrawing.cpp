@@ -41,7 +41,9 @@ namespace npm {
   OdometryDrawing(const string & name,
 		  const Odometry & odometry,
 		  double size)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+	      "the current pose estimation of a robot using sfl::Odometry",
+	      Instance<UniqueManager<Drawing> >()),
       m_odometry(odometry),
       m_size(size)
   {

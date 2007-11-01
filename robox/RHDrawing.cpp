@@ -38,7 +38,9 @@ RHDrawing::
 RHDrawing(const string & name,
 	  const ReplanHandler * replan_handler,
 	  mode_t mode):
-  Drawing(name, Instance<UniqueManager<Drawing> >()),
+  Drawing(name,
+	  "wrapped bubble band drawing, depending on planning state",
+	  Instance<UniqueManager<Drawing> >()),
   _replan_handler(replan_handler),
   _mode(mode)
 {

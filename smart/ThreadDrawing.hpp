@@ -61,9 +61,14 @@ public:
 	const Thread * m_thread;
 	double m_max_delta_ms, m_min_delta_ms;
 	
-	ThreadDrawing(const std::string & name, const Thread * thread)
-		: Drawing(name, Instance<UniqueManager<Drawing> >()),
-			Camera(name, Instance<UniqueManager<Camera> >()),
+	ThreadDrawing(const std::string & name,
+								const Thread * thread)
+		: Drawing(name,
+							"thread time and status stats",
+							Instance<UniqueManager<Drawing> >()),
+			Camera(name,
+						 "auto zoom and scale on thread time stats",
+						 Instance<UniqueManager<Camera> >()),
 			m_thread(thread)
 	{ }
 	

@@ -24,6 +24,7 @@
 
 #include "StillCamera.hpp"
 #include "View.hpp"
+#include "util.hpp"
 
 
 using namespace std;
@@ -37,7 +38,10 @@ namespace npm {
 	      double _x0, double _y0,
 	      double _x1, double _y1,
 	      boost::shared_ptr<Manager> manager)
-    : Camera(name, manager),
+    : Camera(name,
+	     "fixed camera (" + to_string(_x0) + " " + to_string(_y0)
+	     + " " + to_string(_x1) + " " + to_string(_y1) + " " ")",
+	     manager),
       x0(_x0),
       y0(_y0),
       x1(_x1),

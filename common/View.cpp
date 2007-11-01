@@ -55,7 +55,7 @@ namespace npm {
   
   View::
   View(const std::string & name, boost::shared_ptr<Manager> manager)
-    : Manageable(name, manager),
+    : Manageable(name, "", manager),
       camera(0),
       savecount(0),
       mv_enable(false)

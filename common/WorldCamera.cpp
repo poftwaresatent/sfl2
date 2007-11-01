@@ -48,7 +48,10 @@ namespace npm {
   
   WorldCamera::
   WorldCamera(const string & name, const World & world)
-    : Camera(name, Instance<UniqueManager<Camera> >()), m_world(world)
+    : Camera(name,
+	     "bounding box of the world (environment model)",
+	     Instance<UniqueManager<Camera> >()),
+      m_world(world)
   {
   }
   

@@ -31,22 +31,18 @@ using namespace std;
 
 
 namespace npm {
-
-
-  Manageable::
-  Manageable(const string & _name)
-    : name(_name)
-  {
-  }
-
-
+  
+  
   Manageable::
   Manageable(const string & _name,
+	     const string & _comment,
 	     boost::shared_ptr<Manager> manager)
     : name(_name),
+      comment(_comment),
       m_manager(manager)
   {
-    manager->Attach(this);
+    if (manager)
+      manager->Attach(this);
   }
   
   
@@ -61,7 +57,12 @@ namespace npm {
   ostream & Manageable::
   Print(ostream & os) const
   {
-    return os << name;
+    os << name;
+    if ( ! m_manager)
+      os << " (non-managed)";
+    if ( ! comment.empty())
+      os << ": " << comment;
+    return os;
   }
   
   

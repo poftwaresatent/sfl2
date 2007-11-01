@@ -52,7 +52,9 @@ namespace npm {
        'Instance<UniqueManager<Drawing> >()' which is declared in
        Manager.hpp.
     */
-    Drawing(const std::string & name, boost::shared_ptr<Manager> manager);
+    Drawing(const std::string & name,
+	    const std::string & comment,
+	    boost::shared_ptr<Manager> manager);
     
     /**
        The whole idea of this class is to have subclasses define this

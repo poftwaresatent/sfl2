@@ -43,6 +43,7 @@ namespace npm {
   ScannerDrawing(const Lidar * lidar)
     : Drawing(lidar->owner->GetName() + "_lidar_"
 	      + to_string(lidar->GetScanner()->hal_channel),
+	      "laser scanner data in global reference frame",
 	      Instance<UniqueManager<Drawing> >()),
       m_lidar(lidar)
   {

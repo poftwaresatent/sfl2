@@ -37,7 +37,9 @@ namespace npm {
   GoalInstanceDrawing::
   GoalInstanceDrawing(const std::string & name,
 		      const sfl::Goal & goal)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+	      "the goal with associated radius (but not angular range)",
+	      Instance<UniqueManager<Drawing> >()),
       m_goal(goal)
   {
   }

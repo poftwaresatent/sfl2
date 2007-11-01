@@ -45,8 +45,9 @@ namespace npm {
   
   
   Drawing::
-  Drawing(const string & name, boost::shared_ptr<Manager> manager)
-    : Manageable(name, manager)
+  Drawing(const string & name, const string & comment,
+	  boost::shared_ptr<Manager> manager)
+    : Manageable(name, comment, manager)
   {
   }
   

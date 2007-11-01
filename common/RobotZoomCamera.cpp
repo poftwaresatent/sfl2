@@ -26,6 +26,7 @@
 #include "RobotServer.hpp"
 #include "View.hpp"
 #include "Manager.hpp"
+#include "util.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -38,6 +39,8 @@ namespace npm {
   RobotZoomCamera::
   RobotZoomCamera(const RobotServer * robot, double radius)
     : Camera(robot->GetName() + "_true_zoom_camera",
+	     "true robot pose +/- " + to_string(radius),
+#warning why null manager???
 	     Instance<UniqueManager<Camera> >()),
       m_robot(robot),
       m_radius(radius)

@@ -39,7 +39,9 @@ using namespace npm;
 
 GridLayerDrawing::
 GridLayerDrawing(const string & name, const NF1 & _nf1, bool _global)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "greyscale + special color grid plot, local or global frame",
+	    Instance<UniqueManager<Drawing> >()),
     nf1(_nf1), global(_global)
 {
 }

@@ -35,7 +35,9 @@ ODrawing::
 ODrawing(const std::string & name,
 	 const sfl::Objective & obj,
 	 const sfl::DynamicWindow & dwa)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "a DWA's sub-objective (greyscale + special colors)",
+	    Instance<UniqueManager<Drawing> >()),
     m_obj(obj),
     m_dwa(dwa)
 {

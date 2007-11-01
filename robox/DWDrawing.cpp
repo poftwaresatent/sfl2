@@ -34,7 +34,9 @@ using namespace npm;
 DWDrawing::
 DWDrawing(const std::string & name,
 	  const sfl::DynamicWindow & dwa)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "an grid-overview of DWA: objectives, speed range, and optimum",
+	    Instance<UniqueManager<Drawing> >()),
     m_dwa(dwa)
 {
 }

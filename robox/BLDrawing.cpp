@@ -39,7 +39,9 @@ BLDrawing(const std::string & name,
 	    const sfl::BubbleList * bubble_list,
 	    mode_t mode,
 	    double intensity):
-  Drawing(name, Instance<UniqueManager<Drawing> >()),
+  Drawing(name,
+	  "sfl::BubbleList in global frame",
+	  Instance<UniqueManager<Drawing> >()),
   _bubble_list(bubble_list),
   _mode(mode),
   _intensity(intensity)

@@ -67,14 +67,14 @@ namespace npm {
       m_enable_trajectory(enable_trajectory),
       m_world(world),
       m_descriptor(descriptor),
-      m_true_body(new Object(descriptor->name)),
+      m_true_body(new Object(descriptor->name, "true_body")),
       m_true_pose(new Frame())
   {
     bool noisy_odometry(false);
     string_to(descriptor->GetOption("noisy_odometry"), noisy_odometry);
     if(noisy_odometry){
       m_noisy_pose.reset(new Frame());
-      m_noisy_body.reset(new Object(descriptor->name));
+      m_noisy_body.reset(new Object(descriptor->name, "noisy_body"));
       m_noisy_trajectory.reset(new trajectory_t());
       double odometry_noise_min_factor(0.95); // factors <0 are ignored
       double odometry_noise_max_factor(1.05);

@@ -35,7 +35,9 @@ using namespace npm;
 MPDrawing::
 MPDrawing(const std::string & name,
 	  const sfl::MotionPlanner & mp):
-  Drawing(name, Instance<UniqueManager<Drawing> >()),
+  Drawing(name,
+	  "draw the goal of an sfl::MotionPlanner instance",
+	  Instance<UniqueManager<Drawing> >()),
   m_mp(mp)
 {
 }

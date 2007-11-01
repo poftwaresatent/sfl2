@@ -36,7 +36,9 @@ using namespace std;
 
 GridLayerCamera::
 GridLayerCamera(const string & name, const NF1 & _nf1)
-  : Camera(name, Instance<UniqueManager<Camera> >()),
+  : Camera(name,
+	   "grid range for locally plotting NF1 and such",
+	   Instance<UniqueManager<Camera> >()),
     nf1(_nf1)
 {
 }

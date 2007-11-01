@@ -39,7 +39,9 @@ namespace npm {
   DiffDriveDrawing::
   DiffDriveDrawing(const string & name,
 		   shared_ptr<const DiffDrive> drive)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+	      "schematic of DiffDrive at current true robot pose",
+	      Instance<UniqueManager<Drawing> >()),
       m_drive(drive),
       m_halfwheelbase(drive->wheelbase / 2)
   {

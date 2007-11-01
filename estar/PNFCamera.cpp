@@ -32,7 +32,9 @@ using namespace npm;
 PNFCamera::
 PNFCamera(const std::string & name,
 	  Esbot * bot)
-  : Camera(name, Instance<UniqueManager<Camera> >()),
+  : Camera(name,
+	   "fixed on grid size of a PNF instance",
+	   Instance<UniqueManager<Camera> >()),
     m_bot(bot)
 {
 }

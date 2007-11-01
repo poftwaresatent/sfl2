@@ -38,11 +38,18 @@ namespace npm {
   class Manageable
   {
   public:
-    explicit Manageable(const std::string & name);
-    
-    /** Automatically registers itself with the given Manager, and
-	will deregister upon destruction. */
-    Manageable(const std::string & name,
+    /**
+       If you specify a non-null Manager, a Manageable object will
+       automatically registers itself with it, and will deregister
+       upon destruction.
+    */
+    Manageable(/** name of this instance, should be unique for the
+		   given manager (if any) */
+	       const std::string & name,
+	       /** displayed as help-text to users */
+	       const std::string & comment,
+	       /** automatically register and deregister with this
+		   manager (optional but recommended) */
 	       boost::shared_ptr<Manager> manager);
     
     virtual ~Manageable();
@@ -53,6 +60,7 @@ namespace npm {
     std::ostream & operator << (std::ostream & os, const Manageable & m);
     
     const std::string name;
+    const std::string comment;
 
   protected:
     boost::shared_ptr<Manager> const m_manager;

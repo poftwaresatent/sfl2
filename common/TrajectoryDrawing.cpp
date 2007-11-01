@@ -35,8 +35,11 @@ namespace npm {
   
   TrajectoryDrawing::
   TrajectoryDrawing(const RobotServer * owner)
-    : Drawing(owner->GetName() + "_trajectory",
-	      Instance<UniqueManager<Drawing> >()),
+    :
+    Drawing(owner->GetName() + "_trajectory",
+	    "true (and noisy if available) trajectory of \""
+	    + owner->GetName() + "\"",
+	    Instance<UniqueManager<Drawing> >()),
     m_owner(owner)
   {
   }

@@ -47,7 +47,9 @@ namespace npm {
   MapperUpdateDrawing::
   MapperUpdateDrawing(const std::string & name,
 		      boost::shared_ptr<const sfl::Mapper2d> mapper)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+							"most recent changes of a sweeping-update sfl::Mapper2d",
+							Instance<UniqueManager<Drawing> >()),
       m_mapper(mapper)
   {
   }

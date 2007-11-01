@@ -49,7 +49,7 @@ namespace npm {
     : public Manageable
   {
   public:
-    explicit Object(const std::string & name);
+    Object(const std::string & name, const std::string & comment);
     Object(const Object & original);
     
     void AddLine(const sfl::Line & line);

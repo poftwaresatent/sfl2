@@ -39,7 +39,9 @@ namespace npm {
   HoloDriveDrawing::
   HoloDriveDrawing(const string & name,
 		   shared_ptr<const HoloDrive> drive)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+	      "schematic of HoloDrive at current true robot pose",
+	      Instance<UniqueManager<Drawing> >()),
       m_drive(drive),
       m_halfaxislength(drive->axislength / 2)
   {

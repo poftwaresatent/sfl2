@@ -44,7 +44,9 @@ CarrotDrawing::
 CarrotDrawing(const std::string & name,
 	      shared_ptr<CarrotProxy> proxy,
 	      size_t _gradplot_frequency)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+  : Drawing(name,
+	    "trace of gradient descent of E* (global frame)",
+	    Instance<UniqueManager<Drawing> >()),
     gradplot_frequency(_gradplot_frequency),
     m_proxy(proxy)
 {

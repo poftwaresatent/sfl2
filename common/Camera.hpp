@@ -54,7 +54,9 @@ namespace npm {
        cameras have to be registered before the layout config file is
        parsed.
     */
-    Camera(const std::string & name, boost::shared_ptr<Manager> manager);
+    Camera(const std::string & name,
+	   const std::string & comment,
+	   boost::shared_ptr<Manager> manager);
     
     /**
        Configure a View to the Camera's bounding box.

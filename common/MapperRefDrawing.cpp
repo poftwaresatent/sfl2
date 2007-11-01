@@ -52,7 +52,9 @@ namespace npm {
   MapperRefDrawing(const std::string & name,
 									 boost::shared_ptr<const sfl::Mapper2d> mapper,
 									 bool draw_link)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+							"the references and backlinks in a sfl::Mapper2d",
+							Instance<UniqueManager<Drawing> >()),
       m_mapper(mapper),
 			m_draw_link(draw_link)
   {

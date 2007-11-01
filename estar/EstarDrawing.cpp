@@ -43,9 +43,11 @@ using namespace std;
 
 EstarDrawing::
 EstarDrawing(const std::string & name,
-	     shared_ptr<PlanProxy> proxy,
-	     what_t _what)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+						 shared_ptr<PlanProxy> proxy,
+						 what_t _what)
+  : Drawing(name,
+						"default color E* (VALUE/RHS/META/QUEUE/UPWIND/OBST/STATUS)",
+						Instance<UniqueManager<Drawing> >()),
     what(_what),
     m_proxy(proxy)
 {
@@ -54,10 +56,12 @@ EstarDrawing(const std::string & name,
 
 EstarDrawing::
 EstarDrawing(const std::string & name,
-	     shared_ptr<PlanProxy> proxy,
-	     what_t _what,
-	     shared_ptr<gfx::ColorScheme> custom_cs)
-  : Drawing(name, Instance<UniqueManager<Drawing> >()),
+						 shared_ptr<PlanProxy> proxy,
+						 what_t _what,
+						 shared_ptr<gfx::ColorScheme> custom_cs)
+  : Drawing(name,
+						"custom color E* grid (VALUE/RHS/META/QUEUE/UPWIND/OBST/STATUS)",
+						Instance<UniqueManager<Drawing> >()),
     what(_what),
     m_proxy(proxy),
     m_custom_cs(custom_cs)

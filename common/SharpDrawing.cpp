@@ -39,7 +39,10 @@ namespace npm {
 
   SharpDrawing::
   SharpDrawing(const string & name, const Sharp & sharp)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()), m_sharp(sharp)
+    : Drawing(name,
+	      "1D sharp distance data in global reference frame",
+	      Instance<UniqueManager<Drawing> >()),
+      m_sharp(sharp)
   {
   }
 

@@ -51,7 +51,9 @@ namespace npm {
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
 												shared_ptr<TravProxyAPI> proxy)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()),
+    : Drawing(name,
+							"traversability map as greyscale with special highlights",
+							Instance<UniqueManager<Drawing> >()),
 			m_proxy(proxy)
   {
   }
@@ -60,7 +62,10 @@ namespace npm {
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
 												TravProxyAPI * proxy)
-    : Drawing(name, Instance<UniqueManager<Drawing> >()), m_proxy(proxy)
+    : Drawing(name,
+							"traversability map as greyscale with special highlights",
+							Instance<UniqueManager<Drawing> >()),
+			m_proxy(proxy)
   {
   }
   
