@@ -106,10 +106,4 @@ dist_bin_SCRIPTS= birondemo.sh \
                     robots.smart4 \
                     travmap.smart4 \
                     goals.smart4 \
-                    world.smart4 \
-                  smart5.sh \
-                    layout.smart5 \
-                    robots.smart5 \
-                    travmap.smart5 \
-                    goals.smart5 \
-                    world.smart5
+                    world.smart4

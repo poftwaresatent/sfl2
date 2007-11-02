@@ -369,9 +369,9 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	m_odo.reset(new Odometry(GetHAL(), RWlock::Create("smart")));	
 
 	shared_ptr<ControlParams> control_params(new ControlParams());
-	bool use_default_control_params(false);
-	string_to(descriptor->GetOption("use_default_control_params"),
-						use_default_control_params);
+	bool use_default_control_params(true);
+ 	string_to(descriptor->GetOption("use_default_control_params"),
+ 						use_default_control_params);
 	if ( ! use_default_control_params) {
 		control_params->max_longitudinal_speed = params.model_sd_max;
 		double control_sd_min_factor(0.5);
