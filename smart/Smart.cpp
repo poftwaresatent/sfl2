@@ -385,6 +385,18 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		control_params->max_steering_rate = params.model_phid_max;
 	}
 	
+	shared_ptr<FacadeOptions> estar_options(new FacadeOptions());
+	string_to(descriptor->GetOption("estar_check_upwind"),
+						estar_options->check_upwind);
+	string_to(descriptor->GetOption("estar_check_local_consistency"),
+						estar_options->check_local_consistency);
+	string_to(descriptor->GetOption("estar_check_queue_key"),
+						estar_options->check_queue_key);
+	string_to(descriptor->GetOption("estar_auto_reset"),
+						estar_options->auto_reset);
+	string_to(descriptor->GetOption("estar_auto_flush"),
+						estar_options->auto_flush);
+	
 	ostringstream err_os;
 	m_smart_algo.reset(asl::Algorithm::
 										 Create(robot_radius,
@@ -397,6 +409,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 														carrot_maxnsteps,
 														estar_step,
 														! use_simple_query,	// use_estar = ! use_simple_q
+														estar_options,
 														swiped_map_update,
 														controller_name,
 														control_params,
