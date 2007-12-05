@@ -3,8 +3,6 @@ Robot smart Ter
         Pose  0 0 0
 	Option goalmgr_filename goals.smart1
 		
-	Option estar_check_queue_key true
-
 	Option camera_zoom        15
 	Option front_channel       0
         Option front_mount_x       0.65
