@@ -74,8 +74,8 @@ Draw()
   glRotated(180 * gframe->Theta() / M_PI, 0, 0, 1);
   
   const double startval(trace->front().value);
-  double deltav(estar::absval(startval - trace->back().value));
-  if(deltav <= estar::epsilon)
+  double deltav(absval(startval - trace->back().value));
+  if(deltav <= epsilon)
     deltav = startval;
   
   if(0 == gradplot_frequency){
