@@ -330,7 +330,7 @@ namespace sfl {
 	  break;
 	default:
 	  PDEBUG_ERR("BUG in sfl::DistanceObjective::UpdateGrid(): "
-		     "invalid region[%l][%l]=%d\n",
+		     "invalid region[%d][%d]=%d\n",
 		     ix, iy, (*m_region)[ix][iy]);
 	}
       }
@@ -375,7 +375,7 @@ namespace sfl {
 	  const shared_ptr<const Lookup> lkup((*m_time_lookup)[ix][iy]);
 	  if( ! lkup)
 	    PDEBUG_ERR("BUG in sfl::DistanceObjective::MinTime(): "
-		       "no lookup for zone index [%l][%l]\n", ix, iy);
+		       "no lookup for zone index [%d][%d]\n", ix, iy);
 	  else{
 	    const double tt(lkup->Get(iqdl, iqdr));
 	    if((tt != invalidTime)
