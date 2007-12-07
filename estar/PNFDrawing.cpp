@@ -139,8 +139,8 @@ Draw()
       gframe->From(x, y);
       const size_t ix(static_cast<size_t>(rint(x / facade->scale)));
       const size_t iy(static_cast<size_t>(rint(y / facade->scale)));
-      if((ix >= facade->GetXSize()) || (iy >= facade->GetYSize())){
-	PDEBUG("FAIL (ix >= facade.xsize) || (iy >= facade.ysize)\n");
+      if ( ! facade->IsValidIndex(ix, iy)) {
+	PDEBUG("FAIL facade->IsValidIndex(ix, iy)\n");
 	return;
       }
       const ValueColorScheme vcs(facade->GetValue(ix, iy));

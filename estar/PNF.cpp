@@ -180,11 +180,11 @@ AddStaticObject(double globx, double globy)
   const GridFrame::index_t
     idx(m_frame->GlobalIndex(GridFrame::position_t(globx, globy)));
   if((idx.v0 < 0) || (idx.v1 < 0)
-     || (static_cast<size_t>(idx.v0) >= m_flow->xsize)
-     || (static_cast<size_t>(idx.v1) >= m_flow->ysize))
+     || (static_cast<ssize_t>(idx.v0) >= m_flow->xsize)
+     || (static_cast<ssize_t>(idx.v1) >= m_flow->ysize))
     return false;
-  m_flow->AddStaticObject(static_cast<size_t>(idx.v0),
-			  static_cast<size_t>(idx.v1));
+  m_flow->AddStaticObject(static_cast<ssize_t>(idx.v0),
+			  static_cast<ssize_t>(idx.v1));
   return true;
 }
 
@@ -208,11 +208,11 @@ RemoveStaticObject(double globx, double globy)
   const GridFrame::index_t
     idx(m_frame->GlobalIndex(GridFrame::position_t(globx, globy)));
   if((idx.v0 < 0) || (idx.v1 < 0)
-     || (static_cast<size_t>(idx.v0) >= m_flow->xsize)
-     || (static_cast<size_t>(idx.v1) >= m_flow->ysize))
+     || (static_cast<ssize_t>(idx.v0) >= m_flow->xsize)
+     || (static_cast<ssize_t>(idx.v1) >= m_flow->ysize))
     return false;
-  m_flow->RemoveStaticObject(static_cast<size_t>(idx.v0),
-			     static_cast<size_t>(idx.v1));
+  m_flow->RemoveStaticObject(static_cast<ssize_t>(idx.v0),
+			     static_cast<ssize_t>(idx.v1));
   return true;
 }
 
@@ -410,7 +410,8 @@ struct flow_draw_callback
   flow_draw_callback(Flow * flow): m_flow(flow) {}
   void operator () (size_t ix, size_t iy) {
     PVDEBUG("grid: %zu   %zu\n", ix, iy);
-    m_flow->AddStaticObject(ix, iy);
+    m_flow->AddStaticObject(static_cast<ssize_t>(ix),
+			    static_cast<ssize_t>(iy));
   }
   Flow * m_flow;
 };
