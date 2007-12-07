@@ -198,34 +198,11 @@ Draw()
   
   if(draw_trace && (PNF::DONE == step)){
     shared_ptr<const sfl::Frame> frame(pnf->GetGridFrame());
-    double goalx(pnf->goal_x);
-    double goaly(pnf->goal_y);
-    frame->From(goalx, goaly);
     double robx(pnf->robot_x);
     double roby(pnf->robot_y);
     frame->From(robx, roby);
-    glColor3d(1, 0, 0);
-    glLineWidth(2);
-    glBegin(GL_LINE_STRIP);
-    glVertex2d(pnf->robot_x, pnf->robot_y);
-    for(size_t ii(0); ii < 1000; ++ii){
-      const double distance(0.3);
-      const double step(0.03);
-      const size_t maxstep(30);
-      if( ! estar::compute_carrot(*facade, robx, roby,
-				  distance, step, maxstep,
-				  robx, roby, 0)){
-	break;
-      }
-      double xx(robx);
-      double yy(roby);
-      frame->To(xx, yy);
-      glVertex2d(xx, yy);
-      if((sqr(goalx - robx) + sqr(goaly - roby)) < 0.1)
-	break;
-    }
-    glVertex2d(pnf->goal_x, pnf->goal_y);
-    glEnd();    
-    glLineWidth(1);
+    gfx::draw_trace(*facade, robx, roby,
+		    gfx::ColorScheme::Get(gfx::GREEN_PINK_BLUE),
+		    1, 0.5, 0);
   }
 }

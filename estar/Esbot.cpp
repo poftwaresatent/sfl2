@@ -381,9 +381,10 @@ PrepareAction(double timestep)
     const double carrot_distance(1.2); // XXX to do: magic numbers...
     const double carrot_stepsize(0.3);
     const size_t carrot_maxnsteps(30);
-    const int result(trace_carrot(m_pnf->GetFlow()->GetPNF(), robx, roby,
-				  carrot_distance, carrot_stepsize,
-				  carrot_maxnsteps, *m_carrot_trace));
+    const int result(m_pnf->GetFlow()->GetPNF().
+		     TraceCarrot(robx, roby,
+				 carrot_distance, carrot_stepsize,
+				 carrot_maxnsteps, *m_carrot_trace));
     if(0 <= result){
       if(1 == result)
 	PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
@@ -498,8 +499,9 @@ ComputeFullCarrot() const
   const double stepsize(0.2);	// magic numbers stink
   const size_t maxnsteps(static_cast<size_t>(ceil(2 * distance / stepsize)));
   shared_ptr<carrot_trace> trace(new carrot_trace);
-  const int result(trace_carrot(m_pnf->GetFlow()->GetPNF(), robx, roby,
-				distance, stepsize, maxnsteps, *trace));
+  const int result(m_pnf->GetFlow()->GetPNF().
+		   TraceCarrot(robx, roby,
+			       distance, stepsize, maxnsteps, *trace));
   PVDEBUG("d: %g   s: %g   n: %lu   result: %d\n",
 	  distance, stepsize, maxnsteps, result);
   
