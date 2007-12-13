@@ -45,7 +45,8 @@ namespace sfl {
   public:
     typedef GridFrame::index_t index_t;
     typedef GridFrame::position_t position_t;
-    typedef GridFrame::grid_t grid_t;
+
+    typedef array2d<double> grid_t;
     
     NF1(boost::shared_ptr<Mutex> mutex);
     
@@ -83,6 +84,17 @@ namespace sfl {
     boost::shared_ptr<grid_t> m_grid;
     boost::shared_ptr<NF1Wave> m_wave;
     index_t m_trace;
+    
+    
+    // refactored from GridFrame
+    static void SetLocalDisk(GridFrame const & gframe,
+			     grid_t & grid, position_t center,
+			     double radius, double value);
+    
+    // refactored from GridFrame
+    static void SetGlobalDisk(GridFrame const & gframe,
+			      grid_t & grid, position_t center,
+			      double radius, double value);
   };
   
 }

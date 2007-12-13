@@ -47,6 +47,42 @@ namespace sfl {
   
   class Mapper2d
 	{
+	public:
+		struct travmap_grow_strategy {
+			virtual ~travmap_grow_strategy() {}
+			
+			/**
+				 Determine if and how the travmap might need to be grown to
+				 accomodate the point (ix, iy), and potentially resize it
+				 accordingly.
+				 
+				 \return true if the travmap was grown.
+			*/
+			virtual bool operator () (TraversabilityMap & travmap,
+																ssize_t ix, ssize_t iy) = 0;
+			
+			/**
+				 Determine if and how the travmap might need to be grown to
+				 accomodate the bounding box (ix0, iy0, ix1, iy1), and
+				 potentially resize it accordingly.
+				 
+				 \return true if the travmap was grown.
+			*/
+			virtual bool operator () (TraversabilityMap & travmap,
+																ssize_t ix0, ssize_t iy0,
+																ssize_t ix1, ssize_t iy1) = 0;
+		};
+
+		struct never_grow: public travmap_grow_strategy {
+			virtual bool operator () (TraversabilityMap & travmap,
+																ssize_t ix, ssize_t iy)  { return false; }
+			
+			virtual bool operator () (TraversabilityMap & travmap,
+																ssize_t ix0, ssize_t iy0,
+																ssize_t ix1, ssize_t iy1)  { return false; }
+		};
+		
+		
 	private:
 		Mapper2d();
 		Mapper2d(const Mapper2d &);
@@ -54,10 +90,12 @@ namespace sfl {
 		Mapper2d(double robot_radius,
 						 double buffer_zone,
 						 boost::shared_ptr<TraversabilityMap> travmap,
+						 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 						 boost::shared_ptr<RWlock> trav_rwlock);
 		
   public:
 		typedef GridFrame::index_t index_t;
+		typedef TraversabilityMap::grow_notify grow_notify;
 		typedef TraversabilityMap::draw_callback draw_callback;
 		typedef std::set<index_t> link_t;
 		typedef std::map<index_t, int> fwd_t;
@@ -66,13 +104,15 @@ namespace sfl {
 			fwd_t forward;
 			rev_t reverse;
 		};
-		typedef	array2d<link_t> linkmap_t;
-		typedef	array2d<ref_s> refmap_t;
+		typedef	flexgrid<link_t> linkmap_t;
+		typedef	flexgrid<ref_s> refmap_t;
 		
 		
 		Mapper2d(const GridFrame & gridframe,
-						 size_t grid_ncells_x,
-						 size_t grid_ncells_y,
+						 ssize_t grid_xbegin,
+						 ssize_t grid_xend,
+						 ssize_t grid_ybegin,
+						 ssize_t grid_yend,
 						 double robot_radius,
 						 double buffer_zone,
 						 int freespace,
@@ -81,44 +121,52 @@ namespace sfl {
 						 boost::shared_ptr<RWlock> trav_rwlock);
 		
 		static boost::shared_ptr<Mapper2d>
-		Create(double robot_radius, double buffer_zone,
+		Create(double robot_radius,
+					 double buffer_zone,
 					 const std::string & traversability_file,
 					 std::ostream * err_os);
 		
 		
 		/**
 			 Update of traversability map based on a Scan instance, where
-			 each scan point is considered an obstacle.
-			 
-			 \note Because we only call TraversabilityMap::SetValue() for
-			 actually changed cells, the draw_callback is only called for
-			 those cells that actually get modified.
+			 each scan point is considered an obstacle. We only call
+			 TraversabilityMap::SetValue() for actually changed cells, so
+			 the draw_callback is only called for those cells that actually
+			 get modified. The travmap_grow_strategy registered with the
+			 Mapper2d determines if and how the TraversabilityMap gets
+			 resized, and you can get notified of such changes by passing a
+			 grow_notify functor.
 			 
 			 \return The number of cells that got changed.
 		*/
 		size_t Update(const Frame & pose, const Scan & scan,
-									draw_callback * cb = 0);
+									draw_callback * cb = 0, grow_notify * gn = 0);
 		
 		/**
+			 Similar to Update(const Frame &, const Scan &, draw_callback *,
+			 grow_notify *), but also updates the cells along the whole rays
+			 of the scan.
+			 
+			 \note grow_notify might be called several times as the scan is
+			 processed, and draw_callback can then receive indices that are
+			 outside the original range.
+			 
 			 \return The number of cells that got changed.
 		*/
 		size_t SwipedUpdate(const Frame & pose,
 												const Multiscanner::raw_scan_collection_t & scans,
-												draw_callback * cb = 0);
+												draw_callback * cb = 0, grow_notify * gn = 0);
 		
 		/**
-			 Update of traversability map based on arrays of local (x, y)
-			 obstacle point coordinates.
-			 
-			 \note Because we only call TraversabilityMap::SetValue() for
-			 actually changed cells, the draw_callback is only called for
-			 those cells that actually get modified.
+			 Similar to Update(const Frame &, const Scan &, draw_callback *,
+			 grow_notify *), but based on arrays of local (x, y) obstacle
+			 point coordinates.
 			 
 			 \return The number of cells that got changed.
 		*/
 		size_t Update(const Frame & pose,
 									size_t length, double * locx, double * locy,
-									draw_callback * cb = 0);
+									draw_callback * cb = 0, grow_notify * gn = 0);
 		
 		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
 		boost::shared_ptr<WRTravmap> CreateWRTravmap();
@@ -130,8 +178,6 @@ namespace sfl {
 		const refmap_t & GetRefmap() const { return m_refmap; }
 		
 		
-		const ssize_t xsize;
-		const ssize_t ysize;
 		const int freespace;
 		const int obstacle;
 		const int ws_obstacle;
@@ -143,9 +189,11 @@ namespace sfl {
 		
 	private:
 		/** \return The number of cells that were changed. */
-		size_t AddBufferedObstacle(double globx, double globy, draw_callback * cb);
+		size_t AddBufferedObstacle(double globx, double globy,
+															 draw_callback * cb, grow_notify * gn);
 
-		size_t AddBufferedObstacle(index_t source_index, draw_callback * cb);
+		size_t AddBufferedObstacle(index_t source_index,
+															 draw_callback * cb, grow_notify * gn);
 		
 		/** \return The number of cells that were changed. */
 		size_t RemoveBufferedObstacle(index_t source_index, draw_callback * cb);
@@ -155,7 +203,7 @@ namespace sfl {
 				from source to target. Changing values of existing links must
 				be done by the caller (or add a ModifyReference() method). */
 		bool AddReference(index_t source_index,
-											size_t target_ix, size_t target_iy,
+											ssize_t target_ix, ssize_t target_iy,
 											int value);
 		
 		/**
@@ -186,6 +234,7 @@ namespace sfl {
 		refmap_t m_refmap;					// maps all sources of a given target
 		link_t m_freespace_buffer;
 		link_t m_obstacle_buffer;
+		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
 	};
 	
 }

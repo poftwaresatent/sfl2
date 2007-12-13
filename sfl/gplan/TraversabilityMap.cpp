@@ -24,6 +24,7 @@
 
 
 #include "TraversabilityMap.hpp"
+#include "../util/numeric.hpp"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -38,25 +39,38 @@ namespace sfl {
   
   TraversabilityMap::
   TraversabilityMap()
-    : gframe(0, 0, 0, 1), freespace(0), obstacle(127), name("world")
+    : gframe(0, 0, 0, 1),
+			freespace(0),
+			obstacle(127),
+			name("world")
   {
   }
 	
 	
 	TraversabilityMap::
-	TraversabilityMap(const GridFrame & origin, size_t ncells_x, size_t ncells_y)
-		: gframe(origin), freespace(0), obstacle(127), name("world")
+	TraversabilityMap(const GridFrame & origin,
+										ssize_t xbegin, ssize_t xend,
+										ssize_t ybegin, ssize_t yend)
+		: gframe(origin),
+			freespace(0),
+			obstacle(127),
+			name("world")
 	{
-		data.reset(new array2d<int>(ncells_x, ncells_y, freespace)); 
+		grid.resize(xbegin, xend, ybegin, yend, freespace); 
 	}
 	
 	
 	TraversabilityMap::
-	TraversabilityMap(const GridFrame & origin, size_t ncells_x, size_t ncells_y,
+	TraversabilityMap(const GridFrame & origin,
+										ssize_t xbegin, ssize_t xend,
+										ssize_t ybegin, ssize_t yend,
 										int _freespace, int _obstacle, const string & _name)
-		: gframe(origin), freespace(_freespace), obstacle(_obstacle), name(_name)
+		: gframe(origin),
+			freespace(_freespace),
+			obstacle(_obstacle),
+			name(_name)
 	{
-		data.reset(new array2d<int>(ncells_x, ncells_y, freespace));
+		grid.resize(xbegin, xend, ybegin, yend, freespace); 
 	}
   
 	
@@ -73,7 +87,7 @@ namespace sfl {
     int force_dimy(-1);
 		
     vector<vector<int> > data;
-    size_t grid_xsize(0);
+    ssize_t grid_xsize(0);
     
     string textline;
     while(getline(is, textline)){
@@ -158,11 +172,11 @@ namespace sfl {
 				line.push_back(value);
       if( ! line.empty()){
 				data.push_back(line);
-				if(line.size() > grid_xsize)
+				if(static_cast<ssize_t>(line.size()) > grid_xsize)
 					grid_xsize = line.size();
       }
     }
-    size_t grid_ysize(data.size());
+    ssize_t grid_ysize(data.size());
     
     if((force_dimx < 0) && (grid_xsize < 1)){
       if(os) *os << "ERROR: xsize is " << grid_xsize
@@ -179,15 +193,14 @@ namespace sfl {
 			grid_xsize = force_dimx;
 		if(force_dimy > 0)
 			grid_ysize = force_dimy;
-		result->data.reset(new array2d<int>(grid_xsize, grid_ysize,
-																				default_traversability));
+		result->grid.resize(0, grid_xsize, 0, grid_ysize, default_traversability);
     result->gframe.Configure(ox, oy, otheta, resolution);
-    for(size_t iy(0); iy < grid_ysize; ++iy)
-			if(iy < data.size()){
+    for(ssize_t iy(0); iy < grid_ysize; ++iy)
+			if(iy < static_cast<ssize_t>(data.size())){
 				vector<int> & line(data[iy]);
-				for(size_t ix(0); ix < grid_xsize; ++ix)
-					if(ix < line.size())
-						(*result->data)[ix][grid_ysize - iy - 1] = line[ix];
+				for(ssize_t ix(0); ix < grid_xsize; ++ix)
+					if(ix < static_cast<ssize_t>(line.size()))
+						result->grid.at(ix, grid_ysize - iy - 1) = line[ix];
 			}
     
 		return result;
@@ -197,24 +210,20 @@ namespace sfl {
   bool TraversabilityMap::
   GetValue(double global_x, double global_y, int & value) const
   {
-    if( ! data)
-      return false;
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-    if( ! data->ValidIndex(idx))
+    if( ! grid.valid(idx.v0, idx.v1))
       return false;
-    value = (*data)[idx];
+    value = grid.at(idx.v0, idx.v1);
     return true;
   }
   
 
   bool TraversabilityMap::
-  GetValue(size_t index_x, size_t index_y, int & value) const
+  GetValue(ssize_t index_x, ssize_t index_y, int & value) const
   {
-    if( ! data)
+    if( ! grid.valid(index_x, index_y))
       return false;
-    if( ! data->ValidIndex(index_x, index_y))
-      return false;
-    value = (*data)[index_x][index_y];
+    value = grid.at(index_x, index_y);
     return true;
   }
 	
@@ -223,29 +232,25 @@ namespace sfl {
 	SetValue(double global_x, double global_y, int value,
 					 draw_callback * cb)
   {
-    if( ! data)
-      return false;
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-    if( ! data->ValidIndex(idx))
+    if( ! grid.valid(idx.v0, idx.v1))
       return false;
 		if(cb)
-			(*cb)(idx.v0, idx.v1, (*data)[idx], value);
-    (*data)[idx] = value;
+			(*cb)(idx.v0, idx.v1, grid.at(idx.v0, idx.v1), value);
+    grid.at(idx.v0, idx.v1) = value;
     return true;
 	}
 	
 	
 	bool TraversabilityMap::
-	SetValue(size_t index_x, size_t index_y, int value,
+	SetValue(ssize_t index_x, ssize_t index_y, int value,
 					 draw_callback * cb)
   {
-    if( ! data)
-      return false;
-    if( ! data->ValidIndex(index_x, index_y))
+    if( ! grid.valid(index_x, index_y))
       return false;
 		if(cb)
-			(*cb)(index_x, index_y, (*data)[index_x][index_y], value);
-    (*data)[index_x][index_y] = value;
+			(*cb)(index_x, index_y, grid.at(index_x, index_y), value);
+    grid.at(index_x, index_y) = value;
     return true;
 	}
 	
@@ -253,25 +258,26 @@ namespace sfl {
 	void TraversabilityMap::
 	DumpMap(ostream * os) const
 	{
+		ssize_t const xsize(grid.xend() - grid.xbegin());
+		ssize_t const ysize(grid.yend() - grid.ybegin());
 		*os << "# resolution " << gframe.Delta() << "\n"
 				<< "# origin " << gframe.X() << " " << gframe.Y()
-				<< " " << gframe.Theta() << "\n";
-		if(data)
-			*os << "# dimension " << data->xsize << " " << data->ysize << "\n";
-		*os << "# obstacle " << obstacle << "\n"
+				<< " " << gframe.Theta() << "\n"
+				<< "# obstacle " << obstacle << "\n"
 				<< "# freespace " << freespace << "\n"
 				<< "# default " << 0 << "\n"
-				<< "# name " << name << "\n";
+				<< "# name " << name << "\n"
+				<< "# dimension " << xsize << " " << ysize << "\n"
+				<< "# offset " << grid.xbegin() << " " << grid.ybegin() << "\n";
 		
-		if(data)
-			for (size_t j(0); j < data->ysize; j++){
-				for (size_t i(0); i < data->xsize; i++) 
-					*os << (*data) [i][data->ysize - j - 1] << " ";
-				*os << "\n";
-			}
+		for (ssize_t jj(grid.ybegin()); jj < grid.yend(); jj++) {
+			for (ssize_t ii(grid.xbegin()); ii < grid.xend(); ii++) 
+				*os << grid.at(ii, grid.yend() - jj - 1) << " ";
+			*os << "\n";
+		}
 	}
 	
-
+	
 	bool TraversabilityMap::
 	SetObst(double global_x, double global_y, draw_callback * cb)
 	{
@@ -280,7 +286,7 @@ namespace sfl {
 	
 	
 	bool TraversabilityMap::
-	SetObst(size_t index_x, size_t index_y, draw_callback * cb)
+	SetObst(ssize_t index_x, ssize_t index_y, draw_callback * cb)
 	{
 		return SetValue(index_x, index_y, obstacle, cb);
 	}
@@ -294,7 +300,7 @@ namespace sfl {
 	
 	
 	bool TraversabilityMap::
-	SetFree(size_t index_x, size_t index_y, draw_callback * cb)
+	SetFree(ssize_t index_x, ssize_t index_y, draw_callback * cb)
 	{
 		return SetValue(index_x, index_y, freespace, cb);
 	}
@@ -303,46 +309,85 @@ namespace sfl {
 	bool TraversabilityMap::
 	IsObst(double global_x, double global_y) const
 	{
-		if( ! data)
-      return false;
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-    if( ! data->ValidIndex(idx))
+    if( ! grid.valid(idx.v0, idx.v1))
       return false;
-    return (*data)[idx] >= obstacle;
+    return grid.at(idx.v0, idx.v1) >= obstacle;
 	}
 	
 	
 	bool TraversabilityMap::
-	IsObst(size_t index_x, size_t index_y) const
+	IsObst(ssize_t index_x, ssize_t index_y) const
 	{
-		if( ! data)
+    if( ! grid.valid(index_x, index_y))
       return false;
-    if( ! data->ValidIndex(index_x, index_y))
-      return false;
-    return (*data)[index_x][index_y] >= obstacle;
+    return grid.at(index_x, index_y) >= obstacle;
 	}
 	
 	
 	bool TraversabilityMap::
 	IsFree(double global_x, double global_y) const
 	{
-		if( ! data)
-      return false;
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-    if( ! data->ValidIndex(idx))
+    if( ! grid.valid(idx.v0, idx.v1))
       return false;
-    return (*data)[idx] <= freespace;
+    return grid.at(idx.v0, idx.v1) <= freespace;
 	}
 	
 	
 	bool TraversabilityMap::
-	IsFree(size_t index_x, size_t index_y) const
+	IsFree(ssize_t index_x, ssize_t index_y) const
 	{
-		if( ! data)
+    if( ! grid.valid(index_x, index_y))
       return false;
-    if( ! data->ValidIndex(index_x, index_y))
-      return false;
-    return (*data)[index_x][index_y] <= freespace;
+    return grid.at(index_x, index_y) <= freespace;
+	}
+	
+	
+	bool TraversabilityMap::
+	IsValid(ssize_t index_x, ssize_t index_y) const
+	{
+		return grid.valid(index_x, index_y);
+	}
+	
+	
+	bool TraversabilityMap::
+	IsValid(double global_x, double global_y) const
+	{
+		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+		return grid.valid(idx.v0, idx.v1);
+	}
+	
+	
+	bool TraversabilityMap::
+	Autogrow(ssize_t index_x, ssize_t index_y, int fill_value,
+					 grow_notify * gn)
+	{
+		if (grid.valid(index_x, index_y))
+			return false;
+		
+		if (index_x < grid.xbegin())
+			grid.resize_xbegin(index_x, fill_value);
+		if (index_x >= grid.xend())
+			grid.resize_xend(index_x + 1, fill_value);
+		if (index_y < grid.ybegin())
+			grid.resize_ybegin(index_y, fill_value);
+		if (index_y >= grid.yend())
+			grid.resize_yend(index_y + 1, fill_value);
+		
+		if (gn)
+			(*gn)(grid.xbegin(), grid.xend(), grid.ybegin(), grid.yend());
+		
+		return true;
+	}
+	
+	
+	bool TraversabilityMap::
+	Autogrow(double global_x, double global_y, int fill_value,
+					 grow_notify * gn)
+	{
+		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+		return Autogrow(idx.v0, idx.v1, fill_value, gn);
 	}
 	
 }

@@ -1,0 +1,121 @@
+------------------------------------------------------------------------
+r760 | poftwaresatent | 2007-12-11 13:55:47 -0800 (Tue, 11 Dec 2007) | 1 line
+Changed paths:
+   A /branches/sunflower--estar-supergrid-rfct-1 (from /trunk/sunflower:759)
+
+need to extend gplan/TraversabilityMap (and related code) to allow resizeable grids and negative grid indices
+------------------------------------------------------------------------
+r761 | poftwaresatent | 2007-12-11 17:05:51 -0800 (Tue, 11 Dec 2007) | 14 lines
+Changed paths:
+   D /branches/sunflower--estar-supergrid-rfct-1/Makefile.in
+   D /branches/sunflower--estar-supergrid-rfct-1/api/Makefile.in
+   D /branches/sunflower--estar-supergrid-rfct-1/bband/Makefile.in
+   D /branches/sunflower--estar-supergrid-rfct-1/config.guess
+   D /branches/sunflower--estar-supergrid-rfct-1/config.sub
+   D /branches/sunflower--estar-supergrid-rfct-1/configure
+   D /branches/sunflower--estar-supergrid-rfct-1/contrib/Makefile.in
+   D /branches/sunflower--estar-supergrid-rfct-1/cwrap/Makefile.in
+   D /branches/sunflower--estar-supergrid-rfct-1/depcomp
+   D /branches/sunflower--estar-supergrid-rfct-1/dwa/Makefile.in
+   D /branches/sunflower--estar-supergrid-rfct-1/expo/Makefile.in
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.hpp
+   D /branches/sunflower--estar-supergrid-rfct-1/gplan/Makefile.in
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/Mapper2d.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/NF1.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/NF1.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/RWTravmap.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.hpp
+   D /branches/sunflower--estar-supergrid-rfct-1/install-sh
+   D /branches/sunflower--estar-supergrid-rfct-1/ltmain.sh
+   D /branches/sunflower--estar-supergrid-rfct-1/missing
+   D /branches/sunflower--estar-supergrid-rfct-1/mkinstalldirs
+   M /branches/sunflower--estar-supergrid-rfct-1/util/Makefile.am
+   D /branches/sunflower--estar-supergrid-rfct-1/util/Makefile.in
+   A /branches/sunflower--estar-supergrid-rfct-1/util/flexgrid.hpp
+
+gplan/TraversabilityMap now uses flexgrid (copy-pasted from
+E*). Compiles again without E* support, will add that back again now.
+
+* changed all grid index operations to SIGNED and, where applicable,
+  with explicit begin and end indices (instead of assuming begin==0
+  everywhere)
+
+* added size management methods to TraversabilityMap
+
+* moved some NF1-specific  stuff from GridFrame to NF1 (which remains
+  UNSIGNED-index based)
+
+* removed Automake/Autoconf/Libtool -generated files.
+
+------------------------------------------------------------------------
+r762 | poftwaresatent | 2007-12-11 17:14:28 -0800 (Tue, 11 Dec 2007) | 1 line
+Changed paths:
+   D /branches/sunflower--estar-supergrid-rfct-1/config.h.in
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/Mapper2d.hpp
+
+removed another generated file
+------------------------------------------------------------------------
+r763 | poftwaresatent | 2007-12-11 23:34:04 -0800 (Tue, 11 Dec 2007) | 7 lines
+Changed paths:
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/Mapper2d.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/Mapper2d.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/util/flexgrid.hpp
+
+Mapper2d adapted to growable travmap. Also added travmap_grow_strategy
+functor class (so far only implemented as never_grow). Adusted
+TraversabilityMap::Autogrow() to accept a grow_notify functor which
+will make it possible to know when the travmap has grown (useful
+e.g. in asl-mplan to determie when to grow the E* C-space). Improved
+flexgrid somewhat, should bring those changes into E* as well.
+
+------------------------------------------------------------------------
+r764 | poftwaresatent | 2007-12-12 01:19:09 -0800 (Wed, 12 Dec 2007) | 6 lines
+Changed paths:
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/Mapper2d.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/RWTravmap.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/util/flexgrid.hpp
+
+estar-devkit compiles again, but the planner in the smartX.sh demos
+somehow doesn't get updated (the travmap, however, seems to see the
+actual obstacles). Kicked out the "data" smart_ptr indirection in
+TraversabilityMap, now using a flexgrid instance (this simplifies a
+lot of code actually).
+
+------------------------------------------------------------------------
+r766 | poftwaresatent | 2007-12-12 12:05:47 -0800 (Wed, 12 Dec 2007) | 1 line
+Changed paths:
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.hpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/Mapper2d.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/TraversabilityMap.hpp
+
+made some callback functors pure virtual (the empty default implementation lead to missed refactorings, grrrr)
+------------------------------------------------------------------------
+r767 | poftwaresatent | 2007-12-12 12:07:36 -0800 (Wed, 12 Dec 2007) | 1 line
+Changed paths:
+   M /branches/sunflower--estar-supergrid-rfct-1
+   M /branches/sunflower--estar-supergrid-rfct-1/api
+   M /branches/sunflower--estar-supergrid-rfct-1/bband
+   M /branches/sunflower--estar-supergrid-rfct-1/contrib
+   M /branches/sunflower--estar-supergrid-rfct-1/cwrap
+   M /branches/sunflower--estar-supergrid-rfct-1/dwa
+   M /branches/sunflower--estar-supergrid-rfct-1/expo
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan
+   M /branches/sunflower--estar-supergrid-rfct-1/util
+
+ignore generated files
+------------------------------------------------------------------------
+r769 | poftwaresatent | 2007-12-12 16:12:38 -0800 (Wed, 12 Dec 2007) | 1 line
+Changed paths:
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.cpp
+   M /branches/sunflower--estar-supergrid-rfct-1/gplan/GridFrame.hpp
+
+confusion of bbox-style vs range-style specification of grid sizes
+------------------------------------------------------------------------

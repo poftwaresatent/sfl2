@@ -57,12 +57,12 @@ namespace sfl {
     for(size_t is(0); is < nscans; ++is)
       if(scan->data[is].rho >= robot_radius){
 	const scan_data & gdata(scan->data[is]);
-	m_frame->SetGlobalDisk(*m_grid, position_t(gdata.globx, gdata.globy),
-			       robot_radius, NF1Wave::OBSTACLE);
+	SetGlobalDisk(*m_frame, *m_grid, position_t(gdata.globx, gdata.globy),
+		      robot_radius, NF1Wave::OBSTACLE);
       }
-    m_frame->SetGlobalDisk(*m_grid, m_goal, goal_radius, NF1Wave::FREE);
+    SetGlobalDisk(*m_frame, *m_grid, m_goal, goal_radius, NF1Wave::FREE);
     (*m_grid)[m_goal_index] = NF1Wave::GOAL;
-    m_frame->SetGlobalDisk(*m_grid, m_home, robot_radius, NF1Wave::FREE);
+    SetGlobalDisk(*m_frame, *m_grid, m_home, robot_radius, NF1Wave::FREE);
     m_mutex->Unlock();
   }
   
@@ -144,6 +144,41 @@ namespace sfl {
   GetGridFrame() const
   {
     return m_frame;
+  }
+  
+  
+  /** \todo this implementation is a bit brute force... */
+  void NF1::
+  SetLocalDisk(GridFrame const & gframe,
+	       grid_t & grid, position_t center,
+	       double radius, double value)
+  {
+    index_t index(gframe.LocalIndex(center));
+    if(grid.ValidIndex(index))
+      grid[index] = value;
+    const index_t
+      minidx(gframe.LocalIndex(center.v0 - radius, center.v1 - radius));
+    const index_t
+      maxidx(gframe.LocalIndex(center.v0 + radius, center.v1 + radius));
+    const double radius2(sqr(radius));
+    for(ssize_t ix(minidx.v0); ix < maxidx.v0; ++ix)
+      for(ssize_t iy(minidx.v1); iy < maxidx.v1; ++iy)
+	if(grid.ValidIndex(ix, iy)){
+	  const position_t point(gframe.LocalPoint(ix, iy) - center);
+	  const double r2(sqr(point.v0) + sqr(point.v1));
+	  if(r2 <= radius2)
+	    grid[ix][iy] = value;
+	}
+  }
+  
+  
+  void NF1::
+  SetGlobalDisk(GridFrame const & gframe,
+		grid_t & grid, position_t center,
+		double radius, double value)
+  {
+    gframe.From(center.v0, center.v1);
+    SetLocalDisk(gframe, grid, center, radius, value);
   }
   
 }

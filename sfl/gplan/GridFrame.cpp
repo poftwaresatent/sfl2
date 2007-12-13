@@ -110,7 +110,7 @@ namespace sfl {
 
 
   GridFrame::position_t GridFrame::
-  GlobalPoint(size_t ix, size_t iy) const
+  GlobalPoint(ssize_t ix, ssize_t iy) const
   {
     position_t point(LocalPoint(ix, iy));
     To(point.v0, point.v1);
@@ -128,7 +128,7 @@ namespace sfl {
 
 
   GridFrame::position_t GridFrame::
-  LocalPoint(size_t ix, size_t iy) const
+  LocalPoint(ssize_t ix, ssize_t iy) const
   {
     return position_t(ix * m_delta, iy * m_delta);
   }
@@ -141,52 +141,22 @@ namespace sfl {
   }
 
 
-  /** \todo this implementation is a bit brute force... */
-  void GridFrame::
-  SetLocalDisk(grid_t & grid, position_t center,
-	       double radius, double value)
-  {
-    index_t index(LocalIndex(center));
-    if(grid.ValidIndex(index))
-      grid[index] = value;
-    const index_t minidx(LocalIndex(center.v0 - radius, center.v1 - radius));
-    const index_t maxidx(LocalIndex(center.v0 + radius, center.v1 + radius));
-    const double radius2(sqr(radius));
-    for(size_t ix(minidx.v0); ix < maxidx.v0; ++ix)
-      for(size_t iy(minidx.v1); iy < maxidx.v1; ++iy)
-	if(grid.ValidIndex(ix, iy)){
-	  const position_t point(LocalPoint(ix, iy) - center);
-	  const double r2(sqr(point.v0) + sqr(point.v1));
-	  if(r2 <= radius2)
-	    grid[ix][iy] = value;
-	}
-  }
-
-
-  void GridFrame::
-  SetGlobalDisk(grid_t & grid, position_t center,
-		double radius, double value)
-  {
-    From(center.v0, center.v1);
-    SetLocalDisk(grid, center, radius, value);
-  }
-
-
   size_t GridFrame::
-  DrawDDALine(size_t ix0, size_t iy0, size_t ix1, size_t iy1,
-	      size_t xsize, size_t ysize,
+  DrawDDALine(ssize_t ix0, ssize_t iy0, ssize_t ix1, ssize_t iy1,
+	      ssize_t xbegin, ssize_t xend,
+	      ssize_t ybegin, ssize_t yend,
 	      draw_callback & cb) const
   {
-    size_t ix(ix0);
-    size_t iy(iy0);
+    ssize_t ix(ix0);
+    ssize_t iy(iy0);
     size_t count(0);
-    if((ix < xsize) && (iy < ysize)){
+    if ((ix >= xbegin) && (iy >= ybegin) && (ix < xend) && (iy < yend)) {
       cb(ix, iy);
       ++count;
     }
 
-    ssize_t dx(static_cast<ssize_t>(ix1) - static_cast<ssize_t>(ix0));
-    ssize_t dy(static_cast<ssize_t>(iy1) - static_cast<ssize_t>(iy0));
+    ssize_t dx(ix1 - ix0);
+    ssize_t dy(iy1 - iy0);
     if(absval(dx) > absval(dy)){
       double slope(static_cast<double>(dy) / static_cast<double>(dx));
       if(dx < 0){
@@ -199,14 +169,14 @@ namespace sfl {
       while(ix != ix1){
 	ix += dx;
 	yy += slope;
-	iy = static_cast<size_t>(rint(yy));
-	if((ix < xsize) && (iy < ysize)){
+	iy = static_cast<ssize_t>(rint(yy));
+	if ((ix >= xbegin) && (iy >= ybegin) && (ix < xend) && (iy < yend)) {
 	  cb(ix, iy);
 	  ++count;
 	}
       }
       if(iy != iy1){
-	if((ix < xsize) && (iy1 < ysize)){
+	if ((ix >= xbegin) && (iy >= ybegin) && (ix < xend) && (iy < yend)) {
 	  cb(ix, iy1);
 	  ++count;
 	}
@@ -224,14 +194,14 @@ namespace sfl {
       while(iy != iy1){
 	iy += dy;
 	xx += slope;
-	ix = static_cast<size_t>(rint(xx));
-	if((ix < xsize) && (iy < ysize)){
+	ix = static_cast<ssize_t>(rint(xx));
+	if ((ix >= xbegin) && (iy >= ybegin) && (ix < xend) && (iy < yend)) {
 	  cb(ix, iy);
 	  ++count;
 	}
       }
       if(ix != ix1){
-	if((ix1 < xsize) && (iy < ysize)){
+	if ((ix >= xbegin) && (iy >= ybegin) && (ix < xend) && (iy < yend)) {
 	  cb(ix1, iy);
 	  ++count;
 	}
@@ -244,23 +214,28 @@ namespace sfl {
 
   size_t GridFrame::
   DrawLocalLine(double x0, double y0, double x1, double y1,
-		size_t xsize, size_t ysize, draw_callback & cb) const
+		ssize_t xbegin, ssize_t xend,
+		ssize_t ybegin, ssize_t yend,
+		draw_callback & cb) const
   {
-    return DrawDDALine(static_cast<size_t>(rint(x0 / m_delta)),
-		       static_cast<size_t>(rint(y0 / m_delta)),
-		       static_cast<size_t>(rint(x1 / m_delta)),
-		       static_cast<size_t>(rint(y1 / m_delta)),
-		       xsize, ysize, cb);
+    return DrawDDALine(static_cast<ssize_t>(rint(x0 / m_delta)),
+		       static_cast<ssize_t>(rint(y0 / m_delta)),
+		       static_cast<ssize_t>(rint(x1 / m_delta)),
+		       static_cast<ssize_t>(rint(y1 / m_delta)),
+		       xbegin, xend, ybegin, yend, cb);
   }
-
-
+  
+  
   size_t GridFrame::
   DrawGlobalLine(double x0, double y0, double x1, double y1,
-		 size_t xsize, size_t ysize, draw_callback & cb) const
+		 ssize_t xbegin, ssize_t xend,
+		 ssize_t ybegin, ssize_t yend,
+		 draw_callback & cb) const
   {
     From(x0, y0);
     From(x1, y1);
-    return DrawLocalLine(x0, y0, x1, y1, xsize, ysize, cb);
+    return
+      DrawLocalLine(x0, y0, x1, y1, xbegin, xend, ybegin, yend, cb);
   }
 
 
@@ -272,7 +247,7 @@ namespace sfl {
 
 
   void GridFrame::dbg_draw_callback::
-  operator () (size_t ix, size_t iy)
+  operator () (ssize_t ix, ssize_t iy)
   {
     m_os << " (" << ix << ", " << iy << ")";
   }

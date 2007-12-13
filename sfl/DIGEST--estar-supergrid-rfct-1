@@ -1,0 +1,34 @@
+------------------------------------------------------------------------
+r761 | poftwaresatent | 2007-12-11 17:05:51 -0800 (Tue, 11 Dec 2007) | 14 lines
+
+gplan/TraversabilityMap now uses flexgrid (copy-pasted from
+E*). Compiles again without E* support, will add that back again now.
+
+* changed all grid index operations to SIGNED and, where applicable,
+  with explicit begin and end indices (instead of assuming begin==0
+  everywhere)
+
+* added size management methods to TraversabilityMap
+
+* moved some NF1-specific  stuff from GridFrame to NF1 (which remains
+  UNSIGNED-index based)
+
+* removed Automake/Autoconf/Libtool -generated files.
+
+------------------------------------------------------------------------
+r763 | poftwaresatent | 2007-12-11 23:34:04 -0800 (Tue, 11 Dec 2007) | 7 lines
+
+Mapper2d adapted to growable travmap.
+
+------------------------------------------------------------------------
+r766 | poftwaresatent | 2007-12-12 12:05:47 -0800 (Wed, 12 Dec 2007) | 1 line
+
+made some callback functors pure virtual (the empty default
+implementation lead to missed refactorings, grrrr)
+
+------------------------------------------------------------------------
+r769 | poftwaresatent | 2007-12-12 16:12:38 -0800 (Wed, 12 Dec 2007) | 1 line
+
+confusion of bbox-style vs range-style specification of grid sizes
+
+------------------------------------------------------------------------

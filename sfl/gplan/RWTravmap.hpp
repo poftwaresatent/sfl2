@@ -41,8 +41,6 @@ namespace sfl {
   class RDTravmap
   {
   public:
-		typedef TraversabilityMap::const_data_t const_data_t;
-		
 		RDTravmap(boost::shared_ptr<TraversabilityMap const> travmap,
 							boost::shared_ptr<RWlock> rwlock)
 			: m_travmap(reinterpret_cast<boost::shared_ptr<TraversabilityMap>&>
@@ -52,16 +50,36 @@ namespace sfl {
 		/** useful for protecting a whole chunk of operations */
 		RWlock::rdsentry CreateRDSentry()
 		{ return RWlock::rdsentry(m_rwlock); }
-				
-		/** \note Access through this shared pointer is NOT rwlock protected. */
-		const_data_t GetData() const {
-			const_data_t data(reinterpret_cast<const_data_t&>(m_travmap->data));
-			return data;
-		}
+
+// // 	protected:
+// // 		/** \note Access through this is NOT rwlock protected. */
+// // 		TraversabilityMap::grid_t const & GetGrid() const
+// // 		{ return m_travmap->grid; }
+// // 	public:
 		
 		GridFrame const & GetGridFrame() const { return m_travmap->gframe;	}
 		int GetObstacle() const { return m_travmap->obstacle; }
 		int GetFreespace() const { return m_travmap->freespace; }
+		
+		ssize_t GetXBegin() const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->grid.xbegin(); }
+		
+		ssize_t GetXEnd() const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->grid.xend(); }
+		
+		ssize_t GetYBegin() const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->grid.ybegin(); }
+		
+		ssize_t GetYEnd() const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->grid.yend(); }
+		
+		bool IsValid(ssize_t index_x, ssize_t index_y) const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->IsValid(index_x, index_y); }
 
 		/** see TraversabilityMap documentation */
 		bool GetValue(double gx, double gy, int & value) const {
@@ -84,7 +102,7 @@ namespace sfl {
 			return m_travmap->IsObst(gx, gy); }
 		
 		/** see TraversabilityMap documentation */
-		bool IsObst(size_t ix, size_t iy) const {
+		bool IsObst(ssize_t ix, ssize_t iy) const {
 			RWlock::rdsentry const sentry(m_rwlock);
 			return m_travmap->IsObst(ix, iy); }
 		
@@ -94,7 +112,7 @@ namespace sfl {
 			return m_travmap->IsFree(gx, gy); }
 		
 		/** see TraversabilityMap documentation */
-		bool IsFree(size_t ix, size_t iy) const {
+		bool IsFree(ssize_t ix, ssize_t iy) const {
 			RWlock::rdsentry const sentry(m_rwlock);
 			return m_travmap->IsFree(ix, iy); }
 		
@@ -154,7 +172,7 @@ namespace sfl {
 		}
 
 		/** see TraversabilityMap documentation */
- 		bool SetObst(size_t ix, size_t iy, dcb * cb) {
+ 		bool SetObst(ssize_t ix, ssize_t iy, dcb * cb) {
 			RWlock::wrsentry const sentry(m_rwlock);
 			return m_travmap->SetObst(ix, iy, cb);
 		}
@@ -166,10 +184,12 @@ namespace sfl {
 		}
 		
 		/** see TraversabilityMap documentation */
- 		bool SetFree(size_t ix, size_t iy, dcb * cb) {
+ 		bool SetFree(ssize_t ix, ssize_t iy, dcb * cb) {
 			RWlock::wrsentry const sentry(m_rwlock);
 			return m_travmap->SetFree(ix, iy, cb);
 		}
+
+#warning "Should add rwlock-protected Autogrow() methods here."
 	};
 
 }
