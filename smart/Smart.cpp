@@ -132,9 +132,7 @@ public:
 		shared_ptr<RDTravmap> rdtravmap(algo->GetRDTravmap());
 		const GridFrame::index_t
 			idx(rdtravmap->GetGridFrame().GlobalIndex(pose.X(), pose.Y()));
-		TraversabilityMap::const_data_t travdata(rdtravmap->GetData());
-		if((travdata)
-			 && ((idx.v0 < travdata->xsize) && (idx.v1 < travdata->ysize)))
+		if (rdtravmap->IsValid(idx.v0, idx.v1))
 			m_smart_value = estar->GetValue(idx.v0, idx.v1);
 		else
 			m_smart_value = estar::infinity;
@@ -385,7 +383,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		control_params->max_steering_rate = params.model_phid_max;
 	}
 	
-	shared_ptr<FacadeOptions> estar_options(new FacadeOptions());
+	shared_ptr<rfct::FacadeOptions> estar_options(new rfct::FacadeOptions());
 	string_to(descriptor->GetOption("estar_check_upwind"),
 						estar_options->check_upwind);
 	string_to(descriptor->GetOption("estar_check_local_consistency"),

@@ -368,61 +368,80 @@ namespace npm {
   
   
   void World::
-  ApplyTraversability(const TraversabilityMap & travmap)
+  ApplyTraversability(const TraversabilityMap & travmap, bool simple)
   {
-    const GridFrame & gframe(travmap.gframe);
-    const double offset(gframe.Delta() / 2);
-    const array2d<int> & data(*travmap.data);
-    const int obstacle(travmap.obstacle);
-    const size_t xsize(travmap.data->xsize);
-    const size_t ysize(travmap.data->ysize);
-    for(size_t ix(0); ix < xsize; ++ix)
-      for(size_t iy(0); iy < ysize; ++iy)
-	if(data[ix][iy] >= obstacle){
+    GridFrame const & gframe(travmap.gframe);
+    double const offset(gframe.Delta() / 2);
+    int const obstacle(travmap.obstacle);
+    ssize_t const xbegin(travmap.grid.xbegin());
+    ssize_t const xend(travmap.grid.xend());
+    ssize_t const ybegin(travmap.grid.ybegin());
+    ssize_t const yend(travmap.grid.yend());
+    
+    for (ssize_t ix(xbegin); ix < xend; ++ix)
+      for (ssize_t iy(ybegin); iy < yend; ++iy)
+	if (travmap.grid.at(ix, iy) >= obstacle) {
 	  GridFrame::position_t center(gframe.LocalPoint(ix, iy));
-#define KEPP_IT_SIMPLE
-#ifdef KEPP_IT_SIMPLE
-	  {
-	    Line line(center.v0 - offset, center.v1,
-		      center.v0 + offset, center.v1);
-	    line.TransformTo(gframe);
-	    AddLine(line);
+	  if (simple) {
+	    {
+	      Line line(center.v0 - offset, center.v1,
+			center.v0 + offset, center.v1);
+	      line.TransformTo(gframe);
+	      AddLine(line);
+	    }
+	    {
+	      Line line(center.v0, center.v1 - offset,
+			center.v0, center.v1 + offset);
+	      line.TransformTo(gframe);
+	      AddLine(line);
+	    }
 	  }
-	  {
-	    Line line(center.v0, center.v1 - offset,
-		      center.v0, center.v1 + offset);
-	    line.TransformTo(gframe);
-	    AddLine(line);
-	  }
-#else
-	  if((0 >= ix) || (data[ix - 1][iy] < obstacle)){ // west
-	    Line line(center.v0 - offset, center.v1 - offset,
-		      center.v0 - offset, center.v1 + offset);
-	    line.TransformTo(gframe);
-	    AddLine(line);
-	  }
-	  if((xsize - 1 <= ix) || (data[ix + 1][iy] < obstacle)){ // east
-	    Line line(center.v0 + offset, center.v1 - offset,
-		      center.v0 + offset, center.v1 + offset);
-	    line.TransformTo(gframe);
-	    AddLine(line);
-	  }
-	  if((0 >= iy) || (data[ix][iy - 1] < obstacle)){ // south
-	    Line line(center.v0 - offset, center.v1 - offset,
-		      center.v0 + offset, center.v1 - offset);
-	    line.TransformTo(gframe);
-	    AddLine(line);
-	  }
-	  if((ysize - 1 <= iy) || (data[ix][iy + 1] < obstacle)){ // north
-	    Line line(center.v0 - offset, center.v1 + offset,
-		      center.v0 + offset, center.v1 + offset);
-	    line.TransformTo(gframe);
-	    AddLine(line);
-	  }
-#endif
+	  else {
+	    try { // west
+	      if (travmap.grid.at(ix - 1, iy) < obstacle) {
+		Line line(center.v0 - offset, center.v1 - offset,
+			  center.v0 - offset, center.v1 + offset);
+		line.TransformTo(gframe);
+		AddLine(line);
+	      }
+	    }
+	    catch (out_of_range) {
+	    }
+	    try { // east
+	      if (travmap.grid.at(ix + 1, iy) < obstacle) {
+		Line line(center.v0 + offset, center.v1 - offset,
+			  center.v0 + offset, center.v1 + offset);
+		line.TransformTo(gframe);
+		AddLine(line);
+	      }
+	    }
+	    catch (out_of_range) {
+	    }
+	    try { // south
+	      if (travmap.grid.at(ix, iy - 1) < obstacle) {
+		Line line(center.v0 - offset, center.v1 - offset,
+			  center.v0 + offset, center.v1 - offset);
+		line.TransformTo(gframe);
+		AddLine(line);
+	      }
+	    }
+	    catch (out_of_range) {
+	    }
+	    try { // north
+	      if (travmap.grid.at(ix, iy + 1) < obstacle) {
+		Line line(center.v0 - offset, center.v1 + offset,
+			  center.v0 + offset, center.v1 + offset);
+		line.TransformTo(gframe);
+		AddLine(line);
+	      }
+	    }
+	    catch (out_of_range) {
+	    }
+	  } // if (simple) ... else
 	}
+    
     // lower left
-    GridFrame::position_t corner(gframe.LocalPoint(0, 0));
+    GridFrame::position_t corner(gframe.LocalPoint(xbegin, ybegin));
     corner.v0 -= offset;
     corner.v1 -= offset;
     gframe.To(corner.v0, corner.v1);
@@ -430,20 +449,23 @@ namespace npm {
       m_bbox.reset(new BBox(corner.v0, corner.v1, corner.v0, corner.v1));
     else
       m_bbox->Update(corner.v0, corner.v1);
+    
     // upper left
-    corner = gframe.LocalPoint(0, ysize - 1);
+    corner = gframe.LocalPoint(xbegin, yend - 1);
     corner.v0 -= offset;
     corner.v1 += offset;
     gframe.To(corner.v0, corner.v1);
     m_bbox->Update(corner.v0, corner.v1);
+    
     // lower right
-    corner = gframe.LocalPoint(xsize - 1, 0);
+    corner = gframe.LocalPoint(xend - 1, ybegin);
     corner.v0 += offset;
     corner.v1 -= offset;
     gframe.To(corner.v0, corner.v1);
     m_bbox->Update(corner.v0, corner.v1);
+    
     // upper right
-    corner = gframe.LocalPoint(xsize - 1, ysize - 1);
+    corner = gframe.LocalPoint(xend - 1, yend - 1);
     corner.v0 += offset;
     corner.v1 += offset;
     gframe.To(corner.v0, corner.v1);

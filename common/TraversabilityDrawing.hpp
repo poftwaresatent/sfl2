@@ -44,9 +44,11 @@ namespace npm {
 		virtual double GetDelta() const = 0;
 		virtual int GetObstacle() const = 0;
 		virtual int GetFreespace() const = 0;
-		virtual size_t GetXSize() const = 0;
-		virtual size_t GetYSize() const = 0;
-		virtual int GetValue(size_t ix, size_t iy) const = 0;
+		virtual ssize_t GetXBegin() const = 0;
+		virtual ssize_t GetXEnd() const = 0;
+		virtual ssize_t GetYBegin() const = 0;
+		virtual ssize_t GetYEnd() const = 0;
+		virtual int GetValue(ssize_t ix, ssize_t iy) const = 0;
 		bool enable;
 	};
   
@@ -61,9 +63,11 @@ namespace npm {
 		virtual double GetDelta() const;
 		virtual int GetObstacle() const;
 		virtual int GetFreespace() const;
-		virtual size_t GetXSize() const;
-		virtual size_t GetYSize() const;
-		virtual int GetValue(size_t ix, size_t iy) const;
+		virtual ssize_t GetXBegin() const;
+		virtual ssize_t GetXEnd() const;
+		virtual ssize_t GetYBegin() const;
+		virtual ssize_t GetYEnd() const;
+		virtual int GetValue(ssize_t ix, ssize_t iy) const;
 	protected:
 		boost::shared_ptr<sfl::TraversabilityMap const> m_travmap;
 	};
@@ -79,9 +83,11 @@ namespace npm {
 		virtual double GetDelta() const;
 		virtual int GetObstacle() const;
 		virtual int GetFreespace() const;
-		virtual size_t GetXSize() const;
-		virtual size_t GetYSize() const;
-		virtual int GetValue(size_t ix, size_t iy) const;
+		virtual ssize_t GetXBegin() const;
+		virtual ssize_t GetXEnd() const;
+		virtual ssize_t GetYBegin() const;
+		virtual ssize_t GetYEnd() const;
+		virtual int GetValue(ssize_t ix, ssize_t iy) const;
 	protected:
 		boost::shared_ptr<sfl::RDTravmap> m_rdtravmap;
 	};

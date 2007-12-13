@@ -45,7 +45,6 @@
 #include <sfl/api/MotionController.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/gplan/GridFrame.hpp>
-#include <estar/Grid.hpp>
 #include <estar/Facade.hpp>
 #include <estar/dump.hpp>
 #include <pnf/Flow.hpp>

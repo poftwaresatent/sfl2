@@ -85,7 +85,8 @@ namespace npm {
        obstacles.
     */
     void
-    ApplyTraversability(const sfl::TraversabilityMap & travmap);
+    ApplyTraversability(const sfl::TraversabilityMap & travmap,
+			bool simple = true);
     
     void AddLine(const sfl::Line & line);
     

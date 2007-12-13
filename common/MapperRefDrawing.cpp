@@ -74,21 +74,26 @@ namespace npm {
 		shared_ptr<RDTravmap> rdtravmap(m_mapper->CreateRDTravmap());
 		vector<vec2d<double> > pts;
 		
-		if(m_draw_link){
+		ssize_t const xbegin(rdtravmap->GetXBegin());
+		ssize_t const xend(rdtravmap->GetXEnd());
+		ssize_t const ybegin(rdtravmap->GetYBegin());
+		ssize_t const yend(rdtravmap->GetYEnd());
+		
+		if (m_draw_link) {
 			const Mapper2d::linkmap_t & linkmap(m_mapper->GetLinkmap());
 			glColor3d(1, 1, 0.5);
 			glBegin(GL_LINES);
-			for(ssize_t ix(0); ix < m_mapper->xsize; ++ix)
-				for(ssize_t iy(0); iy < m_mapper->ysize; ++iy){
+			for (ssize_t ix(xbegin); ix < xend; ++ix)
+				for (ssize_t iy(ybegin); iy < yend; ++iy) {
 					int val;
-					if( ! rdtravmap->GetValue(ix, iy, val))
+					if ( ! rdtravmap->GetValue(ix, iy, val))
 						continue;
-					const Mapper2d::link_t & link(linkmap[ix][iy]);
-					if(link.empty())
+					const Mapper2d::link_t & link(linkmap.at(ix, iy));
+					if (link.empty())
 						continue;
-					for(Mapper2d::link_t::const_iterator ii(link.begin());
-							ii != link.end(); ++ii){
-						const vec2d<double> pt(ix + Random::Uniform(-0.4, 0.4),
+					for (Mapper2d::link_t::const_iterator ii(link.begin());
+							 ii != link.end(); ++ii) {
+						vec2d<double> const pt(ix + Random::Uniform(-0.4, 0.4),
 																	 iy + Random::Uniform(-0.4, 0.4));
 						glVertex2d(pt.v0, pt.v1);
 						pts.push_back(pt);
@@ -97,24 +102,24 @@ namespace npm {
 					}
 				}
 		}
-		else{
+		else {
 			const Mapper2d::refmap_t & refmap(m_mapper->GetRefmap());
 			glBegin(GL_LINES);
-			for(ssize_t ix(0); ix < m_mapper->xsize; ++ix)
-				for(ssize_t iy(0); iy < m_mapper->ysize; ++iy){
+			for (ssize_t ix(xbegin); ix < xend; ++ix)
+				for (ssize_t iy(ybegin); iy < yend; ++iy) {
 					int val;
-					if( ! rdtravmap->GetValue(ix, iy, val))
+					if ( ! rdtravmap->GetValue(ix, iy, val))
 						continue;
-					const Mapper2d::ref_s & ref(refmap[ix][iy]);
-					for(Mapper2d::rev_t::const_iterator ii(ref.reverse.begin());
-							ii != ref.reverse.end(); ++ii){
-						if(ii->first == val)
+					const Mapper2d::ref_s & ref(refmap.at(ix, iy));
+					for (Mapper2d::rev_t::const_iterator ii(ref.reverse.begin());
+							 ii != ref.reverse.end(); ++ii) {
+						if (ii->first == val)
 							glColor3d(1, 0.5, 0);
 						else
 							glColor3d(0, 0.5, 1);
 						glVertex2d(ix + Random::Uniform(-0.4, 0.4),
 											 iy + Random::Uniform(-0.4, 0.4));
-						const vec2d<double> pt(ii->second.v0 + Random::Uniform(-0.4, 0.4),
+						vec2d<double> const pt(ii->second.v0 + Random::Uniform(-0.4, 0.4),
 																	 ii->second.v1 + Random::Uniform(-0.4, 0.4));
 						glVertex2d(pt.v0, pt.v1);
 						pts.push_back(pt);
@@ -122,13 +127,6 @@ namespace npm {
 				}
 			glEnd();
     }
-		
-// 		glBegin(GL_POINTS);
-// 		glPointSize(1);
-// 		glColor3d(1, 0, 0.5);
-// 		for(size_t ii(0); ii < pts.size(); ++ii)
-// 			glVertex2d(pts[ii].v0, pts[ii].v1);
-// 		glEnd();
 		
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();    

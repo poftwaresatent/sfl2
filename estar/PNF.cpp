@@ -33,7 +33,6 @@
 // for deletion of smart pointers containing forwardly declared types:
 #include <estar/Algorithm.hpp>
 #include <estar/Facade.hpp>
-#include <estar/Grid.hpp>
 #include <estar/Kernel.hpp>
 
 // this must be included last (or at least pretty late), otherwise it
@@ -408,10 +407,9 @@ struct flow_draw_callback
   : public GridFrame::draw_callback
 {
   flow_draw_callback(Flow * flow): m_flow(flow) {}
-  void operator () (size_t ix, size_t iy) {
+  void operator () (ssize_t ix, ssize_t iy) {
     PVDEBUG("grid: %zu   %zu\n", ix, iy);
-    m_flow->AddStaticObject(static_cast<ssize_t>(ix),
-			    static_cast<ssize_t>(iy));
+    m_flow->AddStaticObject(ix, iy);
   }
   Flow * m_flow;
 };
@@ -425,7 +423,7 @@ AddStaticLine(double x0, double y0,
   Wait();
   
   flow_draw_callback cb(m_flow.get());
-  return
-    0 !=
-    m_frame->DrawGlobalLine(x0, y0, x1, y1, m_flow->xsize, m_flow->ysize, cb);
+  return 0 != m_frame->DrawGlobalLine(x0, y0, x1, y1,
+				      0, m_flow->xsize, 0, m_flow->ysize,
+				      cb);
 }

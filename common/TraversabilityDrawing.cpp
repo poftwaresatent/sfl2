@@ -83,21 +83,29 @@ namespace npm {
     glScaled(m_proxy->GetDelta(), m_proxy->GetDelta(), 1);
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    const double
-			cscale(1.0 / (m_proxy->GetObstacle() - m_proxy->GetFreespace()));
-    for(size_t ix(0); ix < m_proxy->GetXSize(); ++ix)
-      for(size_t iy(0); iy < m_proxy->GetYSize(); ++iy){
-				const int value(m_proxy->GetValue(ix, iy));
-				if(value > m_proxy->GetObstacle())
+		
+		double const obstacle(m_proxy->GetObstacle());
+		double const freespace(m_proxy->GetFreespace());
+    double const cscale(1.0 / (obstacle - freespace));
+		
+		ssize_t const xbegin(m_proxy->GetXBegin());
+		ssize_t const xend(m_proxy->GetXEnd());
+		ssize_t const ybegin(m_proxy->GetYBegin());
+		ssize_t const yend(m_proxy->GetYEnd());
+		
+    for ( ssize_t ix(xbegin); ix < xend; ++ix)
+      for ( ssize_t iy(ybegin); iy < yend; ++iy) {
+				int const value(m_proxy->GetValue(ix, iy));
+				if (value > obstacle)
 					glColor3d(0.5, 0, 0.6);
-				else if(value == m_proxy->GetObstacle())
+				else if (value == obstacle)
 					glColor3d(0.5, 0, 0);
-				else if(value < m_proxy->GetFreespace())
+				else if (value < freespace)
 					glColor3d(0, 0, 0.5);
-				else if(value == m_proxy->GetFreespace())
+				else if (value == freespace)
 					glColor3d(0, 0.5, 0);
-				else{
-					const double grey((value - m_proxy->GetFreespace()) * cscale);
+				else {
+					double const grey((value - freespace) * cscale);
 					glColor3d(grey, grey, grey);
 				}
 				glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
@@ -120,8 +128,6 @@ namespace npm {
 		if( ! enable)
 			return false;
     if( ! m_travmap)
-      return false;
-    if( ! m_travmap->data)
       return false;
 		return true;
 	}
@@ -169,24 +175,43 @@ namespace npm {
 	}
 	
 	
-	size_t PtrTravProxy::
-	GetXSize() const
+	ssize_t PtrTravProxy::
+	GetXBegin() const
 	{
-		return m_travmap->data->xsize;
+		return m_travmap->grid.xbegin();
 	}
 	
 	
-	size_t PtrTravProxy::
-	GetYSize() const
+	ssize_t PtrTravProxy::
+	GetXEnd() const
 	{
-		return m_travmap->data->ysize;
+		return m_travmap->grid.xend();
+	}
+	
+	
+	ssize_t PtrTravProxy::
+	GetYBegin() const
+	{
+		return m_travmap->grid.ybegin();
+	}
+	
+	
+	ssize_t PtrTravProxy::
+	GetYEnd() const
+	{
+		return m_travmap->grid.yend();
 	}
 	
 	
 	int PtrTravProxy::
-	GetValue(size_t ix, size_t iy) const
+	GetValue(ssize_t ix, ssize_t iy) const
 	{
-		return (*m_travmap->data)[ix][iy];
+		try {
+			return m_travmap->grid.at(ix, iy);
+		}
+		catch (out_of_range) {
+		}
+		return m_travmap->freespace;
 	}
   
 	
@@ -202,8 +227,6 @@ namespace npm {
 	{
 		if( ! enable)
 			return false;
-    if( ! m_rdtravmap->GetData())
-      return false;
 		return true;
 	}
 	
@@ -250,26 +273,44 @@ namespace npm {
 	}
 	
 	
-	size_t RDTravProxy::
-	GetXSize() const
+	ssize_t RDTravProxy::
+	GetXBegin() const
 	{
-		return m_rdtravmap->GetData()->xsize;
+		return m_rdtravmap->GetXBegin();
 	}
 	
 	
-	size_t RDTravProxy::
-	GetYSize() const
+	ssize_t RDTravProxy::
+	GetXEnd() const
 	{
-		return m_rdtravmap->GetData()->ysize;
+		return m_rdtravmap->GetXEnd();
+	}
+	
+	
+	ssize_t RDTravProxy::
+	GetYBegin() const
+	{
+		return m_rdtravmap->GetYBegin();
+	}
+	
+	
+	ssize_t RDTravProxy::
+	GetYEnd() const
+	{
+		return m_rdtravmap->GetYEnd();
 	}
 	
 	
 	int RDTravProxy::
-	GetValue(size_t ix, size_t iy) const
+	GetValue(ssize_t ix, ssize_t iy) const
 	{
 		int result(0);
-		m_rdtravmap->GetValue(ix, iy, result);
+		try {
+			m_rdtravmap->GetValue(ix, iy, result);
+		}
+		catch (out_of_range) {
+		}
 		return result;
 	}
-
+	
 }
