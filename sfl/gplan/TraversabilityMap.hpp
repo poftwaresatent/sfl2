@@ -41,17 +41,6 @@ namespace sfl {
   class TraversabilityMap
   {
   public:
-		struct grow_notify {
-			virtual ~grow_notify() {}
-			
-			/** This is called AFTER growing the underlying flexgrid, and
-					the new ranges in X and Y are passed as parameters. It is up
-					to subclasses to determine which one(s) of the bounds has
-					actually changed. */
-			virtual void operator () (ssize_t xbegin, ssize_t xend,
-																ssize_t ybegin, ssize_t yend) = 0;
-		};
-		
 		/** \todo rename to change_notify or so... "draw_callback" is an
 				anachronism that doesn't reflect its current use. */
     struct draw_callback {
@@ -112,13 +101,12 @@ namespace sfl {
 
 			 \return true if it was necessary to add cells.
 		*/
-		bool Autogrow(ssize_t index_x, ssize_t index_y, int fill_value,
-									grow_notify * gn = 0);
+		bool Autogrow(ssize_t index_x, ssize_t index_y, int fill_value);
 		
-		/** Like Autogrow(ssize_t, ssize_t, int) but operates on global
-				coordinates that first get transformed into the GridFrame. */
-		bool Autogrow(double global_x, double global_y, int fill_value,
-									grow_notify * gn = 0);
+		/** Like Autogrow(ssize_t, ssize_t, int, grow_notify*) but
+				operates on global coordinates that first get transformed into
+				the GridFrame. */
+		bool Autogrow(double global_x, double global_y, int fill_value);
 		
     /**
        \return true if the traversability at the given global

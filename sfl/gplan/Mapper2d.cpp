@@ -94,7 +94,8 @@ namespace sfl {
 					 int _freespace,
 					 int _obstacle,
 					 const std::string & name,
-					 shared_ptr<RWlock> trav_rwlock)
+					 shared_ptr<RWlock> trav_rwlock,
+					 shared_ptr<travmap_grow_strategy> grow_strategy)
 		: freespace(_freespace),
 			obstacle(_obstacle),
 			ws_obstacle(_obstacle + 1),
@@ -112,6 +113,11 @@ namespace sfl {
 	{
 		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
 		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
+		
+		if (grow_strategy)
+			m_grow_strategy = grow_strategy;
+		else
+			m_grow_strategy.reset(new never_grow());			
 	}
 	
 	
@@ -131,8 +137,7 @@ namespace sfl {
 			grown_robot_radius(robot_radius + gridframe.Delta() * sqrt_of_two),
 			m_travmap(travmap),
 			m_trav_rwlock(trav_rwlock),
-			m_sprite(new Sprite(grown_safe_distance, gridframe.Delta())),
-			m_grow_strategy(grow_strategy)
+			m_sprite(new Sprite(grown_safe_distance, gridframe.Delta()))
 	{
 		ssize_t const grid_xbegin(travmap->grid.xbegin());
 		ssize_t const grid_xend(travmap->grid.xend());
@@ -141,14 +146,17 @@ namespace sfl {
 		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
 		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
 		
-		if ( ! m_grow_strategy)
-			m_grow_strategy.reset(new never_grow());
+		if (grow_strategy)
+			m_grow_strategy = grow_strategy;
+		else
+			m_grow_strategy.reset(new never_grow());			
 	}
 	
 	
 	shared_ptr<Mapper2d> Mapper2d::
 	Create(double robot_radius, double buffer_zone,
 				 const std::string & traversability_file,
+				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
 	{
 		shared_ptr<RWlock> rwl(RWlock::Create("sfl::Mapper2d::m_trav_rwlock"));
@@ -174,8 +182,6 @@ namespace sfl {
       return shared_ptr<Mapper2d>();
     }
 		
-#warning "do something with grow_strategy"
-		shared_ptr<travmap_grow_strategy> grow_strategy(new never_grow());
 		shared_ptr<Mapper2d>
 			result(new Mapper2d(robot_radius, buffer_zone, traversability,
 													grow_strategy, rwl));
@@ -185,7 +191,7 @@ namespace sfl {
 	
 	size_t Mapper2d::
 	Update(const Frame & pose, size_t length, double * locx, double * locy,
-				 draw_callback * cb, grow_notify * gn)
+				 draw_callback * cb)
 	{
 		RWlock::wrsentry sentry(m_trav_rwlock);
 		size_t count(0);
@@ -193,7 +199,7 @@ namespace sfl {
 			double xw(locx[ii]);
 			double yw(locy[ii]);
 			pose.To(xw, yw);
-			count += AddBufferedObstacle(xw, yw, cb, gn);
+			count += AddBufferedObstacle(xw, yw, cb);
 		}
 		return count;
 	}
@@ -201,29 +207,29 @@ namespace sfl {
 	
 	size_t Mapper2d::
 	Update(const Frame & pose, const Scan & scan,
-				 draw_callback * cb, grow_notify * gn)
+				 draw_callback * cb)
 	{
 		RWlock::wrsentry sentry(m_trav_rwlock);
 		const Scan::array_t & scan_data(scan.data);
 		size_t count(0);		
 		for(size_t ii(0); ii < scan_data.size(); ++ii)
 			count +=
-				AddBufferedObstacle(scan_data[ii].globx, scan_data[ii].globy, cb, gn);
+				AddBufferedObstacle(scan_data[ii].globx, scan_data[ii].globy, cb);
 		return count;
 	}
 	
 	
 	size_t Mapper2d::
 	AddBufferedObstacle(double globx, double globy,
-											draw_callback * cb, grow_notify * gn)
+											draw_callback * cb)
 	{
-		return AddBufferedObstacle(gridframe.GlobalIndex(globx, globy), cb, gn);
+		return AddBufferedObstacle(gridframe.GlobalIndex(globx, globy), cb);
 	}
 	
 	
 	size_t Mapper2d::
 	AddBufferedObstacle(index_t source_index,
-											draw_callback * cb, grow_notify * gn)
+											draw_callback * cb)
 	{
 		ssize_t const ix0(source_index.v0);
 		ssize_t const iy0(source_index.v1);
@@ -244,7 +250,12 @@ namespace sfl {
 		bbx1 += ix0;
 		bby0 += iy0;
 		bby1 += iy0;
-		if ((*m_grow_strategy)(*m_travmap, bbx0, bby0, bbx1, bby1)) {
+		bool grown(false);
+		grown |= (*m_grow_strategy)(*m_travmap, bbx0, bby0);
+		grown |= (*m_grow_strategy)(*m_travmap, bbx0, bby1);
+		grown |= (*m_grow_strategy)(*m_travmap, bbx1, bby0);
+		grown |= (*m_grow_strategy)(*m_travmap, bbx1, bby1);
+		if (grown) {
 			ssize_t const xbegin(m_travmap->grid.xbegin());
 			ssize_t const xend(m_travmap->grid.xend());
 			ssize_t const ybegin(m_travmap->grid.ybegin());
@@ -254,8 +265,6 @@ namespace sfl {
 						 bbx0, bby0, bbx1, bby1);
 			m_linkmap.resize(xbegin, xend, ybegin, yend);
 			m_refmap.resize(xbegin, xend, ybegin, yend);
-			if (gn)
-				(*gn)(xbegin, xend, ybegin, yend);
 		}
 		
 		// Ready to insert W-space obstacle and perform C-space expansion
@@ -307,15 +316,32 @@ namespace sfl {
 							 ssize_t target_ix, ssize_t target_iy,
 							 int value)
 	{
-		const index_t target_index(target_ix, target_iy);
-		ref_s & ref(m_refmap.at(target_index.v0, target_index.v1));
-		if(ref.forward.find(source_index) != ref.forward.end()){
-			PVDEBUG("%lu %lu -> %lu %lu already referenced\n",
+		// We need to check for grid bounds because we might be called
+		// with indices that lay outside the current grid.
+
+		if ( ! m_refmap.valid(target_ix, target_iy)) {
+			PVDEBUG("%lu %lu -> %lu %lu target outside refmap grid\n",
 							source_index.v0, source_index.v1, target_ix, target_iy);
-			return false;							// source -> target already in refmap
+			return false;							// target outside refmap grid
 		}
-		link_t & link(m_linkmap.at(source_index.v0, source_index.v1));
-		link.insert(target_index);
+		
+		ssize_t const source_ix(source_index.v0);
+		ssize_t const source_iy(source_index.v1);
+		if ( ! m_linkmap.valid(source_ix, source_iy)) {
+			PVDEBUG("%lu %lu -> %lu %lu source outside linkmap grid\n",
+							source_ix, source_iy, target_ix, target_iy);
+			return false;							// source outside linkmap grid
+		}
+		
+		ref_s & ref(m_refmap.at(target_ix, target_iy));
+		if (ref.forward.find(source_index) != ref.forward.end()) {
+			PVDEBUG("%lu %lu -> %lu %lu already referenced\n",
+							source_ix, source_iy, target_ix, target_iy);
+			return false;							// already in refmap
+		}
+		
+		link_t & link(m_linkmap.at(source_ix, source_iy));
+		link.insert(index_t(target_ix, target_iy));
 		ref.forward.insert(make_pair(source_index, value));
 		ref.reverse.insert(make_pair(value, source_index));
 		return true;
@@ -329,8 +355,8 @@ namespace sfl {
 		PDEBUG("source index %lu %lu\n", source_index.v0, source_index.v1);
 		
 		// We need to check for grid bounds because we might be called
-		// with indices that lay outside the current grid. See
-		// SwipedUpdate() for details.
+		// with indices that lay outside the current grid.
+		
 		ssize_t const six(source_index.v0);
 		ssize_t const siy(source_index.v1);
 		if ( ! m_travmap->IsValid(six, siy))
@@ -420,7 +446,7 @@ namespace sfl {
 	size_t Mapper2d::
 	SwipedUpdate(const Frame & pose,
 							 const Multiscanner::raw_scan_collection_t & scans,
-							 draw_callback * cb, grow_notify * gn)
+							 draw_callback * cb)
 	{
 		RWlock::wrsentry sentry(m_trav_rwlock);
 		
@@ -467,7 +493,7 @@ namespace sfl {
 			count += RemoveBufferedObstacle(*is, cb);
 		for(link_t::const_iterator il(m_obstacle_buffer.begin());
 				il != m_obstacle_buffer.end(); ++il)
-			count += AddBufferedObstacle(*il, cb, gn);
+			count += AddBufferedObstacle(*il, cb);
 		
 		return count;
 	}
@@ -486,6 +512,14 @@ namespace sfl {
 	{
 		shared_ptr<WRTravmap> wrt(new WRTravmap(m_travmap, m_trav_rwlock));
 		return wrt;
+	}
+	
+	
+	bool Mapper2d::always_grow::
+	operator () (TraversabilityMap & travmap,
+							 ssize_t ix, ssize_t iy)
+	{
+		return travmap.Autogrow(ix, iy, travmap.freespace);
 	}
 	
 }

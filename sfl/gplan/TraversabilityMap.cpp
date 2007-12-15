@@ -85,6 +85,8 @@ namespace sfl {
     int default_traversability(0);
     int force_dimx(-1);
     int force_dimy(-1);
+		int offx(0);
+		int offy(0);
 		
     vector<vector<int> > data;
     ssize_t grid_xsize(0);
@@ -122,6 +124,14 @@ namespace sfl {
 						if((force_dimx < 1) || (force_dimy < 1)){
 							if(os) *os << "ERROR: invalid grid dimension \"" << tls.str()
 												 << "\" (two positive integers expected)\n";
+							return shared_ptr<TraversabilityMap>();
+						}
+					}
+					else if(token == "offset"){
+						tls >> offx >> offy;
+						if( ! tls){
+							if(os) *os << "ERROR: could not parse offset from \""
+												 << tls.str() << "\"\n";
 							return shared_ptr<TraversabilityMap>();
 						}
 					}
@@ -193,14 +203,19 @@ namespace sfl {
 			grid_xsize = force_dimx;
 		if(force_dimy > 0)
 			grid_ysize = force_dimy;
-		result->grid.resize(0, grid_xsize, 0, grid_ysize, default_traversability);
+		ssize_t const xbegin(offx);
+		ssize_t const xend(grid_xsize + offx);
+		ssize_t const ybegin(offy);
+		ssize_t const yend(grid_ysize + offy);
+		
+		result->grid.resize(xbegin, xend, ybegin, yend, default_traversability);
     result->gframe.Configure(ox, oy, otheta, resolution);
     for(ssize_t iy(0); iy < grid_ysize; ++iy)
 			if(iy < static_cast<ssize_t>(data.size())){
 				vector<int> & line(data[iy]);
 				for(ssize_t ix(0); ix < grid_xsize; ++ix)
 					if(ix < static_cast<ssize_t>(line.size()))
-						result->grid.at(ix, grid_ysize - iy - 1) = line[ix];
+						result->grid.at(ix + offx, grid_ysize - iy - offy - 1) = line[ix];
 			}
     
 		return result;
@@ -360,8 +375,7 @@ namespace sfl {
 	
 	
 	bool TraversabilityMap::
-	Autogrow(ssize_t index_x, ssize_t index_y, int fill_value,
-					 grow_notify * gn)
+	Autogrow(ssize_t index_x, ssize_t index_y, int fill_value)
 	{
 		if (grid.valid(index_x, index_y))
 			return false;
@@ -375,19 +389,15 @@ namespace sfl {
 		if (index_y >= grid.yend())
 			grid.resize_yend(index_y + 1, fill_value);
 		
-		if (gn)
-			(*gn)(grid.xbegin(), grid.xend(), grid.ybegin(), grid.yend());
-		
 		return true;
 	}
 	
 	
 	bool TraversabilityMap::
-	Autogrow(double global_x, double global_y, int fill_value,
-					 grow_notify * gn)
+	Autogrow(double global_x, double global_y, int fill_value)
 	{
 		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-		return Autogrow(idx.v0, idx.v1, fill_value, gn);
+		return Autogrow(idx.v0, idx.v1, fill_value);
 	}
 	
 }

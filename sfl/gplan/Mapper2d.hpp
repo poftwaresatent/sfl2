@@ -60,26 +60,16 @@ namespace sfl {
 			*/
 			virtual bool operator () (TraversabilityMap & travmap,
 																ssize_t ix, ssize_t iy) = 0;
-			
-			/**
-				 Determine if and how the travmap might need to be grown to
-				 accomodate the bounding box (ix0, iy0, ix1, iy1), and
-				 potentially resize it accordingly.
-				 
-				 \return true if the travmap was grown.
-			*/
-			virtual bool operator () (TraversabilityMap & travmap,
-																ssize_t ix0, ssize_t iy0,
-																ssize_t ix1, ssize_t iy1) = 0;
 		};
 
 		struct never_grow: public travmap_grow_strategy {
 			virtual bool operator () (TraversabilityMap & travmap,
 																ssize_t ix, ssize_t iy)  { return false; }
-			
+		};
+
+		struct always_grow: public travmap_grow_strategy {
 			virtual bool operator () (TraversabilityMap & travmap,
-																ssize_t ix0, ssize_t iy0,
-																ssize_t ix1, ssize_t iy1)  { return false; }
+																ssize_t ix, ssize_t iy);
 		};
 		
 		
@@ -95,7 +85,6 @@ namespace sfl {
 		
   public:
 		typedef GridFrame::index_t index_t;
-		typedef TraversabilityMap::grow_notify grow_notify;
 		typedef TraversabilityMap::draw_callback draw_callback;
 		typedef std::set<index_t> link_t;
 		typedef std::map<index_t, int> fwd_t;
@@ -118,12 +107,16 @@ namespace sfl {
 						 int freespace,
 						 int obstacle,
 						 const std::string & name,
-						 boost::shared_ptr<RWlock> trav_rwlock);
+						 boost::shared_ptr<RWlock> trav_rwlock,
+						 /** Optional. Defaults to never_grow. */
+						 boost::shared_ptr<travmap_grow_strategy> grow_strategy);
 		
 		static boost::shared_ptr<Mapper2d>
 		Create(double robot_radius,
 					 double buffer_zone,
 					 const std::string & traversability_file,
+					 /** Optional. Defaults to never_grow. */
+					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 					 std::ostream * err_os);
 		
 		
@@ -134,39 +127,32 @@ namespace sfl {
 			 the draw_callback is only called for those cells that actually
 			 get modified. The travmap_grow_strategy registered with the
 			 Mapper2d determines if and how the TraversabilityMap gets
-			 resized, and you can get notified of such changes by passing a
-			 grow_notify functor.
+			 resized.
 			 
 			 \return The number of cells that got changed.
 		*/
 		size_t Update(const Frame & pose, const Scan & scan,
-									draw_callback * cb = 0, grow_notify * gn = 0);
+									draw_callback * cb = 0);
 		
 		/**
-			 Similar to Update(const Frame &, const Scan &, draw_callback *,
-			 grow_notify *), but also updates the cells along the whole rays
-			 of the scan.
-			 
-			 \note grow_notify might be called several times as the scan is
-			 processed, and draw_callback can then receive indices that are
-			 outside the original range.
+			 Similar to Update(const Frame&, const Scan&, draw_callback*),
+			 but also updates the cells along the whole rays of the scan.
 			 
 			 \return The number of cells that got changed.
 		*/
 		size_t SwipedUpdate(const Frame & pose,
 												const Multiscanner::raw_scan_collection_t & scans,
-												draw_callback * cb = 0, grow_notify * gn = 0);
+												draw_callback * cb = 0);
 		
 		/**
-			 Similar to Update(const Frame &, const Scan &, draw_callback *,
-			 grow_notify *), but based on arrays of local (x, y) obstacle
-			 point coordinates.
+			 Similar to Update(const Frame&, const Scan&, draw_callback *),
+			 but based on arrays of local (x, y) obstacle point coordinates.
 			 
 			 \return The number of cells that got changed.
 		*/
 		size_t Update(const Frame & pose,
 									size_t length, double * locx, double * locy,
-									draw_callback * cb = 0, grow_notify * gn = 0);
+									draw_callback * cb = 0);
 		
 		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
 		boost::shared_ptr<WRTravmap> CreateWRTravmap();
@@ -189,11 +175,9 @@ namespace sfl {
 		
 	private:
 		/** \return The number of cells that were changed. */
-		size_t AddBufferedObstacle(double globx, double globy,
-															 draw_callback * cb, grow_notify * gn);
+		size_t AddBufferedObstacle(double globx, double globy, draw_callback * cb);
 
-		size_t AddBufferedObstacle(index_t source_index,
-															 draw_callback * cb, grow_notify * gn);
+		size_t AddBufferedObstacle(index_t source_index, draw_callback * cb);
 		
 		/** \return The number of cells that were changed. */
 		size_t RemoveBufferedObstacle(index_t source_index, draw_callback * cb);

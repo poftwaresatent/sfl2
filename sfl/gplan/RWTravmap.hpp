@@ -147,6 +147,16 @@ namespace sfl {
 		RWlock::wrsentry CreateWRSentry()
 		{ return RWlock::wrsentry(m_rwlock); }
 		
+		bool Autogrow(ssize_t index_x, ssize_t index_y, int fill_value) {
+			RWlock::wrsentry const sentry(m_rwlock);
+			return m_travmap->Autogrow(index_x, index_y, fill_value);
+		}
+		
+		bool Autogrow(double global_x, double global_y, int fill_value) {
+			RWlock::wrsentry const sentry(m_rwlock);
+			return m_travmap->Autogrow(global_x, global_y, fill_value);
+		}
+		
 		/** see TraversabilityMap documentation */
  		bool SetValue(double gx, double gy, int value, dcb * cb) {
 			RWlock::wrsentry const sentry(m_rwlock);
@@ -188,8 +198,6 @@ namespace sfl {
 			RWlock::wrsentry const sentry(m_rwlock);
 			return m_travmap->SetFree(ix, iy, cb);
 		}
-
-#warning "Should add rwlock-protected Autogrow() methods here."
 	};
 
 }
