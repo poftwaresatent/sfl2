@@ -218,8 +218,9 @@ namespace foo {
 		case asl::Planner::PLANNING:    glColor3d(1,   0.5, 0  ); break;
 		case asl::Planner::AT_GOAL:     glColor3d(0,   0,   1  ); break;
 		case asl::Planner::UNREACHABLE:
-		case asl::Planner::OUT_OF_GRID:
-		case asl::Planner::IN_OBSTACLE: glColor3d(1,   0,   0  ); break;
+		case asl::Planner::GOAL_OUT_OF_GRID:
+		case asl::Planner::ROBOT_OUT_OF_GRID:
+		case asl::Planner::ROBOT_IN_OBSTACLE: glColor3d(1,   0,   0  ); break;
 		case asl::Planner::ERROR:       glColor3d(1,   0,   0.5); break;
 		default:                           glColor3d(1,   0,   1  );
 		}
@@ -234,8 +235,9 @@ namespace foo {
 		case asl::Planner::PLANNING:    glColor3d(0.5, 0,   0.5); break;
 		case asl::Planner::AT_GOAL:     glColor3d(0,   0.5, 0  ); break;
 		case asl::Planner::UNREACHABLE:
-		case asl::Planner::OUT_OF_GRID:
-		case asl::Planner::IN_OBSTACLE: glColor3d(0,   0,   0.5); break;
+		case asl::Planner::GOAL_OUT_OF_GRID:
+		case asl::Planner::ROBOT_OUT_OF_GRID:
+		case asl::Planner::ROBOT_IN_OBSTACLE: glColor3d(0,   0,   0.5); break;
 		case asl::Planner::ERROR:       glColor3d(0,   0.5, 0.5); break;
 		default:                           glColor3d(0,   0.5, 0.5);
 		}
@@ -395,11 +397,41 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	string_to(descriptor->GetOption("estar_auto_flush"),
 						estar_options->auto_flush);
 	
+	shared_ptr<Mapper::travmap_grow_options> grow_options;
+	double travmap_grow_margin_low(-1);
+	double travmap_grow_margin_high(-1);
+	bool grow_options_given(false);
+	grow_options_given |=
+		string_to(descriptor->GetOption("travmap_grow_margin_low"),
+							travmap_grow_margin_low);
+	grow_options_given |=
+		string_to(descriptor->GetOption("travmap_grow_margin_high"),
+							travmap_grow_margin_high);
+	if (grow_options_given) {
+		if ((travmap_grow_margin_low < 0) && (travmap_grow_margin_high > 0))
+			travmap_grow_margin_low = 0.5 * travmap_grow_margin_high;
+		else if ((travmap_grow_margin_high < 0) && (travmap_grow_margin_low > 0))
+			travmap_grow_margin_high = 2 * travmap_grow_margin_low;
+		if ((travmap_grow_margin_low <= 0) && (travmap_grow_margin_low <= 0))
+			cerr << "WARNING ignoring invalid travmap_grow_options\n"
+					 << " travmap_grow_margin_low " << travmap_grow_margin_low << "\n"
+					 << " travmap_grow_margin_high " << travmap_grow_margin_high << "\n";
+		else
+			grow_options.
+				reset(new Mapper::travmap_grow_options(travmap_grow_margin_low,
+																							 travmap_grow_margin_high));
+	}
+	
+	bool estar_grow_grid(false);
+	string_to(descriptor->GetOption("estar_grow_grid"), estar_grow_grid);
+	
 	ostringstream err_os;
 	m_smart_algo.reset(asl::Algorithm::
 										 Create(robot_radius,
 														buffer_zone,
 														traversability_file,
+														grow_options.get(),
+														descriptor->GetOption("m2d_grow_strategy"),
 														replan_distance,
 														wavefront_buffer,
 														carrot_distance,
@@ -407,6 +439,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 														carrot_maxnsteps,
 														estar_step,
 														! use_simple_query,	// use_estar = ! use_simple_q
+														estar_grow_grid,
 														estar_options,
 														swiped_map_update,
 														controller_name,
@@ -571,6 +604,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		world.AddKeyListener(smart_proxy);
 		AddDrawing(new TraversabilityDrawing(name + "_travmap",
 																				 smart_proxy));
+		AddCamera(new TraversabilityCamera(name + "_travmap", smart_proxy));
 	}
 	
 	size_t gradplot_frequency(1);
@@ -623,6 +657,7 @@ PrepareAction(double timestep)
 		return false;
 	}
 	
+	m_odo->Update();
 	m_mscan->UpdateAll();
 	
 	m_simul_rwlock->Unlock();

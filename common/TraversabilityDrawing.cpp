@@ -26,6 +26,8 @@
 #include "TraversabilityDrawing.hpp"
 #include "wrap_gl.hpp"
 #include "Manager.hpp"
+#include "View.hpp"
+#include "BBox.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
@@ -93,8 +95,8 @@ namespace npm {
 		ssize_t const ybegin(m_proxy->GetYBegin());
 		ssize_t const yend(m_proxy->GetYEnd());
 		
-    for ( ssize_t ix(xbegin); ix < xend; ++ix)
-      for ( ssize_t iy(ybegin); iy < yend; ++iy) {
+    for (ssize_t ix(xbegin); ix < xend; ++ix)
+      for (ssize_t iy(ybegin); iy < yend; ++iy) {
 				int const value(m_proxy->GetValue(ix, iy));
 				if (value > obstacle)
 					glColor3d(0.5, 0, 0.6);
@@ -110,6 +112,15 @@ namespace npm {
 				}
 				glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
       }
+		
+		//// grid frame origin and axes
+		// 		glColor3d(1, 0, 0.5);
+		// 		glBegin(GL_LINE_LOOP);
+		// 		glVertex2d(0, 0);
+		// 		glVertex2d(5 / m_proxy->GetDelta(), 0);
+		// 		glVertex2d(0, 2 / m_proxy->GetDelta());
+		// 		glEnd();
+		
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 	}
@@ -158,6 +169,13 @@ namespace npm {
 	GetDelta() const
 	{
 		return m_travmap->gframe.Delta();
+	}
+	
+	
+	sfl::GridFrame const * PtrTravProxy::
+	GetGridFrame()
+	{
+		return &(m_travmap->gframe);
 	}
 	
 	
@@ -252,6 +270,13 @@ namespace npm {
 	}
 	
 	
+	sfl::GridFrame const * RDTravProxy::
+	GetGridFrame()
+	{
+		return &(m_rdtravmap->GetGridFrame());
+	}
+	
+	
 	double RDTravProxy::
 	GetDelta() const
 	{
@@ -311,6 +336,55 @@ namespace npm {
 		catch (out_of_range) {
 		}
 		return result;
+	}
+	
+	  
+  TraversabilityCamera::
+  TraversabilityCamera(const string & name,
+												shared_ptr<TravProxyAPI> proxy)
+    : Camera(name,
+						 "traversability map as greyscale with special highlights",
+						 Instance<UniqueManager<Camera> >()),
+			m_proxy(proxy)
+  {
+  }
+  
+  
+  TraversabilityCamera::
+  TraversabilityCamera(const string & name,
+											 TravProxyAPI * proxy)
+    : Camera(name,
+						 "traversability map as greyscale with special highlights",
+						 Instance<UniqueManager<Camera> >()),
+			m_proxy(proxy)
+  {
+  }
+	
+	
+	void TraversabilityCamera::
+	ConfigureView(View & view)
+	{
+		sfl::GridFrame const * gframe(m_proxy->GetGridFrame());
+		if ( ! gframe)
+			view.SetBounds(0, 0, 1, 1);
+		
+		sfl::GridFrame::position_t const
+			p0(gframe->GlobalPoint(m_proxy->GetXBegin() - 1,
+														 m_proxy->GetYBegin() - 1));		
+		sfl::GridFrame::position_t const
+			p1(gframe->GlobalPoint(m_proxy->GetXEnd(),
+														 m_proxy->GetYEnd()));
+		sfl::GridFrame::position_t const
+			p2(gframe->GlobalPoint(m_proxy->GetXBegin() - 1,
+														 m_proxy->GetYEnd()));
+		sfl::GridFrame::position_t const
+			p3(gframe->GlobalPoint(m_proxy->GetXEnd(),
+														 m_proxy->GetYBegin() - 1));
+		
+    BBox bb(p0.v0, p0.v1, p1.v0, p1.v1);
+		bb.Update(p2.v0, p2.v1);
+		bb.Update(p3.v0, p3.v1);
+		view.SetBounds(bb, 1);
 	}
 	
 }

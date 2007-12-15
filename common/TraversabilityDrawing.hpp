@@ -28,6 +28,7 @@
 
 
 #include <npm/common/Drawing.hpp>
+#include <npm/common/Camera.hpp>
 #include <sfl/gplan/RWTravmap.hpp>
 
 
@@ -42,6 +43,7 @@ namespace npm {
 		virtual double GetY() const = 0;
 		virtual double GetTheta() const = 0;
 		virtual double GetDelta() const = 0;
+		virtual sfl::GridFrame const * GetGridFrame() = 0;
 		virtual int GetObstacle() const = 0;
 		virtual int GetFreespace() const = 0;
 		virtual ssize_t GetXBegin() const = 0;
@@ -62,6 +64,7 @@ namespace npm {
 		virtual double GetTheta() const;
 		virtual double GetDelta() const;
 		virtual int GetObstacle() const;
+		virtual sfl::GridFrame const * GetGridFrame();
 		virtual int GetFreespace() const;
 		virtual ssize_t GetXBegin() const;
 		virtual ssize_t GetXEnd() const;
@@ -81,6 +84,7 @@ namespace npm {
 		virtual double GetY() const;
 		virtual double GetTheta() const;
 		virtual double GetDelta() const;
+		virtual sfl::GridFrame const * GetGridFrame();
 		virtual int GetObstacle() const;
 		virtual int GetFreespace() const;
 		virtual ssize_t GetXBegin() const;
@@ -107,6 +111,26 @@ namespace npm {
 													TravProxyAPI * proxy);
     
     virtual void Draw();
+    
+  private:
+    boost::shared_ptr<TravProxyAPI> m_proxy;
+  };
+	
+	
+  class TraversabilityCamera
+    : public Camera
+  {
+  public:
+    TraversabilityCamera(const std::string & name,
+												 boost::shared_ptr<TravProxyAPI> proxy);
+		
+		/** \note Packs proxy into a boost::shared_ptr<>, so only use this
+				if you have a raw pointer that will NOT be deleted in your
+				code. */
+    TraversabilityCamera(const std::string & name,
+												 TravProxyAPI * proxy);
+    
+    virtual void ConfigureView(View & view);
     
   private:
     boost::shared_ptr<TravProxyAPI> m_proxy;
