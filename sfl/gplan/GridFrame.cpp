@@ -145,7 +145,7 @@ namespace sfl {
   DrawDDALine(ssize_t ix0, ssize_t iy0, ssize_t ix1, ssize_t iy1,
 	      ssize_t xbegin, ssize_t xend,
 	      ssize_t ybegin, ssize_t yend,
-	      draw_callback & cb) const
+	      draw_callback & cb)
   {
     ssize_t ix(ix0);
     ssize_t iy(iy0);
@@ -210,8 +210,22 @@ namespace sfl {
 
     return count;
   }
-
-
+  
+  
+  size_t GridFrame::
+  DrawDDALine(ssize_t ix0, ssize_t iy0,
+	      ssize_t ix1, ssize_t iy1,
+	      draw_callback & cb)
+  {
+    return DrawDDALine(ix0, iy0, ix1, iy1,
+		       std::numeric_limits<ssize_t>::min(),
+		       std::numeric_limits<ssize_t>::max(), 
+		       std::numeric_limits<ssize_t>::min(),
+		       std::numeric_limits<ssize_t>::max(),
+		       cb);
+  }
+  
+  
   size_t GridFrame::
   DrawLocalLine(double x0, double y0, double x1, double y1,
 		ssize_t xbegin, ssize_t xend,

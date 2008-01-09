@@ -98,11 +98,16 @@ namespace sfl {
        
 			 \return The number of grid cells drawn.
 		*/
-    size_t DrawDDALine(ssize_t ix0, ssize_t iy0,
-											 ssize_t ix1, ssize_t iy1,
-											 ssize_t xbegin, ssize_t xend,
-											 ssize_t ybegin, ssize_t yend,
-											 draw_callback & cb) const;
+    static size_t DrawDDALine(ssize_t ix0, ssize_t iy0,
+															ssize_t ix1, ssize_t iy1,
+															ssize_t xbegin, ssize_t xend,
+															ssize_t ybegin, ssize_t yend,
+															draw_callback & cb);
+		
+		/** "without" limit checks */
+    static size_t DrawDDALine(ssize_t ix0, ssize_t iy0,
+															ssize_t ix1, ssize_t iy1,
+															draw_callback & cb);
 		
     /**
        Calls the provided callback functor for each index that lies on

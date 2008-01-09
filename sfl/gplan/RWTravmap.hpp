@@ -47,16 +47,6 @@ namespace sfl {
 									(travmap)),
 				m_rwlock(rwlock) {}
 		
-		/** useful for protecting a whole chunk of operations */
-		RWlock::rdsentry CreateRDSentry()
-		{ return RWlock::rdsentry(m_rwlock); }
-
-// // 	protected:
-// // 		/** \note Access through this is NOT rwlock protected. */
-// // 		TraversabilityMap::grid_t const & GetGrid() const
-// // 		{ return m_travmap->grid; }
-// // 	public:
-		
 		GridFrame const & GetGridFrame() const { return m_travmap->gframe;	}
 		int GetObstacle() const { return m_travmap->obstacle; }
 		int GetFreespace() const { return m_travmap->freespace; }
