@@ -383,7 +383,7 @@ PrepareAction(double timestep)
     const int result(m_pnf->GetFlow()->GetPNF().
 		     TraceCarrot(robx, roby,
 				 carrot_distance, carrot_stepsize,
-				 carrot_maxnsteps, *m_carrot_trace));
+				 carrot_maxnsteps, *m_carrot_trace, 0));
     if(0 <= result){
       if(1 == result)
 	PVDEBUG("WARNING: carrot didn't reach distance %g\n", carrot_distance);
@@ -500,7 +500,7 @@ ComputeFullCarrot() const
   shared_ptr<carrot_trace> trace(new carrot_trace);
   const int result(m_pnf->GetFlow()->GetPNF().
 		   TraceCarrot(robx, roby,
-			       distance, stepsize, maxnsteps, *trace));
+			       distance, stepsize, maxnsteps, *trace, 0));
   PVDEBUG("d: %g   s: %g   n: %lu   result: %d\n",
 	  distance, stepsize, maxnsteps, result);
   

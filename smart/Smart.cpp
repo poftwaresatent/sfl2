@@ -385,7 +385,8 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		control_params->max_steering_rate = params.model_phid_max;
 	}
 	
-	shared_ptr<rfct::FacadeOptions> estar_options(new rfct::FacadeOptions());
+	shared_ptr<estar::AlgorithmOptions>
+		estar_options(new estar::AlgorithmOptions());
 	string_to(descriptor->GetOption("estar_check_upwind"),
 						estar_options->check_upwind);
 	string_to(descriptor->GetOption("estar_check_local_consistency"),
@@ -595,6 +596,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 																slow_proxy, EstarDrawing::OBST));
 		AddDrawing(new EstarDrawing(name + "_estar_status",
 																slow_proxy, EstarDrawing::STATUS));
+		AddCamera(new EstarCamera(name + "_estar_cspace", fast_proxy));
 	}
 	
 	{

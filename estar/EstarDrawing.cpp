@@ -22,6 +22,8 @@
 #include "EstarDrawing.hpp"
 #include "../common/wrap_gl.hpp"
 #include "../common/Manager.hpp"
+#include "../common/View.hpp"
+#include "../common/BBox.hpp"
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
@@ -125,12 +127,47 @@ Draw()
     exit(EXIT_FAILURE);
   }
   
-  double x0, y0, x1, y1;
-  gfx::get_grid_bbox(*facade, x0, y0, x1, y1);
-  glColor3d(1, 1, 0);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  glRectd(x0, y0, x1, y1);
+	//// yellow bounding box
+	//   double x0, y0, x1, y1;
+	//   gfx::get_grid_bbox(*facade, x0, y0, x1, y1);
+	//   glColor3d(1, 1, 0);
+	//   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//   glRectd(x0, y0, x1, y1);
   
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
+}
+
+
+EstarCamera::
+EstarCamera(const std::string & name,
+						boost::shared_ptr<PlanProxy> proxy)
+	: Camera(name,
+					 "bbox of E* C-space",
+					 Instance<UniqueManager<Camera> >()),
+		m_proxy(proxy)
+{
+}
+
+
+void EstarCamera::
+ConfigureView(View & view)
+{
+	estar::Facade const * facade(m_proxy->GetFacade());
+	sfl::GridFrame const * gframe(m_proxy->GetFrame());
+  if (( ! facade) || ( ! gframe)) {
+		view.SetBounds(0, 0, 1, 1);
+		return;
+	}
+	
+	double x0, y0, x1, y1;
+  gfx::get_grid_bbox(*facade, x0, y0, x1, y1);
+	double const scale(gframe->Delta());
+	x0 *= scale;
+	y0 *= scale;
+	x1 *= scale;
+	y1 *= scale;
+	gframe->To(x0, y0);
+	gframe->To(x1, y1);
+	view.SetBounds(BBox(x0, y0, x1, y1));
 }

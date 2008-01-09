@@ -343,7 +343,7 @@ namespace npm {
   TraversabilityCamera(const string & name,
 												shared_ptr<TravProxyAPI> proxy)
     : Camera(name,
-						 "traversability map as greyscale with special highlights",
+						 "bbox of traversability map",
 						 Instance<UniqueManager<Camera> >()),
 			m_proxy(proxy)
   {
@@ -354,7 +354,7 @@ namespace npm {
   TraversabilityCamera(const string & name,
 											 TravProxyAPI * proxy)
     : Camera(name,
-						 "traversability map as greyscale with special highlights",
+						 "bbox of traversability map",
 						 Instance<UniqueManager<Camera> >()),
 			m_proxy(proxy)
   {

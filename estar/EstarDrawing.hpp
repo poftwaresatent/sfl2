@@ -24,6 +24,7 @@
 
 
 #include <npm/common/Drawing.hpp>
+#include <npm/common/Camera.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -71,6 +72,20 @@ public:
 private:
   boost::shared_ptr<PlanProxy> m_proxy;
   boost::shared_ptr<gfx::ColorScheme> m_custom_cs;
+};
+
+
+class EstarCamera
+	: public npm::Camera
+{
+public:
+	EstarCamera(const std::string & name,
+							boost::shared_ptr<PlanProxy> proxy);
+	
+	virtual void ConfigureView(npm::View & view);
+	
+protected:
+	boost::shared_ptr<PlanProxy> m_proxy;
 };
 
 #endif // ESTAR_DRAWING_HPP

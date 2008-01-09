@@ -6,9 +6,10 @@ LDFLAGS=  @NPM_LDFLAGS@ @NPM_GLUTLIBS@
 noinst_LTLIBRARIES=  libsimul.la
 libsimul_la_SOURCES= RobotFactory.cpp Simulator.cpp
 
-bin_PROGRAMS=      nepumuk dumpworld
+bin_PROGRAMS=      nepumuk dumpworld xfig2world
 nepumuk_SOURCES=   nepumuk.cpp Interlock.cpp
 dumpworld_SOURCES= dumpworld.cpp Interlock.cpp
+xfig2world_SOURCES= xfig2world.cpp
 
 include_HEADERS=   Interlock.hpp RobotFactory.hpp Simulator.hpp
 includedir=        @includedir@/npm/simul
@@ -118,4 +119,10 @@ dist_bin_SCRIPTS= birondemo.sh \
                     robots.smart6 \
                     travmap.smart6 \
                     goals.smart6 \
-                    world.smart6
+                    world.smart6 \
+                  smart7.sh \
+                    layout.smart7 \
+                    robots.smart7 \
+                    travmap.smart7 \
+                    goals.smart7 \
+                    world.smart7
