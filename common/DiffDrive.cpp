@@ -47,14 +47,15 @@ namespace npm {
   {
     shared_ptr<Frame> result(new Frame(current));
   
-    double qdl, qdr;
-    const int status(m_hal->speed_get( & qdl, & qdr));
-    if(0 != status)
+    double qd[2];
+    size_t len(2);
+    const int status(m_hal->speed_get(qd, &len));
+    if ((0 != status) || (2 != len))
       return result;
-  
+    
     // actuator speed -> global speed
-    double dl    = qdl * wheelradius;
-    double dr    = qdr * wheelradius;
+    double dl    = qd[0] * wheelradius;
+    double dr    = qd[1] * wheelradius;
     double v     = (dl + dr) / 2;
     double omega = (dr - dl) / wheelbase;
   

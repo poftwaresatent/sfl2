@@ -127,7 +127,7 @@ public:
 Esbot::
 Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
       const World & world)
-  : RobotClient(descriptor, world, true),
+  : RobotClient(descriptor, world, 2, true),
     m_radius(0.0),
     m_speed(0.0),
     m_grid_width(8),		// override with option pnf_grid_width

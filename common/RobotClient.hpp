@@ -57,11 +57,10 @@ namespace npm {
   {
   public:
     RobotClient(boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world, bool enable_trajectory);
-    
-    RobotClient(const HALFactory & hal_factory,
-		boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world, bool enable_trajectory);
+		const World & world,
+		/** number of degrees of freedom */
+		size_t n_dof,
+		bool enable_trajectory);
     
     virtual ~RobotClient();
     

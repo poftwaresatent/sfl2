@@ -131,7 +131,7 @@ CreateRobotParameters(expoparams & params)
 
 Robox::
 Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
-  : RobotClient(descriptor, world, true), m_hull(CreateHull()),
+  : RobotClient(descriptor, world, 2, true), m_hull(CreateHull()),
     m_ngkl(new local::NGKeyListener())
 {
   for(HullIterator ih(*m_hull); ih.IsValid(); ih.Increment()){

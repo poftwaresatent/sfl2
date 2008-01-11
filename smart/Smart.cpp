@@ -30,7 +30,7 @@
 #include <asl/MappingThread.hpp>
 #include <asl/PlanningThread.hpp>
 #include <asl/ControlThread.hpp>
-#include <asl/path_tracking.hpp>
+#include <asl/AckermannController.hpp>
 #include <asl/ControlParams.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Pose.hpp>
@@ -221,7 +221,8 @@ namespace foo {
 		case asl::Planner::GOAL_OUT_OF_GRID:
 		case asl::Planner::ROBOT_OUT_OF_GRID:
 		case asl::Planner::ROBOT_IN_OBSTACLE: glColor3d(1,   0,   0  ); break;
-		case asl::Planner::ERROR:       glColor3d(1,   0,   0.5); break;
+		case asl::Planner::NO_GOAL:        glColor3d(1, 0.5,   0.5); break;
+		case asl::Planner::ERROR:        glColor3d(1,   0,   0.5); break;
 		default:                           glColor3d(1,   0,   1  );
 		}
 	}
@@ -238,7 +239,8 @@ namespace foo {
 		case asl::Planner::GOAL_OUT_OF_GRID:
 		case asl::Planner::ROBOT_OUT_OF_GRID:
 		case asl::Planner::ROBOT_IN_OBSTACLE: glColor3d(0,   0,   0.5); break;
-		case asl::Planner::ERROR:       glColor3d(0,   0.5, 0.5); break;
+		case asl::Planner::NO_GOAL:        glColor3d(1, 0.5,   0.5); break;
+		case asl::Planner::ERROR:        glColor3d(0,   0.5, 0.5); break;
 		default:                           glColor3d(0,   0.5, 0.5);
 		}
 	}
@@ -287,7 +289,7 @@ namespace foo {
 
 Smart::
 Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
-  : RobotClient(descriptor, world, true),
+  : RobotClient(descriptor, world, 2, true),
 		m_smart_cs(new SmartColorScheme()),
 		m_error(false)
 {
@@ -527,7 +529,6 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	
 	m_control_thread.
 		reset(new asl::ControlThread(0.1,	// XXX magic value
-																 params.model_sdd_max,
 																 m_smart_algo->GetController(),
 																 GetHAL(),
 																 thread_statlen, m_simul_rwlock));
@@ -655,7 +656,7 @@ PrepareAction(double timestep)
 	PDEBUG("\n\n==================================================\n");
 	if(m_error){
 		cerr << "Smart ERROR state, restart simulation\n";
-		GetHAL()->speed_set(0, 0);
+		GetHAL()->deprecated_speed_set(0, 0);
 		return false;
 	}
 	

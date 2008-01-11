@@ -48,7 +48,7 @@ namespace npm {
   ComputeNextPose(const Frame & current, double timestep) const
   {
     double v_trans, steer;
-    m_hal->speed_get(&v_trans, &steer);
+    GetState(v_trans, steer);
     if(absval(v_trans) < epsilon) // otherwise we get NaN results...
       return shared_ptr<Frame>(new Frame(current));
     
@@ -78,9 +78,15 @@ namespace npm {
   void BicycleDrive::
   GetState(double & v_trans, double & steer) const
   {
-    if(0 != m_hal->speed_get(&v_trans, &steer)){
+    double qd[2];
+    size_t len(2);
+    if ((0 != m_hal->speed_get(qd, &len)) || (2 != len)) {
       v_trans = 0;
       steer = 0;
+    }
+    else {
+      v_trans = qd[0];
+      steer = qd[1];
     }
   }
   

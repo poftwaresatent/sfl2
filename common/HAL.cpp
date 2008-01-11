@@ -42,14 +42,15 @@ namespace npm {
   
   
   HAL::
-  HAL(RobotServer * owner)
-    : m_owner(owner),
+  HAL(RobotServer * owner, size_t _ndof)
+    : ndof(_ndof),
+      m_owner(owner),
+      m_wanted_speed(new double[_ndof]),
+      m_current_speed(new double[_ndof]),
       m_odometry_noise(0) // not all compilers seem to do this automatically
   {
-    for(size_t ii(0); ii < 3; ++ii){
-      m_current_speed[ii] = 0;
-      m_wanted_speed[ii] = 0;
-    }
+    bzero(m_wanted_speed.get(), sizeof(double) * _ndof);
+    bzero(m_current_speed.get(), sizeof(double) * _ndof);
   }
   
   
@@ -112,27 +113,59 @@ namespace npm {
   
   
   int HAL::
-  speed_set(double qdl, double qdr)
+  speed_set(const double * qdot, size_t * qdot_len)
   {
-    m_wanted_speed[0] = qdl;
-    m_wanted_speed[1] = qdr;
-    m_wanted_speed[2] = 0;
+    if (( ! qdot) || ( ! qdot_len)) {
+      PDEBUG("qdot (%p) and qdot_len (%p) must not be null\n", qdot, qdot_len);
+      return -1;
+    }
+    
+    // it would be more efficient to use memcpy...
+
+    PVDEBUG("ndof: %zu  qdot_len: %zu\n", ndof, *qdot_len);
+    for (size_t ii(0); ii < ndof; ++ii) {
+      if (ii >= *qdot_len) {
+	for (/**/; ii < ndof; ++ii)
+	  m_wanted_speed[ii] = 0;
+	break;
+      }
+      PVDEBUG("  m_wanted_speed[%zu] = qdot[%zu] = %g\n", ii, ii, qdot[ii]);
+      m_wanted_speed[ii] = qdot[ii];
+    }
+    *qdot_len = ndof;
     return 0;
   }
   
   
   int HAL::
-  speed_get(double * qdl, double * qdr)
-  {    
-    if(m_odometry_noise){
+  speed_get(double * qdot, size_t * qdot_len)
+  {
+    // it would be more efficient to use memcpy when we do not have
+    // m_odometry_noise, but what the hey...
+    
+    if (m_odometry_noise)
       PVDEBUG("noisy speed baby!\n");
-      * qdl = (*m_odometry_noise)(m_current_speed[0]);
-      * qdr = (*m_odometry_noise)(m_current_speed[1]);
+    
+    PVDEBUG("ndof: %zu  qdot_len: %zu\n", ndof, *qdot_len);
+    for (size_t ii(0); ii < *qdot_len; ++ii) {
+      if (ii >= ndof) {
+	for (/**/; ii < *qdot_len; ++ii)
+	  qdot[ii] = 0;
+	break;
+      }
+      if (m_odometry_noise) {
+	PVDEBUG("  qdot[%zu] = noise(m_current_speed[%zu] = %g)\n",
+		ii, ii, m_current_speed[ii]);
+	qdot[ii] = (*m_odometry_noise)(m_current_speed[ii]);
+      }
+      else {
+	PVDEBUG("  qdot[%zu] = m_current_speed[%zu] = %g\n",
+		ii, ii, m_current_speed[ii]);
+	qdot[ii] = m_current_speed[ii];
+      }
     }
-    else{
-      * qdl = m_current_speed[0];
-      * qdr = m_current_speed[1];
-    }
+    
+    *qdot_len = ndof;
     return 0;
   }
   
@@ -160,36 +193,9 @@ namespace npm {
   
   
   void HAL::
-  speed_set(double vx, double vy, double omega)
-  {
-    m_wanted_speed[0] = vx;
-    m_wanted_speed[1] = vy;
-    m_wanted_speed[2] = omega;
-  }
-  
-  
-  void HAL::
-  speed_get(double & vx, double & vy, double & omega)
-  {
-    if(m_odometry_noise){
-      PVDEBUG("noisy speed baby!\n");
-      vx = (*m_odometry_noise)(m_wanted_speed[0]);
-      vy = (*m_odometry_noise)(m_wanted_speed[1]);
-      omega = (*m_odometry_noise)(m_wanted_speed[2]);
-    }
-    else{
-      vx = m_wanted_speed[0];
-      vy = m_wanted_speed[1];
-      omega = m_wanted_speed[2];
-    }
-  }
-  
-  
-  void HAL::
   UpdateSpeeds()
   {
-    for(size_t ii(0); ii < 3; ++ii)
-      m_current_speed[ii] = m_wanted_speed[ii];
+    memcpy(m_current_speed.get(), m_wanted_speed.get(), sizeof(double) * ndof);
   }
   
   

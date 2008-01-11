@@ -44,15 +44,17 @@ namespace npm {
   shared_ptr<Frame> HoloDrive::
   ComputeNextPose(const Frame & current, double timestep) const
   {
-    double vx, vy, omega;
-    m_hal->speed_get(vx, vy, omega);
-    double dx(vx * timestep);
-    double dy(vy * timestep);
-    double dtheta(omega * timestep);
-    current.RotateTo(dx, dy);
     shared_ptr<Frame> result(new Frame(current));
+    double qd[3];
+    size_t len(3);
+    if ((0 != m_hal->speed_get(qd, &len)) || (3 != len))
+      return result;
+    double dx(qd[0] * timestep);
+    double dy(qd[1] * timestep);
+    double dtheta(qd[2] * timestep);
+    current.RotateTo(dx, dy);
     result->Add(dx, dy, dtheta);
     return result;
   }
-
+  
 }

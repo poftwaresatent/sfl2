@@ -64,11 +64,9 @@ namespace npm {
     typedef std::vector<boost::shared_ptr<const sfl::Frame> > trajectory_t;
     
     static RobotServer * Create(boost::shared_ptr<RobotDescriptor> descriptor,
-				const World & world, bool enable_trajectory);
-    
-    static RobotServer * Create(const HALFactory & hal_factory,
-				boost::shared_ptr<RobotDescriptor> descriptor,
-				const World & world, bool enable_trajectory);
+				const World & world,
+				size_t n_dof,
+				bool enable_trajectory);
     
     void UpdateAllSensors();
     void UpdateSensor(Sensor & sensor) const;

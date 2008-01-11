@@ -47,7 +47,7 @@ using namespace std;
 
 SmartCarmen::
 SmartCarmen(shared_ptr<RobotDescriptor> descriptor, const World & world)
-  : RobotClient(descriptor, world, true)
+  : RobotClient(descriptor, world, 2, true)
 {
   expoparams params(descriptor);
   m_nscans = params.front_nscans;
@@ -120,26 +120,43 @@ PrepareAction(double timestep)
 
 	m_mscan->UpdateAll();
 	if( ! send_laser(*m_sick, &cerr)){
-		cerr << "ERROR in SmartCarmen ctor:\n"
+		cerr << "ERROR in SmartCarmen PrepareAction:\n"
 				 << "  wrap_carmen::send_laser() failed.\n";
 		return false;
 	}
 	
 	double x, y, theta, velocity, steering;
 	GetPose(x, y, theta);
-	GetHAL()->speed_get(&velocity, &steering);
+	
+	double qd[2];
+	size_t len(2);
+	if ((0 != GetHAL()->speed_get(qd, &len)) || (2 != len)) {
+		cerr << "ERROR in SmartCarmen PrepareAction:\n"
+				 << "  GetHAL()->speed_get() failed.\n";
+		return false;
+	}
+	velocity = qd[0];
+	steering = qd[1];
+	
 	if( ! send_pos(x, y, theta, velocity, steering, &cerr)){
-		cerr << "ERROR in SmartCarmen ctor:\n"
+		cerr << "ERROR in SmartCarmen PrepareAction:\n"
 				 << "  wrap_carmen::send_pos() failed.\n";
 		return false;
 	}
 	
 	if( ! receive_steering(velocity, steering, &cerr)){
-		cerr << "ERROR in SmartCarmen ctor:\n"
+		cerr << "ERROR in SmartCarmen PrepareAction:\n"
 				 << "  wrap_carmen::receive_steering() failed.\n";
 		return false;
 	}
-	GetHAL()->speed_set(velocity, steering);
+	
+	qd[0] = velocity;
+	qd[1] = steering;
+	if ((0 != GetHAL()->speed_set(qd, &len)) || (2 != len)) {
+		cerr << "ERROR in SmartCarmen PrepareAction:\n"
+				 << "  GetHAL()->speed_set() failed.\n";
+		return false;
+	}
 	
 	return true;
 }

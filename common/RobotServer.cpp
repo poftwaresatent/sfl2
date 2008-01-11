@@ -129,28 +129,17 @@ namespace npm {
     AddCamera(new RobotZoomCamera(this, zoom));
   }
   
-
-  RobotServer * RobotServer::
-  Create(const HALFactory & hal_factory,
-	 shared_ptr<RobotDescriptor> descriptor,
-	 const World & world, bool enable_trajectory)
-  {
-    RobotServer * that(new RobotServer(descriptor,
-				       world,
-				       enable_trajectory));
-    that->m_hal.reset(hal_factory.Create(that));
-    return that;
-  }
-  
   
   RobotServer * RobotServer::
-  Create(shared_ptr<RobotDescriptor> descriptor, const World & world,
+  Create(shared_ptr<RobotDescriptor> descriptor,
+	 const World & world,
+	 size_t n_dof,
 	 bool enable_trajectory)
   {
     RobotServer * that(new RobotServer(descriptor,
 				       world,
 				       enable_trajectory));
-    that->m_hal.reset(new npm::HAL(that));
+    that->m_hal.reset(new npm::HAL(that, n_dof));
     return that;
   }
   

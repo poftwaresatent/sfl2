@@ -505,7 +505,7 @@ namespace npm {
       m_mutex->Unlock();
       break;    
     case 'q':
-      cout << "\nthanks, see you!\n";
+      cout << "\nbye bye!\n";
       exit(EXIT_SUCCESS);
     default:
       layout_map_t::const_iterator il(m_layout.find(key));

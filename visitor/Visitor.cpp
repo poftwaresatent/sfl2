@@ -39,7 +39,7 @@ using namespace boost;
 Visitor::
 Visitor(shared_ptr<RobotDescriptor> descriptor,
 	const World & world)
-  : RobotClient(descriptor, world, false),
+  : RobotClient(descriptor, world, 3, false),
     m_goal(new Goal())
 {
   m_drive = DefineHoloDrive(0.6);
@@ -74,11 +74,14 @@ PrepareAction(double timestep)
   if(absval(dtheta) > dthetathresh)
     dx = 0;
   
-  GetHAL()->speed_set(boundval(-sdmax, xd, sdmax),
-		      boundval(-sdmax, yd, sdmax),
-		      boundval(-thetadmax, thetad, thetadmax));
-
-  return true;
+  double qd[3] = {
+    boundval(-sdmax, xd, sdmax),
+    boundval(-sdmax, yd, sdmax),
+    boundval(-thetadmax, thetad, thetadmax)
+  };
+  size_t len(3);
+  
+  return (0 == GetHAL()->speed_set(qd, &len)) && (3 == len);
 }
 
 

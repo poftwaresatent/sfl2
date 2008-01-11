@@ -27,7 +27,7 @@
 
 
 #include <sfl/api/HAL.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/scoped_array.hpp>
 
 
 namespace npm {
@@ -41,7 +41,9 @@ namespace npm {
     : public sfl::HAL
   {
   public:
-    HAL(RobotServer * owner);
+    const size_t ndof;
+    
+    HAL(RobotServer * owner, size_t ndof);
     
     virtual int time_get(struct ::timespec * stamp);
     virtual int odometry_set(double x, double y, double theta,
@@ -51,13 +53,10 @@ namespace npm {
 			     double * x, double * y, double * theta,
 			     double * sxx, double * syy, double * stt,
 			     double * sxy, double * sxt, double * syt);
-    virtual int speed_set(double qdl, double qdr);
-    virtual int speed_get(double * qdl, double * qdr);
+    virtual int speed_set(const double * qdot, size_t * qdot_len);
+    virtual int speed_get(double * qdot, size_t * qdot_len);
     virtual int scan_get(int channel, double * rho, size_t * rho_len,
 			 struct ::timespec * t0, struct ::timespec * t1);
-    
-    void speed_set(double vx, double vy, double omega);
-    void speed_get(double & vx, double & vy, double & omega);
     
   protected:
     friend class RobotServer;
@@ -70,21 +69,10 @@ namespace npm {
     
   private:
     RobotServer * m_owner;
-    double m_wanted_speed[3];
-    double m_current_speed[3];
+    boost::scoped_array<double> m_wanted_speed;
+    boost::scoped_array<double> m_current_speed;
     const NoiseModel * m_odometry_noise;
     bool m_noisy_scanners;
-  };
-  
-  
-  /**
-     A quick'n'dirty way for subclasses of RobotClient to provide
-     their own subclass of HAL.
-  */
-  class HALFactory {
-  public:
-    virtual ~HALFactory() {}
-    virtual HAL * Create(RobotServer * owner) const = 0;
   };
   
 }
