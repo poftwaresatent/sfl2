@@ -73,11 +73,33 @@ namespace sfl {
 			     double * sxx, double * syy, double * stt,
 			     double * sxy, double * sxt, double * syt) = 0;
     
-    /** \return 0 on success. */
-    virtual int speed_set(double qdl, double qdr) = 0;
     
-    /** \return 0 on success. */
-    virtual int speed_get(double * qdl, double * qdr) = 0;
+    /**
+       Copy joint speeds from a user-supplied array 'qdot' which has
+       'qdot_len' elements. If qdot_len is smaller than the number of
+       joints, set the remaining joint velocities to zero. If qdot_len
+       is larger than the number of joints, discard the extra
+       data. After copying, qdot_len is set to the number of degrees
+       of freedom.
+       
+       \return 0 on success.
+    */
+    virtual int speed_set(const double * qdot,
+			  /** IN: size of qdot[], OUT: number of joints */
+			  size_t * qdot_len) = 0;
+    
+    /**
+       Copy joint speeds into a user-supplied array 'qdot' which has
+       'qdot_len' elements. If qdot_len is smaller than the number of
+       joints, discard the extra data. If qdot_len is larger than the
+       number of joints, fill the extra elements with zeros. After
+       copying, qdot_len is set to the number of degrees of freedom.
+       
+       \return 0 on success.
+    */
+    virtual int speed_get(double * qdot,
+			  /** IN: size of qdot[], OUT: number of joints */
+			  size_t * qdot_len) = 0;
     
     /** \note rho_len is input AND output: If there are fewer scan
 	points than (in) rho_len available, this is reflected by the
@@ -91,6 +113,26 @@ namespace sfl {
 			 /** IN: size of rho[], OUT: scan length */
 			 size_t * rho_len,
 			 struct ::timespec * t0, struct ::timespec * t1) = 0;
+    
+    
+    int deprecated_speed_set(double qdl, double qdr) {
+      double qd[2] = { qdl, qdr };
+      size_t len(2);
+      return speed_set(qd, &len);
+    }
+    
+    
+    int deprecated_speed_get(double * qdl, double * qdr) {
+      double qd[2];
+      size_t len(2);
+      int const stat(speed_get(qd, &len));
+      if (0 != stat)
+	return stat;
+      *qdl = qd[0];
+      *qdr = qd[1];
+      return 0;
+    }
+    
   };
   
 }

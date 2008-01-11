@@ -54,13 +54,13 @@ namespace sfl_cwrap {
   
   
   int cwrapHAL::
-  speed_set(double qdl, double qdr)
-  { return m_hal->speed_set(m_hal, qdl, qdr); }
+  speed_set(const double * qdot, size_t * qdot_len)
+  { return m_hal->speed_set(m_hal, qdot, qdot_len); }
   
   
   int cwrapHAL::
-  speed_get(double * qdl, double * qdr)
-  { return m_hal->speed_get(m_hal, qdl, qdr); }
+  speed_get(double * qdot, size_t * qdot_len)
+  { return m_hal->speed_get(m_hal, qdot, qdot_len); }
   
   
   int cwrapHAL::

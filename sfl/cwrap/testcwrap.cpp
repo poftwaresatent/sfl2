@@ -51,9 +51,10 @@ static int hal_odometry_get(struct cwrap_hal_s * self, struct timespec * stamp,
 			    double * x, double * y, double * theta,
 			    double * sxx, double * syy, double * stt,
 			    double * sxy, double * sxt, double * syt);
-static int hal_speed_set(struct cwrap_hal_s * self, double qdl, double qdr);
+static int hal_speed_set(struct cwrap_hal_s * self,
+			 const double * qdot, size_t * qdot_len);
 static int hal_speed_get(struct cwrap_hal_s * self,
-			 double * qdl, double * qdr);
+			 double * qdot, size_t * qdot_len);
 static int hal_scan_get(struct cwrap_hal_s * self,
 			int channel, double * rho, size_t * rho_len,
 			struct timespec * t0, struct timespec * t1);
@@ -314,18 +315,32 @@ int hal_odometry_get(struct cwrap_hal_s * self,
 }
 
 
-int hal_speed_set(struct cwrap_hal_s * self, double qdl, double qdr)
+int hal_speed_set(struct cwrap_hal_s * self,
+		  const double * qdot, size_t * qdot_len)
 {
-  hal.qdl = qdl;
-  hal.qdr = qdr;
+  if (*qdot_len >= 1)
+    hal.qdl = qdot[0];
+  else
+    hal.qdl = 0;
+  if (*qdot_len >= 2)
+    hal.qdr = qdot[1];
+  else
+    hal.qdr = 0;
+  *qdot_len = 2;
   return 0;
 }
 
 
-int hal_speed_get(struct cwrap_hal_s * self, double * qdl, double * qdr)
+int hal_speed_get(struct cwrap_hal_s * self,
+		  double * qdot, size_t * qdot_len)
 {
-  *qdl = hal.qdl;
-  *qdr = hal.qdr;
+  if (*qdot_len >= 1)
+    qdot[0] = hal.qdl;
+  if (*qdot_len >= 2)
+    qdot[1] = hal.qdr;
+  for (size_t ii(2); ii < *qdot_len; ++ii)
+    qdot[ii] = 0;
+  *qdot_len = 2;
   return 0;
 }
 

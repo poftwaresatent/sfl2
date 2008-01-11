@@ -8,6 +8,8 @@ libcwrap_la_SOURCES= Handlemap.cpp cwrapHAL.cpp sfl.cpp expo.cpp
 include_HEADERS=     expo.h Handlemap.hpp hal.h cwrapHAL.hpp sfl.h
 includedir=          @includedir@/sfl/cwrap
 
+## do not use bin_PROGRAMS here because that leads to buildsys errors
+## (infinite make recursion or invalid libtool object along the way)
 check_PROGRAMS=      testcwrap
 testcwrap_SOURCES=   testcwrap.cpp
 testcwrap_LDADD=     ../libsunflower.la

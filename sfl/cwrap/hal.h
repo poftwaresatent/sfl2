@@ -55,8 +55,20 @@ extern "C" {
 			double * x, double * y, double * theta,
 			double * sxx, double * syy, double * stt,
 			double * sxy, double * sxt, double * syt);
-    int (*speed_set)(struct cwrap_hal_s * self, double qdl, double qdr);
-    int (*speed_get)(struct cwrap_hal_s * self, double * qdl, double * qdr);
+    
+    /**
+       \note The form (struct cwrap_hal_s *, double, double) was
+       deprecated because it hardcoded differential drive semantics.
+    */
+    int (*speed_set)(struct cwrap_hal_s * self,
+		     const double * qdot, size_t * qdot_len);
+    
+    /**
+       \note The form (struct cwrap_hal_s *, double *, double *) was
+       deprecated because it hardcoded differential drive semantics.
+    */
+    int (*speed_get)(struct cwrap_hal_s * self,
+		     double * qdot, size_t * qdot_len);
     
     /**
        \param channel (in): scanner channel number

@@ -81,7 +81,7 @@ namespace sfl {
   DoUpdate(double timestep, ostream * dbgos)
   {
     double cqdl, cqdr;
-    int status(m_hal->speed_get( & cqdl, & cqdr));
+    int status(m_hal->deprecated_speed_get( & cqdl, & cqdr));
     if(0 != status){
       if(dbgos != 0)
 	(*dbgos) << "ERROR in MotionController::Update():\n"
@@ -121,7 +121,7 @@ namespace sfl {
     // send it
     if(dbgos != 0)
       (*dbgos) << "  wanted:   (" << wqdl << ", " << wqdr << ")\n";
-    status = m_hal->speed_set(wqdl, wqdr);
+    status = m_hal->deprecated_speed_set(wqdl, wqdr);
     
     // synch cached values before treating status
     m_rwlock->Wrlock();
