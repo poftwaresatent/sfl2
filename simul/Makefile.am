@@ -30,6 +30,19 @@ if NPM_SMARTFLOWER
                    ../../sunflower/libsunflower.la
 else
 # ! NPM_SMARTFLOWER
+
+if NPM_HAVE_ASL
+  nepumuk_LDADD=   libsimul.la \
+                   ../libnepumuk.la \
+                   -lsunflower \
+                   -lasl-mplan \
+                   -lasl-mcontrol \
+                   -lestar
+  dumpworld_LDADD= libsimul.la \
+                   ../libnepumuk.la \
+                   -lsunflower
+else
+# ! NPM_HAVE_ASL
   nepumuk_LDADD=   libsimul.la \
                    ../libnepumuk.la \
                    -lsunflower \
@@ -37,6 +50,9 @@ else
   dumpworld_LDADD= libsimul.la \
                    ../libnepumuk.la \
                    -lsunflower
+endif
+# ! NPM_HAVE_ASL
+
 endif
 # NPM_SMARTFLOWER
 

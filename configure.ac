@@ -177,10 +177,10 @@ AC_ARG_WITH(estar,
   AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
   [ if test "x$withval" = "x" ; then
       NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR"
-      NPM_ESTAR_LDFLAGS="-lasl-mcontrol -lestar"
+      NPM_ESTAR_LDFLAGS="-lestar"
     else
       NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR -I${withval}/include -I${withval}"
-      NPM_ESTAR_LDFLAGS="-lasl-mcontrol -lestar -L${withval}/lib -L${withval}"
+      NPM_ESTAR_LDFLAGS="-lestar -L${withval}/lib -L${withval}"
     fi
     AM_CONDITIONAL([NPM_HAVE_ESTAR], [true]) ],
   [ AM_CONDITIONAL([NPM_HAVE_ESTAR], [false]) ])
@@ -191,8 +191,11 @@ AC_ARG_WITH(asl,
       AC_MSG_ERROR([--with-asl makes no sense without --with-estar])
     fi
     if test "x$withval" != "x" ; then
-      NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -I${withval}/include -I${withval}"
-      NPM_ESTAR_LDFLAGS="-L${withval}/lib -L${withval} $NPM_ESTAR_LDFLAGS"
+      NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -DNPM_HAVE_ASL -I${withval}/include -I${withval}"
+      NPM_ESTAR_LDFLAGS="-lasl-mplan -lasl-mcontrol -L${withval}/lib -L${withval} $NPM_ESTAR_LDFLAGS"
+    else
+      NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -DNPM_HAVE_ASL"
+      NPM_ESTAR_LDFLAGS="-lasl-mplan -lasl-mcontrol $NPM_ESTAR_LDFLAGS"
     fi
     oldCPPFLAGS="$CPPFLAGS"
     if test "$prefix" = "NONE"; then
