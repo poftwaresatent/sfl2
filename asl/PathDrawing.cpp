@@ -54,7 +54,7 @@ PathDrawing(const std::string & name,
 
 
 static void draw_path(const asl::path_t * path, size_t gradplot_frequency,
-		      double color_intensity)
+		      double color_intensity, double carrot_radius)
 {
   if(( ! path) || (path->empty())){
     PDEBUG("invalid or empty path\n");
@@ -119,12 +119,10 @@ static void draw_path(const asl::path_t * path, size_t gradplot_frequency,
   
   double carx(path->back().point.v0);
   double cary(path->back().point.v1);
-  glColor3d(color_intensity,
-	    color_intensity,
-	    0);
+  glColor3d(1, 1, 0);
   glPushMatrix();
   glTranslated(carx, cary, 0);
-  gluDisk(wrap_glu_quadric_instance(), 0.2, 0.2, 36, 1);
+  gluDisk(wrap_glu_quadric_instance(), carrot_radius, carrot_radius, 36, 1);
   glPopMatrix();
 }
 
@@ -135,8 +133,8 @@ Draw()
   boost::shared_ptr<asl::path_t> clean;
   boost::shared_ptr<asl::path_t> dirty;
   m_aslbot->CopyPaths(clean, dirty);
-  draw_path(clean.get(), gradplot_frequency, 1);
-  draw_path(dirty.get(), 0, 0.5);
+  draw_path(clean.get(), gradplot_frequency, 1, 0.2);
+  draw_path(dirty.get(), 0, 0.5, 0.15);
 
   /* trajectory and reference point drawings */
   asl::path_point ref_point;
