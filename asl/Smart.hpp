@@ -26,41 +26,19 @@
 #define NPM_SMART_HPP
 
 
-#include <npm/common/RobotClient.hpp>
-#include <sfl/util/vec2d.hpp>
-#include <vector>
+#include <npm/asl/AslBot.hpp>
 
 
 namespace asl {
+	class AckermannAlgorithm;
 	class ArcControl;
 	class AckermannController;
 	class NavFuncQuery;
-	
-  struct path_element;
-  typedef std::vector<path_element> path_t;
-	typedef sfl::vec2d<double> path_point;
-	typedef std::vector<path_point> trajectory_t;
-
-  class Algorithm;
-	class MappingThread;
-	class PlanningThread;
-  class ControlThread;
-} 
-
-
-namespace sfl {
-  class Multiscanner;
-  class Odometry;
-  class Scanner;
-	class RWlock;
 }
 
 
-class SmartColorScheme;
-
-
 class Smart
-  : public npm::RobotClient
+  : public AslBot
 {
 private:
   Smart(const Smart &);
@@ -68,25 +46,9 @@ private:
 public:
   Smart(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 				const npm::World & world);
-	~Smart();
 	
-  virtual bool PrepareAction(double timestep);
-  virtual void InitPose(double x, double y, double theta);
-  virtual void SetPose(double x, double y, double theta);
-  virtual void GetPose(double & x, double & y, double & theta);
-	const sfl::Frame & GetPose() const;
-  virtual void SetGoal(double timestep, const sfl::Goal & goal);
-  virtual boost::shared_ptr<const sfl::Goal> GetGoal();
-  virtual bool GoalReached();
-	
-	/** \note Can return null. */
-	void CopyPaths(boost::shared_ptr<asl::path_t> & clean,
-								 boost::shared_ptr<asl::path_t> & dirty) const;
-	
-	/** \note Can return null. */
-	const asl::trajectory_t * GetTrajectory() const;	
-
-	bool GetRefpoint(asl::path_point &ref_point) const;
+	virtual const asl::trajectory_t * GetTrajectory() const;	
+	virtual bool GetRefpoint(asl::path_point &ref_point) const;
 	
 	/** \note Can return null. */
 	const asl::ArcControl * GetArcControl() const;
@@ -96,24 +58,37 @@ public:
 	
   
 protected:
-  boost::shared_ptr<sfl::Scanner> m_sick;
-  boost::shared_ptr<sfl::Multiscanner> m_mscan;
-  boost::shared_ptr<SmartColorScheme> m_smart_cs;
-	boost::shared_ptr<sfl::Odometry> m_odo;
-  
-  boost::shared_ptr<asl::Algorithm> m_smart_algo;
-  boost::shared_ptr<sfl::RWlock> m_simul_rwlock;
-  boost::shared_ptr<asl::MappingThread> m_mapping_thread;
-  boost::shared_ptr<asl::PlanningThread> m_planning_thread;
-  boost::shared_ptr<asl::ControlThread> m_control_thread;
+	boost::shared_ptr<asl::AckermannAlgorithm> m_ackalgo;
 	boost::shared_ptr<const asl::AckermannController> m_acntrl;
+
+	virtual
+	void InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
+										 expoparams const & params,
+										 double carrot_distance,
+										 double carrot_stepsize,
+										 size_t carrot_maxnsteps,
+										 double replan_distance,
+										 std::string const & traversability_file,
+										 int estar_step,
+										 double wavefront_buffer,
+										 std::string const & goalmgr_filename,
+										 bool swiped_map_update,
+										 boost::shared_ptr<estar::AlgorithmOptions> estar_options,
+										 boost::shared_ptr<asl::travmap_grow_options> grow_options,
+										 bool estar_grow_grid,
+										 /** \todo XXX aarghhhhh! */
+										 double & robot_radius);
 	
-  int m_nscans, m_sick_channel;
-	bool m_error;
-	int m_simul_usecsleep;
-	int m_mapping_usecsleep;
-	int m_planning_usecsleep;
-	int m_control_usecsleep;
+	virtual void InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
+														expoparams const & params);
+	
+	virtual void InitDrive(expoparams const & params);
+
+	virtual void InitBody(expoparams const & params);
+	
+	virtual void MoreGraphics(std::string const & name,
+														npm::World const & world,
+														bool slow_drawing_enabled);
 };
 
 #endif // NPM_SMART_HPP

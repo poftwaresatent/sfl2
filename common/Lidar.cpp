@@ -116,7 +116,7 @@ namespace npm {
   void Lidar::
   FinalizeUpdate()
   {
-    if(0 != m_hal->time_get(&m_t0)){
+    if(0 != m_hal->time_get(&m_t1)){
       cerr << "ERROR in npm::Lidar::FinalizeUpdate():"
 	   << " m_hal->time_get() failed.\n";
       exit(EXIT_FAILURE);

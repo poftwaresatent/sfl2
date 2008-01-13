@@ -3,9 +3,11 @@ CFLAGS=   @NPM_CFLAGS@
 CXXFLAGS= @NPM_CXXFLAGS@
 LDFLAGS=  @NPM_LDFLAGS@
 
-noinst_LTLIBRARIES=  libsmart.la
-libsmart_la_SOURCES= Smart.cpp PathDrawing.cpp ArcDrawing.cpp \
+noinst_LTLIBRARIES=  libasl.la
+libasl_la_SOURCES=   AslBot.cpp Smart.cpp Borox.cpp \
+                     PathDrawing.cpp ArcDrawing.cpp \
                      SmartCarmen.cpp wrap_carmen.cpp
-include_HEADERS=     ArcDrawing.hpp PathDrawing.hpp Smart.hpp \
+include_HEADERS=     AslBot.hpp Smart.hpp Borox.hpp \
+                     ArcDrawing.hpp PathDrawing.hpp \
                      SmartCarmen.hpp ThreadDrawing.hpp wrap_carmen.hpp
-includedir=          @includedir@/npm/smart
+includedir=          @includedir@/npm/asl

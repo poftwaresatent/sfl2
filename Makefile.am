@@ -14,8 +14,8 @@ if NPM_HAVE_ESTAR
 endif 
 
 if NPM_HAVE_ASL
-  SMART_DIR=    smart
-  SMART_LIBADD= smart/libsmart.la
+  ASL_DIR=    asl
+  ASL_LIBADD= asl/libasl.la
 endif 
 
 if NPM_HAVE_GENOM
@@ -30,7 +30,7 @@ else
 endif
 
 SUBDIRS= common robox visitor \
-         $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) $(SMART_DIR) \
+         $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
          . simul \
          $(QT_DIR)
 
@@ -42,7 +42,7 @@ libnepumuk_la_LIBADD=  common/libcommon.la \
                        $(LAAS_LIBADD) \
                        $(BIRON_LIBADD) \
                        $(ESTAR_LIBADD) \
-                       $(SMART_LIBADD)
+                       $(ASL_LIBADD)
 
 SRCDIR=                @abs_top_srcdir@
 BUILDDIR=              @abs_top_builddir@

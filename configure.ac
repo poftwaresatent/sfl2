@@ -185,8 +185,6 @@ AC_ARG_WITH(asl,
     fi
     AC_CHECK_HEADER([asl/path_tracking.hpp], [], [
       AC_MSG_ERROR([cannot compile asl/path_tracking.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-    AC_CHECK_HEADER([smartsfl/SmartAlgo.hpp], [], [
-      AC_MSG_ERROR([cannot compile smartsfl/SmartAlgo.hpp (CPPFLAGS=$CPPFLAGS)])], [])
     CPPFLAGS="$oldCPPFLAGS"
     AM_CONDITIONAL([NPM_HAVE_ASL], [true]) ],
   [ AM_CONDITIONAL([NPM_HAVE_ASL], [false]) ])
@@ -267,6 +265,6 @@ AC_SUBST(NPM_ESTAR_CPPFLAGS)
 AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                laas/Makefile biron/Makefile estar/Makefile smart/Makefile
+                laas/Makefile biron/Makefile estar/Makefile asl/Makefile
                 simul/Makefile qt/Makefile qt/QtNepumuk.pro])
 AC_OUTPUT

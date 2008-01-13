@@ -39,11 +39,17 @@
 #include "../common/CheatSheet.hpp"
 #include "../common/DiffDrive.hpp"
 #include "../common/Manager.hpp"
+#include <sfl/util/Hull.hpp>
+#include <sfl/util/numeric.hpp>
+#include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/MotionController.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
+#include <sfl/dwa/DistanceObjective.hpp>
+#include <sfl/dwa/HeadingObjective.hpp>
+#include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/Facade.hpp>
 #include <estar/dump.hpp>
@@ -62,7 +68,7 @@ using sfl::Polygon;
 using sfl::Pose;
 using sfl::Goal;
 using sfl::RobotModel;
-using sfl::DynamicWindow;
+using sfl::LegacyDynamicWindow;
 using sfl::Odometry;
 using sfl::Multiscanner;
 using sfl::MotionController;
@@ -179,7 +185,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
 						RWlock::Create("motor")));
   m_odometry.reset(new Odometry(GetHAL(), RWlock::Create("odometry")));
   m_multiscanner.reset(new Multiscanner(m_odometry));
-  m_dynamicWindow.reset(new DynamicWindow(params.dwa_dimension,
+  m_dynamicWindow.reset(new LegacyDynamicWindow(params.dwa_dimension,
 					  params.dwa_grid_width,
 					  params.dwa_grid_height,
 					  params.dwa_grid_resolution,
@@ -204,20 +210,20 @@ CreateGfxStuff(const std::string & name)
   AddDrawing(new DWDrawing(name + "_dwdrawing", *m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_dodrawing",
 			  m_dynamicWindow->GetDistanceObjective(),
-			  *m_dynamicWindow));
+			  m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_hodrawing",
 			  m_dynamicWindow->GetHeadingObjective(),
-			  *m_dynamicWindow));
+			  m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_sodrawing",
 			  m_dynamicWindow->GetSpeedObjective(),
-			  *m_dynamicWindow));
+			  m_dynamicWindow));
   AddDrawing(new OdometryDrawing(name + "_odomdrawing",
 				 *m_odometry,
 				 m_robotModel->WheelBase() / 2));
   AddDrawing(new DODrawing(name + "_collisiondrawing",
 			   m_dynamicWindow->GetDistanceObjective(),
-			   *m_dynamicWindow,
-			   *m_robotModel));
+			   m_dynamicWindow,
+			   m_robotModel));
   AddDrawing(new PNFDrawing(name + "_global_risk",
 			    this, PNFDrawing::GLOBAL, PNFDrawing::RISK));
   AddDrawing(new PNFDrawing(name + "_gframe_risk",
@@ -249,7 +255,7 @@ CreateGfxStuff(const std::string & name)
 			    Instance<UniqueManager<Camera> >()));
   AddCamera(new OCamera(name + "_ocamera", *m_dynamicWindow));
   double a, b, c, d;
-  m_dynamicWindow->GetDistanceObjective().GetRange(a, b, c, d);
+  m_dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
   AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
 			    Instance<UniqueManager<Camera> >()));
   AddCamera(new PNFCamera(name + "_pnfcamera", this));

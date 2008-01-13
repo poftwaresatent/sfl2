@@ -40,14 +40,14 @@ class ODrawing
 {
 public:
   ODrawing(const std::string & name,
-	   const sfl::Objective & obj,
-	   const sfl::DynamicWindow & dwa);
+	   boost::shared_ptr<sfl::Objective const> obj,
+	   boost::shared_ptr<sfl::DynamicWindow const> dwa);
   
   virtual void Draw();
   
 private:
-  const sfl::Objective & m_obj;
-  const sfl::DynamicWindow & m_dwa;
+  boost::shared_ptr<sfl::Objective const> m_obj;
+  boost::shared_ptr<sfl::DynamicWindow const> m_dwa;
 };
 
 #endif // ODRAWING_HPP

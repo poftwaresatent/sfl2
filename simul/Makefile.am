@@ -125,4 +125,8 @@ dist_bin_SCRIPTS= birondemo.sh \
                     robots.smart7 \
                     travmap.smart7 \
                     goals.smart7 \
-                    world.smart7
+                    world.smart7 \
+                  borox0.sh \
+                    layout.borox0 \
+                    robots.borox0 \
+                    travmap.borox0

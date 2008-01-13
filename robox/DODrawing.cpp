@@ -28,6 +28,7 @@
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
+#include <sfl/dwa/HeadingObjective.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <cmath>
 
@@ -43,9 +44,9 @@ static void DrawHull(sfl::HullIterator ihull,
 
 DODrawing::
 DODrawing(const std::string & name,
-	  const sfl::DistanceObjective & distobj,
-	  const sfl::DynamicWindow & dwa,
-	  const sfl::RobotModel & rm)
+	  boost::shared_ptr<const sfl::DistanceObjective> distobj,
+	  boost::shared_ptr<const sfl::DynamicWindow> dwa,
+	  boost::shared_ptr<const sfl::RobotModel> rm)
   : Drawing(name,
 	    "sfl::DistanceObjective (greyscale with special colors)",
 	    Instance<UniqueManager<Drawing> >()),
@@ -62,38 +63,38 @@ Draw()
   {
     // draw grid occuppancy
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    const double dx(m_distobj.GetDeltaX() / 2);
-    const double dy(m_distobj.GetDeltaY() / 2);
-    for(size_t ix(0); ix < m_distobj.DimX(); ++ix){
-      const double xx(m_distobj.FindXlength(ix));
-      for(size_t iy(0); iy < m_distobj.DimY(); ++iy){
-	const double yy(m_distobj.FindYlength(iy));
+    const double dx(m_distobj->GetDeltaX() / 2);
+    const double dy(m_distobj->GetDeltaY() / 2);
+    for(size_t ix(0); ix < m_distobj->DimX(); ++ix){
+      const double xx(m_distobj->FindXlength(ix));
+      for(size_t iy(0); iy < m_distobj->DimY(); ++iy){
+	const double yy(m_distobj->FindYlength(iy));
 #undef LEGACY
 #ifdef LEGACY
-	if(m_distobj.CellOccupied(ix, iy)){
+	if(m_distobj->CellOccupied(ix, iy)){
 	  glColor3d(1, 1, 0);
 	  glRectd(xx - dx, yy - dy, xx + dx, yy + dy);
 	}
 #else // ! LEGACY
-	if(m_distobj.CellOccupied(ix, iy)){
-	  switch(m_distobj.GetRegion(ix, iy)){
+	if(m_distobj->CellOccupied(ix, iy)){
+	  switch(m_distobj->GetRegion(ix, iy)){
 	  case DistanceObjective::NONE:   glColor3d(0, 0, 1); break;
 	  case DistanceObjective::ZONE:   glColor3d(1, 1, 0); break;
 	  case DistanceObjective::HULL:   glColor3d(1, 0, 0); break;
 	  default:
 	    PDEBUG_ERR("BUG in DODrawing::Draw(): invalid region[%zu][%zu]=%d\n",
-		       ix, iy, m_distobj.GetRegion(ix, iy));
+		       ix, iy, m_distobj->GetRegion(ix, iy));
 	    exit(EXIT_FAILURE);
 	  }
  	}
 	else{
-	  switch(m_distobj.GetRegion(ix, iy)){
+	  switch(m_distobj->GetRegion(ix, iy)){
 	  case DistanceObjective::NONE:   continue; break;
 	  case DistanceObjective::ZONE:   glColor3d(0.5, 0.5 , 0); break;
 	  case DistanceObjective::HULL:   glColor3d(0.5, 0   , 0); break;
 	  default:
 	    PDEBUG_ERR("BUG in DODrawing::Draw(): invalid region[%zu][%zu]=%d\n",
-		       ix, iy, m_distobj.GetRegion(ix, iy));
+		       ix, iy, m_distobj->GetRegion(ix, iy));
 	    exit(EXIT_FAILURE);
 	  }
 	}
@@ -103,37 +104,37 @@ Draw()
     }
   }
   
-  if(m_distobj.ObstacleInHull())
-    DrawHull(HullIterator(*m_distobj.GetHull()),           1, 0, 1  , true);
+  if(m_distobj->ObstacleInHull())
+    DrawHull(HullIterator(*m_distobj->GetHull()),           1, 0, 1  , true);
   else
-    DrawHull(HullIterator(*m_distobj.GetHull()),           1, 0, 0  , false);
-  DrawHull(HullIterator(*m_distobj.GetPaddedHull()),       1, 0, 0.5, false);
-  DrawHull(HullIterator(*m_distobj.GetEvaluationHull()),   0, 0, 1  , false);
-  DrawHull(HullIterator(*m_rm.GetHull()),                0.5, 0.5, 1, false);
+    DrawHull(HullIterator(*m_distobj->GetHull()),           1, 0, 0  , false);
+  DrawHull(HullIterator(*m_distobj->GetPaddedHull()),       1, 0, 0.5, false);
+  DrawHull(HullIterator(*m_distobj->GetEvaluationHull()),   0, 0, 1  , false);
+  DrawHull(HullIterator(*m_rm->GetHull()),                0.5, 0.5, 1, false);
   
-  if((m_dwa.QdlOptIndex() >= 0) &&
-     (m_dwa.QdrOptIndex() >= 0)){
-//     DrawObstaclePaths(m_dwa.QdlOptIndex(),
-// 		      m_dwa.QdrOptIndex());
+  if((m_dwa->QdlOptIndex() >= 0) &&
+     (m_dwa->QdrOptIndex() >= 0)){
+//     DrawObstaclePaths(m_dwa->QdlOptIndex(),
+// 		      m_dwa->QdrOptIndex());
     DrawPose(sfl::Frame(), 1, 1, 1);
-    DrawPose(m_dwa.
-	     GetHeadingObjective().
-	     PredictedStandstill(m_dwa.QdlOptIndex(),
-				 m_dwa.QdrOptIndex()),
+    DrawPose(m_dwa->
+	     GetHeadingObjective()->
+	     PredictedStandstill(m_dwa->QdlOptIndex(),
+				 m_dwa->QdrOptIndex()),
 	     0, 1, 0);
   }
 
   DrawPath();
   
 #ifndef LEGACY
-  const size_t n_near(m_distobj.GetNNear());
+  const size_t n_near(m_distobj->GetNNear());
   if(0 < n_near){
     glColor3d(1, 0, 0.5);
     glPointSize(2);
     glBegin(GL_POINTS);
     for(size_t ii(0); ii < n_near; ++ii){
       double lx, ly;
-      if(m_distobj.GetNear(ii, lx, ly))
+      if(m_distobj->GetNear(ii, lx, ly))
 	glVertex2d(lx, ly);
     }
     glEnd();
@@ -146,10 +147,10 @@ void DODrawing::
 DrawObstaclePaths(size_t iqdl, size_t iqdr)
 {
 #ifndef LEGACY
-  for(size_t ix(0); ix < m_distobj.DimX(); ++ix)
-    for(size_t iy = 0; iy < m_distobj.DimY(); ++iy)
-      if(m_distobj.CellOccupied(ix, iy)
-	 && (DistanceObjective::ZONE == m_distobj.GetRegion(ix, iy)))
+  for(size_t ix(0); ix < m_distobj->DimX(); ++ix)
+    for(size_t iy = 0; iy < m_distobj->DimY(); ++iy)
+      if(m_distobj->CellOccupied(ix, iy)
+	 && (DistanceObjective::ZONE == m_distobj->GetRegion(ix, iy)))
 	DrawCollisionPrediction(iqdl, iqdr, ix, iy);
 #endif // ! LEGACY
 }
@@ -158,12 +159,12 @@ DrawObstaclePaths(size_t iqdl, size_t iqdr)
 void DODrawing::
 DrawCollisionPrediction(size_t iqdl, size_t iqdr, size_t igx, size_t igy)
 {
-  const double time(m_distobj.CollisionTime(igx, igy, iqdl, iqdr));
+  const double time(m_distobj->CollisionTime(igx, igy, iqdl, iqdr));
   const bool no_collision(time < 0);
   
   double sd, thetad;
-  m_rm.Actuator2Global(m_dwa.Qd(iqdl),
-		       m_dwa.Qd(iqdr),
+  m_rm->Actuator2Global(m_dwa->Qd(iqdl),
+		       m_dwa->Qd(iqdr),
 		       sd,
 		       thetad);
   double dist(sfl::absval(sd) * time);
@@ -174,17 +175,17 @@ DrawCollisionPrediction(size_t iqdl, size_t iqdr, size_t igx, size_t igy)
     glColor3d(1, 0.5, 0);
   glPointSize(3);
   glBegin(GL_POINTS);
-  glVertex2d(m_distobj.FindXlength(igx), m_distobj.FindYlength(igy));
+  glVertex2d(m_distobj->FindXlength(igx), m_distobj->FindYlength(igy));
   glEnd();
   glPointSize(1);
   
   if(sfl::absval(1e-9 * sd) < sfl::absval(thetad / 1e-9)){
     // circular equation
     double rCur(sd / thetad);
-    double rGir(sqrt(pow(m_distobj.FindXlength(igx)       , 2) +
-		     pow(m_distobj.FindYlength(igy) - rCur, 2)));
-    double phi0(atan2(m_distobj.FindYlength(igy) - rCur,
-		      m_distobj.FindXlength(igx)) * 180 / M_PI);
+    double rGir(sqrt(pow(m_distobj->FindXlength(igx)       , 2) +
+		     pow(m_distobj->FindYlength(igy) - rCur, 2)));
+    double phi0(atan2(m_distobj->FindYlength(igy) - rCur,
+		      m_distobj->FindXlength(igx)) * 180 / M_PI);
     
     double phi;
     if(no_collision)
@@ -221,8 +222,8 @@ DrawCollisionPrediction(size_t iqdl, size_t iqdr, size_t igx, size_t igy)
     if(sd >= 0)
       dist = - dist;
     glBegin(GL_LINES);
-    glVertex2d(m_distobj.FindXlength(igx), m_distobj.FindYlength(igy));
-    glVertex2d(m_distobj.FindXlength(igx)+dist, m_distobj.FindYlength(igy));
+    glVertex2d(m_distobj->FindXlength(igx), m_distobj->FindYlength(igy));
+    glVertex2d(m_distobj->FindXlength(igx)+dist, m_distobj->FindYlength(igy));
     glEnd();
   }
 }
@@ -253,7 +254,7 @@ DrawPose(const sfl::Frame & pose,
 	 double green,
 	 double blue)
 {
-  const double size(m_rm.WheelBase() / 2);
+  const double size(m_rm->WheelBase() / 2);
   glColor3d(red, green, blue);
 
   glBegin(GL_LINES);
@@ -286,7 +287,7 @@ DrawPath()
   glBegin(GL_LINES);
   glColor3d(1, 1, 1);
   double x, y;
-  m_dwa.GetSubGoal(x, y);
+  m_dwa->GetSubGoal(x, y);
   glVertex2d(0, 0);
   glVertex2d(x, y);
   glEnd();

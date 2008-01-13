@@ -45,16 +45,16 @@ class DODrawing
 {
 public:
   DODrawing(const std::string & name,
-	    const sfl::DistanceObjective & distobj,
-	    const sfl::DynamicWindow & dwa,
-	    const sfl::RobotModel & rm);
+	    boost::shared_ptr<const sfl::DistanceObjective> distobj,
+	    boost::shared_ptr<const sfl::DynamicWindow> dwa,
+	    boost::shared_ptr<const sfl::RobotModel> rm);
   
   virtual void Draw();
   
 private:
-  const sfl::DistanceObjective & m_distobj;
-  const sfl::DynamicWindow & m_dwa;
-  const sfl::RobotModel & m_rm;
+  boost::shared_ptr<const sfl::DistanceObjective> m_distobj;
+  boost::shared_ptr<const sfl::DynamicWindow> m_dwa;
+  boost::shared_ptr<const sfl::RobotModel> m_rm;
   
   void DrawObstaclePaths(size_t iqdl, size_t iqdr);
   void DrawCollisionPrediction(size_t iqdl, size_t iqdr,

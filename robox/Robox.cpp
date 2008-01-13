@@ -52,6 +52,9 @@
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
+#include <sfl/dwa/DistanceObjective.hpp>
+#include <sfl/dwa/SpeedObjective.hpp>
+#include <sfl/dwa/HeadingObjective.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/MotionPlanner.hpp>
 #include <sfl/expo/MotionPlannerState.hpp>
@@ -179,7 +182,6 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
 					  params.dwa_grid_height,
 					  params.dwa_grid_resolution,
 					  m_robotModel,
-					  *m_motionController,
 					  params.dwa_alpha_distance,
 					  params.dwa_alpha_heading,
 					  params.dwa_alpha_speed,
@@ -243,13 +245,13 @@ CreateGfxStuff(const string & name)
   AddDrawing(new DWDrawing(name + "_dwdrawing", *m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_dodrawing",
 			  m_dynamicWindow->GetDistanceObjective(),
-			  *m_dynamicWindow));
+			  m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_hodrawing",
 			  m_dynamicWindow->GetHeadingObjective(),
-			  *m_dynamicWindow));
+			  m_dynamicWindow));
   AddDrawing(new ODrawing(name + "_sodrawing",
 			  m_dynamicWindow->GetSpeedObjective(),
-			  *m_dynamicWindow));
+			  m_dynamicWindow));
   AddDrawing(new RHDrawing(name + "_rhdrawing",
 			   m_bubbleBand->GetReplanHandler(),
 			   RHDrawing::AUTODETECT));
@@ -267,8 +269,8 @@ CreateGfxStuff(const string & name)
 				 m_robotModel->WheelBase() / 2));
   AddDrawing(new DODrawing(name + "_collisiondrawing",
 			   m_dynamicWindow->GetDistanceObjective(),
-			   *m_dynamicWindow,
-			   *m_robotModel));
+			   m_dynamicWindow,
+			   m_robotModel));
   
   AddCamera(new StillCamera(name + "_dwcamera",
 			    0,
@@ -280,7 +282,7 @@ CreateGfxStuff(const string & name)
   AddCamera(new GridLayerCamera(name + "_local_glcamera",
 				m_bubbleBand->GetReplanHandler()->GetNF1()));
   double a, b, c, d;
-  m_dynamicWindow->GetDistanceObjective().GetRange(a, b, c, d);
+  m_dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
   AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
 			    Instance<UniqueManager<Camera> >()));
 }

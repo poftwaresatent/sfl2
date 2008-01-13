@@ -25,7 +25,7 @@
 #include <npm/common/Drawing.hpp>
 
 
-class Smart;
+class AslBot;
 
 
 class PathDrawing
@@ -35,14 +35,14 @@ public:
   size_t gradplot_frequency;
   
   PathDrawing(const std::string & name,
-	      const Smart * smart,
+	      const AslBot * aslbot,
 	      /** plot gradient every X steps (0: don't plot gradient) */
 	      size_t gradplot_frequency);
   
   virtual void Draw();
   
 private:
-  const Smart * m_smart;
+  const AslBot * m_aslbot;
 };
 
 #endif // ASL_PATH_DRAWING_HPP

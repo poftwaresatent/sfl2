@@ -42,13 +42,13 @@ using namespace boost;
 
 PathDrawing::
 PathDrawing(const std::string & name,
-	    const Smart * smart,
+	    const AslBot * aslbot,
 	    size_t _gradplot_frequency)
   : Drawing(name,
 	    "(current and maybe previous) planned path (gradient descent)",
 	    Instance<UniqueManager<Drawing> >()),
     gradplot_frequency(_gradplot_frequency),
-    m_smart(smart)
+    m_aslbot(aslbot)
 {
 }
 
@@ -134,13 +134,13 @@ Draw()
 {
   boost::shared_ptr<asl::path_t> clean;
   boost::shared_ptr<asl::path_t> dirty;
-  m_smart->CopyPaths(clean, dirty);
+  m_aslbot->CopyPaths(clean, dirty);
   draw_path(clean.get(), gradplot_frequency, 1);
   draw_path(dirty.get(), 0, 0.5);
 
   /* trajectory and reference point drawings */
   asl::path_point ref_point;
-  if(m_smart->GetRefpoint(ref_point))
+  if(m_aslbot->GetRefpoint(ref_point))
     {
       glPointSize(8);
       glBegin(GL_POINTS);
@@ -152,7 +152,7 @@ Draw()
       PDEBUG("No reference point could be queried!!!\n");
     }
 
-  const asl::trajectory_t *current_traj=m_smart->GetTrajectory();
+  const asl::trajectory_t *current_traj=m_aslbot->GetTrajectory();
   if(current_traj && (current_traj->size()>1))
     {
       glBegin(GL_LINE_STRIP);

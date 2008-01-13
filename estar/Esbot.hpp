@@ -28,7 +28,7 @@
 
 
 namespace sfl {
-  class DynamicWindow;
+  class LegacyDynamicWindow;
   class Odometry;
   class Multiscanner;
   class MotionController;
@@ -90,7 +90,7 @@ protected:
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<sfl::RobotModel> m_robotModel;
   boost::shared_ptr<sfl::MotionController> m_motionController;
-  boost::shared_ptr<sfl::DynamicWindow> m_dynamicWindow;
+  boost::shared_ptr<sfl::LegacyDynamicWindow> m_dynamicWindow;
   boost::shared_ptr<sfl::Odometry> m_odometry;
   boost::shared_ptr<sfl::Multiscanner> m_multiscanner;
   boost::shared_ptr<PNF> m_pnf;

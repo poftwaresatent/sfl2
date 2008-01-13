@@ -40,7 +40,8 @@
 #endif // NPM_HAVE_ESTAR
 
 #ifdef NPM_HAVE_ASL
-# include <npm/smart/Smart.hpp>
+# include <npm/asl/Smart.hpp>
+# include <npm/asl/Borox.hpp>
 #endif // NPM_HAVE_ASL
 
 //#include <npm/theater/TheaterRobot.hpp>
@@ -77,6 +78,8 @@ namespace npm {
 #ifdef NPM_HAVE_ASL
     else if (descriptor->model == "smart")
       rob = new Smart(descriptor, world);
+    else if (descriptor->model == "borox")
+      rob = new Borox(descriptor, world);
 #endif // NPM_HAVE_ASL
 
 #ifdef NPM_HAVE_GENOM

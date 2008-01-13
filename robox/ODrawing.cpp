@@ -26,6 +26,8 @@
 #include "../common/wrap_gl.hpp"
 #include "../common/Manager.hpp"
 #include <sfl/dwa/DynamicWindow.hpp>
+#include <sfl/dwa/Objective.hpp>
+#include <sfl/util/numeric.hpp>
 
 
 using namespace npm;
@@ -33,8 +35,8 @@ using namespace npm;
 
 ODrawing::
 ODrawing(const std::string & name,
-	 const sfl::Objective & obj,
-	 const sfl::DynamicWindow & dwa)
+	 boost::shared_ptr<sfl::Objective const> obj,
+	 boost::shared_ptr<sfl::DynamicWindow const> dwa)
   : Drawing(name,
 	    "a DWA's sub-objective (greyscale + special colors)",
 	    Instance<UniqueManager<Drawing> >()),
@@ -47,15 +49,15 @@ ODrawing(const std::string & name,
 void ODrawing::
 Draw()
 {
-  const int qdlMin(m_dwa.QdlMinIndex());
+  const int qdlMin(m_dwa->QdlMinIndex());
   if(qdlMin < 0)
     return;
   
-  const int qdlMax(m_dwa.QdlMaxIndex());
-  const int qdrMin(m_dwa.QdrMinIndex());
-  const int qdrMax(m_dwa.QdrMaxIndex());
-  const double funcMin(m_obj.Min(qdlMin, qdlMax, qdrMin, qdrMax));
-  const double funcMax(m_obj.Max(qdlMin, qdlMax, qdrMin, qdrMax));
+  const int qdlMax(m_dwa->QdlMaxIndex());
+  const int qdrMin(m_dwa->QdrMinIndex());
+  const int qdrMax(m_dwa->QdrMaxIndex());
+  const double funcMin(m_obj->Min(qdlMin, qdlMax, qdrMin, qdrMax));
+  const double funcMax(m_obj->Max(qdlMin, qdlMax, qdrMin, qdrMax));
   double scale;
   if(funcMax - funcMin < sfl::epsilon)
     scale = 0;
@@ -66,8 +68,8 @@ Draw()
   double grey;
   for(int l = qdlMin; l <= qdlMax; ++l)
     for(int r = qdrMin; r <= qdrMax; ++r){
-      if( ! m_dwa.Forbidden(l, r)){
-	grey = scale * (m_obj.Value(l, r) - funcMin);
+      if( ! m_dwa->Forbidden(l, r)){
+	grey = scale * (m_obj->Value(l, r) - funcMin);
 	glColor3d(grey, grey, grey);
       }
       else
@@ -75,7 +77,7 @@ Draw()
 
       glRectd(l, r, l + 1, r + 1);
 
-      if(m_dwa.Reachable(l, r)){
+      if(m_dwa->Reachable(l, r)){
 	glColor3d(1, 0, 0);
 	glBegin(GL_LINES);
 	glVertex2d(l,   r);
@@ -86,9 +88,9 @@ Draw()
       }
     }
 
-  if(m_dwa.QdlOptIndex() >= 0){
-    const int qdlOpt(m_dwa.QdlOptIndex());
-    const int qdrOpt(m_dwa.QdrOptIndex());
+  if(m_dwa->QdlOptIndex() >= 0){
+    const int qdlOpt(m_dwa->QdlOptIndex());
+    const int qdrOpt(m_dwa->QdrOptIndex());
     glPolygonMode(GL_FRONT, GL_LINE);
     glColor3d(0, 1, 1);
     glRectd(qdlOpt, qdrOpt, qdlOpt + 1, qdrOpt + 1);
