@@ -167,7 +167,16 @@ ConfigureView(View & view)
 	y0 *= scale;
 	x1 *= scale;
 	y1 *= scale;
+	double x2(x0);
+	double y2(y1);
+	double x3(x1);
+	double y3(y0);
 	gframe->To(x0, y0);
 	gframe->To(x1, y1);
-	view.SetBounds(BBox(x0, y0, x1, y1));
+	gframe->To(x2, y2);
+	gframe->To(x3, y3);
+	BBox bb(x0, y0, x1, y1);
+	bb.Update(x2, y2);
+	bb.Update(x3, y3);
+	view.SetBounds(bb);
 }
