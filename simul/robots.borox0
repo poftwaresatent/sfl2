@@ -1,13 +1,12 @@
 Robot borox Borox
 
-	Pose 15  12  3.2
+	Pose 17  21  3.2
 
-	Goal  9  15  3.2  0.3  3.2
-	Goal 10  18  3.2  0.3  3.2
-	Goal 18  21  3.2  0.3  3.2
-	Goal 12  21  3.2  0.3  3.2
-	Goal  6  15  3.2  0.3  3.2
-	Goal 15  10  3.2  0.3  3.2
+	Goal  3  15  3.2  0.3  3.2
+	Goal 21  19  3.2  0.3  3.2
+
+	Option front_rhomax        4
+	Option rear_rhomax         4
 
         Option dwa_dimension           21
         Option dwa_grid_resolution      0.05
@@ -15,14 +14,21 @@ Robot borox Borox
 
 	Option camera_zoom 4
 	
+	Option estar_check_upwind false
+	Option estar_check_local_consistency false
+	Option estar_check_queue_key true
+	Option estar_auto_reset false
+	Option estar_auto_flush false
+
 	Option m2d_grow_strategy        always
 	Option estar_grow_grid          true 
+	Option coarse_grid_ncells       20
         Option traversability_file      travmap.borox0
-##???        Option buffer_zone              3.0
+
         Option carrot_distance      1
         Option carrot_stepsize      0.1
         Option carrot_maxnsteps    20
-        Option replan_distance      2
+        Option replan_distance      1
         Option wavefront_buffer     2
         Option estar_step         500
 

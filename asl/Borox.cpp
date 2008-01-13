@@ -183,12 +183,16 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 				   wavefront_buffer, carrot_distance,
 				   carrot_stepsize, carrot_maxnsteps,
 				   estar_step, plan_rwlock));
-  else
+  else {
+    size_t coarse_grid_ncells(10);
+    string_to(descriptor->GetOption("coarse_grid_ncells"), coarse_grid_ncells);
     planner.reset(new GrowingEstarPlanner(rdtravmap, gmgr, m_dwa_ptrack,
 					  estar_options, replan_distance,
 					  wavefront_buffer, carrot_distance,
 					  carrot_stepsize, carrot_maxnsteps,
-					  estar_step, plan_rwlock));
+					  estar_step, coarse_grid_ncells,
+					  plan_rwlock));
+  }
   
   shared_ptr<TravmapCallback> travmap_cb(planner->GetTravmapCallback());
   
