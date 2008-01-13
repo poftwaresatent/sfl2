@@ -1,5 +1,6 @@
 #include "Pthread.hpp"
 #include <iostream>
+#include <unistd.h>		// for usleep on OpenBSD
 
 using namespace sfl;
 using namespace boost;

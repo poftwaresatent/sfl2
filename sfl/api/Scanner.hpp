@@ -174,8 +174,7 @@ namespace sfl {
        range. Some consumers of Scan objects expect (phi, rho)
        relative to the robot origin and / or do not handle
        out-of-range readings very well. Consider using
-       Multiscanner::CollectScans() or
-       Multiscanner::CollectGlobalScans() in such cases.
+       Multiscanner::CollectScans() in such cases.
     */
     boost::shared_ptr<Scan> GetScanCopy() const;
     

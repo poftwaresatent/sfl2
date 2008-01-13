@@ -25,11 +25,13 @@
 #include "MotionPlannerState.hpp"
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
-#include <sfl/util/pdebug.hpp>
-#include <sfl/api/Pose.hpp>
-#include <sfl/api/Odometry.hpp>
-#include <sfl/bband/BubbleBand.hpp>
-#include <sfl/dwa/DynamicWindow.hpp>
+#include "../util/numeric.hpp"
+#include "../util/pdebug.hpp"
+#include "../api/Pose.hpp"
+#include "../api/Odometry.hpp"
+#include "../bband/BubbleBand.hpp"
+#include "../dwa/DynamicWindow.hpp"
+#include "../dwa/DistanceObjective.hpp"
 #include <cmath>
 
 
@@ -373,13 +375,17 @@ namespace expo {
 		   direction_t direction,
 		   shared_ptr<const sfl::Scan> global_scan) const
   {
+    double qdl, qdr;
+    m_mp->motion_controller->GetCurrentAct(qdl, qdr);
     sfl::DynamicWindow & dwa(*m_mp->dynamic_window);
-    dwa.Update(timestep, direction.first, direction.second, global_scan);
+    dwa.Update(qdl, qdr,
+	       timestep, direction.first, direction.second, global_scan);
     if(m_mp->auto_adapt_dwa){
       PDEBUG("**************************************************\n");
-      const sfl::DistanceObjective & dobj(dwa.GetDistanceObjective());
+      shared_ptr<const sfl::DistanceObjective>
+	dobj(dwa.GetDistanceObjective());
       static int countdown(0);	// BAD DOG, NO BISCUIT!!!
-      if(dobj.GetNNear() > 0){
+      if(dobj->GetNNear() > 0){
 	PDEBUG("expo MPS %s: near points, auto adapt DWA\n", m_name.c_str());
 	dwa.alpha_distance = 1;
 	dwa.alpha_speed = 0;
@@ -403,7 +409,6 @@ namespace expo {
       }
     }
     
-    double qdl, qdr;
     if( ! dwa.OptimalActuators(qdl, qdr)){
       qdl = 0;
       qdr = 0;

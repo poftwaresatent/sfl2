@@ -95,8 +95,7 @@ namespace sfl {
     
     /** Mainly for debugging, returns the offset of a scanner's data
 	in the collected scan object. This is usually not needed and
-	determined implicitly inside CollectScans() and
-	CollectGlobalScans().*/
+	determined implicitly inside CollectScans(). */
     size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
     
     /** Calls Scanner::Update() on all registered instances and

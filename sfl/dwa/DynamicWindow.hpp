@@ -26,18 +26,23 @@
 #define SUNFLOWER_DYNAMICWINDOW_HPP
 
 
-#include <sfl/util/numeric.hpp>
-#include <sfl/api/RobotModel.hpp>
-#include <sfl/api/MotionController.hpp>
-#include <sfl/api/Scan.hpp>
-#include <sfl/dwa/DistanceObjective.hpp>
-#include <sfl/dwa/HeadingObjective.hpp>
-#include <sfl/dwa/SpeedObjective.hpp>
+//#include <sfl/util/numeric.hpp>
+//#include <sfl/api/Scan.hpp>
+
+#include <sfl/util/array2d.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 namespace sfl {
-
-
+  
+  class RobotModel;
+  class MotionController;
+  class Scan;
+  class DistanceObjective;  
+  class HeadingObjective;  
+  class SpeedObjective;  
+  
+  
   /**
      \brief Main interface of ASL's DWA implementation.
 
@@ -62,42 +67,48 @@ namespace sfl {
      Having moved the sub-objectives to their own classes makes it
      possible to more easily experiment with things such as
      look-up-tables for collision prediction.
-     
-     \todo time for code modernisation (smart ptrs and such)
   */
   class DynamicWindow
   {
   public:
-    /** \note The speed and acceleration limits are defined in RobotModel. */
+    /**
+       The speed and acceleration limits are defined in RobotModel.
+       
+       \note If you have legacy code that expects to pass a
+       MotionController to this constructor, simply use a
+       LegacyDynamicWindow instead.
+    */
     DynamicWindow(int dimension,
 		  double grid_width,
 		  double grid_height,
 		  double grid_resolution,
 		  boost::shared_ptr<const RobotModel> robot_model,
-		  const MotionController & motion_controller,
+		  //// If you expect this parameter, use a LegacyDynamicWindow
+		  //// (see below)
+		  //const MotionController & motion_controller,
 		  double alpha_distance,
 		  double alpha_heading,
 		  double alpha_speed,
 		  bool auto_init);
-    ~DynamicWindow();
     
     bool Initialize(std::ostream * os, bool paranoid);
-    
-    int Dimension() const;
     
     bool Forbidden(int qdlIndex, int qdrIndex) const;
     bool Admissible(int qdlIndex, int qdrIndex) const;
     bool Reachable(int qdlIndex, int qdrIndex) const;
-    double Qd(int index) const;
     
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
-	Multiscanner::CollectScans() and
-	Multiscanner::CollectGlobalScans(), whereas
+	Multiscanner::CollectScans(), whereas
 	Scanner::GetScanCopy() can still contain readings that are out
 	of range (represented as readings at the maximum rho
 	value). */
-    void Update(/** (estimated or fixed) delay until next invocation */
+    void Update(/** current left wheel speed (use LegacyDynamicWindow
+		    if it's tricky for you to get that info) */
+		double qdl,
+		/** current right wheel speed */
+		double qdr,
+		/** (estimated or fixed) delay until next invocation */
 		double timestep,
 		/** local goal x component */
 		double dx,
@@ -140,24 +151,41 @@ namespace sfl {
     */
     bool OptimalActuators(double & qdl, double & qdr) const;
 
+    
+    int Dimension() const { return dimension; }
+    int QdlMinIndex() const { return m_qdlMin; }
+    int QdlMaxIndex() const { return m_qdlMax; }
+    int QdrMinIndex() const { return m_qdrMin; }
+    int QdrMaxIndex() const { return m_qdrMax; }
+    int QdlOptIndex() const { return m_qdlOpt; }
+    int QdrOptIndex() const { return m_qdrOpt; }
+    double ObjectiveMax() const { return m_objectiveMax; }
+    double ObjectiveMin() const { return m_objectiveMin; }
+    
+    /** \pre index within 0..dimension */
+    double Qd(int index) const { return m_qd[index]; }
+    
+    /** \pre indices within QdlMinIndex() ... QdrMaxIndex() */
+    double Objective(int qdlIndex, int qdrIndex) const
+    { return m_objective[qdlIndex][qdrIndex]; }
+    
+    boost::shared_ptr<DistanceObjective const> GetDistanceObjective() const
+    { return m_distance_objective; }
+    
+    boost::shared_ptr<HeadingObjective const> GetHeadingObjective() const
+    { return m_heading_objective; }
 
-    inline int QdlMinIndex() const;
-    inline int QdlMaxIndex() const;
-    inline int QdrMinIndex() const;
-    inline int QdrMaxIndex() const;
-    inline int QdlOptIndex() const;
-    inline int QdrOptIndex() const;
-    inline double ObjectiveMax() const;
-    inline double ObjectiveMin() const;
-    inline double Objective(int qdlIndex, int qdrIndex) const;
-
-    inline const DistanceObjective & GetDistanceObjective() const;
-    inline const HeadingObjective & GetHeadingObjective() const;
-    inline const SpeedObjective & GetSpeedObjective() const;
-
+    boost::shared_ptr<SpeedObjective const> GetSpeedObjective() const
+    { return m_speed_objective; }
+    
     void DumpObstacles(std::ostream & os, const char * prefix) const;
     void DumpObjectives(std::ostream & os, const char * prefix) const;
     
+    
+    const int dimension;
+    const int maxindex;
+    const double resolution;
+    const double qddMax;
     
     double alpha_distance;
     double alpha_heading;
@@ -183,33 +211,24 @@ namespace sfl {
       ADMISSIBLE, REACHABLE, FORBIDDEN
     } speedstate_t;
 
-
-    //RFCTR const double _reachableQd;
-
-    const int _dimension;
-    const int _maxindex;
-    const double _resolution;
     
     boost::shared_ptr<const RobotModel> m_robot_model;
-    const MotionController & _motion_controller;
+    boost::shared_ptr<DistanceObjective> m_distance_objective;
+    boost::shared_ptr<HeadingObjective> m_heading_objective;
+    boost::shared_ptr<SpeedObjective> m_speed_objective;
 
-    DistanceObjective _distance_objective;
-    HeadingObjective _heading_objective;
-    SpeedObjective _speed_objective;
-
-    double * _qd;			//[dimension];
-    speedstate_t ** _state;	//[dimension][dimension];
-    double ** _objective;	//[dimension][dimension];
-
+    boost::scoped_array<double> m_qd; //[dimension];
+    array2d<speedstate_t> m_state; //[dimension][dimension];
+    array2d<double> m_objective; //[dimension][dimension];
+    
     /** Used for colorscale when drawing internal info. */
-    mutable double _objectiveMax;
+    mutable double m_objectiveMax;
     /** Used for colorscale when drawing internal info. */
-    mutable double _objectiveMin;
+    mutable double m_objectiveMin;
 
-    int _qdlMin, _qdlMax, _qdrMin, _qdrMax;
-    mutable int _qdlOpt;
-    mutable int _qdrOpt;
-    const double _qddMax;
+    int m_qdlMin, m_qdlMax, m_qdrMin, m_qdrMax;
+    mutable int m_qdlOpt;
+    mutable int m_qdrOpt;
     mutable bool m_compute_next_optimum;
     
     
@@ -222,105 +241,44 @@ namespace sfl {
 			  double alphaHeading,
 			  double alphaSpeed) const;
   };
-
-
-  int DynamicWindow::
-  QdlMinIndex()
-    const
+  
+  
+  /**
+     Provides the "legacy" API where a MotionController was
+     automatically used to get the current wheel speeds at each
+     Update(). The problem with that approach was that it forces
+     clients to (i) instantiate and manage a MotionController and (ii)
+     call its Update() in synch.
+  */
+  class LegacyDynamicWindow
+    : public DynamicWindow
   {
-    return _qdlMin;
-  }
-
-
-  int DynamicWindow::
-  QdlMaxIndex()
-    const
-  {
-    return _qdlMax;
-  }
-
-
-  int DynamicWindow::
-  QdrMinIndex()
-    const
-  {
-    return _qdrMin;
-  }
-
-
-  int DynamicWindow::
-  QdrMaxIndex()
-    const
-  {
-    return _qdrMax;
-  }
-
-
-  int DynamicWindow::
-  QdrOptIndex()
-    const
-  {
-    return _qdrOpt;
-  }
-
-
-  int DynamicWindow::
-  QdlOptIndex()
-    const
-  {
-    return _qdlOpt;
-  }
-
-
-  double DynamicWindow::
-  ObjectiveMax()
-    const
-  {
-    return _objectiveMax;
-  }
-
-
-  double DynamicWindow::
-  ObjectiveMin()
-    const
-  {
-    return _objectiveMin;
-  }
-
-
-  double DynamicWindow::
-  Objective(int qdlIndex,
-	    int qdrIndex)
-    const
-  {
-    return _objective[qdlIndex][qdrIndex];
-  }
-
-
-  const DistanceObjective & DynamicWindow::
-  GetDistanceObjective()
-    const
-  {
-    return _distance_objective;
-  }
-
-
-  const HeadingObjective & DynamicWindow::
-  GetHeadingObjective()
-    const
-  {
-    return _heading_objective;
-  }
-
-
-  const SpeedObjective & DynamicWindow::
-  GetSpeedObjective()
-    const
-  {
-    return _speed_objective;
-  }
-
-
+  public:
+    LegacyDynamicWindow(int dimension,
+			double grid_width,
+			double grid_height,
+			double grid_resolution,
+			boost::shared_ptr<const RobotModel> robot_model,
+			const MotionController & motion_controller,
+			double alpha_distance,
+			double alpha_heading,
+			double alpha_speed,
+			bool auto_init);
+    
+    /** Gets the current speeds from the registered MotionController
+	and then forwards the call to DynamicWindow::Update(). This
+	requires you to call MotionController::Update() in synch prior
+	to this method (which is the way it is done in legacy
+	code). */
+    void Update(double timestep,
+		double dx,
+		double dy,
+		boost::shared_ptr<const Scan> local_scan,
+		std::ostream * dbgos = 0);
+    
+    const MotionController & motion_controller;
+  };
+  
 }
 
 #endif // SUNFLOWER_DYNAMICWINDOW_HPP

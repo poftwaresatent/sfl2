@@ -60,7 +60,13 @@ namespace sfl {
 		   shared_ptr<RWlock> rwlock)
     : qdMax(robotModel->QdMax()), qddMax(robotModel->QddMax()),
       sdMax(robotModel->SdMax()), thetadMax(robotModel->ThetadMax()),
-      m_robotModel(robotModel), m_hal(hal), m_rwlock(rwlock)
+      m_robotModel(robotModel), m_hal(hal), m_rwlock(rwlock),
+      m_proposedQdl(0),
+      m_proposedQdr(0),
+      m_currentQdl(0),
+      m_currentQdr(0),
+      m_wantedQdl(0),
+      m_wantedQdr(0)
   {
   }
   

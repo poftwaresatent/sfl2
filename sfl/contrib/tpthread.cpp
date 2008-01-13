@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <iostream>
+#include <unistd.h>		// for usleep on OpenBSD
 
 using namespace sfl;
 using namespace boost;

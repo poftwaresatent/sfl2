@@ -25,13 +25,14 @@
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
 #include "MotionPlannerState.hpp"
-#include <sfl/util/pdebug.hpp>
-#include <sfl/api/Multiscanner.hpp>
-#include <sfl/api/Goal.hpp>
-#include <sfl/api/Pose.hpp>
-#include <sfl/api/Odometry.hpp>
-#include <sfl/bband/BubbleBand.hpp>
-#include <sfl/dwa/DynamicWindow.hpp>
+#include "../util/pdebug.hpp"
+#include "../api/Multiscanner.hpp"
+#include "../api/Goal.hpp"
+#include "../api/Pose.hpp"
+#include "../api/Odometry.hpp"
+#include "../bband/BubbleBand.hpp"
+#include "../dwa/DynamicWindow.hpp"
+#include <cmath>
 
 
 // manual

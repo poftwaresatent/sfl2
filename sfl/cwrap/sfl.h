@@ -41,7 +41,7 @@ namespace sfl {
   class Scanner;
   class Multiscanner;
   class RobotModel;
-  class DynamicWindow;
+  class LegacyDynamicWindow;
   class BubbleBand;
   class Odometry;
 }
@@ -51,7 +51,7 @@ namespace sfl_cwrap {
   boost::shared_ptr<sfl::Scanner>       get_Scanner(int handle);
   boost::shared_ptr<sfl::Multiscanner>  get_Multiscanner(int handle);
   boost::shared_ptr<sfl::RobotModel>    get_RobotModel(int handle);
-  boost::shared_ptr<sfl::DynamicWindow> get_DynamicWindow(int handle);
+  boost::shared_ptr<sfl::LegacyDynamicWindow> get_DynamicWindow(int handle);
   boost::shared_ptr<sfl::BubbleBand>    get_BubbleBand(int handle);
   boost::shared_ptr<sfl::Odometry>      get_Odometry(int handle);
 }

@@ -21,14 +21,17 @@
 #include "expo.h"
 #include "Handlemap.hpp"
 #include "cwrapHAL.hpp"
-#include <sfl/api/Scanner.hpp>
-#include <sfl/api/Multiscanner.hpp>
-#include <sfl/api/RobotModel.hpp>
-#include <sfl/api/Odometry.hpp>
-#include <sfl/util/Pthread.hpp>
-#include <sfl/dwa/DynamicWindow.hpp>
-#include <sfl/bband/BubbleBand.hpp>
-#include <sfl/expo/MotionController.hpp>
+#include "../api/Scanner.hpp"
+#include "../api/Multiscanner.hpp"
+#include "../api/RobotModel.hpp"
+#include "../api/Odometry.hpp"
+#include "../util/Pthread.hpp"
+#include "../dwa/DynamicWindow.hpp"
+#include "../dwa/DistanceObjective.hpp"
+#include "../dwa/HeadingObjective.hpp"
+#include "../dwa/SpeedObjective.hpp"
+#include "../bband/BubbleBand.hpp"
+#include "../expo/MotionController.hpp"
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -46,7 +49,7 @@ namespace sfl_cwrap {
   static Handlemap<Scanner>       Scanner_map;
   static Handlemap<Multiscanner>  Multiscanner_map;
   static Handlemap<RobotModel>    RobotModel_map;
-  static Handlemap<DynamicWindow> DynamicWindow_map;
+  static Handlemap<LegacyDynamicWindow> DynamicWindow_map;
   static Handlemap<BubbleBand>    BubbleBand_map;
   static Handlemap<Odometry>      Odometry_map;
 
@@ -67,7 +70,7 @@ namespace sfl_cwrap {
   { return RobotModel_map.Find(handle); }
 
 
-  shared_ptr<DynamicWindow> get_DynamicWindow(int handle)
+  shared_ptr<LegacyDynamicWindow> get_DynamicWindow(int handle)
   { return DynamicWindow_map.Find(handle); }
 
 
@@ -189,7 +192,7 @@ int sfl_create_DynamicWindow(int RobotModel_handle,
     mc(get_MotionController(MotionController_handle));
   if( ! mc)
     return -2;
-  shared_ptr<DynamicWindow> dwa(new DynamicWindow(dimension,
+  shared_ptr<LegacyDynamicWindow> dwa(new LegacyDynamicWindow(dimension,
 						  grid_width,
 						  grid_height,
 						  grid_resolution,
@@ -258,7 +261,7 @@ void sfl_destroy_Multiscanner(int handle)
 int sfl_dump_obstacles(int DynamicWindow_handle, const char * filename,
 		       const char * prefix)
 {
-  shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
+  shared_ptr<LegacyDynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
   if( ! dwa)
     return -1;
   shared_ptr<ofstream> osf;
@@ -275,7 +278,7 @@ int sfl_dump_obstacles(int DynamicWindow_handle, const char * filename,
 int sfl_dump_dwa(int DynamicWindow_handle, const char * filename,
 		 const char * prefix)
 {
-  shared_ptr<DynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
+  shared_ptr<LegacyDynamicWindow> dwa(get_DynamicWindow(DynamicWindow_handle));
   if( ! dwa)
     return -1;
   shared_ptr<ofstream> osf;

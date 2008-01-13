@@ -24,6 +24,7 @@
 
 #include "SpeedObjective.hpp"
 #include "DynamicWindow.hpp"
+#include "../api/RobotModel.hpp"
 
 
 using namespace std;
