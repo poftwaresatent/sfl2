@@ -1,17 +1,24 @@
 Robot smart Ter
         Pose  0 0 0
 	Option goalmgr_filename goals.smart7
+
+#	Option estar_check_upwind false
+#	Option estar_check_local_consistency false
+#	Option estar_check_queue_key true
+#	Option estar_auto_reset false
+#	Option estar_auto_flush false
 	
 	Option m2d_grow_strategy        always
 	Option estar_grow_grid          true 
+	Option coarse_grid_ncells       20
 		
 	Option camera_zoom        10
 	Option front_channel       0
         Option front_mount_x       0.65
         Option front_mount_y       0.0
         Option front_mount_theta   0.0
-        Option front_nscans       90
-        Option front_rhomax       15
+        Option front_nscans      181
+        Option front_rhomax       10
 
         Option model_wheelbase     0.96
         Option model_axlewidth     0.677

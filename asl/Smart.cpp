@@ -99,6 +99,9 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 		control_params->max_steering_rate = params.model_phid_max;
 	}
 	
+	size_t coarse_grid_ncells(10);
+	string_to(descriptor->GetOption("coarse_grid_ncells"), coarse_grid_ncells);
+	
 	ostringstream err_os;
 	m_ackalgo.reset(asl::AckermannAlgorithm::
 									 Create(robot_radius,
@@ -114,6 +117,7 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 													estar_step,
 													! use_simple_query,	// use_estar = ! use_simple_q
 													estar_grow_grid,
+													coarse_grid_ncells,
 													estar_options,
 													swiped_map_update,
 													controller_name,
