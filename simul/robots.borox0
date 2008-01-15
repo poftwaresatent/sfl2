@@ -3,7 +3,7 @@ Robot borox Borox
 	Pose 17  21  3.2
 
 	Goal  3  15  3.2  0.3  3.2
-	Goal 21  19  3.2  0.3  3.2
+	Goal 25  16  3.2  0.3  3.2
 
 	Option front_rhomax        4
 	Option rear_rhomax         4
