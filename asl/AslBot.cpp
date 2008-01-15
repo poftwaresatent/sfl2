@@ -424,7 +424,6 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		PDEBUG("mapping thread remains in synch with simulation\n");
 	
 	m_planning_thread.reset(new asl::PlanningThread(m_asl_algo->GetPlanner(),
-																									m_mscan, 
 																									GetHAL(),
 																									thread_statlen,
 																									m_simul_rwlock));
