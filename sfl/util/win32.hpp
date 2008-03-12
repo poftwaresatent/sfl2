@@ -1,9 +1,12 @@
 #ifndef SFL_WIN32_HPP
 #define SFL_WIN32_HPP
 
-#ifdef WIN32
+# ifdef WIN32
 
-# include <cmath>
+// when mixing libsunflower and estar, bail out earlier to avoid multiple definitions
+#  ifndef ESTAR_WIN32_HPP
+
+#   include <cmath>
 
 typedef long ssize_t;
 
@@ -32,6 +35,6 @@ inline void usleep(unsigned int whatever)
 }
 
 
-#endif // WIN32
-
+#  endif // ESTAR_WIN32_HPP
+# endif // WIN32
 #endif // SFL_WIN32_HPP
