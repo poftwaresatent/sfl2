@@ -30,6 +30,10 @@
 typedef __ssize_t ssize_t;
 #endif // OPENBSD
 
+#ifdef WIN32
+# include <sfl/util/win32.hpp>
+#endif // WIN32
+
 
 namespace sfl {
   

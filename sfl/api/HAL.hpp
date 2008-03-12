@@ -28,14 +28,24 @@
 
 #include <cstddef>
 
-
+#ifndef WIN32
 /** Declared in <time.h> but don't use system clock: The HAL is used
     as central "wall clock" so that simulation can freeze time when
     needed. */
 struct timespec;
+#else
+# include <sfl/util/win32.hpp>
+#endif // WIN32
 
 
 namespace sfl {
+
+	
+#ifdef WIN32
+	typedef fake_timespec timespec_t;
+#else // WIN32
+	typedef struct ::timespec timespec_t;
+#endif // WIN32
 
   
   /**
@@ -60,7 +70,7 @@ namespace sfl {
     virtual ~HAL() { }
     
     /** \return 0 on success. */
-    virtual int time_get(struct ::timespec * stamp) = 0;
+    virtual int time_get(timespec_t * stamp) = 0;
     
     /** \return 0 on success. */
     virtual int odometry_set(double x, double y, double theta,
@@ -68,7 +78,7 @@ namespace sfl {
 			     double sxy, double sxt, double syt) = 0;
     
     /** \return 0 on success. */
-    virtual int odometry_get(struct ::timespec * stamp,
+    virtual int odometry_get(timespec_t * stamp,
 			     double * x, double * y, double * theta,
 			     double * sxx, double * syy, double * stt,
 			     double * sxy, double * sxt, double * syt) = 0;
@@ -112,7 +122,7 @@ namespace sfl {
     virtual int scan_get(int channel, double * rho,
 			 /** IN: size of rho[], OUT: scan length */
 			 size_t * rho_len,
-			 struct ::timespec * t0, struct ::timespec * t1) = 0;
+			 timespec_t * t0, timespec_t * t1) = 0;
     
     
     int deprecated_speed_set(double qdl, double qdr) {

@@ -25,10 +25,12 @@
 #include <sfl/api/Goal.hpp>
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 using namespace sfl;
 using namespace boost;
 using namespace std;
+
 
 namespace sfl {
   

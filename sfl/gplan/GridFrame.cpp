@@ -26,6 +26,7 @@
 #include <sfl/util/numeric.hpp>
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 
 namespace sfl {

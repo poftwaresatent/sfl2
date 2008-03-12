@@ -25,6 +25,11 @@
 #include "expo_parameters.h"
 #include <cmath>
 
+#ifdef WIN32
+# include "../util/numeric.hpp"
+#endif // WIN32
+
+
 
 void expo_default_parameters(struct expo_parameters * params)
 {

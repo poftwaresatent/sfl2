@@ -59,14 +59,14 @@ namespace sfl {
 
 
   Timestamp::
-  Timestamp(const struct ::timespec & stamp)
+  Timestamp(const timespec_t & stamp)
     : m_stamp(stamp)
   {
   }
   
   
   Timestamp & Timestamp::
-  operator = (const struct ::timespec & original)
+  operator = (const timespec_t & original)
   {
     m_stamp = original;
     return * this;

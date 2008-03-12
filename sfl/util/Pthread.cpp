@@ -27,6 +27,10 @@
 # include <unistd.h>
 #endif // OPENBSD
 
+#ifdef WIN32
+# include <sfl/util/win32.hpp>
+#endif // WIN32
+
 
 using namespace boost;
 using namespace std;

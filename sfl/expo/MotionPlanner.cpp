@@ -34,6 +34,9 @@
 #include "../dwa/DynamicWindow.hpp"
 #include <cmath>
 
+#ifdef WIN32
+# include "../util/numeric.hpp"
+#endif // WIN32
 
 // manual
 #define SFL_DEBUG

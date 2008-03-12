@@ -335,8 +335,6 @@ namespace sfl {
 	}
       }
     }
-    PVDEBUG("none: %d   zone: %d   padded: %d   hull: %d\n",
-	    m_n_none, m_n_zone, m_n_padded, m_n_hull);
   }
   
   

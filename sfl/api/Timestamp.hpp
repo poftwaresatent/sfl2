@@ -28,12 +28,21 @@
 
 #include <iosfwd>
 
-
-/* See comments in HAL.hpp */
+#ifdef WIN32
+# include <sfl/util/win32.hpp>
+#else // WIN32
 struct timespec;
+#endif // WIN32
 
 
 namespace sfl {
+
+
+#ifdef WIN32
+	typedef fake_timespec timespec_t;
+#else // WIN32
+	typedef struct ::timespec timespec_t;
+#endif // WIN32
 
 
   /**
@@ -63,7 +72,7 @@ namespace sfl {
        Converts a HAL timestamp into a Timestamp instance. If you need
        a Timestamp of "unspecified" time, use last or first.
     */
-    explicit Timestamp(const struct ::timespec & stamp);
+    explicit Timestamp(const timespec_t & stamp);
     
     /** legacy */
     static const Timestamp & Last() { return last; }
@@ -72,7 +81,7 @@ namespace sfl {
     static const Timestamp & First() { return first; }
     
     /** Conversion operator. */
-    Timestamp & operator = (const struct ::timespec & original);
+    Timestamp & operator = (const timespec_t & original);
     
     /** Prints the Timestamp as "seconds.nanoseconds". */
     friend std::ostream & operator << (std::ostream & os, const Timestamp & t);
@@ -116,11 +125,11 @@ namespace sfl {
     Timestamp & operator -= (const Timestamp & other);
     
     /** const access to the underlying timespec instance */
-    const struct ::timespec & Get() const
+    const timespec_t & Get() const
     { return m_stamp; }
     
   private:
-    struct ::timespec m_stamp;
+    timespec_t m_stamp;
   };
 
 }

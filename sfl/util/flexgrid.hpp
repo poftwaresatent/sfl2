@@ -32,6 +32,10 @@
 #include <stdexcept>
 #include <iterator>
 
+#ifdef WIN32
+# include <sfl/util/win32.hpp>
+#endif // WIN32
+
 
 namespace sfl {
   

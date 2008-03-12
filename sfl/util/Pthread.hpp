@@ -29,6 +29,12 @@
 # include <pthread.h>
 #endif // OPENBSD
 
+#ifdef WIN32
+// "../../pthreads-win32-2.8.0/pthread.h"
+# include <pthread.h>
+#endif // WIN32
+
+
 
 namespace sfl {
   

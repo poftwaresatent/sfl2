@@ -131,7 +131,7 @@ namespace sfl {
     // protected by mutex.
     
     scoped_array<double> rho(new double[nscans]);
-    struct ::timespec t0, t1;
+    timespec_t t0, t1;
     size_t actual_nscans(nscans);
     int status(m_hal->scan_get(hal_channel, rho.get(), &actual_nscans,
 			       &t0, &t1));
@@ -161,7 +161,7 @@ namespace sfl {
     }
     
     double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
-    struct ::timespec foo;
+    timespec_t foo;
     status = m_hal->odometry_get(&foo, &x, &y, &theta, &sxx, &syy, &stt,
 				 &sxy, &sxt, &syt);
     if(0 != status){
