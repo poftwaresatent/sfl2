@@ -285,9 +285,9 @@ namespace sfl {
 				<< "# dimension " << xsize << " " << ysize << "\n"
 				<< "# offset " << grid.xbegin() << " " << grid.ybegin() << "\n";
 		
-		for (ssize_t jj(grid.ybegin()); jj < grid.yend(); jj++) {
-			for (ssize_t ii(grid.xbegin()); ii < grid.xend(); ii++) 
-				*os << grid.at(ii, grid.yend() - jj - 1) << " ";
+		for (ssize_t jj(grid.yend() - 1); jj >= grid.ybegin(); --jj) {
+			for (ssize_t ii(grid.xbegin()); ii < grid.xend(); ++ii) 
+				*os << grid.at(ii, jj) << " ";
 			*os << "\n";
 		}
 	}

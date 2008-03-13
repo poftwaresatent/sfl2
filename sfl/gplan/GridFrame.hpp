@@ -66,9 +66,29 @@ namespace sfl {
 		/** Debug utility that simply prints out the (ix, iy) passed to
 				it, with one leading whitespace. */
 		struct dbg_draw_callback: public draw_callback {
-			dbg_draw_callback(std::ostream & os);
+			explicit dbg_draw_callback(std::ostream & os);
       virtual void operator () (ssize_t ix, ssize_t iy);
 			std::ostream & m_os;
+		};
+		
+		/** Wrap an existing draw_callback, making sure it never gets
+				indices that are out of range. */
+		struct rangecheck_draw_callback: public draw_callback {
+			rangecheck_draw_callback(draw_callback & cb,
+															 ssize_t xbegin, ssize_t xend,
+															 ssize_t ybegin, ssize_t yend);
+			
+			/** Checks xbegin<=ix<xend and ybegin<=iy<yend and forwards the
+					call to the registered callback. The count is updated if the
+					range check passed. */
+			virtual void operator () (ssize_t ix, ssize_t iy);
+			
+			draw_callback & cb;
+			ssize_t const xbegin;
+			ssize_t const xend;
+			ssize_t const ybegin;
+			ssize_t const yend;
+			size_t count;
 		};
     
     
@@ -130,7 +150,28 @@ namespace sfl {
 													ssize_t xbegin, ssize_t xend,
 													ssize_t ybegin, ssize_t yend,
 													draw_callback & cb) const;
-    
+
+    /**
+			 \note If you need range checks, use rangecheck_draw_callback to
+			 wrap your callback.
+		*/
+		static void DrawMidpointCircle(ssize_t icx, ssize_t icy, size_t irad,
+																	 draw_callback & cb);
+		
+    /**
+			 \note If you need range checks, use rangecheck_draw_callback to
+			 wrap your callback.
+		*/
+		void DrawLocalCircle(double cx, double cy, double rad,
+												 draw_callback & cb) const;
+		
+    /**
+			 \note If you need range checks, use rangecheck_draw_callback to
+			 wrap your callback.
+		*/
+		void DrawGlobalCircle(double cx, double cy, double rad,
+													draw_callback & cb) const;
+		
     double Delta() const { return m_delta; }
     
   protected:

@@ -252,8 +252,80 @@ namespace sfl {
     return
       DrawLocalLine(x0, y0, x1, y1, xbegin, xend, ybegin, yend, cb);
   }
-
-
+  
+  
+  static void draw_circle_points(ssize_t icx, ssize_t icy,
+				 ssize_t ix, ssize_t iy,
+				 GridFrame::draw_callback & cb)
+  {
+    if (ix == 0) {
+      cb(icx     , icy + iy);
+      cb(icx     , icy - iy);
+      cb(icx + iy, icy     );
+      cb(icx - iy, icy     );
+    }
+    else if (ix == iy) {
+      cb(icx + ix, icy + iy);
+      cb(icx - ix, icy + iy);
+      cb(icx + ix, icy - iy);
+      cb(icx - ix, icy - iy);
+    }
+    else if (ix < iy) {
+      cb(icx + ix, icy + iy);
+      cb(icx - ix, icy + iy);
+      cb(icx + ix, icy - iy);
+      cb(icx - ix, icy - iy);
+      cb(icx + iy, icy + ix);
+      cb(icx - iy, icy + ix);
+      cb(icx + iy, icy - ix);
+      cb(icx - iy, icy - ix);
+    }
+  }
+  
+  
+  void GridFrame::
+  DrawMidpointCircle(ssize_t icx, ssize_t icy, size_t irad,
+		     draw_callback & cb)
+  {
+    ssize_t ix(0);
+    ssize_t iy(irad);
+    ssize_t pp((5 - iy * 4) / 4);
+    
+    draw_circle_points(icx, icy, ix, iy, cb);
+    
+    while (ix < iy) {
+      ++ix;
+      if (pp < 0)
+	pp += 2 * ix + 1;
+      else {
+	--iy;
+	pp += 2 * (ix - iy) + 1;
+      }
+      draw_circle_points(icx, icy, ix, iy, cb);
+    }
+  }
+  
+  
+  void GridFrame::
+  DrawLocalCircle(double cx, double cy, double rad,
+		  draw_callback & cb) const
+  {
+    DrawMidpointCircle(static_cast<ssize_t>(rint(cx / m_delta)),
+		       static_cast<ssize_t>(rint(cy / m_delta)),
+		       static_cast<size_t>(rint(rad / m_delta)),
+		       cb);
+  }
+  
+  
+  void GridFrame::
+  DrawGlobalCircle(double cx, double cy, double rad,
+		   draw_callback & cb) const
+  {
+    From(cx, cy);
+    DrawLocalCircle(cx, cy, rad, cb);
+  }
+  
+  
   GridFrame::dbg_draw_callback::
   dbg_draw_callback(std::ostream & os)
     : m_os(os)
@@ -266,5 +338,29 @@ namespace sfl {
   {
     m_os << " (" << ix << ", " << iy << ")";
   }
-
+  
+  
+  GridFrame::rangecheck_draw_callback::
+  rangecheck_draw_callback(GridFrame::draw_callback & _cb,
+			   ssize_t _xbegin, ssize_t _xend,
+			   ssize_t _ybegin, ssize_t _yend)
+    : cb(_cb),
+      xbegin(_xbegin),
+      xend(_xend),
+      ybegin(_ybegin),
+      yend(_yend),
+      count(0)
+  {
+  }
+  
+  
+  void GridFrame::rangecheck_draw_callback::
+  operator () (ssize_t ix, ssize_t iy)
+  {
+    if ((xbegin <= ix) && (ix < xend) && (ybegin <= iy) && (iy < yend)) {
+      cb(ix, iy);
+      ++count;
+    }
+  }
+  
 }

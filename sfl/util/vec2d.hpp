@@ -22,6 +22,9 @@
 #define SUNFLOWER_VEC2D_HPP
 
 
+#include <iostream>
+
+
 namespace sfl {
   
   
@@ -74,6 +77,14 @@ namespace sfl {
     
     value_t v0, v1;
   };
+  
+  
+  template<typename value_t>
+  std::ostream & operator << (std::ostream & os, vec2d<value_t> const & vec)
+  {
+    os << "(" << vec.v0 << "  " << vec.v1 << ")";
+    return os;
+  }
   
 }
 

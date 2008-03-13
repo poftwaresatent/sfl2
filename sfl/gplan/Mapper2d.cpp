@@ -273,7 +273,7 @@ namespace sfl {
 		size_t count(1);
 		
 		PVDEBUG("set source to %d\n", ws_obstacle);
-		
+
 		// Perform C-space extension with buffer zone, housekeeping the
 		// cell-dependency structure.
     const Sprite::indexlist_t & area(m_sprite->GetArea());
@@ -513,6 +513,33 @@ namespace sfl {
 	{
 		shared_ptr<WRTravmap> wrt(new WRTravmap(m_travmap, m_trav_rwlock));
 		return wrt;
+	}
+	
+	
+	Mapper2d::buffered_obstacle_adder::
+	buffered_obstacle_adder(Mapper2d * _m2d, Mapper2d::draw_callback * _cb)
+		: m2d(_m2d),
+			cb(_cb),
+			count(0)
+	{
+	}
+	
+	
+	void Mapper2d::buffered_obstacle_adder::
+	operator () (ssize_t ix, ssize_t iy)
+	{
+		count += m2d->AddBufferedObstacle(index_t(ix, iy), cb);
+	}
+	
+	
+	size_t Mapper2d::
+	AddObstacleCircle(double globx, double globy, double radius,
+										draw_callback * cb)
+	{
+		RWlock::wrsentry sentry(m_trav_rwlock);
+		buffered_obstacle_adder boa(this, cb);
+		gridframe.DrawGlobalCircle(globx, globy, radius, boa);
+		return boa.count;
 	}
 	
 	

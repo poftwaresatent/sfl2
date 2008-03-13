@@ -154,6 +154,17 @@ namespace sfl {
 									size_t length, double * locx, double * locy,
 									draw_callback * cb = 0);
 		
+		/**
+			 Draw a (non-fileld) circle of obstacle points using
+			 GridFrame::DrawGlobalCircle(). Each grid cell on the circle is
+			 considered a workspace-obstacle, and will be grown by the robot
+			 radius and buffer zone.
+			 
+			 \return The number of cells that got changed.
+		*/
+		size_t AddObstacleCircle(double globx, double globy, double radius,
+														 draw_callback * cb = 0);
+		
 		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
 		boost::shared_ptr<WRTravmap> CreateWRTravmap();
 		
@@ -174,6 +185,19 @@ namespace sfl {
 		
 		
 	private:
+		class buffered_obstacle_adder
+			: public GridFrame::draw_callback
+		{
+		public:
+			buffered_obstacle_adder(Mapper2d * _m2d, Mapper2d::draw_callback * _cb);
+			virtual void operator () (ssize_t ix, ssize_t iy);
+			Mapper2d * m2d;
+			Mapper2d::draw_callback * cb;
+			size_t count;
+		};
+		
+		friend class buffered_obstacle_adder;
+		
 		/** \return The number of cells that were changed. */
 		size_t AddBufferedObstacle(double globx, double globy, draw_callback * cb);
 

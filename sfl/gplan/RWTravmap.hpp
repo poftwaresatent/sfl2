@@ -41,10 +41,9 @@ namespace sfl {
   class RDTravmap
   {
   public:
-		RDTravmap(boost::shared_ptr<TraversabilityMap const> travmap,
+		RDTravmap(boost::shared_ptr<TraversabilityMap> travmap,
 							boost::shared_ptr<RWlock> rwlock)
-			: m_travmap(reinterpret_cast<boost::shared_ptr<TraversabilityMap>&>
-									(travmap)),
+			: m_travmap(travmap),
 				m_rwlock(rwlock) {}
 		
 		GridFrame const & GetGridFrame() const { return m_travmap->gframe;	}
