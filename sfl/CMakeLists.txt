@@ -45,6 +45,9 @@ ENDIF (SFL_CXX_FLAG_Wundef)
 SET (PREFIX /usr/local          CACHE PATH "project installation prefix")
 SET (BOOST_PATH ${PREFIX}/boost CACHE PATH "Boost installation prefix")
 
+SET (CMAKE_REQUIRED_INCLUDES ${BOOST_PATH}/include ${PREFIX}/include)
+INCLUDE_DIRECTORIES (${BOOST_PATH}/include ${PREFIX}/include)
+
 INCLUDE (CheckIncludeFileCXX)
 
 CHECK_INCLUDE_FILE_CXX (boost/shared_ptr.hpp SFL_HAVE_SHARED_PTR)
@@ -70,6 +73,11 @@ ELSE (WIN32)
     MESSAGE ("Detected Linux")
     ADD_DEFINITIONS (-DLINUX)
   ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
+  
+  IF (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+    MESSAGE ("Detected OpenBSD")
+    ADD_DEFINITIONS (-DOPENBSD)
+  ENDIF (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
 ENDIF(WIN32)
 
 
