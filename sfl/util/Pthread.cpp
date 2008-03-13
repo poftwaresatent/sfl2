@@ -20,7 +20,6 @@
 
 #include "Pthread.hpp"
 #include <iostream>
-#include <pthread.h>
 #include <errno.h>
 
 #ifdef OPENBSD

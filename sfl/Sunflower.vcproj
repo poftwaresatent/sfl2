@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\estar;&quot;..\pthreads-win32-2.8.0&quot;;&quot;$(BOOST)&quot;;..\"
+				AdditionalIncludeDirectories="..\estar;&quot;$(BOOST)&quot;;..\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"

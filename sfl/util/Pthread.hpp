@@ -25,15 +25,12 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 
-#ifdef OPENBSD
+#ifndef WIN32
 # include <pthread.h>
-#endif // OPENBSD
-
-#ifdef WIN32
-// "../../pthreads-win32-2.8.0/pthread.h"
-# include <pthread.h>
+#else
+# define SFL_WIN32PTHREAD_HACK
+# include <sfl/util/win32pthread.h>
 #endif // WIN32
-
 
 
 namespace sfl {
