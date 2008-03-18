@@ -6,7 +6,7 @@
 PROJECT (Sunflower)
 SET (CMAKE_VERBOSE_MAKEFILE ON)
 
-MESSAGE ("System: ${CMAKE_SYSTEM_NAME}")
+MESSAGE (STATUS "System: ${CMAKE_SYSTEM_NAME}")
 
 
 
@@ -34,51 +34,53 @@ IF (SFL_CXX_FLAG_Wnld)
   ADD_DEFINITIONS (-Wno-long-double)
 ENDIF (SFL_CXX_FLAG_Wnld)
 
-CHECK_CXX_COMPILER_FLAG (-Wundef SFL_CXX_FLAG_Wundef)
-IF (SFL_CXX_FLAG_Wundef)
-  ADD_DEFINITIONS (-Wundef)
-ENDIF (SFL_CXX_FLAG_Wundef)
+### -Wundef can sometimes help you find errors when porting files from
+### Windows, but it can be *very* noisy in Boost headers
+# CHECK_CXX_COMPILER_FLAG (-Wundef SFL_CXX_FLAG_Wundef)
+# IF (SFL_CXX_FLAG_Wundef)
+#   ADD_DEFINITIONS (-Wundef)
+# ENDIF (SFL_CXX_FLAG_Wundef)
 
 
-### Find required Boost libraries: Smart Pointers and Graph.
 
-SET (PREFIX /usr/local          CACHE PATH "project installation prefix")
-SET (BOOST_PATH ${PREFIX}/boost CACHE PATH "Boost installation prefix")
+### Find required Boost library
 
-SET (CMAKE_REQUIRED_INCLUDES ${BOOST_PATH}/include ${PREFIX}/include)
-INCLUDE_DIRECTORIES (${BOOST_PATH}/include ${PREFIX}/include)
+INCLUDE (FindBoost)
 
-INCLUDE (CheckIncludeFileCXX)
-
-CHECK_INCLUDE_FILE_CXX (boost/shared_ptr.hpp SFL_HAVE_SHARED_PTR)
-IF (${SFL_HAVE_SHARED_PTR})
-ELSE (${SFL_HAVE_SHARED_PTR})
-      MESSAGE(FATAL_ERROR "boost/shared_ptr.hpp not found")
-ENDIF (${SFL_HAVE_SHARED_PTR})
+IF (Boost_FOUND)
+  MESSAGE (STATUS "Found Boost in ${Boost_INCLUDE_DIRS}")
+  INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
+ELSE (Boost_FOUND)
+  MESSAGE (FATAL_ERROR "Boost libraries not found")
+ENDIF (Boost_FOUND)
 
 
 
 ### Some OS-dependent flags.
 
 IF (WIN32)
-  MESSAGE ("Detected Microsoft Windows")
+  MESSAGE (STATUS "Detected Microsoft Windows")
   ADD_DEFINITIONS (-DWIN32)
 ELSE (WIN32)
   IF (APPLE)
-    MESSAGE ("Detected Mac OS X")
+    MESSAGE (STATUS "Detected Mac OS X")
     ADD_DEFINITIONS (-DOSX)
   ENDIF (APPLE)
   
   IF (CMAKE_SYSTEM_NAME MATCHES Linux)
-    MESSAGE ("Detected Linux")
+    MESSAGE (STATUS "Detected Linux")
     ADD_DEFINITIONS (-DLINUX)
   ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
   
   IF (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
-    MESSAGE ("Detected OpenBSD")
+    MESSAGE (STATUS "Detected OpenBSD")
     ADD_DEFINITIONS (-DOPENBSD)
   ENDIF (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
 ENDIF(WIN32)
+
+
+
+SET (PREFIX /usr/local CACHE PATH "project installation prefix")
 
 
 
@@ -123,4 +125,5 @@ ADD_LIBRARY (sunflower
              api/Multiscanner.cpp)
 
 INCLUDE_DIRECTORIES (..
-                     ../estar)
+                     ../estar
+                     ${PREFIX}/include)
