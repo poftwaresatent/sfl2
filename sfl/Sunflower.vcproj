@@ -23,7 +23,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="5"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
@@ -143,10 +143,10 @@
 			RelativePath=".\gplan\Mapper2d.cpp">
 		</File>
 		<File
-			RelativePath=".\expo\MotionController.cpp">
+			RelativePath=".\api\MotionController.cpp">
 		</File>
 		<File
-			RelativePath=".\api\MotionController.cpp">
+			RelativePath=".\expo\MotionController.cpp">
 		</File>
 		<File
 			RelativePath=".\expo\MotionPlanner.cpp">
