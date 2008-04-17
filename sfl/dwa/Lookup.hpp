@@ -27,7 +27,6 @@
 
 
 #include <sfl/util/array2d.hpp>
-#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <list>
 #include <set>
