@@ -65,7 +65,7 @@ namespace sfl {
 
     /**
        Concatenates data from all Scanners into a single Scan
-       object. Only successfully retreived data is added to the
+       object. Only successfully retrieved data is added to the
        returned Scan instance, so Scan::Nscans() might return a number
        smaller than what you would expect from the sum of
        Scanner::Nscans().
