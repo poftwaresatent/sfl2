@@ -43,7 +43,7 @@ namespace sfl {
   
   
   bool GoalManager::
-  ParseConfig(const string filename, ostream * os)
+  ParseConfig(const string & filename, ostream * os)
   {
     ifstream config(filename.c_str());
     if( ! config){
@@ -126,7 +126,9 @@ namespace sfl {
 
   /* quick & dirty solution to parsing simple waypoints files */
   bool GoalManager::
-  ParseConfigSimple(const string filename, ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff)
+  ParseConfigSimple(const string & filename, ostream * os,
+		    const string & mode, double goal_theta, double goal_radius,
+		    double goal_theta_diff)
   {
     ifstream config(filename.c_str());
     if( ! config){
@@ -137,14 +139,15 @@ namespace sfl {
     return ParseConfigSimple(config, os, mode, goal_theta, goal_radius, goal_theta_diff);
   }
 
-  /*this function assumes a set of x-y coordinates column-wise
-    so, an extremely simple parser */
+  /* this function assumes a set of x-y coordinates column-wise
+     so, an extremely simple parser */
   bool GoalManager::
-  ParseConfigSimple(istream & is, ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff)
+  ParseConfigSimple(istream & is, ostream * os, const std::string & mode,
+		    double goal_theta, double goal_radius, double goal_theta_diff)
   {
     string token;
     int num_goals(0);
-
+    
     //defining the mode first
     if(mode == "none")
       m_repeat = NONE;

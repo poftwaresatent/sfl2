@@ -126,6 +126,7 @@ namespace sfl {
   shared_ptr<const Pose> Odometry::
   Get() const
   {
+#warning "WHAT A HUGE PERFORMANCE HIT!"
     RWlock::rdsentry sentry(m_rwlock);
     if(m_history.empty())
       return shared_ptr<const Pose>(new Pose());

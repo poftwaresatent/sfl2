@@ -84,6 +84,7 @@ namespace sfl {
       m_sinphi(nscans, 0.0),
       m_mutex(mutex)
   {
+#warning "OMG what overkill, just two raw pointers would do the job, instead of 4 shared ones."
     m_buffer.push_back(shared_ptr<Scan>(new Scan(nscans, Timestamp::First(),
 						 Timestamp::Last(),
 						 Pose())));

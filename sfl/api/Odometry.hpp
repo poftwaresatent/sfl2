@@ -142,7 +142,7 @@ namespace sfl {
        Find closest matching pose in the history. If the history is
        empty, then the iterator will have a timestamp of
        Timestamp::first and a null Pose. It's up to the caller to see
-       how will the returned iterator matches the wanted timestamp.
+       how well the returned iterator matches the wanted timestamp.
     */
     history_t::value_type Get(const Timestamp & t) const;
     

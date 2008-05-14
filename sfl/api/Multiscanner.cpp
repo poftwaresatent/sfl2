@@ -39,6 +39,7 @@ using namespace std;
 namespace sfl {
 
 
+#warning "why not a const Odometry?"
   Multiscanner::
   Multiscanner(shared_ptr<Odometry> odometry)
     : m_odometry(odometry)
@@ -116,6 +117,7 @@ namespace sfl {
   }
   
   
+#warning "remove this method, and kick out the iostream include directive"
   size_t Multiscanner::
   ComputeOffset(boost::shared_ptr<const Scanner> scanner) const
   {

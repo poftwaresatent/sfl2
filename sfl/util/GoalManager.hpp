@@ -38,31 +38,35 @@ namespace sfl {
   class GoalManager {
   public:
     /** If and how to cycle through the registered goals. The default
-	is to loop. */
+				is to loop. */
     typedef enum { LOOP, NONE /*, RAND */ } repeat_t;
     
     GoalManager();
     
     /** \return true if the config file was free of errors. If os is
-	non-null, error messages are written into it.
-    
-	\note If false is returned, the state of the GoalManager
-	instance is not well defined (you should throw it away).
+				non-null, error messages are written into it.
+				
+				\note If false is returned, the state of the GoalManager
+				instance is not well defined (you should throw it away).
     */
-    bool ParseConfig(const std::string filename, std::ostream * os);
+    bool ParseConfig(const std::string & filename, std::ostream * os);
 		
     
     /** Like the other ParseConfig(), but takes an already opened
-	stream as input. */
+				stream as input. */
     bool ParseConfig(std::istream & is, std::ostream * os);
-
+		
 		/* parsing a simple goal file */
-		bool ParseConfigSimple(const std::string filename, std::ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff);
-		bool ParseConfigSimple(std::istream & is, std::ostream * os, std::string mode, double goal_theta, double goal_radius, double goal_theta_diff);
+		bool ParseConfigSimple(const std::string & filename, std::ostream * os,
+													 const std::string & mode, double goal_theta,
+													 double goal_radius, double goal_theta_diff);
+		
+		bool ParseConfigSimple(std::istream & is, std::ostream * os, const std::string & mode,
+													 double goal_theta, double goal_radius, double goal_theta_diff);
     
     /** \return 0 iff no goals are registered or the last goal has
-	been reached, a valid pointer otherwise. */
-    boost::shared_ptr<sfl::Goal> GetCurrentGoal() const;
+				been reached, a valid pointer otherwise. */
+    boost::shared_ptr<Goal> GetCurrentGoal() const;
     
     /** Simply appends to the list. */
     void AddGoal(double x, double y, double theta, double dr, double dtheta);
@@ -71,21 +75,21 @@ namespace sfl {
     void NextGoal();
     
     /** \return true iff there is a current goal and the given pose
-	reaches that goal. */
+				reaches that goal. */
     bool GoalReached(double x, double y, double theta, bool go_forward) const;
     
     /** Same as the other GoalReached(), but convenient if you already
-	have an instance of sfl::Frame or sfl::Pose. */
-    bool GoalReached(const sfl::Frame & pose, bool go_forward) const;
-
+				have an instance of sfl::Frame or sfl::Pose. */
+    bool GoalReached(const Frame & pose, bool go_forward) const;
+		
   private:
     /** \note We keep shared ptrs because GetCurrentGoal() returns a
-	pointer, which might be invalidated by AddGoal() if we kept
-	instances in a std::vector. So GetCurrentGoal() has to return
-	a shared ptr as well, to avoid problems if someone wants to
-	store that for later use (returning a raw pointer would cause
-	double-deletes). */
-    typedef std::vector<boost::shared_ptr<sfl::Goal> > goal_t;
+				pointer, which might be invalidated by AddGoal() if we kept
+				instances in a std::vector. So GetCurrentGoal() has to return
+				a shared ptr as well, to avoid problems if someone wants to
+				store that for later use (returning a raw pointer would cause
+				double-deletes). */
+    typedef std::vector<boost::shared_ptr<Goal> > goal_t;
     
     repeat_t m_repeat;
     goal_t m_goal;
