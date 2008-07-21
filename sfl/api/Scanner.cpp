@@ -211,6 +211,19 @@ namespace sfl {
   
   
   Scanner::status_t Scanner::
+  Rho(size_t index, double & rho) const
+  {
+    if(index >= nscans)
+      return INDEX_ERROR;
+    Mutex::sentry sentry(m_mutex);
+    rho = m_clean->data[index].rho;
+    if(m_clean->data[index].in_range)
+      return SUCCESS;
+    return OUT_OF_RANGE;
+  }
+  
+  
+  Scanner::status_t Scanner::
   Phi(size_t index, double & phi) const
   {
     if(index >= nscans)

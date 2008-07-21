@@ -214,6 +214,15 @@ namespace sfl {
 		     size_t index, scan_data & data) const;
     
     /**
+       Get the measured distance [m] of a ray in sensor frame.
+       \return SUCCESS, OUT_OF_RANGE, or INDEX_ERROR
+    */
+    status_t Rho(/** index: [0, Scanner::Nscans() - 1] */
+		 size_t index,
+		 /** (return) angle [phi] */
+		 double & rho) const;
+    
+    /**
        Get the angle [rad] of a ray in sensor frame.
        \return SUCCESS or INDEX_ERROR
     */
