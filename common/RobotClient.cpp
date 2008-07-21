@@ -21,6 +21,8 @@
 #include "RobotClient.hpp"
 #include "RobotServer.hpp"
 #include <sfl/util/Frame.hpp>
+#include <sfl/util/Line.hpp>
+#include <sfl/util/Polygon.hpp>
 
 
 using namespace sfl;
@@ -79,9 +81,33 @@ namespace npm {
   
   
   void RobotClient::
+  AddLine(double x0, double y0, double x1, double y1)
+  {
+    m_server->AddLine(Line(x0, y0, x1, y1));
+  }
+  
+  
+  void RobotClient::
   AddLine(const Line & line)
   {
     m_server->AddLine(line);
+  }
+  
+  
+  void RobotClient::
+  AddPolygon(const Polygon & polygon)
+  {
+    size_t const npoints(polygon.GetNPoints());
+    if (npoints < 2)
+      return;
+    Point const * pt0(polygon.GetPoint(npoints - 1));
+    Point const * pt1(polygon.GetPoint(0));
+    m_server->AddLine(Line(pt0->X(), pt0->Y(), pt1->X(), pt1->Y()));
+    for (size_t ii(1); ii < npoints; ++ii) {
+      pt0 = pt1;
+      pt1 = polygon.GetPoint(ii);
+      m_server->AddLine(Line(pt0->X(), pt0->Y(), pt1->X(), pt1->Y()));
+    }
   }
   
   

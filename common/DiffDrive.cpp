@@ -82,5 +82,25 @@ namespace npm {
   
     return result;
   }
-
+  
+  
+  /**
+     \note A tad of code-duplication wrt ComputeNextPose.
+  */
+  bool DiffDrive::
+  ComputeSpeedState(double & xdot, double & ydot, double & thdot) const
+  {
+    double qd[2];
+    size_t len(2);
+    const int status(m_hal->speed_get(qd, &len));
+    if ((0 != status) || (2 != len))
+      return false;
+    double const dl(qd[0] * wheelradius);
+    double const dr(qd[1] * wheelradius);
+    xdot = (dl + dr) / 2;
+    ydot = 0;
+    thdot = (dr - dl) / wheelbase;
+    return true;
+  }
+  
 }

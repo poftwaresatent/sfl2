@@ -27,6 +27,7 @@
 
 namespace sfl {
   class Line;
+  class Polygon;
   class Goal;
   class Frame;
   class Scanner;
@@ -114,7 +115,13 @@ namespace npm {
     
   protected:
     /** Add a line to the robot's body. */
+    void AddLine(double x0, double y0, double x1, double y1);
+    
+    /** Add a line to the robot's body. */
     void AddLine(const sfl::Line & line);
+    
+    /** Add all lines of a Polygon to the robot's body. */
+    void AddPolygon(const sfl::Polygon & polygon);
     
     /** Add a Drawing subclass to the robot. */
     void AddDrawing(boost::shared_ptr<Drawing> drawing);

@@ -43,6 +43,13 @@ namespace npm {
     DiffDrive(boost::shared_ptr<HAL> hal,
 	      double wheelbase, double wheelradius);
     
+    virtual bool ComputeSpeedState(/** speed in [m/s] along the local X-axis */
+				   double & xdot,
+				   /** speed in [m/s] along the local Y-axis */
+				   double & ydot,
+				   /** rotational speed in [rad/s] */
+				   double & thdot) const;
+    
     /** distance between wheel contact points [m] */
     const double wheelbase;
     

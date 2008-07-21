@@ -58,6 +58,22 @@ namespace npm {
     /** \return The last value returned by NextPose(). */
     boost::shared_ptr<const sfl::Frame> PoseCache() const;
     
+    /**
+       Transform the current motor commands into a Euclidean speed
+       state expressed in the robot's local frame of reference.
+       
+       \note The default implementation always returns false.
+       
+       \return true if the computation succeeded (subclasses might
+       not provide it)
+    */
+    virtual bool ComputeSpeedState(/** speed in [m/s] along the local X-axis */
+				   double & xdot,
+				   /** speed in [m/s] along the local Y-axis */
+				   double & ydot,
+				   /** rotational speed in [rad/s] */
+				   double & thdot) const;
+    
   protected:
     /** Implemented by subclasses. */
     virtual boost::shared_ptr<sfl::Frame>

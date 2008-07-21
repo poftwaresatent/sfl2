@@ -44,6 +44,10 @@
 # include <npm/asl/Borox.hpp>
 #endif // NPM_HAVE_ASL
 
+#ifdef NPM_HAVE_ROS
+# include <npm/ros/ROSbot.hpp>
+#endif // NPM_HAVE_ROS
+
 //#include <npm/theater/TheaterRobot.hpp>
 ////#include <npm/braitenberg/Braitenberg.hpp>
 
@@ -88,6 +92,13 @@ namespace npm {
     else if(descriptor->model == "rackham")
       rob = new Rackham(descriptor, world);
 #endif // NPM_HAVE_GENOM
+
+#ifdef NPM_HAVE_ROS
+    else if ((descriptor->model == "ros")
+	     || (descriptor->model == "ROS")
+	     || (descriptor->model == "ROSbot"))
+      rob = new ROSbot(descriptor, world);
+#endif // NPM_HAVE_ROS
 
     return shared_ptr<RobotClient>(rob);
   }

@@ -60,5 +60,12 @@ namespace npm {
   {
     return m_cache;
   }
+  
+  
+  bool Drive::
+  ComputeSpeedState(double & xdot, double & ydot, double & thdot) const
+  {
+    return false;
+  }
 
 }
