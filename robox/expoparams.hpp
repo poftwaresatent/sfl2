@@ -30,7 +30,7 @@
 struct expoparams
   : public expo_parameters
 {
-  explicit expoparams(boost::shared_ptr<npm::RobotDescriptor> descriptor);
+  explicit expoparams(boost::shared_ptr<sfl::OptionDictionary> opt);
   double model_axlewidth;
   double model_phi_max;
   double model_phid_max;

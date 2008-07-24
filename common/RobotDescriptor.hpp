@@ -37,6 +37,24 @@
 namespace sfl {
   class Goal;
   class Frame;
+
+  
+  class OptionDictionary
+  {
+  public:
+    
+    /** \note returns empty string if undefined name */
+    std::string GetOption(const std::string & key) const;
+    
+    /** \note overrides already existing values */
+    void SetOption(const std::string & key, const std::string & value);
+    
+  protected:
+    typedef std::map<std::string, std::string> option_t;
+    
+    option_t m_option;
+  };
+
 }
 
 
@@ -50,15 +68,10 @@ namespace npm {
      makes that possible).
   */
   class RobotDescriptor
+    : public sfl::OptionDictionary
   {
   public:
     RobotDescriptor(const std::string & model, const std::string & name);
-    
-    /** \note returns empty string if undefined name */
-    std::string GetOption(const std::string & key) const;
-    
-    /** \note overrides already existing values */
-    void SetOption(const std::string & key, const std::string & value);
     
     void SetInitialPose(double x, double y, double theta);
     boost::shared_ptr<const sfl::Frame> GetInitialPose() const
@@ -83,11 +96,9 @@ namespace npm {
     const std::string name;
     
   private:
-    typedef std::map<std::string, std::string> option_t;
     typedef std::vector<boost::shared_ptr<sfl::Goal> > goal_t;
     
     boost::shared_ptr<sfl::Frame> m_initial_pose;
-    option_t m_option;
     goal_t m_goal;
     ssize_t m_current_goal;
     ssize_t m_stop_loop_idx;
