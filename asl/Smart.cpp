@@ -23,16 +23,16 @@
  */
 
 #include "Smart.hpp"
+#include "smart_params.hpp"
 #include "ArcDrawing.hpp"
 #include <asl/Algorithm.hpp>
 #include <asl/Planner.hpp>
 #include <asl/AckermannController.hpp>
 #include <asl/ControlParams.hpp>
 #include <sfl/api/Multiscanner.hpp>
-#include "../robox/expoparams.hpp"
+#include <sfl/util/strutil.hpp>
 #include "../common/Lidar.hpp"
 #include "../common/RobotDescriptor.hpp"
-#include "../common/util.hpp"
 #include "../common/pdebug.hpp"
 #include <iostream>
 
@@ -54,7 +54,7 @@ Smart(shared_ptr<RobotDescriptor> descriptor, const World & world)
 
 void Smart::
 InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-							expoparams const & params,
+							smartparams const & params,
 							double carrot_distance,
 							double carrot_stepsize,
 							size_t carrot_maxnsteps,
@@ -146,7 +146,7 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 
 void Smart::
 InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
-						 expoparams const & params)
+						 smartparams const & params)
 {
 	mscan->Add(DefineLidar(sfl::Frame(params.front_mount_x,
 																		params.front_mount_y,
@@ -160,7 +160,7 @@ InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
 
 
 void Smart::
-InitDrive(expoparams const & params)
+InitDrive(smartparams const & params)
 {
 	DefineBicycleDrive(params.model_wheelbase,
 										 params.model_wheelradius,
@@ -169,7 +169,7 @@ InitDrive(expoparams const & params)
 
 
 void Smart::
-InitBody(expoparams const & params)
+InitBody(smartparams const & params)
 {
   AddLine(Line(-params.model_wheelradius,
 							 -params.model_axlewidth/2 -params.model_wheelradius,

@@ -52,7 +52,7 @@ namespace estar {
 }
 
 class AslColorScheme;
-struct expoparams;
+struct smartparams;
 
 
 class AslBot
@@ -103,7 +103,7 @@ protected:
 	
 	virtual
 	void InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-										 expoparams const & params,
+										 smartparams const & params,
 										 double carrot_distance,
 										 double carrot_stepsize,
 										 size_t carrot_maxnsteps,
@@ -120,11 +120,11 @@ protected:
 										 double & robot_radius) = 0;
 	
 	virtual void InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
-														expoparams const & params) = 0;
+														smartparams const & params) = 0;
 	
-	virtual void InitDrive(expoparams const & params) = 0;
+	virtual void InitDrive(smartparams const & params) = 0;
 
-	virtual void InitBody(expoparams const & params) = 0;
+	virtual void InitBody(smartparams const & params) = 0;
 	
 	virtual void MoreGraphics(std::string const & name,
 														npm::World const & world,

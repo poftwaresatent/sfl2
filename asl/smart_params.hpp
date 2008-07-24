@@ -21,19 +21,18 @@
  * USA
  */
 
-#ifndef EXPOPARAMS_HPP
-#define EXPOPARAMS_HPP
+#ifndef SMARTPARAMS_HPP
+#define SMARTPARAMS_HPP
 
-#include <npm/common/RobotDescriptor.hpp>
 #include <sfl/expo/expo_parameters.h>
 
-struct expoparams
+struct smartparams
   : public expo_parameters
 {
-  explicit expoparams(boost::shared_ptr<sfl::OptionDictionary> opt);
+  explicit smartparams(boost::shared_ptr<sfl::OptionDictionary> opt);
   double model_axlewidth;
   double model_phi_max;
   double model_phid_max;
 };
 
-#endif // EXPOPARAMS_HPP
+#endif // SMARTPARAMS_HPP

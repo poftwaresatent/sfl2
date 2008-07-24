@@ -25,7 +25,7 @@
 #include "Sharp.hpp"
 #include "SharpDrawing.hpp"
 #include "RobotServer.hpp"
-#include "util.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/util/Ray.hpp>
 #include <sfl/util/Frame.hpp>
 

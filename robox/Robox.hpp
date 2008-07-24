@@ -55,7 +55,7 @@ namespace local {
 class BaseRobox
 {
 public:
-  BaseRobox(struct expoparams const & params,
+  BaseRobox(struct expo_parameters const & params,
 	    boost::shared_ptr<sfl::HAL> hal,
 	    boost::shared_ptr<sfl::Multiscanner> mscan);
   

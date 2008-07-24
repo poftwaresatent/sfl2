@@ -26,7 +26,7 @@
 #include "RobotServer.hpp"
 #include "View.hpp"
 #include "Manager.hpp"
-#include "util.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
 
 

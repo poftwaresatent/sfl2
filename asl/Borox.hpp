@@ -56,7 +56,7 @@ protected:
 
   virtual
   void InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-		     expoparams const & params,
+		     smartparams const & params,
 		     double carrot_distance,
 		     double carrot_stepsize,
 		     size_t carrot_maxnsteps,
@@ -73,11 +73,11 @@ protected:
 		     double & robot_radius);
 	
   virtual void InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
-			    expoparams const & params);
+			    smartparams const & params);
 	
-  virtual void InitDrive(expoparams const & params);
+  virtual void InitDrive(smartparams const & params);
 
-  virtual void InitBody(expoparams const & params);
+  virtual void InitBody(smartparams const & params);
 	
   virtual void MoreGraphics(std::string const & name,
 			    npm::World const & world,

@@ -24,16 +24,16 @@
 
 #include "SmartCarmen.hpp"
 #include "wrap_carmen.hpp"
+#include "smart_params.hpp"
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/Line.hpp>
-#include <npm/robox/expoparams.hpp>
-#include <npm/common/Lidar.hpp>
-#include <npm/common/HAL.hpp>
-#include <npm/common/RobotServer.hpp>
-#include <npm/common/RobotDescriptor.hpp>
-#include <npm/common/pdebug.hpp>
+#include "../common/Lidar.hpp"
+#include "../common/HAL.hpp"
+#include "../common/RobotServer.hpp"
+#include "../common/RobotDescriptor.hpp"
+#include "../common/pdebug.hpp"
 #include <iostream>
 
 
@@ -48,7 +48,7 @@ SmartCarmen::
 SmartCarmen(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, 2, true)
 {
-  expoparams params(descriptor);
+  smartparams params(descriptor);
   m_nscans = params.front_nscans;
   m_sick_channel = params.front_channel;
 	

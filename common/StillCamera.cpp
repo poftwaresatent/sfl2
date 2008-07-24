@@ -24,9 +24,10 @@
 
 #include "StillCamera.hpp"
 #include "View.hpp"
-#include "util.hpp"
+#include <sfl/util/strutil.hpp>
 
 
+using namespace sfl;
 using namespace std;
 
 

@@ -18,6 +18,7 @@
  */
 
 #include "Borox.hpp"
+#include "smart_params.hpp"
 #include <asl/Algorithm.hpp>
 #include <asl/Planner.hpp>
 #include <asl/DWAPathTracker.hpp>
@@ -26,19 +27,18 @@
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/GoalManager.hpp>
+#include <sfl/util/strutil.hpp>
 #include <sfl/gplan/Mapper2d.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/dwa/HeadingObjective.hpp>
-#include "../robox/expoparams.hpp"
 #include "../robox/DWDrawing.hpp"
 #include "../robox/ODrawing.hpp"
 #include "../robox/DODrawing.hpp"
 #include "../robox/OCamera.hpp"
 #include "../common/Lidar.hpp"
 #include "../common/RobotDescriptor.hpp"
-#include "../common/util.hpp"
 #include "../common/pdebug.hpp"
 #include "../common/OdometryDrawing.hpp"
 #include "../common/StillCamera.hpp"
@@ -82,7 +82,7 @@ static shared_ptr<Hull> CreateHull()
 }
 
 
-static shared_ptr<RobotModel> CreateModel(expoparams const & params)
+static shared_ptr<RobotModel> CreateModel(smartparams const & params)
 {
   RobotModel::Parameters modelparams(params.model_security_distance,
 				     params.model_wheelbase,
@@ -100,7 +100,7 @@ static shared_ptr<RobotModel> CreateModel(expoparams const & params)
 
 void Borox::
 InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	      expoparams const & params,
+	      smartparams const & params,
 	      double carrot_distance,
 	      double carrot_stepsize,
 	      size_t carrot_maxnsteps,
@@ -212,7 +212,7 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 
 void Borox::
 InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
-	     expoparams const & params)
+	     smartparams const & params)
 {
   mscan->Add(DefineLidar(sfl::Frame(params.front_mount_x,
 				    params.front_mount_y,
@@ -234,7 +234,7 @@ InitScanners(boost::shared_ptr<sfl::Multiscanner> mscan,
 
 
 void Borox::
-InitDrive(expoparams const & params)
+InitDrive(smartparams const & params)
 {
   DefineDiffDrive(params.model_wheelbase,
 		  params.model_wheelradius);
@@ -242,7 +242,7 @@ InitDrive(expoparams const & params)
 
 
 void Borox::
-InitBody(expoparams const & params)
+InitBody(smartparams const & params)
 {
   if ( ! m_model)
     m_model = CreateModel(params);

@@ -24,7 +24,6 @@
 
 #include "Robox.hpp"
 #include "MPDrawing.hpp"
-#include "expoparams.hpp"
 #include "OCamera.hpp"
 #include "ODrawing.hpp"
 #include "DODrawing.hpp"
@@ -41,8 +40,8 @@
 #include "../common/DiffDrive.hpp"
 #include "../common/RobotDescriptor.hpp"
 #include "../common/Lidar.hpp"
-#include "../common/util.hpp"
 #include "../common/Manager.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/api/Odometry.hpp>
@@ -56,6 +55,7 @@
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/dwa/HeadingObjective.hpp>
 #include <sfl/bband/BubbleBand.hpp>
+#include <sfl/expo/expo_parameters.h>
 #include <sfl/expo/MotionPlanner.hpp>
 #include <sfl/expo/MotionPlannerState.hpp>
 #include <sfl/expo/MotionController.hpp>
@@ -117,7 +117,7 @@ namespace local {
 
 
 BaseRobox::
-BaseRobox(expoparams const & params,
+BaseRobox(expo_parameters const & params,
 	  boost::shared_ptr<sfl::HAL> hal,
 	  boost::shared_ptr<sfl::Multiscanner> _mscan)
   : hull(CreateHull()),
@@ -176,7 +176,7 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, 2, true),
     m_ngkl(new local::NGKeyListener())
 {
-  expoparams params(descriptor);
+  expo_parameters params(descriptor);
   
   boost::shared_ptr<sfl::Scanner>
     front = DefineLidar(Frame(params.front_mount_x,

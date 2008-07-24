@@ -29,7 +29,7 @@
 #include "Drawing.hpp"
 #include "Manager.hpp"
 #include "wrap_glu.hpp"
-#include "util.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/util/numeric.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>

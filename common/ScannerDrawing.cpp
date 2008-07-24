@@ -27,7 +27,7 @@
 #include "Lidar.hpp"
 #include "wrap_glu.hpp"
 #include "Manager.hpp"
-#include "util.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Scan.hpp>
 

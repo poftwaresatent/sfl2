@@ -28,8 +28,6 @@
 #include "../robox/ODrawing.hpp"
 #include "../robox/DODrawing.hpp"
 #include "../robox/DWDrawing.hpp"
-#include "../robox/expoparams.hpp"
-#include "../common/util.hpp"
 #include "../common/pdebug.hpp"
 #include "../common/Lidar.hpp"
 #include "../common/GoalInstanceDrawing.hpp"
@@ -39,6 +37,8 @@
 #include "../common/CheatSheet.hpp"
 #include "../common/DiffDrive.hpp"
 #include "../common/Manager.hpp"
+#include "../common/RobotDescriptor.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/api/RobotModel.hpp>
@@ -51,6 +51,7 @@
 #include <sfl/dwa/HeadingObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/gplan/GridFrame.hpp>
+#include <sfl/expo/expo_parameters.h>
 #include <estar/Facade.hpp>
 #include <estar/dump.hpp>
 #include <pnf/Flow.hpp>
@@ -77,13 +78,14 @@ using sfl::Scan;
 using sfl::sqr;
 using sfl::absval;
 using sfl::RWlock;
+using sfl::string_to;
 
 using namespace estar;
 using namespace boost;
 using namespace std;
 
 
-static RobotModel::Parameters CreateRobotParameters(expoparams & params);
+static RobotModel::Parameters CreateRobotParameters(expo_parameters & params);
 static shared_ptr<Hull> CreateHull();  
 
 
@@ -159,7 +161,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   if( ! string_to(descriptor->GetOption("pnf_enable_thread"), m_enable_thread))
     m_enable_thread = false;
   
-  expoparams params(descriptor);
+  expo_parameters params(descriptor);
   
   m_front = DefineLidar(Frame(params.front_mount_x,
 			      params.front_mount_y,
@@ -448,7 +450,7 @@ PrepareAction(double timestep)
 
 
 RobotModel::Parameters
-CreateRobotParameters(expoparams & params)
+CreateRobotParameters(expo_parameters & params)
 {
   return RobotModel::
     Parameters(params.model_security_distance,

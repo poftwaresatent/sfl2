@@ -37,9 +37,9 @@
 #include "DiffDriveDrawing.hpp"
 #include "HoloDriveDrawing.hpp"
 #include "BicycleDriveDrawing.hpp"
-#include "util.hpp"
 #include "pdebug.hpp"
 #include "NoiseModel.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/api/Scanner.hpp>

@@ -21,6 +21,7 @@
 #include "AslBot.hpp"
 #include "PathDrawing.hpp"
 #include "ThreadDrawing.hpp"
+#include "smart_params.hpp"
 #include <asl/Algorithm.hpp>
 #include <asl/MappingThread.hpp>
 #include <asl/PlanningThread.hpp>
@@ -30,20 +31,20 @@
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Pose.hpp>
 #include <sfl/gplan/Mapper2d.hpp>
+#include <sfl/util/strutil.hpp>
 #include <estar/Facade.hpp>
 #include <estar/graphics.hpp>
-#include "../robox/expoparams.hpp"
 #include "../common/HAL.hpp"
 #include "../common/RobotServer.hpp"
 #include "../common/GoalInstanceDrawing.hpp"
 #include "../common/TraversabilityDrawing.hpp"
 #include "../common/World.hpp"
-#include "../common/util.hpp"
 #include "../common/wrap_gl.hpp"
 #include "../common/MapperUpdateDrawing.hpp"
 #include "../common/MapperRefDrawing.hpp"
 #include "../estar/EstarDrawing.hpp"
 #include "../common/pdebug.hpp"
+#include "../common/RobotDescriptor.hpp"
 #include <iostream>
 #include <unistd.h>							// for usleep (on OpenBSD)
 
@@ -287,7 +288,7 @@ AslBot(shared_ptr<RobotDescriptor> descriptor, const World & world)
 void AslBot::
 CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 {
-  expoparams params(descriptor);
+  smartparams params(descriptor);
 	
 	double carrot_distance;
 	if( ! string_to(descriptor->GetOption("carrot_distance"), carrot_distance))
