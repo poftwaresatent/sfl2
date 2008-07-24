@@ -26,11 +26,23 @@
 #define EXPO_PARAMETERS_H
 
 #ifdef __cplusplus
+
+# include <boost/shared_ptr.hpp>
+
+namespace sfl {
+  class OptionDictionary;
+}
+
 extern "C" {
+
 #endif // __cplusplus  
   
   struct expo_parameters
   {
+#ifdef __cplusplus
+    explicit expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
+#endif // __cplusplus
+      
     int front_channel, front_nscans;
     double front_mount_x, front_mount_y, front_mount_theta;
     double front_rhomax, front_phi0, front_phirange;
@@ -57,6 +69,10 @@ extern "C" {
   void expo_default_parameters(struct expo_parameters * params);
   
 #ifdef __cplusplus
+  
+  void expo_parameters_load(expo_parameters & params,
+			    boost::shared_ptr<sfl::OptionDictionary> opt);
+
 }
 #endif // __cplusplus  
 

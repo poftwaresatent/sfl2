@@ -23,12 +23,23 @@
 
 
 #include "expo_parameters.h"
+#include "../util/OptionDictionary.hpp"
+#include "../util/strutil.hpp"
 #include <cmath>
 
 #ifdef WIN32
 # include "../util/numeric.hpp"
 #endif // WIN32
 
+using namespace sfl;
+
+
+expo_parameters::
+expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt)
+{
+  expo_default_parameters(this);
+  expo_parameters_load(*this, opt);
+}
 
 
 void expo_default_parameters(struct expo_parameters * params)
@@ -81,4 +92,55 @@ void expo_default_parameters(struct expo_parameters * params)
   params->mp_auto_adapt_dwa     = 0;
   params->mp_dtheta_starthoming = 10 * M_PI / 180;
   params->mp_dtheta_startaiming = 45 * M_PI / 180;
+}
+
+
+void expo_parameters_load(expo_parameters & params,
+			  boost::shared_ptr<sfl::OptionDictionary> opt)
+{
+  string_to(opt->GetOption("front_channel"), params.front_channel);
+  string_to(opt->GetOption("front_nscans"), params.front_nscans);
+  string_to(opt->GetOption("front_mount_x"), params.front_mount_x);
+  string_to(opt->GetOption("front_mount_y"), params.front_mount_y);
+  string_to(opt->GetOption("front_mount_theta"), params.front_mount_theta);
+  string_to(opt->GetOption("front_rhomax"), params.front_rhomax);
+  string_to(opt->GetOption("front_phi0"), params.front_phi0);
+  string_to(opt->GetOption("front_phirange"), params.front_phirange);
+  
+  string_to(opt->GetOption("rear_channel"), params.rear_channel);
+  string_to(opt->GetOption("rear_nscans"), params.rear_nscans);
+  string_to(opt->GetOption("rear_mount_x"), params.rear_mount_x);
+  string_to(opt->GetOption("rear_mount_y"), params.rear_mount_y);
+  string_to(opt->GetOption("rear_mount_theta"), params.rear_mount_theta);
+  string_to(opt->GetOption("rear_rhomax"), params.rear_rhomax);
+  string_to(opt->GetOption("rear_phi0"), params.rear_phi0);
+  string_to(opt->GetOption("rear_phirange"), params.rear_phirange);
+  
+  string_to(opt->GetOption("model_security_distance"), params.model_security_distance);
+  string_to(opt->GetOption("model_wheelbase"), params.model_wheelbase);
+  string_to(opt->GetOption("model_wheelradius"), params.model_wheelradius);
+  string_to(opt->GetOption("model_qd_max"), params.model_qd_max);
+  string_to(opt->GetOption("model_qdd_max"), params.model_qdd_max);
+  string_to(opt->GetOption("model_sd_max"), params.model_sd_max);
+  string_to(opt->GetOption("model_thetad_max"), params.model_thetad_max);
+  string_to(opt->GetOption("model_sdd_max"), params.model_sdd_max);
+  string_to(opt->GetOption("model_thetadd_max"), params.model_thetadd_max);
+  
+  string_to(opt->GetOption("dwa_dimension"), params.dwa_dimension);
+  string_to(opt->GetOption("dwa_grid_width"), params.dwa_grid_width);
+  string_to(opt->GetOption("dwa_grid_height"), params.dwa_grid_height);
+  string_to(opt->GetOption("dwa_grid_resolution"), params.dwa_grid_resolution);
+  string_to(opt->GetOption("dwa_alpha_distance"), params.dwa_alpha_distance);
+  string_to(opt->GetOption("dwa_alpha_heading"), params.dwa_alpha_heading);
+  string_to(opt->GetOption("dwa_alpha_speed"), params.dwa_alpha_speed);
+  
+  string_to_bool(opt->GetOption("bband_enabled"), params.bband_enabled);
+  string_to(opt->GetOption("bband_shortpath"), params.bband_shortpath);
+  string_to(opt->GetOption("bband_longpath"), params.bband_longpath);
+  string_to(opt->GetOption("bband_maxignoredistance"), params.bband_maxignoredistance);
+  
+  string_to_bool(opt->GetOption("mp_strict_dwa"), params.mp_strict_dwa);
+  string_to_bool(opt->GetOption("mp_auto_adapt_dwa"), params.mp_auto_adapt_dwa);
+  string_to(opt->GetOption("mp_dtheta_starthoming"), params.mp_dtheta_starthoming);
+  string_to(opt->GetOption("mp_dtheta_startaiming"), params.mp_dtheta_startaiming);
 }

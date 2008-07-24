@@ -5,11 +5,12 @@ LDFLAGS=  @SFL_LDFLAGS@
 
 noinst_LTLIBRARIES= libutil.la
 libutil_la_SOURCES= Point.cpp Ray.cpp Frame.cpp Line.cpp Pthread.cpp \
-                    Hull.cpp numeric.cpp Polygon.cpp GoalManager.cpp
+                    Hull.cpp numeric.cpp Polygon.cpp GoalManager.cpp \
+                    OptionDictionary.cpp strutil.cpp
 include_HEADERS=    Point.hpp array2d.hpp functors.hpp Frame.hpp \
                     vec2d.hpp Pthread.hpp Ray.hpp Line.hpp pdebug.hpp \
                     Polygon.hpp Hull.hpp numeric.hpp GoalManager.hpp \
-                    ringbuf.hpp flexgrid.hpp
+                    ringbuf.hpp flexgrid.hpp OptionDictionary.hpp strutil.hpp
 includedir=         @includedir@/sfl/util
 
 check_PROGRAMS=       test-goalmgr test-ringbuf test-pthread
