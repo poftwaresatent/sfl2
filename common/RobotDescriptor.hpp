@@ -28,6 +28,7 @@
 #define NPM_ROBOTDESCRIPTOR_HPP
 
 
+#include <sfl/util/OptionDictionary.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <map>
@@ -37,24 +38,6 @@
 namespace sfl {
   class Goal;
   class Frame;
-
-  
-  class OptionDictionary
-  {
-  public:
-    
-    /** \note returns empty string if undefined name */
-    std::string GetOption(const std::string & key) const;
-    
-    /** \note overrides already existing values */
-    void SetOption(const std::string & key, const std::string & value);
-    
-  protected:
-    typedef std::map<std::string, std::string> option_t;
-    
-    option_t m_option;
-  };
-
 }
 
 

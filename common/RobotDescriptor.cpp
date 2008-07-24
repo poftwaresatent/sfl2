@@ -27,36 +27,9 @@
 #include "RobotDescriptor.hpp"
 #include <sfl/api/Goal.hpp>
 
-using namespace std;
-
-namespace sfl {
-
-
-  string OptionDictionary::
-  GetOption(const string & key) const
-  {
-    option_t::const_iterator io(m_option.find(key));
-    if(io == m_option.end())
-      return string("");
-    return io->second;
-  }
-
-
-  void OptionDictionary::
-  SetOption(const string & key, const string & value)
-  {
-    option_t::iterator io(m_option.find(key));
-    if(io == m_option.end())
-      m_option.insert(make_pair(key, value));
-    else
-      io->second = value;
-  }
-
-}
-
-
 using namespace sfl;
 using namespace boost;
+using namespace std;
 
 
 namespace npm {
