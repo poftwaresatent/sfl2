@@ -120,7 +120,7 @@ int sfl_create_Multiscanner(int odometry_handle,
   shared_ptr<Odometry> odo(get_Odometry(odometry_handle));
   if( ! odo)
     return -1;
-  shared_ptr<Multiscanner> ms(new Multiscanner(odo));
+  shared_ptr<Multiscanner> ms(new Multiscanner(odo->GetHAL()));
   for(int is(0); is < nscanners; ++is){
     shared_ptr<Scanner> sc(get_Scanner(scanner_handle[is]));
     if( ! sc)

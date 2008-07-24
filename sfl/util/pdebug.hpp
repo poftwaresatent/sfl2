@@ -38,7 +38,18 @@ inline void PDEBUG_OUT(char const * fmt, ...) {}
 inline void PDEBUG_OFF(char const * fmt, ...) {}
 #endif // WIN32
 
-#undef  PDEBUG
+#ifdef SFL_VERBOSE_DEBUG
+# define SFL_DEBUG
+# define PVDEBUG PDEBUG_OUT
+#else // ! SFL_VERBOSE_DEBUG
+# define PVDEBUG PDEBUG_OFF
+#endif // SFL_VERBOSE_DEBUG
+
+#ifdef SFL_DEBUG
+# define PDEBUG PDEBUG_OUT
+#else // ! SFL_DEBUG
+# define PDEBUG PDEBUG_OFF
+#endif // SFL_DEBUG
 
 
 #endif // SFL_PDEBUG_HPP

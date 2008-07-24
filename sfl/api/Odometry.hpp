@@ -146,6 +146,12 @@ namespace sfl {
     */
     history_t::value_type Get(const Timestamp & t) const;
     
+    /**
+       For easier porting of legacy code that expected an Odometry
+       instance in some places where a HAL actually suffices. The HAL
+       is usually shared among all libsunflower objects anyway...
+    */
+    boost::shared_ptr<HAL> GetHAL() { return m_hal; }
     
   private:
     friend class OdometryThread;

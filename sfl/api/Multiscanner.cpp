@@ -25,10 +25,10 @@
 #include "Multiscanner.hpp"
 #include "Scanner.hpp"
 #include "Scan.hpp"
-#include "Odometry.hpp"
+#include "HAL.hpp"
 #include "Pose.hpp"
-#include <sfl/util/numeric.hpp>
-#include <iostream>		// dbg
+#include "../util/numeric.hpp"
+#include "../util/pdebug.hpp"
 #include <cmath>
 
 
@@ -37,12 +37,11 @@ using namespace std;
 
 
 namespace sfl {
-
-
-#warning "why not a const Odometry?"
+  
+  
   Multiscanner::
-  Multiscanner(shared_ptr<Odometry> odometry)
-    : m_odometry(odometry)
+  Multiscanner(shared_ptr<HAL> hal)
+    : m_hal(hal)
   {
   }
   
@@ -74,11 +73,22 @@ namespace sfl {
   shared_ptr<Scan> Multiscanner::
   CollectScans() const
   {
+    shared_ptr<Scan> result;
+    
+    double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
+    timespec_t foo;
+    int const status(m_hal->odometry_get(&foo, &x, &y, &theta,
+					 &sxx, &syy, &stt,
+					 &sxy, &sxt, &syt));
+    if(0 != status){
+      PDEBUG("m_hal->odometry_get() failed with status %d\n", status);
+      return result;
+    }
+    
     // initialize to zero size (just add VALID data) and with INVERTED
     // timestamps to detect the min and max actual ones
-    shared_ptr<Scan>
-      result(new Scan(0, Timestamp::Last(), Timestamp::First(),
-		      *m_odometry->Get()));
+    result.reset(new Scan(0, Timestamp::Last(), Timestamp::First(),
+			  Pose(x, y, theta, sxx, syy, stt, sxy, sxt, syt)));
     
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
       shared_ptr<Scanner> scanner(m_scanner[iScanner]);
@@ -117,22 +127,22 @@ namespace sfl {
   }
   
   
-#warning "remove this method, and kick out the iostream include directive"
-  size_t Multiscanner::
-  ComputeOffset(boost::shared_ptr<const Scanner> scanner) const
-  {
-    size_t off(0);
-    for(vector_t::const_iterator is(m_scanner.begin());
-	is != m_scanner.end();
-	++is){
-      if(scanner == *is)
-	return off;
-      off += (*is)->nscans;
-    }
-    std::cerr << "WARNING in Multiscanner::ComputeOffset():\n"
-	      << "  scanner not registered, returning 0\n";
-    return 0;
-  }
+// #warning "remove this method, and kick out the iostream include directive"
+//   size_t Multiscanner::
+//   ComputeOffset(boost::shared_ptr<const Scanner> scanner) const
+//   {
+//     size_t off(0);
+//     for(vector_t::const_iterator is(m_scanner.begin());
+// 	is != m_scanner.end();
+// 	++is){
+//       if(scanner == *is)
+// 	return off;
+//       off += (*is)->nscans;
+//     }
+//     std::cerr << "WARNING in Multiscanner::ComputeOffset():\n"
+// 	      << "  scanner not registered, returning 0\n";
+//     return 0;
+//   }
 
 
   bool Multiscanner::

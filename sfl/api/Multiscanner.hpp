@@ -32,7 +32,7 @@
 
 namespace sfl {
   
-  class Odometry;
+  class HAL;
   class Scanner;
   class Scan;
 
@@ -50,8 +50,11 @@ namespace sfl {
   public:
     typedef std::vector<boost::shared_ptr<Scan> > raw_scan_collection_t;
     
-    
-    explicit Multiscanner(boost::shared_ptr<Odometry> odometry);
+    /**
+       \note If you expected an Odometry as argument here, simply use
+       Odometry::GetHAL() to bring your code up to date.
+    */
+    explicit Multiscanner(boost::shared_ptr<HAL> hal);
     
     
     /** Appends a Scanner instance to the list of registered devices. */
@@ -74,7 +77,7 @@ namespace sfl {
        maximum Timestamp of all registered Scanners. Even if a Scanner
        provides no data (e.g. all values are out of range), its
        Timestamp is still taken into account.  The robot pose will be
-       taken from odometry, not from the information in the scanners.
+       taken from HAL odometry, not from the information in the scanners.
        
        \note For polar coordinates, the robot origin is used. The
        ordering of the data is inherited from the order of calls to
@@ -93,10 +96,10 @@ namespace sfl {
     */
     boost::shared_ptr<raw_scan_collection_t> CollectRawScans() const;
     
-    /** Mainly for debugging, returns the offset of a scanner's data
-	in the collected scan object. This is usually not needed and
-	determined implicitly inside CollectScans(). */
-    size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
+//     /** Mainly for debugging, returns the offset of a scanner's data
+// 	in the collected scan object. This is usually not needed and
+// 	determined implicitly inside CollectScans(). */
+//     size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
     
     /** Calls Scanner::Update() on all registered instances and
 	returns true if all of these calls succeeded. Does NOT take
@@ -106,7 +109,7 @@ namespace sfl {
   protected:
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
     
-    boost::shared_ptr<Odometry> m_odometry;
+    boost::shared_ptr<HAL> m_hal;
     size_t m_total_nscans;
     vector_t m_scanner;
   };
