@@ -26,7 +26,6 @@
 #include "wrap_carmen.hpp"
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/Multiscanner.hpp>
-#include <sfl/api/Odometry.hpp>
 #include <sfl/util/Pthread.hpp>
 #include <sfl/util/Line.hpp>
 #include <npm/robox/expoparams.hpp>
@@ -57,8 +56,7 @@ SmartCarmen(shared_ptr<RobotDescriptor> descriptor, const World & world)
   double wheelradius(params.model_wheelradius);
   double axlewidth(params.model_axlewidth);
 	
-	shared_ptr<Odometry> odo(new Odometry(GetHAL(), RWlock::Create("smart")));	
-	m_mscan.reset(new Multiscanner(odo));
+	m_mscan.reset(new Multiscanner(GetHAL()));
 	m_sick = DefineLidar(Frame(params.front_mount_x,
 														 params.front_mount_y,
 														 params.front_mount_theta),

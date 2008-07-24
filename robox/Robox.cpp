@@ -116,11 +116,15 @@ namespace local {
 }
 
 
-static RobotModel::Parameters
-CreateRobotParameters(expoparams & params)
+BaseRobox::
+BaseRobox(expoparams const & params,
+	  boost::shared_ptr<sfl::HAL> hal,
+	  boost::shared_ptr<sfl::Multiscanner> _mscan)
+  : hull(CreateHull()),
+    mscan(_mscan)
 {
-  return RobotModel::
-    Parameters(params.model_security_distance,
+  RobotModel::Parameters const
+    modelParms(params.model_security_distance,
 	       params.model_wheelbase,
 	       params.model_wheelradius,
 	       params.model_qd_max,
@@ -129,23 +133,53 @@ CreateRobotParameters(expoparams & params)
 	       params.model_thetad_max,
 	       params.model_sdd_max,
 	       params.model_thetadd_max);
+  robotModel.reset(new RobotModel(modelParms, hull));
+  motionController.
+    reset(new expo::MotionController(robotModel, hal,
+				     RWlock::Create("motor")));
+  odometry.reset(new Odometry(hal, RWlock::Create("odometry")));
+  bubbleBand.
+    reset(new BubbleBand(*robotModel, *odometry, *mscan,
+			 BubbleList::Parameters(params.bband_shortpath,
+						params.bband_longpath,
+						params.bband_maxignoredistance),
+			 RWlock::Create("bband")));
+  
+  dynamicWindow.reset(new DynamicWindow(params.dwa_dimension,
+					params.dwa_grid_width,
+					params.dwa_grid_height,
+					params.dwa_grid_resolution,
+					robotModel,
+					params.dwa_alpha_distance,
+					params.dwa_alpha_heading,
+					params.dwa_alpha_speed,
+					true));  
+  motionPlanner.reset(new expo::MotionPlanner(motionController,
+					      dynamicWindow,
+					      mscan,
+					      robotModel,
+					      bubbleBand,
+					      odometry));
+  if ((params.mp_dtheta_starthoming > 0) && (params.mp_dtheta_startaiming > 0)) {
+    if ( ! motionPlanner->SetAimingThresholds(params.mp_dtheta_startaiming,
+					      params.mp_dtheta_starthoming)) {
+      cerr << "ERROR: motionPlanner->SetAimingThresholds("
+	   << params.mp_dtheta_startaiming << ", " << params.mp_dtheta_starthoming << ") failed\n";
+      exit(EXIT_FAILURE);
+    }
+  }
 }
 
 
 Robox::
 Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
-  : RobotClient(descriptor, world, 2, true), m_hull(CreateHull()),
+  : RobotClient(descriptor, world, 2, true),
     m_ngkl(new local::NGKeyListener())
 {
-  for(HullIterator ih(*m_hull); ih.IsValid(); ih.Increment()){
-    AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
-    PDEBUG("line %05.2f %05.2f %05.2f %05.2f\n",
-	   ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1());
-  }
-  
   expoparams params(descriptor);
   
-  m_front = DefineLidar(Frame(params.front_mount_x,
+  boost::shared_ptr<sfl::Scanner>
+    front = DefineLidar(Frame(params.front_mount_x,
 			      params.front_mount_y,
 			      params.front_mount_theta),
 			params.front_nscans,
@@ -153,7 +187,8 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
 			params.front_phi0,
 			params.front_phirange,
 			params.front_channel)->GetScanner();
-  m_rear = DefineLidar(Frame(params.rear_mount_x,
+  boost::shared_ptr<sfl::Scanner>
+    rear = DefineLidar(Frame(params.rear_mount_x,
 			     params.rear_mount_y,
 			     params.rear_mount_theta),
 		       params.rear_nscans,
@@ -161,67 +196,24 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		       params.rear_phi0,
 		       params.rear_phirange,
 		       params.rear_channel)->GetScanner();
-
+  boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(GetHAL()));
+  mscan->Add(front);
+  mscan->Add(rear);
+  
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
-  const RobotModel::Parameters modelParms(CreateRobotParameters(params));
-  m_robotModel.reset(new RobotModel(modelParms, m_hull));
-  m_motionController.
-    reset(new expo::MotionController(m_robotModel, GetHAL(),
-				     RWlock::Create("motor")));
-  m_odometry.reset(new Odometry(GetHAL(), RWlock::Create("odometry")));
-  m_multiscanner.reset(new Multiscanner(m_odometry));
-  m_bubbleBand.
-    reset(new BubbleBand(*m_robotModel, *m_odometry, *m_multiscanner,
-			 BubbleList::Parameters(params.bband_shortpath,
-						params.bband_longpath,
-					params.bband_maxignoredistance),
-			 RWlock::Create("bband")));
   
-  m_dynamicWindow.reset(new DynamicWindow(params.dwa_dimension,
-					  params.dwa_grid_width,
-					  params.dwa_grid_height,
-					  params.dwa_grid_resolution,
-					  m_robotModel,
-					  params.dwa_alpha_distance,
-					  params.dwa_alpha_heading,
-					  params.dwa_alpha_speed,
-					  true));
+  m_base.reset(new BaseRobox(params, GetHAL(), mscan));
   
-  m_multiscanner->Add(m_front);
-  m_multiscanner->Add(m_rear);
-  
-  m_motionPlanner.reset(new expo::MotionPlanner(m_motionController,
-						m_dynamicWindow,
-						m_multiscanner,
-						m_robotModel,
-						m_bubbleBand,
-						m_odometry));
-  
-  double dtheta_starthoming;
-  if( ! string_to(descriptor->GetOption("dtheta_starthoming"),
-		  dtheta_starthoming))
-    dtheta_starthoming = -1;
-  double dtheta_startaiming;
-  if( ! string_to(descriptor->GetOption("dtheta_startaiming"),
-		  dtheta_startaiming))
-    dtheta_startaiming = -1;
-  if((dtheta_starthoming > 0) && (dtheta_startaiming > 0)){
-    if( ! m_motionPlanner->SetAimingThresholds(dtheta_startaiming,
-					       dtheta_starthoming)){
-      cerr << "ERROR: m_motionPlanner->SetAimingThresholds("
-	   << dtheta_startaiming << ", " << dtheta_starthoming << ") failed\n";
-      exit(EXIT_FAILURE);
-    }
+  for(HullIterator ih(*m_base->hull); ih.IsValid(); ih.Increment()){
+    AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
+    PDEBUG("line %05.2f %05.2f %05.2f %05.2f\n",
+	   ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1());
   }
-  else if((dtheta_starthoming > 0) || (dtheta_startaiming > 0))
-    cerr << "WARNING: you only set one of dtheta_starthoming or\n"
-	 << "         dtheta_startaiming but should set both...\n"
-	 << "         IGNORING WHATEVER YOU SET.\n";
   
   CreateGfxStuff(descriptor->name);
   
   world.AddKeyListener(m_ngkl);
-  shared_ptr<KeyListener> listener(new local::MPKeyListener(m_motionPlanner));
+  shared_ptr<KeyListener> listener(new local::MPKeyListener(m_base->motionPlanner));
   world.AddKeyListener(listener);
 }
 
@@ -241,54 +233,54 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
 void Robox::
 CreateGfxStuff(const string & name)
 {
-  AddDrawing(new MPDrawing(name + "_goaldrawing", *m_motionPlanner));
-  AddDrawing(new DWDrawing(name + "_dwdrawing", *m_dynamicWindow));
+  AddDrawing(new MPDrawing(name + "_goaldrawing", *m_base->motionPlanner));
+  AddDrawing(new DWDrawing(name + "_dwdrawing", *m_base->dynamicWindow));
   AddDrawing(new ODrawing(name + "_dodrawing",
-			  m_dynamicWindow->GetDistanceObjective(),
-			  m_dynamicWindow));
+			  m_base->dynamicWindow->GetDistanceObjective(),
+			  m_base->dynamicWindow));
   AddDrawing(new ODrawing(name + "_hodrawing",
-			  m_dynamicWindow->GetHeadingObjective(),
-			  m_dynamicWindow));
+			  m_base->dynamicWindow->GetHeadingObjective(),
+			  m_base->dynamicWindow));
   AddDrawing(new ODrawing(name + "_sodrawing",
-			  m_dynamicWindow->GetSpeedObjective(),
-			  m_dynamicWindow));
+			  m_base->dynamicWindow->GetSpeedObjective(),
+			  m_base->dynamicWindow));
   AddDrawing(new RHDrawing(name + "_rhdrawing",
-			   m_bubbleBand->GetReplanHandler(),
+			   m_base->bubbleBand->GetReplanHandler(),
 			   RHDrawing::AUTODETECT));
   AddDrawing(new BBDrawing(name + "_bbdrawing",
-			   *m_bubbleBand,
+			   *m_base->bubbleBand,
 			   BBDrawing::AUTODETECT));
   AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
-				  m_bubbleBand->GetReplanHandler()->GetNF1(),
+				  m_base->bubbleBand->GetReplanHandler()->GetNF1(),
 				  false));
   AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
-				  m_bubbleBand->GetReplanHandler()->GetNF1(),
+				  m_base->bubbleBand->GetReplanHandler()->GetNF1(),
 				  true));
   AddDrawing(new OdometryDrawing(name + "_odomdrawing",
-				 *m_odometry,
-				 m_robotModel->WheelBase() / 2));
+				 *m_base->odometry,
+				 m_base->robotModel->WheelBase() / 2));
   AddDrawing(new DODrawing(name + "_collisiondrawing",
-			   m_dynamicWindow->GetDistanceObjective(),
-			   m_dynamicWindow,
-			   m_robotModel));
+			   m_base->dynamicWindow->GetDistanceObjective(),
+			   m_base->dynamicWindow,
+			   m_base->robotModel));
   
   AddCamera(new StillCamera(name + "_dwcamera",
 			    0,
 			    0,
-			    m_dynamicWindow->Dimension(),
-			    m_dynamicWindow->Dimension(),
+			    m_base->dynamicWindow->Dimension(),
+			    m_base->dynamicWindow->Dimension(),
 			    Instance<UniqueManager<Camera> >()));
-  AddCamera(new OCamera(name + "_ocamera", *m_dynamicWindow));
+  AddCamera(new OCamera(name + "_ocamera", *m_base->dynamicWindow));
   AddCamera(new GridLayerCamera(name + "_local_glcamera",
-				m_bubbleBand->GetReplanHandler()->GetNF1()));
+				m_base->bubbleBand->GetReplanHandler()->GetNF1()));
   double a, b, c, d;
-  m_dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
+  m_base->dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
   AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
 			    Instance<UniqueManager<Camera> >()));
 }
 
 
-shared_ptr<Hull> Robox::
+shared_ptr<Hull> BaseRobox::
 CreateHull()
 {
   shared_ptr<Hull> hull(new Hull());
@@ -315,7 +307,7 @@ InitPose(double x,
 	 double y,
 	 double theta)
 {
-  m_odometry->Init(Pose(x, y, theta));
+  m_base->odometry->Init(Pose(x, y, theta));
 }
 
 
@@ -324,7 +316,7 @@ SetPose(double x,
 	double y,
 	double theta)
 {
-  m_odometry->Set(Pose(x, y, theta));
+  m_base->odometry->Set(Pose(x, y, theta));
 }
 
 
@@ -333,7 +325,7 @@ GetPose(double & x,
 	double & y,
 	double & theta)
 {
-  shared_ptr<const Pose> pose(m_odometry->Get());
+  shared_ptr<const Pose> pose(m_base->odometry->Get());
   x = pose->X();
   y = pose->Y();
   theta = pose->Theta();
@@ -343,7 +335,7 @@ GetPose(double & x,
 shared_ptr<const Goal> Robox::
 GetGoal()
 {
-  return shared_ptr<const Goal>(new Goal(m_motionPlanner->GetGoal()));
+  return shared_ptr<const Goal>(new Goal(m_base->motionPlanner->GetGoal()));
 }
 
 
@@ -351,77 +343,14 @@ bool Robox::
 StartThreads()
 {
   shared_ptr<RobotDescriptor> descriptor(GetDescriptor());
-  if(descriptor->GetOption("front_thread") != ""){
-    cerr << "front_thread \"" << descriptor->GetOption("front_thread")
-	 << "\"\n";
-    istringstream is(descriptor->GetOption("front_thread"));
-    unsigned int useconds;
-    if( ! (is >> useconds))
-      return false;
-    shared_ptr<ScannerThread> thread(new ScannerThread("front"));
-    if( ! m_front->SetThread(thread))
-      return false;
-    if( ! thread->Start(useconds))
-      return false;
-    cerr << "started front_thread: " << useconds << "us\n";
-  }
-  if(descriptor->GetOption("rear_thread") != ""){
-    cerr << "rear_thread \"" << descriptor->GetOption("rear_thread")
-	 << "\"\n";
-    istringstream is(descriptor->GetOption("rear_thread"));
-    unsigned int useconds;
-    if( ! (is >> useconds))
-      return false;
-    shared_ptr<ScannerThread> thread(new ScannerThread("rear"));
-    if( ! m_rear->SetThread(thread))
-      return false;
-    if( ! thread->Start(useconds))
-      return false;
-    cerr << "started rear_thread: " << useconds << "us\n";
-  }
-  if(descriptor->GetOption("mc_thread") != ""){
-    cerr << "mc_thread \"" << descriptor->GetOption("mc_thread")
-	 << "\"\n";
-    istringstream is(descriptor->GetOption("mc_thread"));
-    unsigned int useconds;
-    if( ! (is >> useconds))
-      return false;
-    shared_ptr<MotionControllerThread>
-      thread(new MotionControllerThread("mc"));
-    if( ! m_motionController->SetThread(thread))
-      return false;
-    if( ! thread->Start(useconds))
-      return false;
-    cerr << "started mc_thread: " << useconds << "us\n";
-  }
-  if(descriptor->GetOption("odo_thread") != ""){
-    cerr << "odo_thread \"" << descriptor->GetOption("odo_thread")
-	 << "\"\n";
-    istringstream is(descriptor->GetOption("odo_thread"));
-    unsigned int useconds;
-    if( ! (is >> useconds))
-      return false;
-    shared_ptr<OdometryThread> thread(new OdometryThread("odo"));
-    if( ! m_odometry->SetThread(thread))
-      return false;
-    if( ! thread->Start(useconds))
-      return false;
-    cerr << "started odo_thread: " << useconds << "us\n";
-  }
-  if(descriptor->GetOption("bband_thread") != ""){
-    cerr << "bband_thread \"" << descriptor->GetOption("bband_thread")
-	 << "\"\n";
-    istringstream is(descriptor->GetOption("bband_thread"));
-    unsigned int useconds;
-    if( ! (is >> useconds))
-      return false;
-    shared_ptr<BubbleBandThread> thread(new BubbleBandThread("bband"));
-    if( ! m_bubbleBand->SetThread(thread))
-      return false;
-    if( ! thread->Start(useconds))
-      return false;
-    cerr << "started bband_thread: " << useconds << "us\n";
-  }
+  if ((descriptor->GetOption("front_thread") != "")
+      || (descriptor->GetOption("rear_thread") != "")
+      || (descriptor->GetOption("mc_thread") != "")
+      || (descriptor->GetOption("odo_thread") != "")
+      || (descriptor->GetOption("bband_thread") != ""))
+    cerr << "Robox::StartThreads(): threading was never really working, so it was kicked out.\n"
+	 << "  the options front_thread, rear_thread, mc_thread, odo_thread, and bband_thread\n"
+	 << "  are simply being ignored. Have  anice day.\n";
   return true;  
 }
 
@@ -433,24 +362,23 @@ GoalReached()
     m_ngkl->next_goal = false;
     return true;
   }
-  return m_motionPlanner->GoalReached();
+  return m_base->motionPlanner->GoalReached();
 }
 
 
 void Robox::
 SetGoal(double timestep, const Goal & goal)
 {
-  m_motionPlanner->SetGoal(timestep, goal);
+  m_base->motionPlanner->SetGoal(timestep, goal);
 }
 
 
 bool Robox::
 PrepareAction(double timestep)
 {
-  m_front->Update();
-  m_rear->Update();
-  m_motionPlanner->Update(timestep);
-  m_motionController->Update(timestep);
-  m_odometry->Update();
+  m_base->mscan->UpdateAll();
+  m_base->motionPlanner->Update(timestep);
+  m_base->motionController->Update(timestep);
+  m_base->odometry->Update();
   return true;
 }

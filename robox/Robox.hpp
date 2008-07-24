@@ -37,6 +37,7 @@ namespace sfl {
   class Odometry;
   class Scanner;
   class Multiscanner;
+  class HAL;
 }
 
 
@@ -49,6 +50,27 @@ namespace expo {
 namespace local {
   class NGKeyListener;
 }
+
+
+class BaseRobox
+{
+public:
+  BaseRobox(struct expoparams const & params,
+	    boost::shared_ptr<sfl::HAL> hal,
+	    boost::shared_ptr<sfl::Multiscanner> mscan);
+  
+  boost::shared_ptr<sfl::Hull> hull;
+  boost::shared_ptr<sfl::RobotModel> robotModel;
+  boost::shared_ptr<expo::MotionController> motionController;
+  boost::shared_ptr<sfl::DynamicWindow> dynamicWindow;
+  boost::shared_ptr<sfl::Odometry> odometry;
+  boost::shared_ptr<sfl::BubbleBand> bubbleBand;
+  boost::shared_ptr<sfl::Multiscanner> mscan;
+  boost::shared_ptr<expo::MotionPlanner> motionPlanner;
+
+private:  
+  static boost::shared_ptr<sfl::Hull> CreateHull();    
+};
 
 
 class Robox
@@ -74,20 +96,9 @@ public:
   virtual void GetPose(double & x, double & y, double & theta);
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
-  static boost::shared_ptr<sfl::Hull> CreateHull();  
-  
 protected:
-  boost::shared_ptr<sfl::Scanner> m_front;
-  boost::shared_ptr<sfl::Scanner> m_rear;
+  boost::shared_ptr<BaseRobox> m_base;
   boost::shared_ptr<npm::DiffDrive> m_drive;
-  boost::shared_ptr<sfl::RobotModel> m_robotModel;
-  boost::shared_ptr<expo::MotionController> m_motionController;
-  boost::shared_ptr<sfl::DynamicWindow> m_dynamicWindow;
-  boost::shared_ptr<sfl::Odometry> m_odometry;
-  boost::shared_ptr<sfl::BubbleBand> m_bubbleBand;
-  boost::shared_ptr<sfl::Multiscanner> m_multiscanner;
-  boost::shared_ptr<expo::MotionPlanner> m_motionPlanner;
-  boost::shared_ptr<sfl::Hull> m_hull;
   boost::shared_ptr<local::NGKeyListener> m_ngkl;
   
   void CreateGfxStuff(const std::string & name);

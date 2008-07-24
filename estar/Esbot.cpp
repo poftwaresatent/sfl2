@@ -184,7 +184,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   m_motionController.reset(new MotionController(m_robotModel, GetHAL(),
 						RWlock::Create("motor")));
   m_odometry.reset(new Odometry(GetHAL(), RWlock::Create("odometry")));
-  m_multiscanner.reset(new Multiscanner(m_odometry));
+  m_multiscanner.reset(new Multiscanner(GetHAL()));
   m_dynamicWindow.reset(new LegacyDynamicWindow(params.dwa_dimension,
 					  params.dwa_grid_width,
 					  params.dwa_grid_height,

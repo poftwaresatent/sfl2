@@ -379,7 +379,7 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	bool estar_grow_grid(false);
 	string_to(descriptor->GetOption("estar_grow_grid"), estar_grow_grid);
 	
-	m_mscan.reset(new Multiscanner(m_odo));
+	m_mscan.reset(new Multiscanner(GetHAL()));
 	InitScanners(m_mscan, params);
 	
 	double robot_radius;					// XXX arghlgmpf!!!!
