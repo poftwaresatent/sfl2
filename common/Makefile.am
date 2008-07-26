@@ -16,7 +16,7 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                       Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
                       DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp \
                       TraversabilityDrawing.cpp BicycleDriveDrawing.cpp \
-                      Random.cpp MapperUpdateDrawing.cpp MapperRefDrawing.cpp \
+                      MapperUpdateDrawing.cpp MapperRefDrawing.cpp \
                       NoiseModel.cpp
 
 include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
@@ -27,7 +27,7 @@ include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
                       Lidar.hpp Manageable.hpp Manager.hpp \
                       MapperRefDrawing.hpp MapperUpdateDrawing.hpp \
                       NoiseModel.hpp Object.hpp OdometryDrawing.hpp \
-                      Random.hpp RobotClient.hpp RobotDescriptor.hpp \
+                      RobotClient.hpp RobotDescriptor.hpp \
                       RobotDrawing.hpp RobotServer.hpp \
                       RobotZoomCamera.hpp ScannerDrawing.hpp \
                       Sensor.hpp Sharp.hpp SharpDrawing.hpp \

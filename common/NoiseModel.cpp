@@ -23,8 +23,10 @@
  */
 
 #include "NoiseModel.hpp"
-#include "Random.hpp"
+#include <sfl/util/Random.hpp>
+#include <err.h>
 
+using namespace sfl;
 
 namespace npm {
   
@@ -44,10 +46,15 @@ namespace npm {
   operator () (double value)
     const
   {
-    if((min_factor > 0) && (max_factor > 0) && (min_factor < max_factor))
-      value *= Random::Uniform(min_factor, max_factor);
-    if(min_offset < max_offset)
-      value += Random::Uniform(min_offset, max_offset);
+		try {
+			if((min_factor > 0) && (max_factor > 0) && (min_factor < max_factor))
+				value *= Random::Uniform(min_factor, max_factor);
+			if(min_offset < max_offset)
+				value += Random::Uniform(min_offset, max_offset);
+		}
+		catch (std::runtime_error ee) {
+			errx(EXIT_FAILURE, "exception in NoiseModel(): %s", ee.what());
+		}
     return value;
   }
 

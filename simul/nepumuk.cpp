@@ -179,7 +179,7 @@ int main(int argc, char ** argv)
     }
   }
   else{
-    init_glut(argc, argv, 700, 500);
+    init_glut(argc, argv, 640, 480);
     glutMainLoop();
   }
 }

@@ -25,7 +25,6 @@
 #include "HAL.hpp"
 #include "RobotServer.hpp"
 #include "Lidar.hpp"
-#include "Random.hpp"
 #include "pdebug.hpp"
 #include "NoiseModel.hpp"
 #include <sfl/util/Frame.hpp>

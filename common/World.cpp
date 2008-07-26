@@ -28,13 +28,14 @@
 #include "WorldDrawing.hpp"
 #include "WorldCamera.hpp"
 #include "BBox.hpp"
-#include "Random.hpp"
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Line.hpp>
+#include <sfl/util/Random.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <err.h>
 
 
 #ifdef NPM_DEBUG
@@ -476,70 +477,76 @@ namespace npm {
   shared_ptr<World> World::
   Parse(istream & is, ostream * os)
   {
-    string name("");
-    vector<Line> line;
-    string textline;
-    double probability(-1);
-    while(getline(is, textline)){
-      istringstream tls(textline);
-      if(textline[0] == '#')
-	continue;
-      string token;
-      if( ! (tls >> token))
-	continue;
-      if(token == "name"){
-	tls >> name;
-	if( ! tls){
-	  if(os) *os << "ERROR: could not parse name from \""
-		     << tls.str() << "\"\n";
-	  return shared_ptr<World>();
+    shared_ptr<World> world;
+    try {
+      string name("");
+      vector<Line> line;
+      string textline;
+      double probability(-1);
+      while(getline(is, textline)){
+	istringstream tls(textline);
+	if(textline[0] == '#')
+	  continue;
+	string token;
+	if( ! (tls >> token))
+	  continue;
+	if(token == "name"){
+	  tls >> name;
+	  if( ! tls){
+	    if(os) *os << "ERROR: could not parse name from \""
+		       << tls.str() << "\"\n";
+	    return world;
+	  }
+	  PVDEBUG("name: %s\n", name.c_str());
 	}
-	PVDEBUG("name: %s\n", name.c_str());
-      }
-      else if(token == "line"){
-	double x0, y0, x1, y1;
-	tls >> x0 >> y0 >> x1 >> y1;
-	if( ! tls){
-	  if(os) *os << "ERROR: could not parse line from \""
-		     << tls.str() << "\"\n";
-	  return shared_ptr<World>();
+	else if(token == "line"){
+	  double x0, y0, x1, y1;
+	  tls >> x0 >> y0 >> x1 >> y1;
+	  if( ! tls){
+	    if(os) *os << "ERROR: could not parse line from \""
+		       << tls.str() << "\"\n";
+	    return world;
+	  }
+	  line.push_back(Line(x0, y0, x1, y1));
+	  PVDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
 	}
-	line.push_back(Line(x0, y0, x1, y1));
-	PVDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
-      }
-      else if(token == "probability"){
-	tls >> probability;
-	if( ! tls){
-	  if(os) *os << "ERROR: could not parse probability from \""
-		     << tls.str() << "\"\n";
-	  return shared_ptr<World>();
+	else if(token == "probability"){
+	  tls >> probability;
+	  if( ! tls){
+	    if(os) *os << "ERROR: could not parse probability from \""
+		       << tls.str() << "\"\n";
+	    return world;
+	  }
+	  PVDEBUG("probability %g\n", probability);
 	}
-	PVDEBUG("probability %g\n", probability);
+	else{
+	  if(os) *os << "ERROR: could not parse \""
+		     << tls.str() << "\"\n";
+	  return world;
+	}
       }
-      else{
-	if(os) *os << "ERROR: could not parse \""
-		   << tls.str() << "\"\n";
-	return shared_ptr<World>();
+      if(name.empty()){
+	if(os) *os << "ERROR: no name specified\n";
+	return world;
       }
-    }
-    if(name.empty()){
-      if(os) *os << "ERROR: no name specified\n";
-      return shared_ptr<World>();
-    }
-    if(line.empty()){
-      if(os) *os << "ERROR: no lines specified\n";
-      return shared_ptr<World>();
-    }
-    shared_ptr<World> world(new World(name));
-    if(probability < 0)
-      for(size_t il(0); il < line.size(); ++il)
-	world->AddLine(line[il]);
-    else
-      for(size_t il(0); il < line.size(); ++il)
-	if(Random::Uniform(probability))
+      if(line.empty()){
+	if(os) *os << "ERROR: no lines specified\n";
+	return world;
+      }
+      world.reset(new World(name));
+      if(probability < 0)
+	for(size_t il(0); il < line.size(); ++il)
 	  world->AddLine(line[il]);
-    PVDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
-	    world->m_bbox->X1(), world->m_bbox->Y1());
+      else
+	for(size_t il(0); il < line.size(); ++il)
+	  if(Random::Uniform(probability))
+	    world->AddLine(line[il]);
+      PVDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
+	      world->m_bbox->X1(), world->m_bbox->Y1());
+    }
+    catch (runtime_error ee) {
+      errx(EXIT_FAILURE, "exception in World::Parse(): %s", ee.what());
+    }
     return world;
   }
   
