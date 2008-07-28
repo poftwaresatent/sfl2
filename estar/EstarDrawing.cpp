@@ -113,7 +113,7 @@ Draw()
     gfx::draw_grid_queue(*facade);
     break;
   case UPWIND:
-    gfx::draw_grid_upwind(*facade, 1, 0, 0, 2);
+    gfx::draw_grid_upwind(*facade, 1, 0, 0, 2, true);
     break;
   case OBST:
     gfx::draw_grid_obstacles(*facade, 1, 0.5, 0.5);
