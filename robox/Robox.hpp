@@ -29,48 +29,14 @@
 #include <npm/common/RobotClient.hpp>
 
 
-namespace sfl {
-  class DynamicWindow;
-  class RobotModel;
-  class Hull;
-  class BubbleBand;
-  class Odometry;
-  class Scanner;
-  class Multiscanner;
-  class HAL;
-}
-
-
 namespace expo {
-  class MotionPlanner;
-  class MotionController;
+  class Robox;
 }
 
 
 namespace local {
   class NGKeyListener;
 }
-
-
-class BaseRobox
-{
-public:
-  BaseRobox(struct expo_parameters const & params,
-	    boost::shared_ptr<sfl::HAL> hal,
-	    boost::shared_ptr<sfl::Multiscanner> mscan);
-  
-  boost::shared_ptr<sfl::Hull> hull;
-  boost::shared_ptr<sfl::RobotModel> robotModel;
-  boost::shared_ptr<expo::MotionController> motionController;
-  boost::shared_ptr<sfl::DynamicWindow> dynamicWindow;
-  boost::shared_ptr<sfl::Odometry> odometry;
-  boost::shared_ptr<sfl::BubbleBand> bubbleBand;
-  boost::shared_ptr<sfl::Multiscanner> mscan;
-  boost::shared_ptr<expo::MotionPlanner> motionPlanner;
-
-private:  
-  static boost::shared_ptr<sfl::Hull> CreateHull();    
-};
 
 
 class Robox
@@ -97,7 +63,7 @@ public:
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
 protected:
-  boost::shared_ptr<BaseRobox> m_base;
+  boost::shared_ptr<expo::Robox> m_base;
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<local::NGKeyListener> m_ngkl;
   

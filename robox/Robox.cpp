@@ -33,48 +33,42 @@
 #include "GridLayerCamera.hpp"
 #include "GridLayerDrawing.hpp"
 #include "../common/World.hpp"
-#include "../common/Globals.hpp"
+// #include "../common/Globals.hpp"
 #include "../common/OdometryDrawing.hpp"
 #include "../common/StillCamera.hpp"
 #include "../common/HAL.hpp"
-#include "../common/DiffDrive.hpp"
+// #include "../common/DiffDrive.hpp"
 #include "../common/RobotDescriptor.hpp"
 #include "../common/Lidar.hpp"
+#include "../common/pdebug.hpp"
 #include "../common/Manager.hpp"
-#include <sfl/util/strutil.hpp>
-#include <sfl/util/Pthread.hpp>
-#include <sfl/util/pdebug.hpp>
+// #include <sfl/util/strutil.hpp>
+// #include <sfl/util/Pthread.hpp>
+// #include <sfl/util/pdebug.hpp>
 #include <sfl/api/Odometry.hpp>
-#include <sfl/api/Scanner.hpp>
+// #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
-#include <sfl/api/Pose.hpp>
+// #include <sfl/api/Pose.hpp>
 #include <sfl/api/RobotModel.hpp>
-#include <sfl/api/Goal.hpp>
+// #include <sfl/api/Goal.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/dwa/HeadingObjective.hpp>
-#include <sfl/bband/BubbleBand.hpp>
+// #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/expo_parameters.h>
 #include <sfl/expo/MotionPlanner.hpp>
-#include <sfl/expo/MotionPlannerState.hpp>
+// #include <sfl/expo/MotionPlannerState.hpp>
 #include <sfl/expo/MotionController.hpp>
-#include <iostream>
-#include <sstream>
-
-
-#define PDEBUG PDEBUG_OFF
+#include <sfl/expo/Robox.hpp>
+// #include <iostream>
+// #include <sstream>
 
 
 using namespace npm;
 using namespace sfl;
 using namespace boost;
 using namespace std;
-
-
-static const double LIDAROFFSET = 0.15;
-static const double WHEELBASE = 0.521;
-static const double WHEELRADIUS = 0.088;
 
 
 namespace local {
@@ -116,61 +110,6 @@ namespace local {
 }
 
 
-BaseRobox::
-BaseRobox(expo_parameters const & params,
-	  boost::shared_ptr<sfl::HAL> hal,
-	  boost::shared_ptr<sfl::Multiscanner> _mscan)
-  : hull(CreateHull()),
-    mscan(_mscan)
-{
-  RobotModel::Parameters const
-    modelParms(params.model_security_distance,
-	       params.model_wheelbase,
-	       params.model_wheelradius,
-	       params.model_qd_max,
-	       params.model_qdd_max,
-	       params.model_sd_max,
-	       params.model_thetad_max,
-	       params.model_sdd_max,
-	       params.model_thetadd_max);
-  robotModel.reset(new RobotModel(modelParms, hull));
-  motionController.
-    reset(new expo::MotionController(robotModel, hal,
-				     RWlock::Create("motor")));
-  odometry.reset(new Odometry(hal, RWlock::Create("odometry")));
-  bubbleBand.
-    reset(new BubbleBand(*robotModel, *odometry, *mscan,
-			 BubbleList::Parameters(params.bband_shortpath,
-						params.bband_longpath,
-						params.bband_maxignoredistance),
-			 RWlock::Create("bband")));
-  
-  dynamicWindow.reset(new DynamicWindow(params.dwa_dimension,
-					params.dwa_grid_width,
-					params.dwa_grid_height,
-					params.dwa_grid_resolution,
-					robotModel,
-					params.dwa_alpha_distance,
-					params.dwa_alpha_heading,
-					params.dwa_alpha_speed,
-					true));  
-  motionPlanner.reset(new expo::MotionPlanner(motionController,
-					      dynamicWindow,
-					      mscan,
-					      robotModel,
-					      bubbleBand,
-					      odometry));
-  if ((params.mp_dtheta_starthoming > 0) && (params.mp_dtheta_startaiming > 0)) {
-    if ( ! motionPlanner->SetAimingThresholds(params.mp_dtheta_startaiming,
-					      params.mp_dtheta_starthoming)) {
-      cerr << "ERROR: motionPlanner->SetAimingThresholds("
-	   << params.mp_dtheta_startaiming << ", " << params.mp_dtheta_starthoming << ") failed\n";
-      exit(EXIT_FAILURE);
-    }
-  }
-}
-
-
 Robox::
 Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, 2, true),
@@ -202,9 +141,9 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
-  m_base.reset(new BaseRobox(params, GetHAL(), mscan));
+  m_base.reset(new expo::Robox(params, GetHAL(), mscan));
   
-  for(HullIterator ih(*m_base->hull); ih.IsValid(); ih.Increment()){
+  for (HullIterator ih(*m_base->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
     PDEBUG("line %05.2f %05.2f %05.2f %05.2f\n",
 	   ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1());
@@ -280,28 +219,6 @@ CreateGfxStuff(const string & name)
 }
 
 
-shared_ptr<Hull> BaseRobox::
-CreateHull()
-{
-  shared_ptr<Hull> hull(new Hull());
-  static const double octoSmall = 0.178;
-  static const double octoBig = 0.430;
-  
-  Polygon outline;		// temporary
-  outline.AddPoint( octoBig  , octoSmall);
-  outline.AddPoint( octoSmall, octoBig);
-  outline.AddPoint(-octoSmall, octoBig);
-  outline.AddPoint(-octoBig  , octoSmall);
-  outline.AddPoint(-octoBig  ,-octoSmall);
-  outline.AddPoint(-octoSmall,-octoBig);
-  outline.AddPoint( octoSmall,-octoBig);
-  outline.AddPoint( octoBig  ,-octoSmall);
-  hull->AddPolygon(outline);
-  
-  return hull;
-}
-
-
 void Robox::
 InitPose(double x,
 	 double y,
@@ -335,7 +252,7 @@ GetPose(double & x,
 shared_ptr<const Goal> Robox::
 GetGoal()
 {
-  return shared_ptr<const Goal>(new Goal(m_base->motionPlanner->GetGoal()));
+  return shared_ptr<const Goal>(new Goal(m_base->GetGoal()));
 }
 
 
@@ -369,16 +286,20 @@ GoalReached()
 void Robox::
 SetGoal(double timestep, const Goal & goal)
 {
-  m_base->motionPlanner->SetGoal(timestep, goal);
+  m_base->SetGoal(timestep, goal);
 }
 
 
 bool Robox::
 PrepareAction(double timestep)
 {
-  m_base->mscan->UpdateAll();
-  m_base->motionPlanner->Update(timestep);
-  m_base->motionController->Update(timestep);
-  m_base->odometry->Update();
+  try {
+    m_base->Update(timestep);
+  }
+  catch (runtime_error ee) {
+    cerr << "Robox::PrepareAction(): m_base->Update() failed with exception\n"
+	 << ee.what() << "\n";
+    return false;
+  }
   return true;
 }
