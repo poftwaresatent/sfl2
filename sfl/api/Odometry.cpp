@@ -126,10 +126,13 @@ namespace sfl {
   shared_ptr<const Pose> Odometry::
   Get() const
   {
+    shared_ptr<Pose> pose;
     RWlock::rdsentry sentry(m_rwlock);
     if(m_history.empty())
-      return shared_ptr<const Pose>(new Pose());
-    return m_history.rbegin()->second;
+      pose.reset(new Pose());
+    else
+      pose = m_history.rbegin()->second;
+    return pose;
   }
   
  

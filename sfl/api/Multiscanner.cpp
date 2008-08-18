@@ -30,6 +30,7 @@
 #include "../util/numeric.hpp"
 #include "../util/pdebug.hpp"
 #include <cmath>
+#include <iostream>
 
 
 using namespace boost;
@@ -146,12 +147,18 @@ namespace sfl {
 
 
   bool Multiscanner::
-  UpdateAll()
+  UpdateAll(std::ostream * erros )
   {
     bool ok(true);
-    for(size_t ii(0); ii < m_scanner.size(); ++ii)
-      if(0 > m_scanner[ii]->Update())
+    for (size_t ii(0); ii < m_scanner.size(); ++ii) {
+      int const status(m_scanner[ii]->Update());
+      if (0 > status) {
 	ok = false;
+	if (erros)
+	  *erros << "sfl::Multiscanner::UpdateAll(): update of scanner " << ii
+		 << " failed with status " << status << "\n";
+      }
+    }
     return ok;
   }
 

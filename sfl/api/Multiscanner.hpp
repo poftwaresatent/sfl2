@@ -104,7 +104,7 @@ namespace sfl {
     /** Calls Scanner::Update() on all registered instances and
 	returns true if all of these calls succeeded. Does NOT take
 	the shortcut of forfeiting updates after a failure. */
-    bool UpdateAll();
+    bool UpdateAll(std::ostream * erros = 0);
     
   protected:
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
