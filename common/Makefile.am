@@ -3,6 +3,14 @@ CFLAGS=   @NPM_CFLAGS@
 CXXFLAGS= @NPM_CXXFLAGS@
 LDFLAGS=  @NPM_LDFLAGS@
 
+if NPM_HAVE_ESTAR
+  ESTAR_SRC= MapperUpdateDrawing.cpp MapperRefDrawing.cpp
+  ESTAR_HDR= MapperUpdateDrawing.hpp MapperRefDrawing.hpp
+else
+  ESTAR_SRC= 
+  ESTAR_HDR= 
+endif
+
 noinst_LTLIBRARIES=   libcommon.la
 libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                       GoalInstanceDrawing.cpp OdometryDrawing.cpp \
@@ -16,8 +24,8 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
                       Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
                       DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp \
                       TraversabilityDrawing.cpp BicycleDriveDrawing.cpp \
-                      MapperUpdateDrawing.cpp MapperRefDrawing.cpp \
-                      NoiseModel.cpp
+                      NoiseModel.cpp \
+                      $(ESTAR_SRC)
 
 include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
                       Camera.hpp CheatSheet.hpp DiffDrive.hpp \
@@ -25,7 +33,6 @@ include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
                       Drive.hpp Globals.hpp GoalInstanceDrawing.hpp \
                       HAL.hpp HoloDrive.hpp HoloDriveDrawing.hpp \
                       Lidar.hpp Manageable.hpp Manager.hpp \
-                      MapperRefDrawing.hpp MapperUpdateDrawing.hpp \
                       NoiseModel.hpp Object.hpp OdometryDrawing.hpp \
                       RobotClient.hpp RobotDescriptor.hpp \
                       RobotDrawing.hpp RobotServer.hpp \
@@ -35,6 +42,7 @@ include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
                       TrajectoryDrawing.hpp TraversabilityDrawing.hpp \
                       View.hpp World.hpp WorldCamera.hpp \
                       WorldDrawing.hpp pdebug.hpp wrap_gl.hpp \
-                      wrap_glu.hpp wrap_glut.hpp
+                      wrap_glu.hpp wrap_glut.hpp \
+                      $(ESTAR_HDR)
 
 includedir=           @includedir@/npm/common
