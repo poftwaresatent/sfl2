@@ -242,6 +242,33 @@ AC_ARG_WITH(genom,
   ],[
     AM_CONDITIONAL([NPM_HAVE_GENOM], [false])])
 
+NPM_ROS_CPPFLAGS=""
+NPM_ROS_LDFLAGS=""
+AC_ARG_WITH(ros,
+  AC_HELP_STRING([--with-ros=PATH], [enable ROS]),
+  [ if test "x$withval" != "x" ; then
+      NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS -I${withval}/core/roscpp/include -I${withval}/util/rosthread/include -I${withval}/3rdparty/xmlrpc++/src"
+      NPM_ROS_LDFLAGS="-L${withval}/core/roscpp/lib -L${withval}/util/rosthread/lib -L${withval}/3rdparty/xmlrpc++/lib $NPM_LDFLAGS"
+    else
+      NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS"
+    fi
+    AM_CONDITIONAL([NPM_HAVE_ROS], [true])
+    oldCPPFLAGS="$CPPFLAGS"
+    if test "$prefix" = "NONE"; then
+      CPPFLAGS="$NPM_CPPFLAGS $NPM_ROS_CPPFLAGS"
+    else
+      CPPFLAGS="$NPM_CPPFLAGS $NPM_ROS_CPPFLAGS -I$prefix/include"
+    fi
+    AC_CHECK_HEADER([rosthread/mutex.h], [], [
+      AC_MSG_ERROR([cannot compile rosthread/mutex.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([XmlRpc.h], [], [
+      AC_MSG_ERROR([cannot compile XmlRpc.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([ros/node.h], [], [
+      AC_MSG_ERROR([cannot compile ros/node.h (CPPFLAGS=$CPPFLAGS)])], [])
+    CPPFLAGS="$oldCPPFLAGS"
+  ],[
+    AM_CONDITIONAL([NPM_HAVE_ROS], [false])])
+
 AC_ARG_WITH(png,
   AC_HELP_STRING([--with-png=PATH], [specify libpng install dir]),
   [ if test "x$withval" != "x" ; then
@@ -281,10 +308,12 @@ AC_SUBST(NPM_LDFLAGS)
 AC_SUBST(NPM_GLUTLIBS)
 AC_SUBST(NPM_XCF_CPPFLAGS)
 AC_SUBST(NPM_XCF_LDFLAGS)
+AC_SUBST(NPM_ROS_CPPFLAGS)
+AC_SUBST(NPM_ROS_LDFLAGS)
 AC_SUBST(NPM_ESTAR_CPPFLAGS)
 AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                laas/Makefile biron/Makefile estar/Makefile asl/Makefile
+                ros/Makefile laas/Makefile biron/Makefile estar/Makefile asl/Makefile
                 simul/Makefile qt/Makefile qt/QtNepumuk.pro])
 AC_OUTPUT

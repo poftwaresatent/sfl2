@@ -1,4 +1,4 @@
-CPPFLAGS= @NPM_CPPFLAGS@ @NPM_XCF_CPPFLAGS@ @NPM_ESTAR_CPPFLAGS@
+CPPFLAGS= @NPM_CPPFLAGS@ @NPM_XCF_CPPFLAGS@ @NPM_ESTAR_CPPFLAGS@ @NPM_ROS_CPPFLAGS@
 CFLAGS=   @NPM_CFLAGS@
 CXXFLAGS= @NPM_CXXFLAGS@
 LDFLAGS=  @NPM_LDFLAGS@ @NPM_GLUTLIBS@
@@ -149,4 +149,7 @@ dist_bin_SCRIPTS= birondemo.sh \
                   borox0.sh \
                     layout.borox0 \
                     robots.borox0 \
-                    travmap.borox0
+                    travmap.borox0 \
+                  ros0.sh \
+                    layout.ros0 \
+                    robots.ros0

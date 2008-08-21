@@ -8,6 +8,11 @@ if NPM_HAVE_XCF
   BIRON_LIBADD= biron/libbiron.la
 endif
 
+if NPM_HAVE_ROS
+  ROS_DIR=    ros
+  ROS_LIBADD= ros/libros.la
+endif
+
 if NPM_HAVE_ESTAR
   ESTAR_DIR=    estar
   ESTAR_LIBADD= estar/libestar.la
@@ -30,7 +35,7 @@ else
 endif
 
 SUBDIRS= common robox visitor \
-         $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
+         $(ROS_DIR) $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
          . simul \
          $(QT_DIR)
 
@@ -39,6 +44,7 @@ libnepumuk_la_SOURCES=
 libnepumuk_la_LIBADD=  common/libcommon.la \
                        robox/librobox.la \
                        visitor/libvisitor.la \
+                       $(ROS_LIBADD) \
                        $(LAAS_LIBADD) \
                        $(BIRON_LIBADD) \
                        $(ESTAR_LIBADD) \
