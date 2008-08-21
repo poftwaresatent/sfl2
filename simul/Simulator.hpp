@@ -28,7 +28,6 @@
 
 #include <npm/common/Manager.hpp>
 #include <npm/common/View.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
@@ -39,48 +38,30 @@ namespace npm {
 
   class World;
   class RobotClient;
-
-
-  class Simulator
+  class Simulator;
+  
+  
+  class AppWindow
   {
   public:
-    Simulator(boost::shared_ptr<npm::World> world, double timestep,
-	      boost::shared_ptr<sfl::Mutex> mutex);
-    ~Simulator();
-  
-    void InitRobots(const std::string & filename);
-    void InitLayout(const std::string & filename, bool fatal_warnings);
-    void Init();
-    bool Idle();
+    std::string const name;
+    std::string const layout_filename;
+    
+    AppWindow(std::string const & name, std::string const & layout_filename,
+	      int width, int height, Simulator * simul);
+    
+    void InitLayout();
     void Reshape(int width, int height);
     void Draw();
     void Keyboard(unsigned char key, int x, int y);
-  
-    void SetContinuous(bool printscreen = false);
-  
-  private:
-  
-    struct robot_s {
-      robot_s(boost::shared_ptr<npm::RobotClient> _robot)
-	: robot(_robot), runnable(true) {}
-      boost::shared_ptr<npm::RobotClient> robot;
-      bool runnable;
-    };
-  
-    typedef std::vector<robot_s> robot_t;
-  
     void PrintScreen();
-    void UpdateAllSensors();
-    void UpdateRobots();
-  
-    boost::shared_ptr<npm::World> m_world;  
-    robot_t m_robot;
-    bool m_step;
-    bool m_continuous;
-    bool m_printscreen;
+    
+    void GetSize(int & width, int & height) { width = m_width; height = m_height; }
+    
+  private:
+    Simulator * m_simul;
+    
     int m_width, m_height;
-    double m_timestep;
-    boost::shared_ptr<sfl::Mutex> m_mutex;  
     
     typedef SubManager<View> layout_t;
     typedef boost::shared_ptr<layout_t> layout_ptr;
@@ -94,6 +75,52 @@ namespace npm {
     typedef std::vector<view_ptr> views_t;
     
     views_t m_views;
+  };
+  
+  
+  class Simulator
+  {
+  public:
+    std::string const robot_config_filename; // rfct
+    bool const fatal_warnings;	// rfct
+    
+    Simulator(boost::shared_ptr<World> world, double timestep,
+	      std::string const & robot_config_filename,
+	      std::string const & layout_filename,
+	      bool fatal_warnings);
+    ~Simulator();
+  
+    void InitRobots();
+    void Init();
+    bool Idle();
+  
+    void SetContinuous(bool printscreen = false);
+    
+    size_t GetNAppWindows() const { return m_appwin.size(); } // rfct?
+    AppWindow * GetAppWindow(size_t ii) { return m_appwin[ii].get(); } // rfct?
+    
+  private:
+    friend class AppWindow;	// rfct
+    std::vector<boost::shared_ptr<AppWindow> > m_appwin;
+    
+    struct robot_s {
+      robot_s(boost::shared_ptr<RobotClient> _robot)
+	: robot(_robot), runnable(true) {}
+      boost::shared_ptr<RobotClient> robot;
+      bool runnable;
+    };
+  
+    typedef std::vector<robot_s> robot_t;
+  
+    void UpdateAllSensors();
+    void UpdateRobots();
+  
+    boost::shared_ptr<World> m_world;  
+    robot_t m_robot;
+    bool m_step;
+    bool m_continuous;
+    bool m_printscreen;
+    double m_timestep;
   };
 
 }

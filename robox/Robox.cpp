@@ -33,36 +33,24 @@
 #include "GridLayerCamera.hpp"
 #include "GridLayerDrawing.hpp"
 #include "../common/World.hpp"
-// #include "../common/Globals.hpp"
 #include "../common/OdometryDrawing.hpp"
 #include "../common/StillCamera.hpp"
 #include "../common/HAL.hpp"
-// #include "../common/DiffDrive.hpp"
 #include "../common/RobotDescriptor.hpp"
 #include "../common/Lidar.hpp"
 #include "../common/pdebug.hpp"
 #include "../common/Manager.hpp"
-// #include <sfl/util/strutil.hpp>
-// #include <sfl/util/Pthread.hpp>
-// #include <sfl/util/pdebug.hpp>
 #include <sfl/api/Odometry.hpp>
-// #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
-// #include <sfl/api/Pose.hpp>
 #include <sfl/api/RobotModel.hpp>
-// #include <sfl/api/Goal.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/dwa/HeadingObjective.hpp>
-// #include <sfl/bband/BubbleBand.hpp>
 #include <sfl/expo/expo_parameters.h>
 #include <sfl/expo/MotionPlanner.hpp>
-// #include <sfl/expo/MotionPlannerState.hpp>
 #include <sfl/expo/MotionController.hpp>
 #include <sfl/expo/Robox.hpp>
-// #include <iostream>
-// #include <sstream>
 
 
 using namespace npm;

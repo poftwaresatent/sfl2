@@ -24,15 +24,14 @@
 
 #include "Simulator.hpp"
 #include "RobotFactory.hpp"
-#include <npm/common/World.hpp>
-#include <npm/common/RobotClient.hpp>
-#include <npm/common/RobotServer.hpp>
-#include <npm/common/Manager.hpp>
-#include <npm/common/SimpleImage.hpp>
-#include <npm/common/View.hpp>
-#include <npm/common/RobotDescriptor.hpp>
+#include "../common/World.hpp"
+#include "../common/RobotClient.hpp"
+#include "../common/RobotServer.hpp"
+#include "../common/Manager.hpp"
+#include "../common/SimpleImage.hpp"
+#include "../common/View.hpp"
+#include "../common/RobotDescriptor.hpp"
 #include <sfl/util/Frame.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -51,15 +50,33 @@ using namespace std;
 namespace npm {
 
 
+  AppWindow::
+  AppWindow(std::string const & _name, std::string const & _layout_filename,
+	    int width, int height, Simulator * simul)
+    : name(_name),
+      layout_filename(_layout_filename),
+      m_simul(simul),
+      m_width(width),
+      m_height(height)
+  {
+  }
+  
+  
   Simulator::
-  Simulator(shared_ptr<World> world, double timestep, shared_ptr<Mutex> mutex)
-    : m_world(world),
+  Simulator(shared_ptr<World> world, double timestep,
+	    std::string const & _robot_config_filename,
+	    std::string const & layout_filename,
+	    bool _fatal_warnings)
+    : robot_config_filename(_robot_config_filename),
+      fatal_warnings(_fatal_warnings),
+      m_world(world),
       m_step(false),
       m_continuous(false),
       m_printscreen(false),
-      m_timestep(timestep),
-      m_mutex(mutex)
+      m_timestep(timestep)
   {
+    m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow("nepumuk", layout_filename,
+							   640, 480, this)));
   }
 
 
@@ -70,11 +87,11 @@ namespace npm {
 
 
   void Simulator::
-  InitRobots(const string & filename)
+  InitRobots()
   {
     typedef shared_ptr<RobotDescriptor> rdesc_t;
     vector<rdesc_t> rdesc;
-    ifstream config(filename.c_str());
+    ifstream config(robot_config_filename.c_str());
     string token;
     while(config >> token){
       if(token[0] == '#'){
@@ -233,13 +250,22 @@ namespace npm {
       if(rd->HaveGoals())
 	m_robot[ir].robot->SetGoal(m_timestep, *rd->GetCurrentGoal());
     }
+    
+    // add an application window for all robots that request one
+    for (size_t ii(0); ii < m_robot.size(); ++ii) {
+      shared_ptr<RobotDescriptor> rdesc(m_robot[ii].robot->GetDescriptor());
+      string layout_file(rdesc->GetOption("standalone_window"));
+      if ( ! layout_file.empty())
+	m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow(rdesc->name, layout_file,
+							       640, 480, this)));
+    }
   }
 
 
-  void Simulator::
-  InitLayout(const string &filename, bool fatal_warnings)
+  void AppWindow::
+  InitLayout()
   {
-    ifstream config(filename.c_str());
+    ifstream config(layout_filename.c_str());
     string token;
     view_ptr view;
     ostringstream warnings;
@@ -352,7 +378,7 @@ namespace npm {
     }
   
     if( ! warnings.str().empty()){
-      if(fatal_warnings)
+      if(m_simul->fatal_warnings)
 	cerr << "ERROR in Simulator::InitLayout():\n";
       else
 	cerr << "WARNING in Simulator::InitLayout():\n";
@@ -363,7 +389,7 @@ namespace npm {
       cerr << "\n==================================================\n"
 	   << "DRAWINGS:\n\n";
       Instance<UniqueManager<Drawing> >()->PrintCatalog(cerr);
-      if(fatal_warnings)
+      if(m_simul->fatal_warnings)
 	exit(EXIT_FAILURE);
     }
     
@@ -373,6 +399,9 @@ namespace npm {
       exit(EXIT_FAILURE);
     }    
     m_active_layout = m_default_layout;
+    
+    // inform all views about our window size (in pixels)
+    Reshape(m_width, m_height);
   }
   
   
@@ -383,11 +412,14 @@ namespace npm {
   }
 
 
-  void Simulator::
+  void AppWindow::
   Reshape(int width,
 	  int height)
   {
-    Mutex::sentry sentry(m_mutex);
+    // Do NOT try to be smart and skip if width and height haven't
+    // changed, because we do call Reshape() with unchanged sizes when
+    // view get initialized.
+    
     m_width = width;
     m_height = height;
     
@@ -402,10 +434,9 @@ namespace npm {
   }
   
   
-  void Simulator::
+  void AppWindow::
   Draw()
   {
-    Mutex::sentry sentry(m_mutex);
     m_active_layout->Walk(View::DrawWalker());
   }
 
@@ -415,16 +446,15 @@ namespace npm {
   {
     PVDEBUG("Hello!\n");
     bool retval(false);
-    m_mutex->Lock();
     if(m_step || m_continuous){
       if(m_step)
 	m_step = false;
       UpdateRobots();
       retval = true;
     }
-    if(m_printscreen)
-      PrintScreen();
-    m_mutex->Unlock();
+   if(m_printscreen)
+     for (size_t ii(0); ii < m_appwin.size(); ++ii)
+       m_appwin[ii]->PrintScreen();
     return retval;
   }
 
@@ -442,8 +472,6 @@ namespace npm {
   {
     PVDEBUG("updating robots...\n");
   
-    Mutex::sentry sentry(m_mutex);
-
     UpdateAllSensors();
     for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir){
       ir->runnable = ir->robot->PrepareAction(m_timestep);
@@ -470,39 +498,31 @@ namespace npm {
   }
 
 
-  void Simulator::
+  void AppWindow::
   Keyboard(unsigned char key,
 	   int mousex,
 	   int mousey)
   {
-    m_world->DispatchKey(key);
+    m_simul->m_world->DispatchKey(key);
     switch(key){
     case ' ':
-      m_mutex->Lock();
-      m_step = true;
-      m_continuous = false;
-      m_printscreen = false;
-      m_mutex->Unlock();
+      m_simul->m_step = true;
+      m_simul->m_continuous = false;
+      m_simul->m_printscreen = false;
       break;
     case 'c':
-      m_mutex->Lock();
-      m_step = false;
-      m_continuous = true;
-      m_printscreen = false;
-      m_mutex->Unlock();
+      m_simul->m_step = false;
+      m_simul->m_continuous = true;
+      m_simul->m_printscreen = false;
       break;
     case 'p':
-      m_mutex->Lock();
-      if( ! m_printscreen)
+      if( ! m_simul->m_printscreen)
 	PrintScreen();
-      m_mutex->Unlock();
       break;
     case 'P':
-      m_mutex->Lock();
-      m_step = false;
-      m_continuous = true;
-      m_printscreen = true;
-      m_mutex->Unlock();
+      m_simul->m_step = false;
+      m_simul->m_continuous = true;
+      m_simul->m_printscreen = true;
       break;    
     case 'q':
       cout << "\nbye bye!\n";
@@ -523,20 +543,18 @@ namespace npm {
   void Simulator::
   SetContinuous(bool printscreen)
   {
-    m_mutex->Lock();
     m_step = false;
     m_continuous = true;
     m_printscreen = printscreen;
-    m_mutex->Unlock();
   }
 
 
-  void Simulator::
+  void AppWindow::
   PrintScreen()
   {
     static unsigned int count(0);
     ostringstream filename;
-    filename << "anim/pnf"
+    filename << "anim/" << name
 	     << setw(6) << setfill('0') << count++
 	     << ".png";
   

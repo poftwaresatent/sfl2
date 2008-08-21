@@ -12,7 +12,7 @@ else
 endif
 
 noinst_LTLIBRARIES=   libcommon.la
-libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
+libcommon_la_SOURCES= WorldCamera.cpp CheatSheet.cpp \
                       GoalInstanceDrawing.cpp OdometryDrawing.cpp \
                       BBox.cpp WorldDrawing.cpp Manageable.cpp Sharp.cpp \
                       TrajectoryDrawing.cpp HoloDriveDrawing.cpp Object.cpp \
@@ -30,7 +30,7 @@ libcommon_la_SOURCES= WorldCamera.cpp Globals.cpp CheatSheet.cpp \
 include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
                       Camera.hpp CheatSheet.hpp DiffDrive.hpp \
                       DiffDriveDrawing.hpp Drawer.hpp Drawing.hpp \
-                      Drive.hpp Globals.hpp GoalInstanceDrawing.hpp \
+                      Drive.hpp GoalInstanceDrawing.hpp \
                       HAL.hpp HoloDrive.hpp HoloDriveDrawing.hpp \
                       Lidar.hpp Manageable.hpp Manager.hpp \
                       NoiseModel.hpp Object.hpp OdometryDrawing.hpp \

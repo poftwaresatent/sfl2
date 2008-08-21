@@ -24,18 +24,15 @@
 
 #include "Simulator.hpp"
 #include "Interlock.hpp"
-#include <npm/common/Globals.hpp>
-#include <npm/common/World.hpp>
-#include <npm/common/wrap_glut.hpp>
-#include <npm/common/TraversabilityDrawing.hpp>
+#include "../common/World.hpp"
+#include "../common/wrap_glut.hpp"
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <signal.h>
-
-#ifdef OPENBSD
-# include <unistd.h>
-#endif // OPENBSD
+#include <err.h>
+#include <unistd.h>
 
 
 using namespace npm;
@@ -72,14 +69,16 @@ public:
 };
 
 
+typedef map<int, AppWindow*> appwin_handle_t;
+static appwin_handle_t appwin_handle;
+
 static Parameters params;
 static const unsigned int glut_timer_ms(50);
 static const unsigned int timestep_usec(100000);
-static int handle;
 static shared_ptr<Simulator> simulator;
 
 static void parse_options(int argc, char ** argv);
-static void init_glut(int argc, char** argv, int width, int height);
+static void init_glut(int argc, char ** argv);
 static void reshape(int width, int height);
 static void draw();
 static void keyboard(unsigned char key, int x, int y);
@@ -157,8 +156,11 @@ int main(int argc, char ** argv)
   }
   
   simulator.
-    reset(new Simulator(world, 0.000001 * timestep_usec, SimulatorMutex()));
-  simulator->InitRobots(params.robot_config_filename);
+    reset(new Simulator(world, 0.000001 * timestep_usec,
+			params.robot_config_filename,
+			params.layout_config_filename,
+			params.fatal_warnings));
+  simulator->InitRobots();
   if (params.dump) {
     cout << "==================================================\n"
 	 << "CAMERAS:\n";
@@ -168,7 +170,6 @@ int main(int argc, char ** argv)
     Instance<UniqueManager<Drawing> >()->PrintCatalog(cout);
     exit(EXIT_SUCCESS);
   }
-  simulator->InitLayout(params.layout_config_filename, params.fatal_warnings);
   simulator->Init();
   
   if(params.no_glut){
@@ -179,46 +180,67 @@ int main(int argc, char ** argv)
     }
   }
   else{
-    init_glut(argc, argv, 640, 480);
+    init_glut(argc, argv);
     glutMainLoop();
   }
 }
 
 
-void init_glut(int argc, char ** argv, int width, int height)
+void init_glut(int argc, char ** argv)
 {
-  simulator->Reshape(width, height);
-  
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-  glutInitWindowPosition(0, 0);
-  glutInitWindowSize(width, height);
-
-  handle = glutCreateWindow("nepumuk");
-  if(handle == 0){
-    cerr << "ERROR: glutCreateWindow() failed\n";
-    exit(EXIT_FAILURE);
+  
+  for (size_t ii(0); ii < simulator->GetNAppWindows(); ++ii) {
+    AppWindow * appwin(simulator->GetAppWindow(ii));
+    int width, height;
+    appwin->GetSize(width, height);
+    appwin->InitLayout();
+    
+    glutInitWindowPosition(10 * ii, 10 * ii);
+    glutInitWindowSize(width, height);
+    
+    int const handle(glutCreateWindow(appwin->name.c_str()));
+    if (0 == handle)
+      errx(EXIT_FAILURE, "init_glut(): glutCreateWindow(%s) failed for appwin %zu",
+	   appwin->name.c_str(), ii);
+    printf("appwin %zu: %s\n", ii, appwin->name.c_str());
+    appwin_handle.insert(make_pair(handle, appwin));
+    
+    // all windows get draw, reshape, and keyboard functions
+    glutDisplayFunc(draw);
+    glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    
+    // simulator tick (wallclock) is on the first window only
+    if (0 == ii)
+      glutTimerFunc(glut_timer_ms, timer, handle);
   }
   
-  glutDisplayFunc(draw);
-  glutReshapeFunc(reshape);
-  glutTimerFunc(glut_timer_ms, timer, handle);
-  glutKeyboardFunc(keyboard);
+  if (appwin_handle.empty())
+    errx(EXIT_FAILURE, "init_glut(): no application window");
 }
 
 
 void reshape(int width, int height)
 {
-  simulator->Reshape(width, height);
+  int const handle(glutGetWindow());
+  appwin_handle_t::iterator ih(appwin_handle.find(handle));
+  if (appwin_handle.end() == ih)
+    errx(EXIT_FAILURE, "reshape(): non-registered GLUT handle");
+  ih->second->Reshape(width, height);
 }
 
 
 void draw()
 {
-  glClear(GL_COLOR_BUFFER_BIT);
-  simulator->Draw();
-  glFlush();
-  glutSwapBuffers();
+  for (appwin_handle_t::iterator ih(appwin_handle.begin()); ih != appwin_handle.end(); ++ih) {
+    glutSetWindow(ih->first);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ih->second->Draw();
+    glFlush();
+    glutSwapBuffers();
+  }
 }
 
 
@@ -226,17 +248,23 @@ void keyboard(unsigned char key,
 	      int x,
 	      int y)
 {
-  simulator->Keyboard(key, x, y);
+  int const handle(glutGetWindow());
+  appwin_handle_t::iterator ih(appwin_handle.find(handle));
+  if (appwin_handle.end() == ih)
+    errx(EXIT_FAILURE, "keyboard(): non-registered GLUT handle");
+  ih->second->Keyboard(key, x, y);
   glutPostRedisplay();
 }
 
 
 void timer(int handle)
 {
-  if(simulator->Idle()){
-    glutSetWindow(handle);
-    glutPostRedisplay();
-  }
+  if (simulator->Idle())
+    for (appwin_handle_t::iterator ih(appwin_handle.begin()); ih != appwin_handle.end(); ++ih) {
+      glutSetWindow(ih->first);
+      glutPostRedisplay();
+    }
+  
   glutTimerFunc(glut_timer_ms, timer, handle);
 }
 
@@ -290,6 +318,7 @@ void parse_options(int argc, char ** argv)
 void cleanup()
 {
   simulator.reset();
+#warning "shouldn't GLUT resources be freed or so?"
 }
 
 
