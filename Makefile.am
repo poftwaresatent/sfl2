@@ -55,6 +55,9 @@ BUILDDIR=              @abs_top_builddir@
 
 BUILT_SOURCES=         incsym
 
+EXTRA_DIST=            bootstrap-buildsystem.sh \
+                       build-stage.sh
+
 incsym:
 	test -d $(BUILDDIR)/include || mkdir -p $(BUILDDIR)/include
 	test -L $(BUILDDIR)/include/npm || ln -s $(SRCDIR) $(BUILDDIR)/include/npm
