@@ -31,15 +31,13 @@
 #include "../common/SimpleImage.hpp"
 #include "../common/View.hpp"
 #include "../common/RobotDescriptor.hpp"
+#include "../common/pdebug.hpp"
 #include <sfl/util/Frame.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-
-#include <sfl/util/pdebug.hpp>
-#define PDEBUG PDEBUG_ERR
-#define PVDEBUG PDEBUG_OFF
+#include <err.h>
 
 
 using namespace sfl;
@@ -226,38 +224,37 @@ namespace npm {
 	   << token << "\"\n";
       exit(EXIT_FAILURE);
     }
-  
-    // This is a bit ugly... but well, history is full of quirks: Set
-    // the goals of all applicable robots *after* creating all robots,
-    // because some code depends on the presence of all other robots
-    // inside SetGoal. Notably, estar/Esbot.cpp.
-    for(vector<rdesc_t>::iterator ir(rdesc.begin()); ir != rdesc.end(); ++ir){
-      shared_ptr<RobotClient>
-	rob(RobotFactory::Create((*ir), *m_world));
-      if( ! rob){
-	cerr << "ERROR in Simulator::InitRobots():\n"
-	     << "   unknown model \"" << (*ir)->model << "\"\n";
-	exit(EXIT_FAILURE);
-      }
+    
+    // Historic quirk: set the goals of all applicable robots *after*
+    // creating all robots, some code depends on the presence of all
+    // other robots inside SetGoal.
+    
+    for (size_t ii(0); ii < rdesc.size(); ++ii) {
+      
+      // create robot from descriptor
+      shared_ptr<RobotClient> rob(RobotFactory::Create(rdesc[ii], *m_world));
+      if ( ! rob)
+	errx(EXIT_FAILURE, "Simulator::InitRobots(): unknown model \"%s\"",
+	     rdesc[ii]->model.c_str());
+
+      // hook it into the simulation
       m_robot.push_back(robot_s(rob));
       m_world->AddRobot(rob->m_server.get());
-      shared_ptr<const Frame> pose((*ir)->GetInitialPose());
+      shared_ptr<const Frame> pose(rdesc[ii]->GetInitialPose());
       rob->m_server->InitializePose(*pose);
       rob->SetPose(pose->X(), pose->Y(), pose->Theta());
+      
+      // did this robot request a standalone window?
+      string const layout_file(rdesc[ii]->GetOption("standalone_window"));
+      if ( ! layout_file.empty())
+	m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow(rdesc[ii]->name, layout_file,
+							       640, 480, this)));
     }
-    for(size_t ir(0); ir < m_robot.size(); ++ir){
+    
+    for (size_t ir(0); ir < m_robot.size(); ++ir) {
       rdesc_t rd(m_robot[ir].robot->GetDescriptor());
       if(rd->HaveGoals())
 	m_robot[ir].robot->SetGoal(m_timestep, *rd->GetCurrentGoal());
-    }
-    
-    // add an application window for all robots that request one
-    for (size_t ii(0); ii < m_robot.size(); ++ii) {
-      shared_ptr<RobotDescriptor> rdesc(m_robot[ii].robot->GetDescriptor());
-      string layout_file(rdesc->GetOption("standalone_window"));
-      if ( ! layout_file.empty())
-	m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow(rdesc->name, layout_file,
-							       640, 480, this)));
     }
   }
 
