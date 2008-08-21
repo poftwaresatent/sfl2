@@ -78,7 +78,7 @@ echo "  [-r|--ros]                  enable ROS support (experimental)"
 	    shift; continue;;
 	-r|--ros)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-ros"
-	    shift; shift; continue;;
+	    shift; continue;;
 	*)
 	    echo "ERROR unhandled option(s) $*" 1>&2
 	    exit 1;;
