@@ -98,6 +98,78 @@ namespace local {
 }
 
 
+namespace npm {
+
+  VisualRobox::
+  VisualRobox(std::string const & name,
+	      expo_parameters const & params,
+	      boost::shared_ptr<sfl::HAL> hal,
+	      boost::shared_ptr<sfl::Multiscanner> mscan)
+    : expo::Robox(params, hal, mscan)
+  {
+    AddDrawing(new MPDrawing(name + "_goaldrawing", *motionPlanner));
+    AddDrawing(new DWDrawing(name + "_dwdrawing", *dynamicWindow));
+    AddDrawing(new ODrawing(name + "_dodrawing",
+			    dynamicWindow->GetDistanceObjective(),
+			    dynamicWindow));
+    AddDrawing(new ODrawing(name + "_hodrawing",
+			    dynamicWindow->GetHeadingObjective(),
+			    dynamicWindow));
+    AddDrawing(new ODrawing(name + "_sodrawing",
+			    dynamicWindow->GetSpeedObjective(),
+			    dynamicWindow));
+    AddDrawing(new RHDrawing(name + "_rhdrawing",
+			     bubbleBand->GetReplanHandler(),
+			     RHDrawing::AUTODETECT));
+    AddDrawing(new BBDrawing(name + "_bbdrawing",
+			     *bubbleBand,
+			     BBDrawing::AUTODETECT));
+    AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
+				    bubbleBand->GetReplanHandler()->GetNF1(),
+				    false));
+    AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
+				    bubbleBand->GetReplanHandler()->GetNF1(),
+				    true));
+    AddDrawing(new OdometryDrawing(name + "_odomdrawing",
+				   *odometry,
+				   robotModel->WheelBase() / 2));
+    AddDrawing(new DODrawing(name + "_collisiondrawing",
+			     dynamicWindow->GetDistanceObjective(),
+			     dynamicWindow,
+			     robotModel));
+    
+    AddCamera(new StillCamera(name + "_dwcamera",
+			      0,
+			      0,
+			      dynamicWindow->Dimension(),
+			      dynamicWindow->Dimension(),
+			      Instance<UniqueManager<Camera> >()));
+    AddCamera(new OCamera(name + "_ocamera", *dynamicWindow));
+    AddCamera(new GridLayerCamera(name + "_local_glcamera",
+				  bubbleBand->GetReplanHandler()->GetNF1()));
+    double a, b, c, d;
+    dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
+    AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
+			      Instance<UniqueManager<Camera> >()));
+  }
+  
+  
+  void VisualRobox::
+  AddDrawing(Drawing * drawing)
+  {
+    m_drawing.push_back(shared_ptr<Drawing>(drawing));
+  }
+  
+  
+  void VisualRobox::
+  AddCamera(Camera * camera)
+  {
+    m_camera.push_back(shared_ptr<Camera>(camera));
+  }
+  
+}
+
+
 Robox::
 Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, 2, true),
@@ -129,15 +201,13 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
-  m_base.reset(new expo::Robox(params, GetHAL(), mscan));
+  m_base.reset(new npm::VisualRobox(descriptor->name, params, GetHAL(), mscan));
   
   for (HullIterator ih(*m_base->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
     PDEBUG("line %05.2f %05.2f %05.2f %05.2f\n",
 	   ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1());
   }
-  
-  CreateGfxStuff(descriptor->name);
   
   world.AddKeyListener(m_ngkl);
   shared_ptr<KeyListener> listener(new local::MPKeyListener(m_base->motionPlanner));
@@ -154,56 +224,6 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
     return 0;
   }
   return robox;
-}
-
-
-void Robox::
-CreateGfxStuff(const string & name)
-{
-  AddDrawing(new MPDrawing(name + "_goaldrawing", *m_base->motionPlanner));
-  AddDrawing(new DWDrawing(name + "_dwdrawing", *m_base->dynamicWindow));
-  AddDrawing(new ODrawing(name + "_dodrawing",
-			  m_base->dynamicWindow->GetDistanceObjective(),
-			  m_base->dynamicWindow));
-  AddDrawing(new ODrawing(name + "_hodrawing",
-			  m_base->dynamicWindow->GetHeadingObjective(),
-			  m_base->dynamicWindow));
-  AddDrawing(new ODrawing(name + "_sodrawing",
-			  m_base->dynamicWindow->GetSpeedObjective(),
-			  m_base->dynamicWindow));
-  AddDrawing(new RHDrawing(name + "_rhdrawing",
-			   m_base->bubbleBand->GetReplanHandler(),
-			   RHDrawing::AUTODETECT));
-  AddDrawing(new BBDrawing(name + "_bbdrawing",
-			   *m_base->bubbleBand,
-			   BBDrawing::AUTODETECT));
-  AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
-				  m_base->bubbleBand->GetReplanHandler()->GetNF1(),
-				  false));
-  AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
-				  m_base->bubbleBand->GetReplanHandler()->GetNF1(),
-				  true));
-  AddDrawing(new OdometryDrawing(name + "_odomdrawing",
-				 *m_base->odometry,
-				 m_base->robotModel->WheelBase() / 2));
-  AddDrawing(new DODrawing(name + "_collisiondrawing",
-			   m_base->dynamicWindow->GetDistanceObjective(),
-			   m_base->dynamicWindow,
-			   m_base->robotModel));
-  
-  AddCamera(new StillCamera(name + "_dwcamera",
-			    0,
-			    0,
-			    m_base->dynamicWindow->Dimension(),
-			    m_base->dynamicWindow->Dimension(),
-			    Instance<UniqueManager<Camera> >()));
-  AddCamera(new OCamera(name + "_ocamera", *m_base->dynamicWindow));
-  AddCamera(new GridLayerCamera(name + "_local_glcamera",
-				m_base->bubbleBand->GetReplanHandler()->GetNF1()));
-  double a, b, c, d;
-  m_base->dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
-  AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
-			    Instance<UniqueManager<Camera> >()));
 }
 
 

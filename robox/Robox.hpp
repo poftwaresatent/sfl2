@@ -29,13 +29,38 @@
 #include <npm/common/RobotClient.hpp>
 
 
-namespace expo {
-  class Robox;
-}
+//rfct
+#include <sfl/expo/Robox.hpp>
+#include <vector>
+// namespace expo {
+//   class Robox;
+// }
 
 
 namespace local {
   class NGKeyListener;
+}
+
+
+namespace npm {
+  
+  class VisualRobox
+    : public expo::Robox
+  {
+  public:
+    VisualRobox(std::string const & name,
+		expo_parameters const & params,
+		boost::shared_ptr<sfl::HAL> hal,
+		boost::shared_ptr<sfl::Multiscanner> mscan);
+    
+  protected:
+    void AddDrawing(Drawing * drawing);
+    void AddCamera(Camera * camera);
+    
+    std::vector<boost::shared_ptr<Drawing> > m_drawing;
+    std::vector<boost::shared_ptr<Camera> > m_camera;
+  };
+  
 }
 
 
@@ -67,7 +92,6 @@ protected:
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<local::NGKeyListener> m_ngkl;
   
-  void CreateGfxStuff(const std::string & name);
   bool StartThreads();
 };
 
