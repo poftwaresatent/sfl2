@@ -1,22 +1,20 @@
 CPPFLAGS= @NPM_CPPFLAGS@ @NPM_ROS_CPPFLAGS@
 CFLAGS=   @NPM_CFLAGS@
 CXXFLAGS= @NPM_CXXFLAGS@
-LDFLAGS=  @NPM_LDFLAGS@
+LDFLAGS=  @NPM_LDFLAGS@ @NPM_ROS_LDFLAGS@
 
 if ! NPM_HAVE_ROS
   BUILT_SOURCES= ros_config_error
 endif
 
-noinst_LTLIBRARIES=  libros.la
-libros_la_SOURCES=   ROSbot.cpp
-include_HEADERS=     ROSbot.hpp
+noinst_LTLIBRARIES=   libnpmros.la
+libnpmros_la_SOURCES= ROSbot.cpp
+include_HEADERS=      ROSbot.hpp
 
 includedir=          @includedir@/npm/ros
 
-bin_PROGRAMS=        test
-
-test_SOURCES=        test.cpp
-test_LDADD=          -lros
+bin_PROGRAMS=        rostest
+rostest_SOURCES=        rostest.cpp
 
 ros_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"

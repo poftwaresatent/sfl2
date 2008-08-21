@@ -10,7 +10,7 @@ endif
 
 if NPM_HAVE_ROS
   ROS_DIR=    ros
-  ROS_LIBADD= ros/libros.la
+  ROS_LIBADD= ros/libnpmros.la
 endif
 
 if NPM_HAVE_ESTAR

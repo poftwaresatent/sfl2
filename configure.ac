@@ -244,14 +244,23 @@ AC_ARG_WITH(genom,
 
 NPM_ROS_CPPFLAGS=""
 NPM_ROS_LDFLAGS=""
-AC_ARG_WITH(ros,
-  AC_HELP_STRING([--with-ros=PATH], [enable ROS]),
-  [ if test "x$withval" != "x" ; then
-      NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS -I${withval}/core/roscpp/include -I${withval}/util/rosthread/include -I${withval}/3rdparty/xmlrpc++/src"
-      NPM_ROS_LDFLAGS="-L${withval}/core/roscpp/lib -L${withval}/util/rosthread/lib -L${withval}/3rdparty/xmlrpc++/lib $NPM_LDFLAGS"
-    else
-      NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS"
-    fi
+AC_ARG_ENABLE(ros,
+  AC_HELP_STRING([--enable-ros], [enable ROS (rospack must be in PATH)]),
+  [ NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS"
+    for component in roscpp std_msgs; do
+      cflags=`rospack export/cpp/cflags $component`
+      if test "x$cflags" = "x"; then
+        AC_MSG_ERROR([cannot rospack export/cpp/cflags $component])
+      fi
+      NPM_ROS_CPPFLAGS="$NPM_ROS_CPPFLAGS $cflags"
+      AC_MSG_NOTICE([$component: cflags are $cflags])
+      lflags=`rospack export/cpp/lflags $component`
+      if test "x$lflags" = "x"; then
+        AC_MSG_ERROR([cannot rospack export/cpp/lflags $component])
+      fi
+      NPM_ROS_LDFLAGS="$lflags $NPM_ROS_LDFLAGS"
+      AC_MSG_NOTICE([$component: lflags are $lflags])
+    done
     AM_CONDITIONAL([NPM_HAVE_ROS], [true])
     oldCPPFLAGS="$CPPFLAGS"
     if test "$prefix" = "NONE"; then
@@ -265,6 +274,14 @@ AC_ARG_WITH(ros,
       AC_MSG_ERROR([cannot compile XmlRpc.h (CPPFLAGS=$CPPFLAGS)])], [])
     AC_CHECK_HEADER([ros/node.h], [], [
       AC_MSG_ERROR([cannot compile ros/node.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([rostools/Header.h], [], [
+      AC_MSG_ERROR([cannot compile rostools/Header.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([std_msgs/BaseVel.h], [], [
+      AC_MSG_ERROR([cannot compile std_msgs/BaseVel.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([std_msgs/LaserScan.h], [], [
+      AC_MSG_ERROR([cannot compile std_msgs/LaserScan.h (CPPFLAGS=$CPPFLAGS)])], [])
+    AC_CHECK_HEADER([std_msgs/RobotBase2DOdom.h], [], [
+      AC_MSG_ERROR([cannot compile std_msgs/RobotBase2DOdom.h (CPPFLAGS=$CPPFLAGS)])], [])
     CPPFLAGS="$oldCPPFLAGS"
   ],[
     AM_CONDITIONAL([NPM_HAVE_ROS], [false])])

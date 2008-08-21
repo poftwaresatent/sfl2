@@ -23,33 +23,33 @@
 
 
 #include "RobotFactory.hpp"
-#include <npm/common/RobotDescriptor.hpp>
-#include <npm/visitor/Visitor.hpp>
-#include <npm/robox/Robox.hpp>
+#include "../common/RobotDescriptor.hpp"
+#include "../visitor/Visitor.hpp"
+#include "../robox/Robox.hpp"
 
 #ifdef NPM_HAVE_GENOM
-# include <npm/laas/LAAS.hpp>
+# include "../laas/LAAS.hpp"
 #endif // NPM_HAVE_GENOM
 
 #ifdef NPM_HAVE_XCF
-# include <npm/biron/Biron.hpp>
+# include "../biron/Biron.hpp"
 #endif // NPM_HAVE_XCF
 
 #ifdef NPM_HAVE_ESTAR
-# include <npm/estar/Esbot.hpp>
+# include "../estar/Esbot.hpp"
 #endif // NPM_HAVE_ESTAR
 
 #ifdef NPM_HAVE_ASL
-# include <npm/asl/Smart.hpp>
-# include <npm/asl/Borox.hpp>
+# include "../asl/Smart.hpp"
+# include "../asl/Borox.hpp"
 #endif // NPM_HAVE_ASL
 
 #ifdef NPM_HAVE_ROS
-# include <npm/ros/ROSbot.hpp>
+# include "../ros/ROSbot.hpp"
 #endif // NPM_HAVE_ROS
 
-//#include <npm/theater/TheaterRobot.hpp>
-////#include <npm/braitenberg/Braitenberg.hpp>
+//#include "../theater/TheaterRobot.hpp"
+////#include "../braitenberg/Braitenberg.hpp"
 
 
 using namespace boost;

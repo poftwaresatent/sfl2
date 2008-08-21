@@ -31,6 +31,7 @@ echo "  [-j|--jobs]    <NUM>        number of parallel make jobs"
 echo "  [-d|--debug]                enable debug messages and symbols"
 echo "  [-s|--skipbs]               do not bootstrap build system"
 echo "  [-q|--qt]                   enable Qt support (experimental)"
+echo "  [-r|--ros]                  enable ROS support (experimental)"
         exit 0;;
 	-p|--prefix)
 	    abspath $2
@@ -75,6 +76,9 @@ echo "  [-q|--qt]                   enable Qt support (experimental)"
 	-q|--qt)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-qt"
 	    shift; continue;;
+	-r|--ros)
+	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-ros"
+	    shift; shift; continue;;
 	*)
 	    echo "ERROR unhandled option(s) $*" 1>&2
 	    exit 1;;
