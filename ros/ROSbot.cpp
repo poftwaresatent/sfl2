@@ -19,16 +19,17 @@
  */
 
 #include "ROSbot.hpp"
-#include "../robox/expoparams.hpp"
 #include "../common/OdometryDrawing.hpp"
 #include "../common/HAL.hpp"
 #include "../common/RobotServer.hpp"
 #include "../common/Lidar.hpp"
 #include "../common/DiffDrive.hpp"
+#include "../common/RobotDescriptor.hpp"
 #include <sfl/api/Goal.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/MotionController.hpp>
 #include <sfl/util/Polygon.hpp>
+#include <sfl/expo/expo_parameters.h>
 #include <iostream>
 #include <err.h>
 
@@ -160,7 +161,7 @@ ROSbot(shared_ptr<RobotDescriptor> descriptor, const World & world)
   }
   
   // find a more generic way (maybe ROS services or parameters)
-  expoparams params(descriptor);
+  expo_parameters params(descriptor);
   m_lidar.push_back(DefineLidar(Frame(params.front_mount_x,
 				      params.front_mount_y,
 				      params.front_mount_theta),
