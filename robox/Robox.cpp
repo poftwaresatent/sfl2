@@ -23,18 +23,8 @@
 
 
 #include "Robox.hpp"
-#include "MPDrawing.hpp"
-#include "OCamera.hpp"
-#include "ODrawing.hpp"
-#include "DODrawing.hpp"
-#include "DWDrawing.hpp"
-#include "RHDrawing.hpp"
-#include "BBDrawing.hpp"
-#include "GridLayerCamera.hpp"
-#include "GridLayerDrawing.hpp"
+#include "VisualRobox.hpp"
 #include "../common/World.hpp"
-#include "../common/OdometryDrawing.hpp"
-#include "../common/StillCamera.hpp"
 #include "../common/HAL.hpp"
 #include "../common/RobotDescriptor.hpp"
 #include "../common/Lidar.hpp"
@@ -43,6 +33,7 @@
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
+#include <sfl/api/Goal.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
@@ -98,78 +89,6 @@ namespace local {
 }
 
 
-namespace npm {
-
-  VisualRobox::
-  VisualRobox(std::string const & name,
-	      expo_parameters const & params,
-	      boost::shared_ptr<sfl::HAL> hal,
-	      boost::shared_ptr<sfl::Multiscanner> mscan)
-    : expo::Robox(params, hal, mscan)
-  {
-    AddDrawing(new MPDrawing(name + "_goaldrawing", *motionPlanner));
-    AddDrawing(new DWDrawing(name + "_dwdrawing", *dynamicWindow));
-    AddDrawing(new ODrawing(name + "_dodrawing",
-			    dynamicWindow->GetDistanceObjective(),
-			    dynamicWindow));
-    AddDrawing(new ODrawing(name + "_hodrawing",
-			    dynamicWindow->GetHeadingObjective(),
-			    dynamicWindow));
-    AddDrawing(new ODrawing(name + "_sodrawing",
-			    dynamicWindow->GetSpeedObjective(),
-			    dynamicWindow));
-    AddDrawing(new RHDrawing(name + "_rhdrawing",
-			     bubbleBand->GetReplanHandler(),
-			     RHDrawing::AUTODETECT));
-    AddDrawing(new BBDrawing(name + "_bbdrawing",
-			     *bubbleBand,
-			     BBDrawing::AUTODETECT));
-    AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
-				    bubbleBand->GetReplanHandler()->GetNF1(),
-				    false));
-    AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
-				    bubbleBand->GetReplanHandler()->GetNF1(),
-				    true));
-    AddDrawing(new OdometryDrawing(name + "_odomdrawing",
-				   *odometry,
-				   robotModel->WheelBase() / 2));
-    AddDrawing(new DODrawing(name + "_collisiondrawing",
-			     dynamicWindow->GetDistanceObjective(),
-			     dynamicWindow,
-			     robotModel));
-    
-    AddCamera(new StillCamera(name + "_dwcamera",
-			      0,
-			      0,
-			      dynamicWindow->Dimension(),
-			      dynamicWindow->Dimension(),
-			      Instance<UniqueManager<Camera> >()));
-    AddCamera(new OCamera(name + "_ocamera", *dynamicWindow));
-    AddCamera(new GridLayerCamera(name + "_local_glcamera",
-				  bubbleBand->GetReplanHandler()->GetNF1()));
-    double a, b, c, d;
-    dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
-    AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
-			      Instance<UniqueManager<Camera> >()));
-  }
-  
-  
-  void VisualRobox::
-  AddDrawing(Drawing * drawing)
-  {
-    m_drawing.push_back(shared_ptr<Drawing>(drawing));
-  }
-  
-  
-  void VisualRobox::
-  AddCamera(Camera * camera)
-  {
-    m_camera.push_back(shared_ptr<Camera>(camera));
-  }
-  
-}
-
-
 Robox::
 Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   : RobotClient(descriptor, world, 2, true),
@@ -201,16 +120,16 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
-  m_base.reset(new npm::VisualRobox(descriptor->name, params, GetHAL(), mscan));
+  m_imp.reset(new npm::VisualRobox(descriptor->name, params, GetHAL(), mscan));
   
-  for (HullIterator ih(*m_base->hull); ih.IsValid(); ih.Increment()) {
+  for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
     PDEBUG("line %05.2f %05.2f %05.2f %05.2f\n",
 	   ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1());
   }
   
   world.AddKeyListener(m_ngkl);
-  shared_ptr<KeyListener> listener(new local::MPKeyListener(m_base->motionPlanner));
+  shared_ptr<KeyListener> listener(new local::MPKeyListener(m_imp->motionPlanner));
   world.AddKeyListener(listener);
 }
 
@@ -232,7 +151,7 @@ InitPose(double x,
 	 double y,
 	 double theta)
 {
-  m_base->odometry->Init(Pose(x, y, theta));
+  m_imp->odometry->Init(Pose(x, y, theta));
 }
 
 
@@ -241,7 +160,7 @@ SetPose(double x,
 	double y,
 	double theta)
 {
-  m_base->odometry->Set(Pose(x, y, theta));
+  m_imp->odometry->Set(Pose(x, y, theta));
 }
 
 
@@ -250,7 +169,7 @@ GetPose(double & x,
 	double & y,
 	double & theta)
 {
-  shared_ptr<const Pose> pose(m_base->odometry->Get());
+  shared_ptr<const Pose> pose(m_imp->odometry->Get());
   x = pose->X();
   y = pose->Y();
   theta = pose->Theta();
@@ -260,7 +179,7 @@ GetPose(double & x,
 shared_ptr<const Goal> Robox::
 GetGoal()
 {
-  return shared_ptr<const Goal>(new Goal(m_base->GetGoal()));
+  return shared_ptr<const Goal>(new Goal(m_imp->GetGoal()));
 }
 
 
@@ -287,14 +206,14 @@ GoalReached()
     m_ngkl->next_goal = false;
     return true;
   }
-  return m_base->motionPlanner->GoalReached();
+  return m_imp->motionPlanner->GoalReached();
 }
 
 
 void Robox::
 SetGoal(double timestep, const Goal & goal)
 {
-  m_base->SetGoal(timestep, goal);
+  m_imp->SetGoal(timestep, goal);
 }
 
 
@@ -302,10 +221,10 @@ bool Robox::
 PrepareAction(double timestep)
 {
   try {
-    m_base->Update(timestep);
+    m_imp->Update(timestep);
   }
   catch (runtime_error ee) {
-    cerr << "Robox::PrepareAction(): m_base->Update() failed with exception\n"
+    cerr << "Robox::PrepareAction(): m_imp->Update() failed with exception\n"
 	 << ee.what() << "\n";
     return false;
   }

@@ -25,42 +25,14 @@
 #ifndef ROBOX_HPP
 #define ROBOX_HPP
 
-
 #include <npm/common/RobotClient.hpp>
 
-
-//rfct
-#include <sfl/expo/Robox.hpp>
-#include <vector>
-// namespace expo {
-//   class Robox;
-// }
-
+namespace npm {
+  class VisualRobox;
+}
 
 namespace local {
   class NGKeyListener;
-}
-
-
-namespace npm {
-  
-  class VisualRobox
-    : public expo::Robox
-  {
-  public:
-    VisualRobox(std::string const & name,
-		expo_parameters const & params,
-		boost::shared_ptr<sfl::HAL> hal,
-		boost::shared_ptr<sfl::Multiscanner> mscan);
-    
-  protected:
-    void AddDrawing(Drawing * drawing);
-    void AddCamera(Camera * camera);
-    
-    std::vector<boost::shared_ptr<Drawing> > m_drawing;
-    std::vector<boost::shared_ptr<Camera> > m_camera;
-  };
-  
 }
 
 
@@ -88,7 +60,7 @@ public:
   virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
 protected:
-  boost::shared_ptr<expo::Robox> m_base;
+  boost::shared_ptr<npm::VisualRobox> m_imp;
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<local::NGKeyListener> m_ngkl;
   
