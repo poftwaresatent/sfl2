@@ -159,9 +159,13 @@ speed_set(const double * qdot,
   double const dl(qdot[0] * wheelradius);
   double const dr(qdot[1] * wheelradius);
   
-  RWlock::wrsentry wr(m_node->rwlock);
-  m_node->velx = (dl + dr) / 2;
-  m_node->velw = (dr - dl) / wheelbase;
+  {
+    RWlock::wrsentry wr(m_node->rwlock);
+    m_node->velx = (dl + dr) / 2;
+    m_node->velw = (dr - dl) / wheelbase;
+  }
+  
+  m_node->publishSpeed();
   
   return 0;
 }

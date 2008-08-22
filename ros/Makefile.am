@@ -13,8 +13,10 @@ include_HEADERS=      ROSbot.hpp ROSHAL.hpp
 
 includedir=           @includedir@/npm/ros
 
-bin_PROGRAMS=         rostest
+bin_PROGRAMS=         rostest roshaltest
 rostest_SOURCES=      rostest.cpp
+roshaltest_SOURCES=   roshaltest.cpp
+roshaltest_LDADD=     libnpmros.la -lsunflower
 
 ros_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"
