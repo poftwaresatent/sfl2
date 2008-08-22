@@ -29,48 +29,48 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSBOT_HPP
-#define ROSBOT_HPP
+#ifndef ROSHAL_HPP
+#define ROSHAL_HPP
 
-#include <npm/common/RobotClient.hpp>
+#include <sfl/api/HAL.hpp>
 #include <vector>
 
-
-namespace sfl {
-  class MotionController;
-  class RobotModel;
-  class Hull;
+namespace {
+  class ROSHALNode;
 }
 
-class ROSbotNode;
 
-
-class ROSbot
-  : public npm::RobotClient
+class ROSHAL
+  : public sfl::HAL
 {
 public:
-  ROSbot(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	 const npm::World & world);
-  virtual ~ROSbot();
+  ROSHAL(size_t nscanners, std::ostream * dbgos);
+  virtual ~ROSHAL();
   
-  virtual bool PrepareAction(double timestep);
-  virtual void SetGoal(double timestep, const sfl::Goal & goal);
-  virtual bool GoalReached();
-  virtual void InitPose(double x, double y, double theta);
-  virtual void SetPose(double x, double y, double theta);
-  virtual void GetPose(double & x, double & y, double & theta);
-  virtual boost::shared_ptr<const sfl::Goal> GetGoal();
+  virtual int time_get(sfl::timespec_t * stamp);
+  
+  virtual int odometry_set(double x, double y, double theta,
+			   double sxx, double syy, double stt,
+			   double sxy, double sxt, double syt);
+  
+  virtual int odometry_get(sfl::timespec_t * stamp,
+			   double * x, double * y, double * theta,
+			   double * sxx, double * syy, double * stt,
+			   double * sxy, double * sxt, double * syt);
+  
+  virtual int speed_set(const double * qdot,
+			size_t * qdot_len);
+  
+  virtual int speed_get(double * qdot,
+			size_t * qdot_len);
+  
+  virtual int scan_get(int channel, double * rho,
+		       size_t * rho_len,
+		       sfl::timespec_t * t0, sfl::timespec_t * t1);
   
 protected:
-  friend class ROSbotNode;
-  
-  std::vector<boost::shared_ptr<npm::Lidar> > m_lidar;
-  boost::shared_ptr<npm::DiffDrive> m_drive;
-  boost::shared_ptr<sfl::Goal> m_goal;
-  boost::shared_ptr<sfl::MotionController> m_mcontrol;
-  boost::shared_ptr<sfl::RobotModel> m_model;
-  boost::shared_ptr<sfl::Hull> m_hull;
-  ROSbotNode * m_ros_node;
+  ROSHALNode * m_node;
+  std::ostream * m_dbgos;  
 };
 
 #endif // ROSBOT_HPP

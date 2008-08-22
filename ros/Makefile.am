@@ -8,13 +8,13 @@ if ! NPM_HAVE_ROS
 endif
 
 noinst_LTLIBRARIES=   libnpmros.la
-libnpmros_la_SOURCES= ROSbot.cpp
-include_HEADERS=      ROSbot.hpp
+libnpmros_la_SOURCES= ROSbot.cpp ROSHAL.cpp
+include_HEADERS=      ROSbot.hpp ROSHAL.hpp
 
-includedir=          @includedir@/npm/ros
+includedir=           @includedir@/npm/ros
 
-bin_PROGRAMS=        rostest
-rostest_SOURCES=        rostest.cpp
+bin_PROGRAMS=         rostest
+rostest_SOURCES=      rostest.cpp
 
 ros_config_error:
 	@echo "ERROR in configuration: should not build in this subdir"
