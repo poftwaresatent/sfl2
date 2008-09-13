@@ -246,7 +246,7 @@ namespace {
     if (m_dbgos)
       *m_dbgos << "ROSHALNode: subscribed to odom\n";
     
-    if ( ! advertise<std_msgs::BaseVel>("cmd_vel"))
+    if ( ! advertise<std_msgs::BaseVel>("cmd_vel", 1))
       errx(EXIT_FAILURE, "ROSHALNode: advertise(cmd_vel) failed");
     if (m_dbgos)
       *m_dbgos << "ROSHALNode: advertised cmd_vel\n";

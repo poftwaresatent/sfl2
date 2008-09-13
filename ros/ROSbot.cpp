@@ -76,7 +76,7 @@ public:
     if ( ! vel_rwlock)
       errx(EXIT_FAILURE, "RWlock::Create(ROSbotNode) failed");
       
-    advertise<std_msgs::RobotBase2DOdom>("odom");
+    advertise<std_msgs::RobotBase2DOdom>("odom", 1);
       
     vel.vx = 0;
     vel.vw = 0;
@@ -105,7 +105,7 @@ public:
 	ostringstream os;
 	os << "scan" << ii;
 	scan_ad.push_back(os.str());
-	advertise<std_msgs::LaserScan>(os.str());
+	advertise<std_msgs::LaserScan>(os.str(), 1);
 	  
 	cout << "advertised " << os.str() << "\n";
       }
