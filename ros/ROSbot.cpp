@@ -80,7 +80,7 @@ public:
       
     vel.vx = 0;
     vel.vw = 0;
-    if ( ! subscribe("cmd_vel", vel, &ROSbotNode::cbBaseVel))
+    if ( ! subscribe("cmd_vel", vel, &ROSbotNode::cbBaseVel, 1))
       errx(EXIT_FAILURE, "subscribe(BaseVel) failed");
   }
     

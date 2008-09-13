@@ -241,7 +241,7 @@ namespace {
 	*m_dbgos << "ROSHALNode: subscribed to " << m_scan_ad[ii] << "\n";
     }
     
-    if ( ! subscribe("odom", m_odom, &ROSHALNode::cbRobotBase2DOdom))
+    if ( ! subscribe("odom", m_odom, &ROSHALNode::cbRobotBase2DOdom, 1))
       errx(EXIT_FAILURE, "ROSHALNode: subscribe(odom) failed");
     if (m_dbgos)
       *m_dbgos << "ROSHALNode: subscribed to odom\n";
