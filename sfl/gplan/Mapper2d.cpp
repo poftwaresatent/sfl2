@@ -384,7 +384,7 @@ namespace sfl {
 												 influence, new_target_value)){
 				int old_target_value;
 				if( ! m_travmap->GetValue(tix, tiy, old_target_value)){
-					PDEBUG_OUT("BUG (harmless): target %ud %ud not in travmap.\n",
+					PDEBUG_OUT("BUG (harmless): target %zd %zd not in travmap.\n",
 										 tix, tiy);
 					continue;
 				}
@@ -436,7 +436,7 @@ namespace sfl {
 			if(bwd->first != influence)
 				break;
 		}
-		PDEBUG_OUT("BUG: %ud %ud -> %ud %ud in fwd but not bwd refmap\n",
+		PDEBUG_OUT("BUG: %zd %zd -> %zd %zd in fwd but not bwd refmap\n",
 							 source_index.v0, source_index.v1,
 							 target_index.v0, target_index.v1);
 		new_value = freespace; // just to avoid uninitialized memory usage

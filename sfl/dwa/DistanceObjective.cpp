@@ -201,7 +201,7 @@ namespace sfl {
 	for(size_t iqdl(0); iqdl < dimension; ++iqdl){
 	  for(size_t iqdr(0); iqdr < dimension; ++iqdr){
 	    double wanted(invalidTime);
-	    if(m_evaluation_hull->Contains(xx, yy))
+	    if(m_evaluation_hull->Contains(xx, yy)) {
 	      if(m_padded_hull->Contains(xx, yy))
 		wanted = epsilon; // due to epsilon hack above...
 	      else{
@@ -214,6 +214,7 @@ namespace sfl {
 		    wanted = tt;
 		}
 	      }
+	    }
 	    double compressed(invalidTime);
 	    if((*m_time_lookup)[igx][igy])
 	      compressed = (*m_time_lookup)[igx][igy]->Get(iqdl, iqdr);
@@ -330,7 +331,7 @@ namespace sfl {
 	  break;
 	default:
 	  PDEBUG_ERR("BUG in sfl::DistanceObjective::UpdateGrid(): "
-		     "invalid region[%d][%d]=%d\n",
+		     "invalid region[%zd][%zd]=%d\n",
 		     ix, iy, (*m_region)[ix][iy]);
 	}
       }
@@ -373,7 +374,7 @@ namespace sfl {
 	  const shared_ptr<const Lookup> lkup((*m_time_lookup)[ix][iy]);
 	  if( ! lkup)
 	    PDEBUG_ERR("BUG in sfl::DistanceObjective::MinTime(): "
-		       "no lookup for zone index [%d][%d]\n", ix, iy);
+		       "no lookup for zone index [%zd][%zd]\n", ix, iy);
 	  else{
 	    const double tt(lkup->Get(iqdl, iqdr));
 	    if((tt != invalidTime)

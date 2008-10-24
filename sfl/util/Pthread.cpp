@@ -21,6 +21,7 @@
 #include "Pthread.hpp"
 #include <iostream>
 #include <errno.h>
+#include <string.h>
 
 #ifdef OPENBSD
 # include <unistd.h>

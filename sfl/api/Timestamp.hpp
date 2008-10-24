@@ -31,7 +31,7 @@
 #ifdef WIN32
 # include <sfl/util/win32.hpp>
 #else // WIN32
-struct timespec;
+# include <time.h>
 #endif // WIN32
 
 
