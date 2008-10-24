@@ -31,6 +31,8 @@
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 #include <sys/time.h>
+#include <strings.h>
+#include <string.h>
 
 
 using namespace sfl;

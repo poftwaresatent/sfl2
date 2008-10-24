@@ -38,6 +38,7 @@
 #include <sstream>
 #include <iomanip>
 #include <err.h>
+#include <limits>
 
 
 using namespace sfl;

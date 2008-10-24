@@ -23,6 +23,7 @@
 
 
 #include "SimpleImage.hpp"
+#include <stdlib.h>
 
 
 

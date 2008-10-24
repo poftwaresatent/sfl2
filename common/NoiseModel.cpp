@@ -25,6 +25,7 @@
 #include "NoiseModel.hpp"
 #include <sfl/util/Random.hpp>
 #include <err.h>
+#include <stdlib.h>
 
 using namespace sfl;
 
