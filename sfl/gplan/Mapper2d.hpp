@@ -184,7 +184,14 @@ namespace sfl {
 		const double grown_robot_radius;
 		
 		
-	private:
+		/**
+			 In case you want to draw buffered obstacle lines into the map,
+			 call GridFrame::DrawGlobalLine() (or DrawLocalLine() or
+			 DrawDDALine()) with an instance of buffered_obstacle_adder. The
+			 extra Mapper2d::draw_callback constructir argument can be used
+			 to pass through another drawer, which will get called for each
+			 individual cell in the buffered obstacle region.
+		*/
 		class buffered_obstacle_adder
 			: public GridFrame::draw_callback
 		{
@@ -196,8 +203,6 @@ namespace sfl {
 			size_t count;
 		};
 		
-		friend class buffered_obstacle_adder;
-		
 		/** \return The number of cells that were changed. */
 		size_t AddBufferedObstacle(double globx, double globy, draw_callback * cb);
 
@@ -205,6 +210,9 @@ namespace sfl {
 		
 		/** \return The number of cells that were changed. */
 		size_t RemoveBufferedObstacle(index_t source_index, draw_callback * cb);
+		
+		
+	private:
 		
 		/** \note This method does not check if an existing link changes
 				value, but simply returns false if there already is a link
