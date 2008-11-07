@@ -104,6 +104,8 @@ namespace sfl {
 						 boost::shared_ptr<RWlock> trav_rwlock,
 						 /** Optional. Defaults to never_grow. */
 						 boost::shared_ptr<travmap_grow_strategy> grow_strategy);
+
+		virtual ~Mapper2d() {}
 		
 		static boost::shared_ptr<Mapper2d>
 		Create(double robot_radius,
@@ -238,6 +240,14 @@ namespace sfl {
 		typedef	flexgrid<link_t> linkmap_t;
 		typedef	flexgrid<ref_s> refmap_t;
 		
+		static boost::shared_ptr<ReflinkMapper2d>
+		Create(double robot_radius,
+					 double buffer_zone,
+					 double padding_factor,
+					 const std::string & traversability_file,
+					 /** Optional. Defaults to never_grow. */
+					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
+					 std::ostream * err_os);
 		
 		/**
 			 Similar to Update(const Frame&, const Scan&, draw_callback*),

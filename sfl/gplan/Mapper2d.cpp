@@ -186,6 +186,47 @@ namespace sfl {
 	}
 	
 	
+	/**
+		 \todo Unify this copy-pasted method with the one in Mapper2d.
+	*/
+	shared_ptr<ReflinkMapper2d> ReflinkMapper2d::
+	Create(double robot_radius,
+				 double buffer_zone,
+				 double padding_factor,
+				 const std::string & traversability_file,
+				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
+				 std::ostream * err_os)
+	{
+		shared_ptr<RWlock> rwl(RWlock::Create("sfl::ReflinkMapper2d::m_trav_rwlock"));
+		if( ! rwl){
+      if(err_os) *err_os << "ERROR in ReflinkMapper2d::Create():\n"
+												 << "  sfl::RWlock::Create() failed\n";
+      return shared_ptr<ReflinkMapper2d>();
+    }
+		
+		ifstream trav(traversability_file.c_str());
+    if( ! trav){
+      if(err_os) *err_os << "ERROR in ReflinkMapper2d::Create():\n"
+												 << "  invalid traversability file \""
+												 << traversability_file << "\".\n";
+      return shared_ptr<ReflinkMapper2d>();
+    }
+    shared_ptr<TraversabilityMap>
+      traversability(TraversabilityMap::Parse(trav, err_os));
+    if( ! traversability){
+      if(err_os) *err_os << "ERROR in ReflinkMapper2d::Create():\n"
+												 << "  TraversabilityMap::Parse() failed on \""
+												 << traversability_file << "\".\n";
+      return shared_ptr<ReflinkMapper2d>();
+    }
+		
+		shared_ptr<ReflinkMapper2d>
+			result(new ReflinkMapper2d(robot_radius, buffer_zone, padding_factor, traversability,
+																 grow_strategy, rwl));
+		return result;
+	}
+	
+	
 	size_t Mapper2d::
 	Update(const Frame & pose, size_t length, double * locx, double * locy,
 				 draw_callback * cb)
