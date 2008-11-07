@@ -55,7 +55,7 @@ namespace local {
 	struct swipe_cb
 		: public sfl::GridFrame::draw_callback
 	{
-		typedef sfl::Mapper2d::link_t link_t;
+		typedef sfl::ReflinkMapper2d::link_t link_t;
 		
 		link_t & buffer;
 		const sfl::TraversabilityMap & travmap;
@@ -114,9 +114,6 @@ namespace sfl {
 			m_trav_rwlock(trav_rwlock),
 			m_sprite(new Sprite(grown_safe_distance, _gridframe.Delta()))
 	{
-		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-		
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -144,13 +141,6 @@ namespace sfl {
 			m_trav_rwlock(trav_rwlock),
 			m_sprite(new Sprite(grown_safe_distance, gridframe.Delta()))
 	{
-		ssize_t const grid_xbegin(travmap->grid.xbegin());
-		ssize_t const grid_xend(travmap->grid.xend());
-		ssize_t const grid_ybegin(travmap->grid.ybegin());
-		ssize_t const grid_yend(travmap->grid.yend());
-		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-		
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -270,8 +260,7 @@ namespace sfl {
 			PDEBUG("grown to range (%d, %d, %d, %d) for bbox (%d, %d, %d, %d)\n",
 						 xbegin, xend, ybegin, yend,
 						 bbx0, bby0, bbx1, bby1);
-			m_linkmap.resize(xbegin, xend, ybegin, yend);
-			m_refmap.resize(xbegin, xend, ybegin, yend);
+			ResizeNotify(xbegin, xend, ybegin, yend);
 		}
 		
 		// Ready to insert W-space obstacle and perform C-space expansion
@@ -323,6 +312,15 @@ namespace sfl {
 							 ssize_t target_ix, ssize_t target_iy,
 							 int value)
 	{
+		return false;
+	}
+	
+	
+	bool ReflinkMapper2d::
+	AddReference(index_t source_index,
+							 ssize_t target_ix, ssize_t target_iy,
+							 int value)
+	{
 		// We need to check for grid bounds because we might be called
 		// with indices that lay outside the current grid.
 
@@ -355,7 +353,7 @@ namespace sfl {
 	}
 	
 	
-	size_t Mapper2d::
+	size_t ReflinkMapper2d::
 	RemoveBufferedObstacle(index_t source_index,
 												 draw_callback * cb)
 	{
@@ -406,7 +404,7 @@ namespace sfl {
 	}
 	
 	
-	bool Mapper2d::
+	bool ReflinkMapper2d::
 	RemoveReference(index_t source_index,
 									index_t target_index,
 									int & influence, int & new_value)
@@ -450,7 +448,7 @@ namespace sfl {
 	}
 	
 	
-	size_t Mapper2d::
+	size_t ReflinkMapper2d::
 	SwipedUpdate(const Frame & pose,
 							 const Multiscanner::raw_scan_collection_t & scans,
 							 draw_callback * cb)
@@ -549,11 +547,44 @@ namespace sfl {
 	}
 	
 	
+	void Mapper2d::
+	ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend, ssize_t grid_ybegin, ssize_t grid_yend)
+	{
+		// nop
+	}
+	
+	
 	bool Mapper2d::always_grow::
 	operator () (TraversabilityMap & travmap,
 							 ssize_t ix, ssize_t iy)
 	{
 		return travmap.Autogrow(ix, iy, travmap.freespace);
+	}
+
+
+	ReflinkMapper2d::
+	ReflinkMapper2d(double robot_radius,
+									double buffer_zone,
+									double padding_factor,
+									boost::shared_ptr<TraversabilityMap> travmap,
+									boost::shared_ptr<travmap_grow_strategy> grow_strategy,
+									boost::shared_ptr<RWlock> trav_rwlock)
+		: Mapper2d(robot_radius, buffer_zone, padding_factor, travmap, grow_strategy, trav_rwlock)
+	{
+		ssize_t const grid_xbegin(travmap->grid.xbegin());
+		ssize_t const grid_xend(travmap->grid.xend());
+		ssize_t const grid_ybegin(travmap->grid.ybegin());
+		ssize_t const grid_yend(travmap->grid.yend());
+		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
+		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
+	}
+	
+	
+	void ReflinkMapper2d::
+	ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend, ssize_t grid_ybegin, ssize_t grid_yend)
+	{
+		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
+		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
 	}
 	
 }

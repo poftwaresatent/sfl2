@@ -77,6 +77,7 @@ namespace sfl {
 		Mapper2d();
 		Mapper2d(const Mapper2d &);
 		
+	protected:
 		Mapper2d(double robot_radius,
 						 double buffer_zone,
 						 double padding_factor,
@@ -87,15 +88,6 @@ namespace sfl {
   public:
 		typedef GridFrame::index_t index_t;
 		typedef TraversabilityMap::draw_callback draw_callback;
-		typedef std::set<index_t> link_t;
-		typedef std::map<index_t, int> fwd_t;
-		typedef std::multimap<int, index_t> rev_t;
-		struct ref_s {
-			fwd_t forward;
-			rev_t reverse;
-		};
-		typedef	flexgrid<link_t> linkmap_t;
-		typedef	flexgrid<ref_s> refmap_t;
 		
 		
 		Mapper2d(const GridFrame & gridframe,
@@ -138,16 +130,6 @@ namespace sfl {
 									draw_callback * cb = 0);
 		
 		/**
-			 Similar to Update(const Frame&, const Scan&, draw_callback*),
-			 but also updates the cells along the whole rays of the scan.
-			 
-			 \return The number of cells that got changed.
-		*/
-		size_t SwipedUpdate(const Frame & pose,
-												const Multiscanner::raw_scan_collection_t & scans,
-												draw_callback * cb = 0);
-		
-		/**
 			 Similar to Update(const Frame&, const Scan&, draw_callback *),
 			 but based on arrays of local (x, y) obstacle point coordinates.
 			 
@@ -171,11 +153,7 @@ namespace sfl {
 		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
 		boost::shared_ptr<WRTravmap> CreateWRTravmap();
 		
-		const link_t & GetFreespaceBuffer() const { return m_freespace_buffer; }
-		const link_t & GetObstacleBuffer() const { return m_obstacle_buffer; }
 		const GridFrame & GetGridFrame() const { return gridframe; }
-		const linkmap_t & GetLinkmap() const { return m_linkmap; }
-		const refmap_t & GetRefmap() const { return m_refmap; }
 		
 		
 		const int freespace;
@@ -211,19 +189,85 @@ namespace sfl {
 
 		size_t AddBufferedObstacle(index_t source_index, draw_callback * cb);
 		
+		
+	protected:
+		/** Default implementation does nothing. Quick hack for
+				ReflinkMapper2d rfct. */
+		virtual void ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend,
+															ssize_t grid_ybegin, ssize_t grid_yend);
+		
+		/** Default implementation does nothing. Quick hack for
+				ReflinkMapper2d rfct. */		
+		virtual bool AddReference(index_t source_index,
+															ssize_t target_ix, ssize_t target_iy,
+															int value);
+		
+		/** We use obstacle+1 to keep track of those cells that are non-CS
+				expanded obstacles, to distinguish them from obstacle cells
+				that do not contain any actual workspace points. */
+		boost::shared_ptr<TraversabilityMap> m_travmap;
+		boost::shared_ptr<RWlock> m_trav_rwlock;
+		boost::shared_ptr<estar::Sprite> m_sprite;
+		
+		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
+	};
+	
+	
+	/**
+		 Experimental way of implementing RemoveBufferedObstacle().
+	*/
+  class ReflinkMapper2d
+		: public Mapper2d
+	{
+	protected:
+		ReflinkMapper2d(double robot_radius,
+										double buffer_zone,
+										double padding_factor,
+										boost::shared_ptr<TraversabilityMap> travmap,
+										boost::shared_ptr<travmap_grow_strategy> grow_strategy,
+										boost::shared_ptr<RWlock> trav_rwlock);
+		
+	public:
+		typedef std::set<index_t> link_t;
+		typedef std::map<index_t, int> fwd_t;
+		typedef std::multimap<int, index_t> rev_t;
+		struct ref_s {
+			fwd_t forward;
+			rev_t reverse;
+		};
+		typedef	flexgrid<link_t> linkmap_t;
+		typedef	flexgrid<ref_s> refmap_t;
+		
+		
+		/**
+			 Similar to Update(const Frame&, const Scan&, draw_callback*),
+			 but also updates the cells along the whole rays of the scan.
+			 
+			 \return The number of cells that got changed.
+		*/
+		size_t SwipedUpdate(const Frame & pose,
+												const Multiscanner::raw_scan_collection_t & scans,
+												draw_callback * cb = 0);
+		
 		/** \return The number of cells that were changed. */
 		size_t RemoveBufferedObstacle(index_t source_index, draw_callback * cb);
 		
+		const linkmap_t & GetLinkmap() const { return m_linkmap; }
+		const refmap_t & GetRefmap() const { return m_refmap; }
+		const link_t & GetFreespaceBuffer() const { return m_freespace_buffer; }
+		const link_t & GetObstacleBuffer() const { return m_obstacle_buffer; }
 		
-	private:
+	protected:
+		virtual void ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend,
+															ssize_t grid_ybegin, ssize_t grid_yend);
 		
 		/** \note This method does not check if an existing link changes
 				value, but simply returns false if there already is a link
 				from source to target. Changing values of existing links must
 				be done by the caller (or add a ModifyReference() method). */
-		bool AddReference(index_t source_index,
-											ssize_t target_ix, ssize_t target_iy,
-											int value);
+		virtual bool AddReference(index_t source_index,
+															ssize_t target_ix, ssize_t target_iy,
+															int value);
 		
 		/**
 			 \note This method does NOT remove the link from m_linkmap, as
@@ -241,19 +285,10 @@ namespace sfl {
 												 index_t target_index,
 												 int & influence, int & new_value);
 		
-		
-		/** We use obstacle+1 to keep track of those cells that are non-CS
-				expanded obstacles, to distinguish them from obstacle cells
-				that do not contain any actual workspace points. */
-		boost::shared_ptr<TraversabilityMap> m_travmap;
-		boost::shared_ptr<RWlock> m_trav_rwlock;
-		boost::shared_ptr<estar::Sprite> m_sprite;
-		
-		linkmap_t m_linkmap;				// lists all targets of a given source
-		refmap_t m_refmap;					// maps all sources of a given target
 		link_t m_freespace_buffer;
 		link_t m_obstacle_buffer;
-		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
+		linkmap_t m_linkmap;				// lists all targets of a given source
+		refmap_t m_refmap;					// maps all sources of a given target		
 	};
 	
 }
