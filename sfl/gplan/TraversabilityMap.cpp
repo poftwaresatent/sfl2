@@ -286,8 +286,14 @@ namespace sfl {
 				<< "# offset " << grid.xbegin() << " " << grid.ybegin() << "\n";
 		
 		for (ssize_t jj(grid.yend() - 1); jj >= grid.ybegin(); --jj) {
-			for (ssize_t ii(grid.xbegin()); ii < grid.xend(); ++ii) 
-				*os << grid.at(ii, jj) << " ";
+			for (ssize_t ii(grid.xbegin()); ii < grid.xend(); ++ii) {
+				// should probably use manipulators...
+				if (10 > grid.at(ii, jj))
+					*os << "  ";
+				else if (100 > grid.at(ii, jj))
+					*os << " ";
+				*os << " " << grid.at(ii, jj);
+			}
 			*os << "\n";
 		}
 	}
