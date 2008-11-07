@@ -79,6 +79,7 @@ namespace sfl {
 		
 		Mapper2d(double robot_radius,
 						 double buffer_zone,
+						 double padding_factor,
 						 boost::shared_ptr<TraversabilityMap> travmap,
 						 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 						 boost::shared_ptr<RWlock> trav_rwlock);
@@ -104,6 +105,7 @@ namespace sfl {
 						 ssize_t grid_yend,
 						 double robot_radius,
 						 double buffer_zone,
+						 double padding_factor,
 						 int freespace,
 						 int obstacle,
 						 const std::string & name,
@@ -114,6 +116,7 @@ namespace sfl {
 		static boost::shared_ptr<Mapper2d>
 		Create(double robot_radius,
 					 double buffer_zone,
+					 double padding_factor,
 					 const std::string & traversability_file,
 					 /** Optional. Defaults to never_grow. */
 					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,

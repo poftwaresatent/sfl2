@@ -47,8 +47,8 @@ using namespace estar;
 using namespace boost;
 
 
-static const double sqrt_of_two(1.41421356237);
-
+//static const double sqrt_of_two(1.41421356237);
+static const double sqrt_of_half(0.707106781187);
 
 namespace local {
 
@@ -92,6 +92,7 @@ namespace sfl {
 					 ssize_t grid_yend,
 					 double robot_radius,
 					 double _buffer_zone,
+					 double padding_factor,
 					 int _freespace,
 					 int _obstacle,
 					 const std::string & name,
@@ -103,8 +104,9 @@ namespace sfl {
 			gridframe(_gridframe),
 			buffer_zone(_buffer_zone),
 			grown_safe_distance(robot_radius + _buffer_zone
-														+ _gridframe.Delta() * sqrt_of_two),
-			grown_robot_radius(robot_radius + _gridframe.Delta() * sqrt_of_two),
+													+ padding_factor * _gridframe.Delta() * sqrt_of_half),
+			grown_robot_radius(robot_radius
+												 + padding_factor * _gridframe.Delta() * sqrt_of_half),
 			m_travmap(new TraversabilityMap(_gridframe,
 																			grid_xbegin, grid_xend,
 																			grid_ybegin, grid_yend,
@@ -125,6 +127,7 @@ namespace sfl {
 	Mapper2d::
 	Mapper2d(double robot_radius,
 					 double _buffer_zone,
+					 double padding_factor,
 					 shared_ptr<TraversabilityMap> travmap,
 					 shared_ptr<travmap_grow_strategy> grow_strategy,
 					 shared_ptr<RWlock> trav_rwlock)
@@ -134,8 +137,9 @@ namespace sfl {
 			gridframe(travmap->gframe),
 			buffer_zone(_buffer_zone),
 			grown_safe_distance(robot_radius + _buffer_zone
-														+ gridframe.Delta() * sqrt_of_two),
-			grown_robot_radius(robot_radius + gridframe.Delta() * sqrt_of_two),
+													+ padding_factor * gridframe.Delta() * sqrt_of_half),
+			grown_robot_radius(robot_radius
+												 + padding_factor * gridframe.Delta() * sqrt_of_half),
 			m_travmap(travmap),
 			m_trav_rwlock(trav_rwlock),
 			m_sprite(new Sprite(grown_safe_distance, gridframe.Delta()))
@@ -155,7 +159,9 @@ namespace sfl {
 	
 	
 	shared_ptr<Mapper2d> Mapper2d::
-	Create(double robot_radius, double buffer_zone,
+	Create(double robot_radius,
+				 double buffer_zone,
+				 double padding_factor,
 				 const std::string & traversability_file,
 				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
@@ -184,7 +190,7 @@ namespace sfl {
     }
 		
 		shared_ptr<Mapper2d>
-			result(new Mapper2d(robot_radius, buffer_zone, traversability,
+			result(new Mapper2d(robot_radius, buffer_zone, padding_factor, traversability,
 													grow_strategy, rwl));
 		return result;
 	}
