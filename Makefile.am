@@ -39,7 +39,7 @@ SUBDIRS= common robox visitor \
          . simul \
          $(QT_DIR)
 
-noinst_LTLIBRARIES=    libnepumuk.la
+lib_LTLIBRARIES=       libnepumuk.la
 libnepumuk_la_SOURCES= 
 libnepumuk_la_LIBADD=  common/libcommon.la \
                        robox/librobox.la \
