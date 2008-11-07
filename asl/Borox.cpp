@@ -115,6 +115,11 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	      bool estar_grow_grid,
 	      double & robot_radius)
 {
+  if (swiped_map_update)
+    cerr << "WARNING in Borox::InitAlgorithm():\n"
+	 << "WARNING   ReflinkMapper2d is too experimental,\n"
+	 << "WARNING   so I am ignoring that you want to do \"swiped_map_update\".\n";
+  
   if ( ! m_model)
     m_model = CreateModel(params);
   
@@ -126,9 +131,11 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   bool use_simple_query(false);
   string_to(descriptor->GetOption("use_simple_query"), use_simple_query);
   
+#warning 'make padding_factor configurable (fallback to legacy behavior)'
+  double const padding_factor(2);
   shared_ptr<Mapper2d::always_grow> grow_strategy(new Mapper2d::always_grow());
   shared_ptr<Mapper2d>
-    m2d(Mapper2d::Create(robot_radius, buffer_zone, traversability_file,
+    m2d(Mapper2d::Create(robot_radius, buffer_zone, padding_factor, traversability_file,
 			 grow_strategy, &cerr));
   if ( ! m2d) {
     cerr << "ERROR in Borox::InitAlgorithm():\n"
@@ -197,7 +204,7 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   shared_ptr<TravmapCallback> travmap_cb(planner->GetTravmapCallback());
   
   shared_ptr<Mapper>
-    mapper(new Mapper(m2d, travmap_cb, swiped_map_update, grow_options.get()));
+    mapper(new Mapper(m2d, travmap_cb, grow_options.get()));
   if ( ! mapper) {
     cerr << "ERROR in Borox::InitAlgorithm():\n"
 	 << "  Could not create asl::Mapper.\n";

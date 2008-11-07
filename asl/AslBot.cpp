@@ -526,12 +526,14 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
  	AddDrawing(new ThreadDrawing<asl::ControlThread>
 						 (name + "_control_thread", m_control_thread.get()));
 	
-	AddDrawing(new MapperUpdateDrawing(name + "_mapper_update",
-																		 m_asl_algo->GetMapper2d()));
-	AddDrawing(new MapperRefDrawing(name + "_mapper_ref",
-																	m_asl_algo->GetMapper2d(), false));
-	AddDrawing(new MapperRefDrawing(name + "_mapper_link",
-																	m_asl_algo->GetMapper2d(), true));
+	if (m_asl_algo->GetReflinkMapper2d()) {
+		AddDrawing(new MapperUpdateDrawing(name + "_mapper_update",
+																			 m_asl_algo->GetReflinkMapper2d()));
+		AddDrawing(new MapperRefDrawing(name + "_mapper_ref",
+																		m_asl_algo->GetReflinkMapper2d(), false));
+		AddDrawing(new MapperRefDrawing(name + "_mapper_link",
+																		m_asl_algo->GetReflinkMapper2d(), true));
+	}
 	
 	MoreGraphics(name, world, slow_drawing_enabled);
 }

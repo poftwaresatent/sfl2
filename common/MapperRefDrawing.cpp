@@ -51,10 +51,10 @@ namespace npm {
   
   MapperRefDrawing::
   MapperRefDrawing(const std::string & name,
-									 boost::shared_ptr<const sfl::Mapper2d> mapper,
+									 boost::shared_ptr<const sfl::ReflinkMapper2d> mapper,
 									 bool draw_link)
     : Drawing(name,
-							"the references and backlinks in a sfl::Mapper2d",
+							"the references and backlinks in a sfl::ReflinkMapper2d",
 							Instance<UniqueManager<Drawing> >()),
       m_mapper(mapper),
 			m_draw_link(draw_link)
@@ -82,7 +82,7 @@ namespace npm {
 			ssize_t const yend(rdtravmap->GetYEnd());
 		
 			if (m_draw_link) {
-				const Mapper2d::linkmap_t & linkmap(m_mapper->GetLinkmap());
+				const ReflinkMapper2d::linkmap_t & linkmap(m_mapper->GetLinkmap());
 				glColor3d(1, 1, 0.5);
 				glBegin(GL_LINES);
 				for (ssize_t ix(xbegin); ix < xend; ++ix)
@@ -90,10 +90,10 @@ namespace npm {
 						int val;
 						if ( ! rdtravmap->GetValue(ix, iy, val))
 							continue;
-						const Mapper2d::link_t & link(linkmap.at(ix, iy));
+						const ReflinkMapper2d::link_t & link(linkmap.at(ix, iy));
 						if (link.empty())
 							continue;
-						for (Mapper2d::link_t::const_iterator ii(link.begin());
+						for (ReflinkMapper2d::link_t::const_iterator ii(link.begin());
 								 ii != link.end(); ++ii) {
 							vec2d<double> const pt(ix + Random::Uniform(-0.4, 0.4),
 																		 iy + Random::Uniform(-0.4, 0.4));
@@ -105,15 +105,15 @@ namespace npm {
 					}
 			}
 			else {
-				const Mapper2d::refmap_t & refmap(m_mapper->GetRefmap());
+				const ReflinkMapper2d::refmap_t & refmap(m_mapper->GetRefmap());
 				glBegin(GL_LINES);
 				for (ssize_t ix(xbegin); ix < xend; ++ix)
 					for (ssize_t iy(ybegin); iy < yend; ++iy) {
 						int val;
 						if ( ! rdtravmap->GetValue(ix, iy, val))
 							continue;
-						const Mapper2d::ref_s & ref(refmap.at(ix, iy));
-						for (Mapper2d::rev_t::const_iterator ii(ref.reverse.begin());
+						const ReflinkMapper2d::ref_s & ref(refmap.at(ix, iy));
+						for (ReflinkMapper2d::rev_t::const_iterator ii(ref.reverse.begin());
 								 ii != ref.reverse.end(); ++ii) {
 							if (ii->first == val)
 								glColor3d(1, 0.5, 0);

@@ -31,7 +31,7 @@
 
 
 namespace sfl {
-  class Mapper2d;
+  class ReflinkMapper2d;
 }
 
 
@@ -43,12 +43,12 @@ namespace npm {
   {
   public:
     MapperUpdateDrawing(const std::string & name,
-			boost::shared_ptr<const sfl::Mapper2d> mapper);
+												boost::shared_ptr<const sfl::ReflinkMapper2d> mapper);
     
     virtual void Draw();
     
   private:
-    boost::shared_ptr<const sfl::Mapper2d> m_mapper;
+    boost::shared_ptr<const sfl::ReflinkMapper2d> m_mapper;
   };
 
 }

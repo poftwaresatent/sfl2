@@ -46,9 +46,9 @@ namespace npm {
   
   MapperUpdateDrawing::
   MapperUpdateDrawing(const std::string & name,
-		      boost::shared_ptr<const sfl::Mapper2d> mapper)
+		      boost::shared_ptr<const sfl::ReflinkMapper2d> mapper)
     : Drawing(name,
-							"most recent changes of a sweeping-update sfl::Mapper2d",
+							"most recent changes of a sweeping-update sfl::ReflinkMapper2d",
 							Instance<UniqueManager<Drawing> >()),
       m_mapper(mapper)
   {
@@ -58,8 +58,8 @@ namespace npm {
   void MapperUpdateDrawing::
   Draw()
   {
-    const Mapper2d::link_t & freespace(m_mapper->GetFreespaceBuffer());
-    const Mapper2d::link_t & obstacle(m_mapper->GetObstacleBuffer());
+    const ReflinkMapper2d::link_t & freespace(m_mapper->GetFreespaceBuffer());
+    const ReflinkMapper2d::link_t & obstacle(m_mapper->GetObstacleBuffer());
     
     if(freespace.empty() && obstacle.empty())
       return;
@@ -75,7 +75,7 @@ namespace npm {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
     glColor3d(0, 1, 0.5);
-    for(Mapper2d::link_t::const_iterator ifree(freespace.begin());
+    for(ReflinkMapper2d::link_t::const_iterator ifree(freespace.begin());
 				ifree != freespace.end(); ++ifree){
       PDEBUG("free %ul %ul\n", ifree->v0, ifree->v1);
       glRectd(ifree->v0 - 0.3, ifree->v1 - 0.3,
@@ -83,7 +83,7 @@ namespace npm {
     }
     
     glColor3d(1, 0, 0.5);
-    for(Mapper2d::link_t::const_iterator iobst(obstacle.begin());
+    for(ReflinkMapper2d::link_t::const_iterator iobst(obstacle.begin());
 				iobst != obstacle.end(); ++iobst){
       PDEBUG("obst %ul %ul\n", iobst->v0, iobst->v1);
       glRectd(iobst->v0 - 0.4, iobst->v1 - 0.4,
