@@ -53,35 +53,37 @@ typedef int8_t * png_bytep;
 #include <string>
 using std::string;
 
+namespace npm {
 
+  /**
+   *  \brief PNG-only image.
+   * 
+   *  This class is a quick hack to enable screenshots of the Simulator.
+   * 
+   *  \todo Adjust naming conventions to the other classes.
+   */
 
-/**
- *  \brief PNG-only image.
- * 
- *  This class is a quick hack to enable screenshots of the Simulator.
- * 
- *  \todo Adjust naming conventions to the other classes.
- */
+  class SimpleImage
+  {
+  public:
+    SimpleImage(png_uint_32 width, png_uint_32 height);
+    ~SimpleImage();
 
-class SimpleImage
-{
-public:
-  SimpleImage(png_uint_32 width, png_uint_32 height);
-  ~SimpleImage();
+    bool write_png(const string &filename);
+    void set_pixel(png_uint_32 x, png_uint_32 y,
+		   png_byte r, png_byte g, png_byte b);
+    void read_framebuf(unsigned int xoff, unsigned int yoff);
 
-  bool write_png(const string &filename);
-  void set_pixel(png_uint_32 x, png_uint_32 y,
-		 png_byte r, png_byte g, png_byte b);
-  void read_framebuf(unsigned int xoff, unsigned int yoff);
+  private:
+    static const int BPP = 3;
 
-private:
-  static const int BPP = 3;
+    png_uint_32 width, height;
+    png_bytep *row_pointers;
+    png_byte *pixel;
 
-  png_uint_32 width, height;
-  png_bytep *row_pointers;
-  png_byte *pixel;
+    png_uint_32 npixels;
+  };
 
-  png_uint_32 npixels;
-};
+}
 
 #endif // SIMPLEIMAGE_H
