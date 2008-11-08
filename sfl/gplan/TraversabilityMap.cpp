@@ -347,6 +347,25 @@ namespace sfl {
 	
 	
 	bool TraversabilityMap::
+	IsWObst(double global_x, double global_y) const
+	{
+    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+    if( ! grid.valid(idx.v0, idx.v1))
+      return false;
+    return grid.at(idx.v0, idx.v1) > obstacle;
+	}
+	
+	
+	bool TraversabilityMap::
+	IsWObst(ssize_t index_x, ssize_t index_y) const
+	{
+    if( ! grid.valid(index_x, index_y))
+      return false;
+    return grid.at(index_x, index_y) > obstacle;
+	}
+	
+	
+	bool TraversabilityMap::
 	IsFree(double global_x, double global_y) const
 	{
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));

@@ -140,12 +140,28 @@ namespace sfl {
 		bool SetFree(ssize_t index_x, ssize_t index_y, draw_callback * cb);
 		
 		/** \return true if the given point lies in the grid and there is
-				an obstacle there. */
+				a blown up (config space) obstacle there. */
 		bool IsObst(double global_x, double global_y) const;
 
 		/** \return true if the given index lies in the grid and there is
-				an obstacle there. */
+				a blown up (config space) obstacle there. */
 		bool IsObst(ssize_t index_x, ssize_t index_y) const;
+		
+		/** \note This only makes sense if you distinguish work- from
+				config-space obstacles by flagging the former as obstacle+1
+				(or higher).
+				
+				\return true if the given point lies in the grid and there is
+				a non-blown up (work space) obstacle there. */
+		bool IsWObst(double global_x, double global_y) const;
+
+		/** \note This only makes sense if you distinguish work- from
+				config-space obstacles by flagging the former as obstacle+1
+				(or higher).
+				
+				\return true if the given index lies in the grid and there is
+				a non-blown up (work space) obstacle there. */
+		bool IsWObst(ssize_t index_x, ssize_t index_y) const;
 
 		/** \return true if the given point lies in the grid and the
 				corresponding cell is in free-space. */

@@ -96,6 +96,16 @@ namespace sfl {
 			return m_travmap->IsObst(ix, iy); }
 		
 		/** see TraversabilityMap documentation */
+		bool IsWObst(double gx, double gy) const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->IsWObst(gx, gy); }
+		
+		/** see TraversabilityMap documentation */
+		bool IsWObst(ssize_t ix, ssize_t iy) const {
+			RWlock::rdsentry const sentry(m_rwlock);
+			return m_travmap->IsWObst(ix, iy); }
+		
+		/** see TraversabilityMap documentation */
 		bool IsFree(double gx, double gy) const {
 			RWlock::rdsentry const sentry(m_rwlock);
 			return m_travmap->IsFree(gx, gy); }
