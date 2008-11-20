@@ -33,11 +33,6 @@
 #include <set>
 
 
-namespace estar {
-	class Sprite;
-}
-
-
 namespace sfl {
 	
 	
@@ -193,6 +188,17 @@ namespace sfl {
 		
 		
 	protected:
+		struct sprite_element {
+      sprite_element(ssize_t _x, ssize_t _y, int _v): x(_x), y(_y), v(_v) { }
+      ssize_t x, y;
+      int v;
+    };
+    
+    typedef std::vector<sprite_element> sprite_t;
+		
+		
+		void InitSprite();
+		
 		/** Default implementation does nothing. Quick hack for
 				ReflinkMapper2d rfct. */
 		virtual void ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend,
@@ -209,7 +215,8 @@ namespace sfl {
 				that do not contain any actual workspace points. */
 		boost::shared_ptr<TraversabilityMap> m_travmap;
 		boost::shared_ptr<RWlock> m_trav_rwlock;
-		boost::shared_ptr<estar::Sprite> m_sprite;
+		sprite_t m_sprite;
+		ssize_t m_sprite_x0, m_sprite_y0, m_sprite_x1, m_sprite_y1;	// bbox
 		
 		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
 	};

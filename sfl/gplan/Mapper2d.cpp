@@ -26,8 +26,8 @@
 #include "Mapper2d.hpp"
 #include "GridFrame.hpp"
 #include <sfl/util/pdebug.hpp>
+#include <sfl/util/numeric.hpp>
 #include <sfl/api/Scan.hpp>
-#include <estar/Sprite.hpp>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -43,7 +43,6 @@
 
 
 using namespace std;
-using namespace estar;
 using namespace boost;
 
 
@@ -111,9 +110,10 @@ namespace sfl {
 																			grid_xbegin, grid_xend,
 																			grid_ybegin, grid_yend,
 																			freespace, obstacle, name)),
-			m_trav_rwlock(trav_rwlock),
-			m_sprite(new Sprite(grown_safe_distance, _gridframe.Delta()))
+			m_trav_rwlock(trav_rwlock)
+		//			m_sprite(new Sprite(grown_safe_distance, _gridframe.Delta()))
 	{
+		InitSprite();
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -138,9 +138,9 @@ namespace sfl {
 			grown_robot_radius(robot_radius
 												 + padding_factor * gridframe.Delta() * sqrt_of_half),
 			m_travmap(travmap),
-			m_trav_rwlock(trav_rwlock),
-			m_sprite(new Sprite(grown_safe_distance, gridframe.Delta()))
+			m_trav_rwlock(trav_rwlock)
 	{
+		InitSprite();
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -282,12 +282,10 @@ namespace sfl {
 			return 0;
 		
 		// See if we (might) need to grow the grid...
-		ssize_t bbx0, bby0, bbx1, bby1;
-		m_sprite->GetBBox(bbx0, bby0, bbx1, bby1);
-		bbx0 += ix0;
-		bbx1 += ix0;
-		bby0 += iy0;
-		bby1 += iy0;
+		ssize_t const bbx0(m_sprite_x0 + ix0);
+		ssize_t const bby0(m_sprite_y0 + iy0);
+		ssize_t const bbx1(m_sprite_x1 + ix0);
+		ssize_t const bby1(m_sprite_y1 + iy0);
 		bool grown(false);
 		grown |= (*m_grow_strategy)(*m_travmap, bbx0, bby0);
 		grown |= (*m_grow_strategy)(*m_travmap, bbx0, bby1);
@@ -310,35 +308,24 @@ namespace sfl {
 		
 		PVDEBUG("set source to %d\n", ws_obstacle);
 
-		// Perform C-space extension with buffer zone, housekeeping the
-		// cell-dependency structure.
-    const Sprite::indexlist_t & area(m_sprite->GetArea());
-		for (size_t ii(0); ii < area.size(); ++ii) {
-			ssize_t const ix(ix0 + area[ii].x);
-			ssize_t const iy(iy0 + area[ii].y);
+		// Perform C-space extension with buffer zone, potentially
+		// housekeeping the cell-dependency structure (depending on which
+		// subclass we're in).
+		for (size_t ii(0); ii < m_sprite.size(); ++ii) {
+			ssize_t const ix(ix0 + m_sprite[ii].x);
+			ssize_t const iy(iy0 + m_sprite[ii].y);
 			if ( ! m_travmap->IsValid(ix, iy))
 				continue;								// outside of grid
 			if ((ix0 == ix) && (iy0 == iy))
 				continue;								// we've already flagged the center
 			
-			double const dist(area[ii].r);
-			if (dist > grown_safe_distance)
-				continue;								// outside buffer ("never" happens)
+			PVDEBUG("target %lu %lu to %d\n", ix, iy, m_sprite[ii].v);
 			
-			int value(obstacle);
-			if (dist > grown_robot_radius) {
-				double const vv(  freespace * (dist - grown_robot_radius)
-												+ obstacle  * (grown_safe_distance - dist));
-				value = static_cast<int>(rint(vv / buffer_zone));
-			}
-			
-			PVDEBUG("target %lu %lu to %d\n", ix, iy, value);
-			
-			AddReference(source_index, ix, iy, value);
+			AddReference(source_index, ix, iy, m_sprite[ii].v);
 			m_travmap->GetValue(ix, iy, old_value);
-			if (value > old_value) {
-				PVDEBUG("value = %d > old_value = %d\n", value, old_value);
-				m_travmap->SetValue(ix, iy, value, cb);
+			if (m_sprite[ii].v > old_value) {
+				PVDEBUG("value = %d > old_value = %d\n", m_sprite[ii].v, old_value);
+				m_travmap->SetValue(ix, iy, m_sprite[ii].v, cb);
 				++count;
 			}
 		}
@@ -626,6 +613,42 @@ namespace sfl {
 	{
 		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
 		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
+	}
+	
+	
+	void Mapper2d::
+	InitSprite()
+	{
+		m_sprite_x0 = 0;
+		m_sprite_y0 = 0;
+		m_sprite_x1 = 0;
+		m_sprite_y1 = 0;
+		const ssize_t offset(static_cast<ssize_t>(ceil(grown_safe_distance / gridframe.Delta())));
+    for (ssize_t ix(-offset); ix <= offset; ++ix) {
+      const double x2(sqr(ix * gridframe.Delta()));
+      for (ssize_t iy(-offset); iy <= offset; ++iy) {
+				const double rr(sqrt(sqr(iy * gridframe.Delta()) + x2));
+				if (rr < grown_safe_distance) {
+					// compute cost of this cell and store it in the sprite
+#warning 'TO DO: pluggable cost shapes'
+					double const vv(  freespace * (rr - grown_robot_radius)
+													+ obstacle  * (grown_safe_distance - rr));
+					int const cost(minval(obstacle, static_cast<int>(rint(vv / buffer_zone))));
+					if (cost > 0) {
+						m_sprite.push_back(sprite_element(ix, iy, cost));
+						// update the sprite's bounding box
+						if (ix < m_sprite_x0)
+							m_sprite_x0 = ix;
+						if (ix > m_sprite_x1)
+							m_sprite_x1 = ix;
+						if (iy < m_sprite_y0)
+							m_sprite_y0 = iy;
+						if (iy > m_sprite_y1)
+							m_sprite_y1 = iy;
+					}
+				}
+      }
+    }
 	}
 	
 }

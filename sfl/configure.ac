@@ -86,18 +86,17 @@ AC_ARG_WITH(robox,
     CPPFLAGS="$oldCPPFLAGS" ],
   [ AM_CONDITIONAL([SFL_HAVE_ROBOX], [false]) ])
 
-dnl IDEA: use two separate options for libtool/non-LT install...
-AC_ARG_WITH(estar,
-  AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
-  [ if test "x$withval" = "x" ; then
-      SFL_CPPFLAGS="$SFL_CPPFLAGS -DHAVE_ESTAR"
-      SFL_LDFLAGS="-lestar $SFL_LDFLAGS"
-    else
-      SFL_CPPFLAGS="$SFL_CPPFLAGS -DHAVE_ESTAR -I${withval}/include -I${withval}"
-      SFL_LDFLAGS="-lestar -L${withval}/lib -L${withval} $SFL_LDFLAGS"
-    fi
-    AM_CONDITIONAL([SFL_HAVE_ESTAR], [true]) ],
-  [ AM_CONDITIONAL([SFL_HAVE_ESTAR], [false]) ])
+dnl AC_ARG_WITH(estar,
+dnl   AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
+dnl   [ if test "x$withval" = "x" ; then
+dnl       SFL_CPPFLAGS="$SFL_CPPFLAGS -DHAVE_ESTAR"
+dnl       SFL_LDFLAGS="-lestar $SFL_LDFLAGS"
+dnl     else
+dnl       SFL_CPPFLAGS="$SFL_CPPFLAGS -DHAVE_ESTAR -I${withval}/include -I${withval}"
+dnl       SFL_LDFLAGS="-lestar -L${withval}/lib -L${withval} $SFL_LDFLAGS"
+dnl     fi
+dnl     AM_CONDITIONAL([SFL_HAVE_ESTAR], [true]) ],
+dnl   [ AM_CONDITIONAL([SFL_HAVE_ESTAR], [false]) ])
 
 ABSTOPBUILDDIR=`pwd`
 if test -z "$ABSTOPBUILDDIR" ; then
