@@ -99,7 +99,7 @@ namespace npm {
       for (ssize_t iy(ybegin); iy < yend; ++iy) {
 				int const value(m_proxy->GetValue(ix, iy));
 				if (value > obstacle)
-					glColor3d(0.5, 0, 0.6);
+					glColor3d(0.5, 0, 1);
 				else if (value == obstacle)
 					glColor3d(0.5, 0, 0);
 				else if (value < freespace)
