@@ -39,7 +39,25 @@ namespace sfl {
 	class Scan;
 	class GridFrame;
 	
-  
+	
+	struct travmap_cost_decay {
+		virtual ~travmap_cost_decay() {}
+		virtual double operator () (double normdist) const = 0;
+	};
+	
+	struct linear_travmap_cost_decay: public travmap_cost_decay {
+		/** \return (1-normdist) */
+		virtual double operator () (double normdist) const;
+	};
+	
+	struct exponential_travmap_cost_decay: public travmap_cost_decay {
+		double const power;
+		explicit exponential_travmap_cost_decay(double power);
+		/** \return pow(1-normdist, power) */
+		virtual double operator () (double normdist) const;
+	};
+	
+	
   class Mapper2d
 	{
 	public:
@@ -76,6 +94,8 @@ namespace sfl {
 		Mapper2d(double robot_radius,
 						 double buffer_zone,
 						 double padding_factor,
+						 /** use linear_travmap_cost_decay for legacy behavior */
+						 travmap_cost_decay const & decay,
 						 boost::shared_ptr<TraversabilityMap> travmap,
 						 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 						 boost::shared_ptr<RWlock> trav_rwlock);
@@ -95,6 +115,8 @@ namespace sfl {
 						 double padding_factor,
 						 int freespace,
 						 int obstacle,
+						 /** use linear_travmap_cost_decay for legacy behavior */
+						 travmap_cost_decay const & decay,
 						 const std::string & name,
 						 boost::shared_ptr<RWlock> trav_rwlock,
 						 /** Optional. Defaults to never_grow. */
@@ -106,6 +128,8 @@ namespace sfl {
 		Create(double robot_radius,
 					 double buffer_zone,
 					 double padding_factor,
+					 /** use linear_travmap_cost_decay for legacy behavior */
+					 travmap_cost_decay const & decay,
 					 const std::string & traversability_file,
 					 /** Optional. Defaults to never_grow. */
 					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
@@ -197,7 +221,7 @@ namespace sfl {
     typedef std::vector<sprite_element> sprite_t;
 		
 		
-		void InitSprite();
+		void InitSprite(travmap_cost_decay const & decay);
 		
 		/** Default implementation does nothing. Quick hack for
 				ReflinkMapper2d rfct. */
@@ -232,6 +256,8 @@ namespace sfl {
 		ReflinkMapper2d(double robot_radius,
 										double buffer_zone,
 										double padding_factor,
+										/** use linear_travmap_cost_decay for legacy behavior */
+										travmap_cost_decay const & decay,
 										boost::shared_ptr<TraversabilityMap> travmap,
 										boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 										boost::shared_ptr<RWlock> trav_rwlock);
@@ -251,6 +277,8 @@ namespace sfl {
 		Create(double robot_radius,
 					 double buffer_zone,
 					 double padding_factor,
+					 /** use linear_travmap_cost_decay for legacy behavior */
+					 travmap_cost_decay const & decay,
 					 const std::string & traversability_file,
 					 /** Optional. Defaults to never_grow. */
 					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,

@@ -94,6 +94,7 @@ namespace sfl {
 					 double padding_factor,
 					 int _freespace,
 					 int _obstacle,
+					 travmap_cost_decay const & decay,
 					 const std::string & name,
 					 shared_ptr<RWlock> trav_rwlock,
 					 shared_ptr<travmap_grow_strategy> grow_strategy)
@@ -113,7 +114,7 @@ namespace sfl {
 			m_trav_rwlock(trav_rwlock)
 		//			m_sprite(new Sprite(grown_safe_distance, _gridframe.Delta()))
 	{
-		InitSprite();
+		InitSprite(decay);
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -125,6 +126,7 @@ namespace sfl {
 	Mapper2d(double robot_radius,
 					 double _buffer_zone,
 					 double padding_factor,
+					 travmap_cost_decay const & decay,
 					 shared_ptr<TraversabilityMap> travmap,
 					 shared_ptr<travmap_grow_strategy> grow_strategy,
 					 shared_ptr<RWlock> trav_rwlock)
@@ -140,7 +142,7 @@ namespace sfl {
 			m_travmap(travmap),
 			m_trav_rwlock(trav_rwlock)
 	{
-		InitSprite();
+		InitSprite(decay);
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -152,6 +154,7 @@ namespace sfl {
 	Create(double robot_radius,
 				 double buffer_zone,
 				 double padding_factor,
+				 travmap_cost_decay const & decay,
 				 const std::string & traversability_file,
 				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
@@ -180,8 +183,8 @@ namespace sfl {
     }
 		
 		shared_ptr<Mapper2d>
-			result(new Mapper2d(robot_radius, buffer_zone, padding_factor, traversability,
-													grow_strategy, rwl));
+			result(new Mapper2d(robot_radius, buffer_zone, padding_factor, decay,
+													traversability, grow_strategy, rwl));
 		return result;
 	}
 	
@@ -193,6 +196,7 @@ namespace sfl {
 	Create(double robot_radius,
 				 double buffer_zone,
 				 double padding_factor,
+				 travmap_cost_decay const & decay,
 				 const std::string & traversability_file,
 				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
@@ -221,8 +225,8 @@ namespace sfl {
     }
 		
 		shared_ptr<ReflinkMapper2d>
-			result(new ReflinkMapper2d(robot_radius, buffer_zone, padding_factor, traversability,
-																 grow_strategy, rwl));
+			result(new ReflinkMapper2d(robot_radius, buffer_zone, padding_factor, decay,
+																 traversability, grow_strategy, rwl));
 		return result;
 	}
 	
@@ -594,10 +598,12 @@ namespace sfl {
 	ReflinkMapper2d(double robot_radius,
 									double buffer_zone,
 									double padding_factor,
+									travmap_cost_decay const & decay,
 									boost::shared_ptr<TraversabilityMap> travmap,
 									boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 									boost::shared_ptr<RWlock> trav_rwlock)
-		: Mapper2d(robot_radius, buffer_zone, padding_factor, travmap, grow_strategy, trav_rwlock)
+		: Mapper2d(robot_radius, buffer_zone, padding_factor,
+							 decay, travmap, grow_strategy, trav_rwlock)
 	{
 		ssize_t const grid_xbegin(travmap->grid.xbegin());
 		ssize_t const grid_xend(travmap->grid.xend());
@@ -617,23 +623,25 @@ namespace sfl {
 	
 	
 	void Mapper2d::
-	InitSprite()
+	InitSprite(travmap_cost_decay const & decay)
 	{
 		m_sprite_x0 = 0;
 		m_sprite_y0 = 0;
 		m_sprite_x1 = 0;
 		m_sprite_y1 = 0;
 		const ssize_t offset(static_cast<ssize_t>(ceil(grown_safe_distance / gridframe.Delta())));
+		const double bufcostrange(obstacle - freespace -2);
     for (ssize_t ix(-offset); ix <= offset; ++ix) {
       const double x2(sqr(ix * gridframe.Delta()));
       for (ssize_t iy(-offset); iy <= offset; ++iy) {
 				const double rr(sqrt(sqr(iy * gridframe.Delta()) + x2));
 				if (rr < grown_safe_distance) {
-					// compute cost of this cell and store it in the sprite
-#warning 'TO DO: pluggable cost shapes'
-					double const vv(  freespace * (rr - grown_robot_radius)
-													+ obstacle  * (grown_safe_distance - rr));
-					int const cost(minval(obstacle, static_cast<int>(rint(vv / buffer_zone))));
+					int cost(obstacle);
+					if (rr > grown_robot_radius) {
+						double const normdist((rr - grown_robot_radius) / buffer_zone);
+						double const vv(freespace + 1 + decay(normdist) * bufcostrange);
+						cost = boundval(freespace + 1, static_cast<int>(rint(vv)), obstacle - 1);
+					}
 					if (cost > 0) {
 						m_sprite.push_back(sprite_element(ix, iy, cost));
 						// update the sprite's bounding box
@@ -649,6 +657,27 @@ namespace sfl {
 				}
       }
     }
+	}
+	
+	
+	double linear_travmap_cost_decay::
+	operator () (double normdist) const
+	{
+		return 1 - normdist;
+	}
+	
+	
+	exponential_travmap_cost_decay::
+	exponential_travmap_cost_decay(double _power)
+		: power(_power)
+	{
+	}
+	
+	
+	double exponential_travmap_cost_decay::
+	operator () (double normdist) const
+	{
+		return pow(1 - normdist, power);
 	}
 	
 }
