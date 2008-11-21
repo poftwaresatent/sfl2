@@ -22,7 +22,12 @@ Robot borox Borox
 
 	Option m2d_grow_strategy        always
 	Option estar_grow_grid          true 
-	Option coarse_grid_ncells       20
+
+### trigger a bug in r950 by setting coarse_grid_ncells to 20!
+### the robot will get stuck because it does not replan even though it
+### has no plan... and in other similar situations it would replan.
+	Option coarse_grid_ncells       30
+
         Option traversability_file      travmap.borox0
 
         Option carrot_distance      1

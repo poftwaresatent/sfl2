@@ -131,12 +131,16 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   bool use_simple_query(false);
   string_to(descriptor->GetOption("use_simple_query"), use_simple_query);
   
-#warning 'make padding_factor configurable (fallback to legacy behavior)'
-  double const padding_factor(2);
+#warning 'make these two configurable one day'
+  double const padding_factor(2);	// 2 is legacy
+  double const decay_power(2); // this is not, however
+  
   shared_ptr<Mapper2d::always_grow> grow_strategy(new Mapper2d::always_grow());
   shared_ptr<Mapper2d>
-    m2d(Mapper2d::Create(robot_radius, buffer_zone, padding_factor, traversability_file,
-			 grow_strategy, &cerr));
+    m2d(Mapper2d::Create(robot_radius, buffer_zone, padding_factor,
+			 ////linear_travmap_cost_decay(),
+			 exponential_travmap_cost_decay(decay_power),
+			 traversability_file, grow_strategy, &cerr));
   if ( ! m2d) {
     cerr << "ERROR in Borox::InitAlgorithm():\n"
 	 << "  Could not create Mapper2d instance.\n";
