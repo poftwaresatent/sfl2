@@ -26,25 +26,17 @@
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
 #include "../util/numeric.hpp"
+
+// manual override
+#define SFL_DEBUG
 #include "../util/pdebug.hpp"
+
 #include "../api/Pose.hpp"
 #include "../api/Odometry.hpp"
 #include "../bband/BubbleBand.hpp"
 #include "../dwa/DynamicWindow.hpp"
 #include "../dwa/DistanceObjective.hpp"
 #include <cmath>
-
-
-// manual override
-#define SFL_DEBUG
-
-#ifdef SFL_DEBUG
-# define PDEBUG PDEBUG_ERR
-# define PVDEBUG PDEBUG_OFF
-#else // ! SFL_DEBUG
-# define PDEBUG PDEBUG_OFF
-# define PVDEBUG PDEBUG_OFF
-#endif // SFL_DEBUG
 
 
 using namespace boost;

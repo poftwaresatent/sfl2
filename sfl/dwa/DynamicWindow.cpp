@@ -28,20 +28,12 @@
 #include "SpeedObjective.hpp"
 #include "../api/RobotModel.hpp"
 #include "../api/MotionController.hpp"
-#include "../util/pdebug.hpp"
-#include <iostream>
-
 
 // manual dbg
 #define SFL_DEBUG
+#include "../util/pdebug.hpp"
 
-#ifdef SFL_DEBUG
-# define PDEBUG PDEBUG_ERR
-# define PVDEBUG PDEBUG_OFF
-#else // ! SFL_DEBUG
-# define PDEBUG PDEBUG_OFF
-# define PVDEBUG PDEBUG_OFF
-#endif // SFL_DEBUG
+#include <iostream>
 
 
 using namespace boost;

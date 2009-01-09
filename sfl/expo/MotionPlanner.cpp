@@ -25,7 +25,11 @@
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
 #include "MotionPlannerState.hpp"
+
+// manual
+#define SFL_DEBUG
 #include "../util/pdebug.hpp"
+
 #include "../api/Multiscanner.hpp"
 #include "../api/Goal.hpp"
 #include "../api/Pose.hpp"
@@ -37,16 +41,6 @@
 #ifdef WIN32
 # include "../util/numeric.hpp"
 #endif // WIN32
-
-// manual
-#define SFL_DEBUG
-
-#ifdef SFL_DEBUG
-# define PDEBUG PDEBUG_ERR
-#else // ! SFL_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // SFL_DEBUG
-#define PVDEBUG PDEBUG_OFF
 
 
 using namespace boost;
