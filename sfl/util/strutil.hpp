@@ -67,6 +67,33 @@ namespace sfl {
     foo = bar ? 1 : 0;
     return true;
   }
+
+  
+  /**
+     Split a string at the first occurrence of a separator, and store
+     the two portions in head and tail. For example,
+     "head:tail_or:whatever::comes:then" with separator ':' will yield
+     "head" and "tail_or:whatever::comes:then". The same string split
+     along '_' would yield "head:tail" and "or:whatever::comes:then".
+     
+     Note that it's OK to pass the same instance as input and tail,
+     but DO NOT pass the head twice.
+     
+     \code
+     for (int ii(1); ii < argc; ++ii) {
+       string head;
+       string tail(argv[ii]);
+       while (splitstring(tail, ':', head, tail))
+         cout << head << "\n";
+       cout << head << "\n";
+     }
+     \endcode
+     
+     \return true if there is more to be extracted, allowing you to
+     easily tokenize a string.
+  */
+  bool splitstring(std::string const & input, char separator,
+		   std::string & head, std::string & tail);
   
 }
 

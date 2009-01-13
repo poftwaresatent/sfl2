@@ -18,6 +18,7 @@
  */
 
 #include "strutil.hpp"
+using namespace std;
 
 namespace sfl {
   
@@ -34,6 +35,24 @@ namespace sfl {
       return true;
     }
     return false;
+  }
+  
+  
+  bool splitstring(string const & input, char separator,
+		   string & head, string & tail)
+  {
+    if (input.empty()) {
+      head = "";
+      tail = "";
+      return false;
+    }
+    string::size_type col(input.find(separator, 0));
+    head = input.substr(0, col);
+    if (string::npos != col)
+      tail = input.substr(col + 1);
+    else
+      tail = "";
+    return true;
   }
   
 }
