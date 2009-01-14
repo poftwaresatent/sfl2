@@ -318,7 +318,7 @@ void parse_options(int argc, char ** argv)
 void cleanup()
 {
   simulator.reset();
-#warning "shouldn't GLUT resources be freed or so?"
+  // XXXX to do: shouldn't GLUT resources be freed or so?
 }
 
 

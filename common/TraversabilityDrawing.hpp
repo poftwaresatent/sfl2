@@ -101,16 +101,25 @@ namespace npm {
     : public Drawing
   {
   public:
+		typedef enum {
+			DEFAULT,
+			MINIMAL_DARK,
+		} color_code_t;
+		
     TraversabilityDrawing(const std::string & name,
-													boost::shared_ptr<TravProxyAPI> proxy);
+													boost::shared_ptr<TravProxyAPI> proxy,
+													color_code_t color_code = DEFAULT);
 		
 		/** \note Packs proxy into a boost::shared_ptr<>, so only use this
 				if you have a raw pointer that will NOT be deleted in your
 				code. */
     TraversabilityDrawing(const std::string & name,
-													TravProxyAPI * proxy);
+													TravProxyAPI * proxy,
+													color_code_t color_code = DEFAULT);
     
     virtual void Draw();
+		
+		color_code_t color_code;
     
   private:
     boost::shared_ptr<TravProxyAPI> m_proxy;

@@ -52,10 +52,12 @@ namespace npm {
   
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
-												shared_ptr<TravProxyAPI> proxy)
+												shared_ptr<TravProxyAPI> proxy,
+												color_code_t _color_code)
     : Drawing(name,
 							"traversability map as greyscale with special highlights",
 							Instance<UniqueManager<Drawing> >()),
+			color_code(_color_code),
 			m_proxy(proxy)
   {
   }
@@ -63,10 +65,12 @@ namespace npm {
   
   TraversabilityDrawing::
   TraversabilityDrawing(const string & name,
-												TravProxyAPI * proxy)
+												TravProxyAPI * proxy,
+												color_code_t _color_code)
     : Drawing(name,
 							"traversability map as greyscale with special highlights",
 							Instance<UniqueManager<Drawing> >()),
+			color_code(_color_code),
 			m_proxy(proxy)
   {
   }
@@ -98,17 +102,29 @@ namespace npm {
     for (ssize_t ix(xbegin); ix < xend; ++ix)
       for (ssize_t iy(ybegin); iy < yend; ++iy) {
 				int const value(m_proxy->GetValue(ix, iy));
-				if (value > obstacle)
-					glColor3d(0.5, 0, 1);
-				else if (value == obstacle)
-					glColor3d(0.5, 0, 0);
-				else if (value < freespace)
-					glColor3d(0, 0, 0.5);
-				else if (value == freespace)
-					glColor3d(0, 0.5, 0);
+				if (MINIMAL_DARK == color_code) {
+					if (value > obstacle)
+						glColor3d(1.0, 0.8, 0.8);
+					else if (value == obstacle)
+						glColor3d(0.6, 0.3, 0.3);
+					else if (value > freespace)
+						glColor3d(0.2, 0.2, 0.2);
+					else
+						glColor3d(0, 0, 0);
+				}
 				else {
-					double const grey((value - freespace) * cscale);
-					glColor3d(grey, grey, grey);
+					if (value > obstacle)
+						glColor3d(0.5, 0, 1);
+					else if (value == obstacle)
+						glColor3d(0.5, 0, 0);
+					else if (value < freespace)
+						glColor3d(0, 0, 0.5);
+					else if (value == freespace)
+						glColor3d(0, 0.5, 0);
+					else {
+						double const grey((value - freespace) * cscale);
+						glColor3d(grey, grey, grey);
+					}
 				}
 				glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
       }
