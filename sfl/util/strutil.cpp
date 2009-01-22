@@ -23,6 +23,14 @@ using namespace std;
 namespace sfl {
   
   template<>
+  std::string to_string<bool>(const bool & flag) {
+    if (flag)
+      return "true";
+    return "false";      
+  }
+  
+  
+  template<>
   bool string_to<bool>(const std::string & str, bool & foo) {
     if((str == "true") || (str == "TRUE") || (str == "True")
        || (str == "on") || (str == "ON") || (str == "On")){

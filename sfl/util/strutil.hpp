@@ -36,6 +36,10 @@ namespace sfl {
     return os.str();
   }
   
+  /** booleans are better represented by "true" and "false" than by 1 and 0. */
+  template<>
+  std::string to_string<bool>(const bool & flag);
+  
   /** convert a string to "something" based on its input operator */
   template<typename Foo>
   bool string_to(const std::string & str, Foo & foo) {
@@ -90,10 +94,38 @@ namespace sfl {
      \endcode
      
      \return true if there is more to be extracted, allowing you to
-     easily tokenize a string.
+     easily tokenize a string. But see also tokenize() which does just
+     that.
   */
   bool splitstring(std::string const & input, char separator,
 		   std::string & head, std::string & tail);
+  
+  
+  /**
+     For any tokenlist_t that accepts push_back(string const &) and
+     can return its size().
+  */
+  template<typename tokenlist_t>
+  size_t tokenize(std::string const & input, char separator, tokenlist_t & output) {
+    std::string head;
+    std::string tail(input);
+    while (splitstring(tail, ':', head, tail))
+      output.push_back(head);
+    output.push_back(head);
+    return output.size();
+  }
+  
+  
+  /**
+     For any tokenlist_t whose operator[]() returns a string const &
+     and which can return its size().
+  */
+  template<typename tokenlist_t, typename value_t>
+  bool token_to(tokenlist_t const & tokenlist, size_t index, value_t & value) {
+    if (index >= tokenlist.size())
+      return false;
+    return string_to(tokenlist[index], value);
+  }
   
 }
 
