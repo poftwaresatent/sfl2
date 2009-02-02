@@ -28,7 +28,7 @@
 #include <sfl/gplan/Mapper2d.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <cmath>
-
+#include <err.h>
 
 #ifdef NPM_DEBUG
 # define PDEBUG PDEBUG_OUT
@@ -46,10 +46,12 @@ namespace npm {
   
   MapperUpdateDrawing::
   MapperUpdateDrawing(const std::string & name,
-		      boost::shared_ptr<const sfl::ReflinkMapper2d> mapper)
+											what_t _what,
+											boost::shared_ptr<const sfl::Mapper2d> mapper)
     : Drawing(name,
-							"most recent changes of a sweeping-update sfl::ReflinkMapper2d",
+							"most recent changes of a sweeping-update sfl::Mapper2d",
 							Instance<UniqueManager<Drawing> >()),
+			what(_what),
       m_mapper(mapper)
   {
   }
@@ -58,10 +60,40 @@ namespace npm {
   void MapperUpdateDrawing::
   Draw()
   {
-    const ReflinkMapper2d::link_t & freespace(m_mapper->GetFreespaceBuffer());
-    const ReflinkMapper2d::link_t & obstacle(m_mapper->GetObstacleBuffer());
-    
-    if(freespace.empty() && obstacle.empty())
+    Mapper2d::index_buffer_t const * buf;
+		double offset;
+		switch (what) {
+		case FREESPACE:
+			buf = &m_mapper->GetFreespaceBuffer();
+			offset = 0.1;
+			glColor3d(0, 1, 0.5);
+			break;
+		case OBSTACLE:
+			buf = &m_mapper->GetObstacleBuffer();
+			offset = 0.15;
+			glColor3d(1, 0, 0.5);
+			break;
+		case CHECK:
+			buf = &m_mapper->GetSwipeCheckBuffer();
+			offset = 0.2;
+			glColor3d(0.5, 0, 1);
+			break;
+		case HOLE:
+			buf = &m_mapper->GetSwipeHoleBuffer();
+			offset = 0.25;
+			glColor3d(0.5, 1, 0);
+			break;
+		case REPAIR:
+			buf = &m_mapper->GetSwipeRepairBuffer();
+			offset = 0.3;
+			glColor3d(0, 0.5, 1);
+			break;
+		default:
+			warnx("npm::MapperUpdateDrawing::Draw(): invalid what %d", what);
+			return;
+		}
+		
+    if (buf->empty())
       return;
     
     const GridFrame & gframe(m_mapper->GetGridFrame());
@@ -71,23 +103,12 @@ namespace npm {
     glTranslated(gframe.X(), gframe.Y(), 0);
     glRotated(180 * gframe.Theta() / M_PI, 0, 0, 1);
     glScaled(gframe.Delta(), gframe.Delta(), 1);
-    
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    
-    glColor3d(0, 1, 0.5);
-    for(ReflinkMapper2d::link_t::const_iterator ifree(freespace.begin());
-				ifree != freespace.end(); ++ifree){
-      PDEBUG("free %ul %ul\n", ifree->v0, ifree->v1);
-      glRectd(ifree->v0 - 0.3, ifree->v1 - 0.3,
-							ifree->v0 + 0.3, ifree->v1 + 0.3);
-    }
-    
-    glColor3d(1, 0, 0.5);
-    for(ReflinkMapper2d::link_t::const_iterator iobst(obstacle.begin());
-				iobst != obstacle.end(); ++iobst){
-      PDEBUG("obst %ul %ul\n", iobst->v0, iobst->v1);
-      glRectd(iobst->v0 - 0.4, iobst->v1 - 0.4,
-							iobst->v0 + 0.4, iobst->v1 + 0.4);
+		
+    for(Mapper2d::index_buffer_t::const_iterator ibuf(buf->begin()); ibuf != buf->end(); ++ibuf){
+      PVDEBUG("buf %zd %zd\n", ibuf->v0, ibuf->v1);
+      glRectd(ibuf->v0 - offset, ibuf->v1 - offset,
+							ibuf->v0 + offset, ibuf->v1 + offset);
     }
     
     glMatrixMode(GL_MODELVIEW);

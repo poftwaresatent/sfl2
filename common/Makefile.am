@@ -4,8 +4,8 @@ CXXFLAGS= @NPM_CXXFLAGS@
 LDFLAGS=  @NPM_LDFLAGS@
 
 if NPM_HAVE_ESTAR
-  ESTAR_SRC= MapperUpdateDrawing.cpp MapperRefDrawing.cpp
-  ESTAR_HDR= MapperUpdateDrawing.hpp MapperRefDrawing.hpp
+  ESTAR_SRC= MapperUpdateDrawing.cpp
+  ESTAR_HDR= MapperUpdateDrawing.hpp
 else
   ESTAR_SRC= 
   ESTAR_HDR= 

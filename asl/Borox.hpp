@@ -66,6 +66,7 @@ protected:
 		     double wavefront_buffer,
 		     std::string const & goalmgr_filename,
 		     bool swiped_map_update,
+		     double max_swipe_distance,
 		     boost::shared_ptr<estar::AlgorithmOptions> estar_options,
 		     boost::shared_ptr<asl::travmap_grow_options> grow_options,
 		     bool estar_grow_grid,

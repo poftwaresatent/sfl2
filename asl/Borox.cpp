@@ -110,16 +110,12 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	      double wavefront_buffer,
 	      std::string const & goalmgr_filename,
 	      bool swiped_map_update,
+	      double max_swipe_distance,
 	      boost::shared_ptr<estar::AlgorithmOptions> estar_options,
 	      boost::shared_ptr<asl::travmap_grow_options> grow_options,
 	      bool estar_grow_grid,
 	      double & robot_radius)
 {
-  if (swiped_map_update)
-    cerr << "WARNING in Borox::InitAlgorithm():\n"
-	 << "WARNING   ReflinkMapper2d is too experimental,\n"
-	 << "WARNING   so I am ignoring that you want to do \"swiped_map_update\".\n";
-  
   if ( ! m_model)
     m_model = CreateModel(params);
   
@@ -208,7 +204,7 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   shared_ptr<TravmapCallback> travmap_cb(planner->GetTravmapCallback());
   
   shared_ptr<Mapper>
-    mapper(new Mapper(m2d, travmap_cb, grow_options.get()));
+    mapper(new Mapper(m2d, swiped_map_update, max_swipe_distance, travmap_cb, grow_options.get()));
   if ( ! mapper) {
     cerr << "ERROR in Borox::InitAlgorithm():\n"
 	 << "  Could not create asl::Mapper.\n";

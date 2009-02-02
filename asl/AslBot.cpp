@@ -41,7 +41,6 @@
 #include "../common/World.hpp"
 #include "../common/wrap_gl.hpp"
 #include "../common/MapperUpdateDrawing.hpp"
-#include "../common/MapperRefDrawing.hpp"
 #include "../estar/EstarDrawing.hpp"
 #include "../common/pdebug.hpp"
 #include "../common/RobotDescriptor.hpp"
@@ -332,9 +331,6 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 		exit(EXIT_FAILURE);
 	}
 	
-	bool swiped_map_update(false);
-	string_to(descriptor->GetOption("swiped_map_update"), swiped_map_update);
-	
 	m_odo.reset(new Odometry(GetHAL(), RWlock::Create("aslbot")));	
 	
 	shared_ptr<estar::AlgorithmOptions>
@@ -383,11 +379,17 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 	m_mscan.reset(new Multiscanner(GetHAL()));
 	InitScanners(m_mscan, params);
 	
+	bool swiped_map_update(false);
+	string_to(descriptor->GetOption("swiped_map_update"), swiped_map_update);
+	
+	double max_swipe_distance(4);
+	string_to(descriptor->GetOption("max_swipe_distance"), max_swipe_distance);
+	
 	double robot_radius;					// XXX arghlgmpf!!!!
 	InitAlgorithm(descriptor, params,
 								carrot_distance, carrot_stepsize, carrot_maxnsteps,
 								replan_distance, traversability_file, estar_step,
-								wavefront_buffer, goalmgr_filename, swiped_map_update,
+								wavefront_buffer, goalmgr_filename, swiped_map_update, max_swipe_distance,
 								estar_options, grow_options, estar_grow_grid, robot_radius);
 	
 	m_simul_rwlock = RWlock::Create("npm::AslBot");
@@ -525,15 +527,21 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 						 (name + "_planning_thread", m_planning_thread.get()));
  	AddDrawing(new ThreadDrawing<asl::ControlThread>
 						 (name + "_control_thread", m_control_thread.get()));
-	
-	if (m_asl_algo->GetReflinkMapper2d()) {
-		AddDrawing(new MapperUpdateDrawing(name + "_mapper_update",
-																			 m_asl_algo->GetReflinkMapper2d()));
-		AddDrawing(new MapperRefDrawing(name + "_mapper_ref",
-																		m_asl_algo->GetReflinkMapper2d(), false));
-		AddDrawing(new MapperRefDrawing(name + "_mapper_link",
-																		m_asl_algo->GetReflinkMapper2d(), true));
-	}
+	AddDrawing(new MapperUpdateDrawing(name + "_mapper_free",
+																		 MapperUpdateDrawing::FREESPACE,
+																		 m_asl_algo->GetMapper2d()));
+	AddDrawing(new MapperUpdateDrawing(name + "_mapper_obst",
+																		 MapperUpdateDrawing::OBSTACLE,
+																		 m_asl_algo->GetMapper2d()));
+	AddDrawing(new MapperUpdateDrawing(name + "_mapper_check",
+																		 MapperUpdateDrawing::CHECK,
+																		 m_asl_algo->GetMapper2d()));
+	AddDrawing(new MapperUpdateDrawing(name + "_mapper_hole",
+																		 MapperUpdateDrawing::HOLE,
+																		 m_asl_algo->GetMapper2d()));
+	AddDrawing(new MapperUpdateDrawing(name + "_mapper_repair",
+																		 MapperUpdateDrawing::REPAIR,
+																		 m_asl_algo->GetMapper2d()));
 	
 	MoreGraphics(name, world, slow_drawing_enabled);
 }

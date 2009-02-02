@@ -150,6 +150,10 @@ dist_bin_SCRIPTS= birondemo.sh \
                     layout.borox0 \
                     robots.borox0 \
                     travmap.borox0 \
+                  borox1.sh \
+                    layout.borox1 \
+                    robots.borox1 \
+                    travmap.borox1 \
                   ros0.sh \
                     layout.ros0 \
                     robots.ros0
