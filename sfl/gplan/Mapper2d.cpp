@@ -34,14 +34,6 @@
 #include <limits>
 
 
-#ifdef SFL_DEBUG
-# define PDEBUG PDEBUG_ERR
-#else // ! SFL_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // SFL_DEBUG
-#define PVDEBUG PDEBUG_OFF
-
-
 using namespace std;
 using namespace boost;
 
@@ -54,23 +46,26 @@ namespace local {
 	struct swipe_cb
 		: public sfl::GridFrame::draw_callback
 	{
-		typedef sfl::ReflinkMapper2d::link_t link_t;
-		
-		link_t & buffer;
+		sfl::Mapper2d::index_buffer_t & swipe_buffer;
+		sfl::Mapper2d::index_buffer_t & freespace_buffer;
 		const sfl::TraversabilityMap & travmap;
-		const int ws_obst;
 		
-		swipe_cb(link_t & _buffer, const sfl::TraversabilityMap & _travmap,
-						 int _ws_obst)
-			: buffer(_buffer), travmap(_travmap), ws_obst(_ws_obst)
+#warning 'swipe buf should be optional, just a waste unless debugging'
+		swipe_cb(sfl::Mapper2d::index_buffer_t & _swipe_buffer,
+						 sfl::Mapper2d::index_buffer_t & _freespace_buffer,
+						 const sfl::TraversabilityMap & _travmap)
+			: swipe_buffer(_swipe_buffer), freespace_buffer(_freespace_buffer), travmap(_travmap)
 		{
 		}
-
+		
 		virtual void operator () (ssize_t ix, ssize_t iy)
 		{
-			int val;
-			if(travmap.GetValue(ix, iy, val) && (ws_obst == val))
-				buffer.insert(sfl::Mapper2d::index_t(ix, iy));
+			sfl::Mapper2d::index_t const ii(ix, iy);
+			swipe_buffer.insert(ii);
+			if (travmap.IsWObst(ix, iy)) {
+				PVDEBUG("swipe_cb on W-obst %zd %zd\n", ix, iy);
+				freespace_buffer.insert(ii);
+			}
 		}
 		
 	};
@@ -98,10 +93,7 @@ namespace sfl {
 					 const std::string & name,
 					 shared_ptr<RWlock> trav_rwlock,
 					 shared_ptr<travmap_grow_strategy> grow_strategy)
-		: freespace(_freespace),
-			obstacle(_obstacle),
-			ws_obstacle(_obstacle + 1),
-			gridframe(_gridframe),
+		: gridframe(_gridframe),
 			buffer_zone(_buffer_zone),
 			grown_safe_distance(robot_radius + _buffer_zone
 													+ padding_factor * _gridframe.Delta() * sqrt_of_half),
@@ -110,11 +102,11 @@ namespace sfl {
 			m_travmap(new TraversabilityMap(_gridframe,
 																			grid_xbegin, grid_xend,
 																			grid_ybegin, grid_yend,
-																			freespace, obstacle, name)),
+																			_freespace, _obstacle, name)),
 			m_trav_rwlock(trav_rwlock)
-		//			m_sprite(new Sprite(grown_safe_distance, _gridframe.Delta()))
 	{
-		InitSprite(decay);
+		InitAddmask(decay);
+		InitRemovemask();
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -130,10 +122,7 @@ namespace sfl {
 					 shared_ptr<TraversabilityMap> travmap,
 					 shared_ptr<travmap_grow_strategy> grow_strategy,
 					 shared_ptr<RWlock> trav_rwlock)
-		: freespace(travmap->freespace),
-			obstacle(travmap->obstacle),
-			ws_obstacle(travmap->obstacle + 1),
-			gridframe(travmap->gframe),
+		: gridframe(travmap->gframe),
 			buffer_zone(_buffer_zone),
 			grown_safe_distance(robot_radius + _buffer_zone
 													+ padding_factor * gridframe.Delta() * sqrt_of_half),
@@ -142,7 +131,8 @@ namespace sfl {
 			m_travmap(travmap),
 			m_trav_rwlock(trav_rwlock)
 	{
-		InitSprite(decay);
+		InitAddmask(decay);
+		InitRemovemask();
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
 		else
@@ -189,48 +179,6 @@ namespace sfl {
 	}
 	
 	
-	/**
-		 \todo Unify this copy-pasted method with the one in Mapper2d.
-	*/
-	shared_ptr<ReflinkMapper2d> ReflinkMapper2d::
-	Create(double robot_radius,
-				 double buffer_zone,
-				 double padding_factor,
-				 travmap_cost_decay const & decay,
-				 const std::string & traversability_file,
-				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
-				 std::ostream * err_os)
-	{
-		shared_ptr<RWlock> rwl(RWlock::Create("sfl::ReflinkMapper2d::m_trav_rwlock"));
-		if( ! rwl){
-      if(err_os) *err_os << "ERROR in ReflinkMapper2d::Create():\n"
-												 << "  sfl::RWlock::Create() failed\n";
-      return shared_ptr<ReflinkMapper2d>();
-    }
-		
-		ifstream trav(traversability_file.c_str());
-    if( ! trav){
-      if(err_os) *err_os << "ERROR in ReflinkMapper2d::Create():\n"
-												 << "  invalid traversability file \""
-												 << traversability_file << "\".\n";
-      return shared_ptr<ReflinkMapper2d>();
-    }
-    shared_ptr<TraversabilityMap>
-      traversability(TraversabilityMap::Parse(trav, err_os));
-    if( ! traversability){
-      if(err_os) *err_os << "ERROR in ReflinkMapper2d::Create():\n"
-												 << "  TraversabilityMap::Parse() failed on \""
-												 << traversability_file << "\".\n";
-      return shared_ptr<ReflinkMapper2d>();
-    }
-		
-		shared_ptr<ReflinkMapper2d>
-			result(new ReflinkMapper2d(robot_radius, buffer_zone, padding_factor, decay,
-																 traversability, grow_strategy, rwl));
-		return result;
-	}
-	
-	
 	size_t Mapper2d::
 	Update(const Frame & pose, size_t length, double * locx, double * locy,
 				 draw_callback * cb)
@@ -241,7 +189,7 @@ namespace sfl {
 			double xw(locx[ii]);
 			double yw(locy[ii]);
 			pose.To(xw, yw);
-			count += AddBufferedObstacle(xw, yw, cb);
+			count += AddOneGlobalObstacle(xw, yw, false, cb);
 		}
 		return count;
 	}
@@ -256,283 +204,224 @@ namespace sfl {
 		size_t count(0);		
 		for(size_t ii(0); ii < scan_data.size(); ++ii)
 			count +=
-				AddBufferedObstacle(scan_data[ii].globx, scan_data[ii].globy, cb);
+				AddOneGlobalObstacle(scan_data[ii].globx, scan_data[ii].globy, false, cb);
 		return count;
 	}
 	
 	
 	size_t Mapper2d::
-	AddBufferedObstacle(double globx, double globy,
-											draw_callback * cb)
+	AddOneGlobalObstacle(double globx, double globy, bool force, draw_callback * cb)
 	{
-		return AddBufferedObstacle(gridframe.GlobalIndex(globx, globy), cb);
+		return AddOneObstacle(gridframe.GlobalIndex(globx, globy), force, cb);
 	}
 	
 	
 	size_t Mapper2d::
-	AddBufferedObstacle(index_t source_index,
-											draw_callback * cb)
+	AddOneObstacle(index_t source_index, bool force, draw_callback * cb)
 	{
 		ssize_t const ix0(source_index.v0);
 		ssize_t const iy0(source_index.v1);
 		
-		PVDEBUG("source index %lu %lu\n", ix0, iy0);
-		
-		// Check if the cell is in the grid or we already have a "true"
-		// (workspace) obstacle here, in which case we can skip the rest
-		int old_value;
-		if (m_travmap->GetValue(ix0, iy0, old_value)
-				&& (ws_obstacle == old_value))
+		// We can skip this one if it is already a W-space obstacle (and
+		// we are allowed to).
+		if (( ! force) && (m_travmap->IsWObst(ix0, iy0))) {
+			PDEBUG("source %zd %zd is already W-obst\n", ix0, iy0);
 			return 0;
-		
-		// See if we (might) need to grow the grid...
-		ssize_t const bbx0(m_sprite_x0 + ix0);
-		ssize_t const bby0(m_sprite_y0 + iy0);
-		ssize_t const bbx1(m_sprite_x1 + ix0);
-		ssize_t const bby1(m_sprite_y1 + iy0);
-		bool grown(false);
-		grown |= (*m_grow_strategy)(*m_travmap, bbx0, bby0);
-		grown |= (*m_grow_strategy)(*m_travmap, bbx0, bby1);
-		grown |= (*m_grow_strategy)(*m_travmap, bbx1, bby0);
-		grown |= (*m_grow_strategy)(*m_travmap, bbx1, bby1);
-		if (grown) {
-			ssize_t const xbegin(m_travmap->grid.xbegin());
-			ssize_t const xend(m_travmap->grid.xend());
-			ssize_t const ybegin(m_travmap->grid.ybegin());
-			ssize_t const yend(m_travmap->grid.yend());
-			PDEBUG("grown to range (%d, %d, %d, %d) for bbox (%d, %d, %d, %d)\n",
-						 xbegin, xend, ybegin, yend,
-						 bbx0, bby0, bbx1, bby1);
-			ResizeNotify(xbegin, xend, ybegin, yend);
 		}
 		
-		// Ready to insert W-space obstacle and perform C-space expansion
-		m_travmap->SetValue(ix0, iy0, ws_obstacle, cb);
-		size_t count(1);
+		// maybe grow the grid...
+		ssize_t const bbx0(m_addmask_x0 + ix0);
+		ssize_t const bby0(m_addmask_y0 + iy0);
+		ssize_t const bbx1(m_addmask_x1 + ix0);
+		ssize_t const bby1(m_addmask_y1 + iy0);
+		(*m_grow_strategy)(*m_travmap, bbx0, bby0);
+		(*m_grow_strategy)(*m_travmap, bbx0, bby1);
+		(*m_grow_strategy)(*m_travmap, bbx1, bby0);
+		(*m_grow_strategy)(*m_travmap, bbx1, bby1);
 		
-		PVDEBUG("set source to %d\n", ws_obstacle);
-
-		// Perform C-space extension with buffer zone, potentially
-		// housekeeping the cell-dependency structure (depending on which
-		// subclass we're in).
-		for (size_t ii(0); ii < m_sprite.size(); ++ii) {
-			ssize_t const ix(ix0 + m_sprite[ii].x);
-			ssize_t const iy(iy0 + m_sprite[ii].y);
-			if ( ! m_travmap->IsValid(ix, iy))
-				continue;								// outside of grid
+		// Ready to insert W-space obstacle and perform C-space expansion
+		m_travmap->SetWObst(ix0, iy0, cb);
+		size_t count(1);
+		PDEBUG("added W-obst at source %zd %zd\n", ix0, iy0);
+		
+		// Perform C-space extension with buffer zone.
+		for (addmask_t::const_iterator is(m_addmask.begin()); is != m_addmask.end(); ++is) {
+			ssize_t const ix(ix0 + is->first.v0);
+			ssize_t const iy(iy0 + is->first.v1);
 			if ((ix0 == ix) && (iy0 == iy))
 				continue;								// we've already flagged the center
 			
-			PVDEBUG("target %lu %lu to %d\n", ix, iy, m_sprite[ii].v);
-			
-			AddReference(source_index, ix, iy, m_sprite[ii].v);
-			m_travmap->GetValue(ix, iy, old_value);
-			if (m_sprite[ii].v > old_value) {
-				PVDEBUG("value = %d > old_value = %d\n", m_sprite[ii].v, old_value);
-				m_travmap->SetValue(ix, iy, m_sprite[ii].v, cb);
+			int old_value;
+			if (m_travmap->GetValue(ix, iy, old_value) // bound check in here
+					&& (is->second > old_value)) {
+				m_travmap->SetValue(ix, iy, is->second, cb);
 				++count;
+				PVDEBUG("added C-obst at target %zd %zd, cost %d (old cost %d)\n",
+								ix, iy, is->second, old_cost);
 			}
 		}
 		
-		PVDEBUG("changed %lu cells\n", count);
+		PVDEBUG("changed %zu cells\n", count);
 		return count;
 	}
 	
 	
-	bool Mapper2d::
-	AddReference(index_t source_index,
-							 ssize_t target_ix, ssize_t target_iy,
-							 int value)
+	size_t Mapper2d::
+	RemoveOneObstacle(index_t source_index, draw_callback * cb)
 	{
-		return false;
+		index_buffer_t remove;
+		remove.insert(source_index);
+		return UpdateObstacles(0, false, &remove, cb);
 	}
 	
 	
-	bool ReflinkMapper2d::
-	AddReference(index_t source_index,
-							 ssize_t target_ix, ssize_t target_iy,
-							 int value)
+	size_t Mapper2d::
+	UpdateObstacles(index_buffer_t const * add,
+									bool force_add,
+									index_buffer_t * remove,
+									draw_callback * cb)
 	{
-		// We need to check for grid bounds because we might be called
-		// with indices that lay outside the current grid.
-
-		if ( ! m_refmap.valid(target_ix, target_iy)) {
-			PVDEBUG("%lu %lu -> %lu %lu target outside refmap grid\n",
-							source_index.v0, source_index.v1, target_ix, target_iy);
-			return false;							// target outside refmap grid
-		}
+		size_t count(0);
+		m_swipe_hole_buffer.clear();
+		m_swipe_repair_buffer.clear();
 		
-		ssize_t const source_ix(source_index.v0);
-		ssize_t const source_iy(source_index.v1);
-		if ( ! m_linkmap.valid(source_ix, source_iy)) {
-			PVDEBUG("%lu %lu -> %lu %lu source outside linkmap grid\n",
-							source_ix, source_iy, target_ix, target_iy);
-			return false;							// source outside linkmap grid
-		}
-		
-		ref_s & ref(m_refmap.at(target_ix, target_iy));
-		if (ref.forward.find(source_index) != ref.forward.end()) {
-			PVDEBUG("%lu %lu -> %lu %lu already referenced\n",
-							source_ix, source_iy, target_ix, target_iy);
-			return false;							// already in refmap
-		}
-		
-		link_t & link(m_linkmap.at(source_ix, source_iy));
-		link.insert(index_t(target_ix, target_iy));
-		ref.forward.insert(make_pair(source_index, value));
-		ref.reverse.insert(make_pair(value, source_index));
-		return true;
-	}
-	
-	
-	size_t ReflinkMapper2d::
-	RemoveBufferedObstacle(index_t source_index,
-												 draw_callback * cb)
-	{
-		PDEBUG("source index %lu %lu\n", source_index.v0, source_index.v1);
-		
-		// We need to check for grid bounds because we might be called
-		// with indices that lay outside the current grid.
-		
-		ssize_t const six(source_index.v0);
-		ssize_t const siy(source_index.v1);
-		if ( ! m_travmap->IsValid(six, siy))
-			return 0;
-		
-		ref_s & ref(m_refmap.at(six, siy));
-		if(ref.reverse.empty()){
-			m_travmap->SetValue(six, siy, freespace, cb);
-			PDEBUG("set source to freespace\n");
-		}
-		else{
-			m_travmap->SetValue(six, siy, ref.reverse.rbegin()->first, cb);
-			PDEBUG("set source to %d\n", ref.reverse.rbegin()->first);
-		}
-		
-		size_t count(1);
-		link_t & link(m_linkmap.at(six, siy));
-		for(link_t::iterator il(link.begin()); il != link.end(); ++il){
-			const index_t target_index(*il);
-			ssize_t const tix(target_index.v0);
-			ssize_t const tiy(target_index.v1);
-			int influence, new_target_value;
-			if(RemoveReference(source_index, target_index,
-												 influence, new_target_value)){
-				int old_target_value;
-				if( ! m_travmap->GetValue(tix, tiy, old_target_value)){
-					PDEBUG_OUT("BUG (harmless): target %zd %zd not in travmap.\n",
-										 tix, tiy);
+		if (remove) {
+			
+			// remove former W-obstacles
+			index_buffer_t spurious;
+			for (index_buffer_t::const_iterator is(remove->begin()); is != remove->end(); ++is) {
+				ssize_t const ix0(is->v0);
+				ssize_t const iy0(is->v1);
+				if ( ! m_travmap->IsWObst(ix0, iy0)) {
+					PDEBUG("skip source %zd %zd because not W-obst\n", ix0, iy0);
+					spurious.insert(*is);
 					continue;
 				}
-				if(old_target_value != new_target_value){
-					m_travmap->SetValue(tix, tiy, new_target_value, cb);
+				
+				if (m_travmap->IsValid(ix0, iy0)) {
+					PDEBUG("wipe source %zd %zd\n", ix0, iy0);
 					++count;
+					m_travmap->SetFree(ix0, iy0, cb);
+				}
+				else
+					PDEBUG("source %zd %zd is out of bounds\n", ix0, iy0);
+			}
+			
+			// should normally be a no-op
+			for (index_buffer_t::const_iterator is(spurious.begin()); is != spurious.end(); ++is)
+				remove->erase(*is);
+			
+			// determine the areas influenced by the former W-obstacles:
+			// inner areas are later wiped, outer areas only scanned for
+			// already existing W-obstacles
+			for (index_buffer_t::const_iterator is(remove->begin()); is != remove->end(); ++is) {
+				ssize_t const ix0(is->v0);
+				ssize_t const iy0(is->v1);
+				for (removemask_t::const_iterator ir(m_removemask.begin());
+						 ir != m_removemask.end(); ++ir) {
+					ssize_t const tx(ix0 + ir->first.v0);
+					ssize_t const ty(iy0 + ir->first.v1);
+					if (m_travmap->IsWObst(tx, ty)) {
+						PDEBUG("add again target %zd %zd because W-obst\n", tx, ty);
+						m_swipe_repair_buffer.insert(index_t(tx, ty));
+					}
+					else if (ir->second && ( ! m_travmap->IsFree(tx, ty))) {
+						PDEBUG("wipe target %zd %zd\n", tx, ty);
+						m_swipe_hole_buffer.insert(index_t(tx, ty));
+					}
 				}
 			}
+			
+			// wipe out the region of influence of each removed W-obstacle
+			for (index_buffer_t::const_iterator iw(m_swipe_hole_buffer.begin());
+					 iw != m_swipe_hole_buffer.end(); ++iw)
+				m_travmap->SetFree(iw->v0, iw->v1, cb);
+			count += m_swipe_hole_buffer.size();
+			
+			// add back all the W-obstacles which have a region of influence
+			// that intersects the set of cells that were just wiped (set
+			// force add to true, because we did not set these cells to
+			// W-obstacle cost)
+			for (index_buffer_t::const_iterator ia(m_swipe_repair_buffer.begin());
+					 ia != m_swipe_repair_buffer.end(); ++ia)
+				count += AddOneObstacle(*ia, true, cb);
 		}
-		link.clear();
+		
+		// forcing optional, depends on user
+		if (add)
+			for (index_buffer_t::const_iterator ia(add->begin()); ia != add->end(); ++ia)
+				count += AddOneObstacle(*ia, force_add, cb);
 		
 		return count;
 	}
 	
 	
-	bool ReflinkMapper2d::
-	RemoveReference(index_t source_index,
-									index_t target_index,
-									int & influence, int & new_value)
-	{
-		ref_s & ref(m_refmap.at(target_index.v0, target_index.v1));
-		const fwd_t::iterator fwd(ref.forward.find(source_index));
-		if(fwd == ref.forward.end()){
-			PDEBUG("source %lu %lu not in refmap\n",
-							source_index.v0, source_index.v1);
-			return false;						// source not in refmap (bug in caller?)
-		}
-		influence = fwd->second;
-		
-		// remove link from m_refmap
-		ref.forward.erase(fwd);
-		for(rev_t::iterator bwd(ref.reverse.find(influence));
-				bwd != ref.reverse.end(); ++bwd){
-			if(bwd->second == source_index){
-				ref.reverse.erase(bwd);
-				if(ref.reverse.empty()){
-					PDEBUG("target %ul %ul set to freespace\n",
-								 target_index.v0, target_index.v1);
-					new_value = freespace;
-				}
-				else{
-					PDEBUG("target %ul %ul set to %d\n",
-								 target_index.v0, target_index.v1,
-								 ref.reverse.rbegin()->first);
-					new_value = ref.reverse.rbegin()->first;
-				}
-				return true;
-			}
-			if(bwd->first != influence)
-				break;
-		}
-		PDEBUG_OUT("BUG: %zd %zd -> %zd %zd in fwd but not bwd refmap\n",
-							 source_index.v0, source_index.v1,
-							 target_index.v0, target_index.v1);
-		new_value = freespace; // just to avoid uninitialized memory usage
-		return true;
-	}
-	
-	
-	size_t ReflinkMapper2d::
+	/**
+		 \todo Removals should be done "en vrac", not one by
+		 one. Multiscanner::raw_scan_collection_t is bad because it uses
+		 the robot's pose, not each sensor's at the time of capture.
+	*/
+	size_t Mapper2d::
 	SwipedUpdate(const Frame & pose,
 							 const Multiscanner::raw_scan_collection_t & scans,
+							 double max_remove_distance,
 							 draw_callback * cb)
 	{
 		RWlock::wrsentry sentry(m_trav_rwlock);
 		
-		// compute sets of swiped and obstacle cells WITHOUT changing travmap etc
 		m_freespace_buffer.clear();
 		m_obstacle_buffer.clear();
-		swipe_cb swipe(m_freespace_buffer, *m_travmap, ws_obstacle);
-		for(size_t is(0); is < scans.size(); ++is){			
-			const Scan::array_t & scan_data(scans[is]->data);
-			const index_t i0(gridframe.GlobalIndex(scans[is]->pose.X(),
-																						 scans[is]->pose.Y()));
-			for(size_t ir(0); ir < scan_data.size(); ++ir){
-				const index_t i1(gridframe.GlobalIndex(scan_data[ir].globx,
-																							 scan_data[ir].globy));
-				// Allow drawing outside the current grid range, this will
-				// potentially lead to growing the travmap once we call
-				// AddBufferedObstacle() further below.
-				gridframe.DrawDDALine(i0.v0, i0.v1, i1.v0, i1.v1,
-															numeric_limits<ssize_t>::min(),
-															numeric_limits<ssize_t>::max(),
-															numeric_limits<ssize_t>::min(),
-															numeric_limits<ssize_t>::max(),
+		m_swipe_check_buffer.clear();
+		swipe_cb swipe(m_swipe_check_buffer, m_freespace_buffer, *m_travmap);
+		ssize_t const bbx0(m_travmap->grid.xbegin());
+		ssize_t const bbx1(m_travmap->grid.xend());
+		ssize_t const bby0(m_travmap->grid.ybegin());
+		ssize_t const bby1(m_travmap->grid.yend());
+		
+		// compute sets of swiped and obstacle cells
+		for (size_t is(0); is < scans.size(); ++is) {
+			double const spx(scans[is]->scanner_pose.X());
+			double const spy(scans[is]->scanner_pose.Y());
+			double const spt(scans[is]->scanner_pose.Theta());
+			Scan::array_t const & scan_data(scans[is]->data);
+			const index_t i0(gridframe.GlobalIndex(spx, spy));
+			
+			for (size_t ir(0); ir < scan_data.size(); ++ir) {
+				index_t const ihit(gridframe.GlobalIndex(scan_data[ir].globx, scan_data[ir].globy));
+				index_t iswipe;
+				if (scan_data[ir].rho <= max_remove_distance) {
+					// swipe up to the laser point
+					iswipe = ihit;
+				}
+				else {
+					// swipe along ray, but stop after max_remove_distance
+					double const theta(spt + scan_data[ir].phi);
+					iswipe = gridframe.GlobalIndex(spx + max_remove_distance * cos(theta),
+																				 spy + max_remove_distance * sin(theta));
+				}
+				gridframe.DrawDDALine(i0.v0, i0.v1, iswipe.v0, iswipe.v1,
+															bbx0, bbx1, bby0, bby1,
 															swipe);
-				if(scan_data[ir].in_range){
-					int val;
-					if(m_travmap->GetValue(i1.v0, i1.v1, val))
-						m_obstacle_buffer.insert(i1);
+				if (scan_data[ir].in_range) {
+					// always insert them into m_obstacle_buffer, do not check
+					// m_travmap->IsWObst(ihit.v0, ihit.v1), because otherwise
+					// neighboring rays can erase known W-obstacles
+					PDEBUG("in range W-obst: global %g  %g   index %zd %zd\n",
+								 scan_data[ir].globx, scan_data[ir].globy,
+								 ihit.v0, ihit.v1);
+					m_obstacle_buffer.insert(ihit);
 				}
 			}
-			// remove new obstacles from swiped set (due to grid effects, it
-			// would otherwise be possible for a later ray to erase an
-			// obstacle seen by an earlier ray)
-			for(link_t::const_iterator io(m_obstacle_buffer.begin());
-					io != m_obstacle_buffer.end(); ++io)
-				m_freespace_buffer.erase(*io);
 		}
 		
-		// update travmap:
-		// 1. remove any obstacle that were traversed by rays
-		// 2. add  new obstacles, which	potentially grows the travmap
-		size_t count(0);
-		for(link_t::const_iterator is(m_freespace_buffer.begin());
-				is != m_freespace_buffer.end(); ++is)
-			count += RemoveBufferedObstacle(*is, cb);
-		for(link_t::const_iterator il(m_obstacle_buffer.begin());
-				il != m_obstacle_buffer.end(); ++il)
-			count += AddBufferedObstacle(*il, cb);
+		// remove new obstacles from swiped set (due to grid effects, it
+		// would otherwise be possible for a later ray to erase an
+		// obstacle seen by an earlier ray)
+		for (index_buffer_t::const_iterator io(m_obstacle_buffer.begin());
+				 io != m_obstacle_buffer.end(); ++io)
+			m_freespace_buffer.erase(*io);
 		
-		return count;
+		return UpdateObstacles(&m_obstacle_buffer, false, &m_freespace_buffer, cb);
 	}
 	
 	
@@ -553,8 +442,9 @@ namespace sfl {
 	
 	
 	Mapper2d::buffered_obstacle_adder::
-	buffered_obstacle_adder(Mapper2d * _m2d, Mapper2d::draw_callback * _cb)
+	buffered_obstacle_adder(Mapper2d * _m2d, bool _force, Mapper2d::draw_callback * _cb)
 		: m2d(_m2d),
+			force(_force),
 			cb(_cb),
 			count(0)
 	{
@@ -564,25 +454,18 @@ namespace sfl {
 	void Mapper2d::buffered_obstacle_adder::
 	operator () (ssize_t ix, ssize_t iy)
 	{
-		count += m2d->AddBufferedObstacle(index_t(ix, iy), cb);
+		count += m2d->AddOneObstacle(index_t(ix, iy), force, cb);
 	}
 	
 	
 	size_t Mapper2d::
 	AddObstacleCircle(double globx, double globy, double radius,
-										draw_callback * cb)
+										bool force, draw_callback * cb)
 	{
 		RWlock::wrsentry sentry(m_trav_rwlock);
-		buffered_obstacle_adder boa(this, cb);
+		buffered_obstacle_adder boa(this, force, cb);
 		gridframe.DrawGlobalCircle(globx, globy, radius, boa);
 		return boa.count;
-	}
-	
-	
-	void Mapper2d::
-	ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend, ssize_t grid_ybegin, ssize_t grid_yend)
-	{
-		// nop
 	}
 	
 	
@@ -592,45 +475,19 @@ namespace sfl {
 	{
 		return travmap.Autogrow(ix, iy, travmap.freespace);
 	}
-
-
-	ReflinkMapper2d::
-	ReflinkMapper2d(double robot_radius,
-									double buffer_zone,
-									double padding_factor,
-									travmap_cost_decay const & decay,
-									boost::shared_ptr<TraversabilityMap> travmap,
-									boost::shared_ptr<travmap_grow_strategy> grow_strategy,
-									boost::shared_ptr<RWlock> trav_rwlock)
-		: Mapper2d(robot_radius, buffer_zone, padding_factor,
-							 decay, travmap, grow_strategy, trav_rwlock)
-	{
-		ssize_t const grid_xbegin(travmap->grid.xbegin());
-		ssize_t const grid_xend(travmap->grid.xend());
-		ssize_t const grid_ybegin(travmap->grid.ybegin());
-		ssize_t const grid_yend(travmap->grid.yend());
-		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-	}
-	
-	
-	void ReflinkMapper2d::
-	ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend, ssize_t grid_ybegin, ssize_t grid_yend)
-	{
-		m_linkmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-		m_refmap.resize(grid_xbegin, grid_xend, grid_ybegin, grid_yend);
-	}
 	
 	
 	void Mapper2d::
-	InitSprite(travmap_cost_decay const & decay)
+	InitAddmask(travmap_cost_decay const & decay)
 	{
-		m_sprite_x0 = 0;
-		m_sprite_y0 = 0;
-		m_sprite_x1 = 0;
-		m_sprite_y1 = 0;
+		m_addmask_x0 = 0;
+		m_addmask_y0 = 0;
+		m_addmask_x1 = 0;
+		m_addmask_y1 = 0;
 		const ssize_t offset(static_cast<ssize_t>(ceil(grown_safe_distance / gridframe.Delta())));
-		const double bufcostrange(obstacle - freespace -2);
+		int const obstacle(m_travmap->obstacle);
+		int const freespace(m_travmap->freespace);
+		const double bufcostrange(obstacle - freespace - 2);
     for (ssize_t ix(-offset); ix <= offset; ++ix) {
       const double x2(sqr(ix * gridframe.Delta()));
       for (ssize_t iy(-offset); iy <= offset; ++iy) {
@@ -643,20 +500,46 @@ namespace sfl {
 						cost = boundval(freespace + 1, static_cast<int>(rint(vv)), obstacle - 1);
 					}
 					if (cost > 0) {
-						m_sprite.push_back(sprite_element(ix, iy, cost));
-						// update the sprite's bounding box
-						if (ix < m_sprite_x0)
-							m_sprite_x0 = ix;
-						if (ix > m_sprite_x1)
-							m_sprite_x1 = ix;
-						if (iy < m_sprite_y0)
-							m_sprite_y0 = iy;
-						if (iy > m_sprite_y1)
-							m_sprite_y1 = iy;
+						m_addmask.insert(make_pair(index_t(ix, iy), cost));
+						// update the addmask's bounding box
+						if (ix < m_addmask_x0)
+							m_addmask_x0 = ix;
+						if (ix > m_addmask_x1)
+							m_addmask_x1 = ix;
+						if (iy < m_addmask_y0)
+							m_addmask_y0 = iy;
+						if (iy > m_addmask_y1)
+							m_addmask_y1 = iy;
 					}
 				}
       }
     }
+	}
+	
+	
+	void Mapper2d::
+	InitRemovemask()
+	{
+		m_removemask_x0 = 0;
+		m_removemask_y0 = 0;
+		m_removemask_x1 = 0;
+		m_removemask_y1 = 0;
+    for (addmask_t::const_iterator ii(m_addmask.begin()); ii != m_addmask.end(); ++ii)
+			for (addmask_t::const_iterator jj(m_addmask.begin()); jj != m_addmask.end(); ++jj) {
+				ssize_t const ix(ii->first.v0 - jj->first.v0); // "minus" because it's a convolution
+				ssize_t const iy(ii->first.v1 - jj->first.v1);
+				m_removemask.insert(make_pair(index_t(ix, iy), false));
+				if (ix < m_removemask_x0)
+					m_removemask_x0 = ix;
+				if (ix > m_removemask_x1)
+					m_removemask_x1 = ix;
+				if (iy < m_removemask_y0)
+					m_removemask_y0 = iy;
+				if (iy > m_removemask_y1)
+					m_removemask_y1 = iy;
+			}
+    for (addmask_t::const_iterator ii(m_addmask.begin()); ii != m_addmask.end(); ++ii)
+			m_removemask[ii->first] = true;
 	}
 	
 	

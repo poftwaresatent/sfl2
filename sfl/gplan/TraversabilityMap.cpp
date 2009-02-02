@@ -42,6 +42,7 @@ namespace sfl {
     : gframe(0, 0, 0, 1),
 			freespace(0),
 			obstacle(127),
+			w_obstacle(128),
 			name("world")
   {
   }
@@ -54,6 +55,7 @@ namespace sfl {
 		: gframe(origin),
 			freespace(0),
 			obstacle(127),
+			w_obstacle(128),
 			name("world")
 	{
 		grid.resize(xbegin, xend, ybegin, yend, freespace); 
@@ -68,6 +70,7 @@ namespace sfl {
 		: gframe(origin),
 			freespace(_freespace),
 			obstacle(_obstacle),
+			w_obstacle(_obstacle + 1),
 			name(_name)
 	{
 		grid.resize(xbegin, xend, ybegin, yend, freespace); 
@@ -278,6 +281,7 @@ namespace sfl {
 		*os << "# resolution " << gframe.Delta() << "\n"
 				<< "# origin " << gframe.X() << " " << gframe.Y()
 				<< " " << gframe.Theta() << "\n"
+				<< "# w_obstacle " << w_obstacle << "\n"
 				<< "# obstacle " << obstacle << "\n"
 				<< "# freespace " << freespace << "\n"
 				<< "# default " << 0 << "\n"
@@ -310,6 +314,20 @@ namespace sfl {
 	SetObst(ssize_t index_x, ssize_t index_y, draw_callback * cb)
 	{
 		return SetValue(index_x, index_y, obstacle, cb);
+	}
+	
+	
+	bool TraversabilityMap::
+	SetWObst(double global_x, double global_y, draw_callback * cb)
+	{
+		return SetValue(global_x, global_y, w_obstacle, cb);
+	}
+	
+	
+	bool TraversabilityMap::
+	SetWObst(ssize_t index_x, ssize_t index_y, draw_callback * cb)
+	{
+		return SetValue(index_x, index_y, w_obstacle, cb);
 	}
 	
 	
@@ -352,7 +370,7 @@ namespace sfl {
     const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
     if( ! grid.valid(idx.v0, idx.v1))
       return false;
-    return grid.at(idx.v0, idx.v1) > obstacle;
+    return grid.at(idx.v0, idx.v1) >= w_obstacle;
 	}
 	
 	
@@ -361,7 +379,7 @@ namespace sfl {
 	{
     if( ! grid.valid(index_x, index_y))
       return false;
-    return grid.at(index_x, index_y) > obstacle;
+    return grid.at(index_x, index_y) >= w_obstacle;
 	}
 	
 	

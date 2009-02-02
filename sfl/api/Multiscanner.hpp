@@ -85,6 +85,10 @@ namespace sfl {
        are monotonically increasing! Also, scans are collected via
        individual calls to Scanner accessors, it is thus possible that
        the result mixes data from more than one acquisition cycle.
+       
+       \note Scan::robot_pose and Scan::scanner_pose are both set to
+       the robot pose. Use CollectRawScans() if you need to have more
+       sensible value the scanner pose.
     */
     boost::shared_ptr<Scan> CollectScans() const;
     

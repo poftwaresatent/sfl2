@@ -30,8 +30,9 @@ namespace sfl {
   
   Scan::
   Scan(size_t nscans, const Timestamp & tlower, const Timestamp & tupper,
-       const Pose & _pose)
-    : tlower(tlower), tupper(tupper), pose(_pose), data(nscans)
+       const Pose & _robot_pose, const Frame & _scanner_pose)
+    : tlower(tlower), tupper(tupper), robot_pose(_robot_pose),
+      scanner_pose(_scanner_pose), data(nscans)
   {
   }
   
@@ -39,7 +40,8 @@ namespace sfl {
   Scan::
   Scan(const Scan & original)
     : tlower(original.tlower), tupper(original.tupper),
-      pose(original.pose), data(original.data)
+      robot_pose(original.robot_pose), scanner_pose(original.scanner_pose),
+      data(original.data)
   {
   }
   

@@ -75,10 +75,10 @@ namespace sfl {
 			RWlock::rdsentry const sentry(m_rwlock);
 			return m_travmap->GetValue(gx, gy, value); }
 		
-		/** see TraversabilityMap documentation */
-		bool GetValue(size_t ix, size_t iy, int & value) const {
-			RWlock::rdsentry const sentry(m_rwlock);
-			return m_travmap->GetValue(ix, iy, value); }
+// 		/** see TraversabilityMap documentation */
+// 		bool GetValue(size_t ix, size_t iy, int & value) const {
+// 			RWlock::rdsentry const sentry(m_rwlock);
+// 			return m_travmap->GetValue(ix, iy, value); }
 		
 		/** see TraversabilityMap documentation */
 		bool GetValue(ssize_t ix, ssize_t iy, int & value) const {
@@ -162,11 +162,11 @@ namespace sfl {
 			return m_travmap->SetValue(gx, gy, value, cb);
 		}
 		
-		/** see TraversabilityMap documentation */
- 		bool SetValue(size_t ix, size_t iy, int value, dcb * cb) {
-			RWlock::wrsentry const sentry(m_rwlock);
-			return m_travmap->SetValue(ix, iy, value, cb);
-		}
+// 		/** see TraversabilityMap documentation */
+//  		bool SetValue(size_t ix, size_t iy, int value, dcb * cb) {
+// 			RWlock::wrsentry const sentry(m_rwlock);
+// 			return m_travmap->SetValue(ix, iy, value, cb);
+// 		}
 		
 		/** see TraversabilityMap documentation */
  		bool SetValue(ssize_t ix, ssize_t iy, int value, dcb * cb) {

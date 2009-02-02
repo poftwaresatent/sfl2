@@ -73,7 +73,8 @@ namespace sfl {
 	 /** upper bound on the acquisition timestamp */
 	 const Timestamp & tupper,
 	 /** estimated robot position at "most probable" acquisition time */
-	 const Pose & pose);
+	 const Pose & robot_pose,
+	 const Frame & scanner_pose);
     
     Scan(const Scan & original);
     
@@ -84,7 +85,10 @@ namespace sfl {
     Timestamp tupper;
     
     /** estimated robot position at "most probable" acquisition time */
-    Pose pose;
+    Pose robot_pose;
+    
+    /** estimated scanner position at "most probable" acquisition time */
+    Frame scanner_pose;
     
     /** array of scan data */
     array_t data;

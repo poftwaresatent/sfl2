@@ -102,6 +102,7 @@ namespace sfl {
 		
   public:
 		typedef GridFrame::index_t index_t;
+		typedef std::set<index_t> index_buffer_t;
 		typedef TraversabilityMap::draw_callback draw_callback;
 		
 		
@@ -135,7 +136,6 @@ namespace sfl {
 					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 					 std::ostream * err_os);
 		
-		
 		/**
 			 Update of traversability map based on a Scan instance, where
 			 each scan point is considered an obstacle. We only call
@@ -159,7 +159,7 @@ namespace sfl {
 		size_t Update(const Frame & pose,
 									size_t length, double * locx, double * locy,
 									draw_callback * cb = 0);
-		
+
 		/**
 			 Draw a (non-fileld) circle of obstacle points using
 			 GridFrame::DrawGlobalCircle(). Each grid cell on the circle is
@@ -169,6 +169,9 @@ namespace sfl {
 			 \return The number of cells that got changed.
 		*/
 		size_t AddObstacleCircle(double globx, double globy, double radius,
+														 /** gets passed to AddOneObstacle() */
+														 bool force,
+														 /** gets passed to AddOneObstacle() */
 														 draw_callback * cb = 0);
 		
 		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
@@ -177,9 +180,6 @@ namespace sfl {
 		const GridFrame & GetGridFrame() const { return gridframe; }
 		
 		
-		const int freespace;
-		const int obstacle;
-		const int ws_obstacle;
 		const GridFrame gridframe;
 		const double buffer_zone;
 		const double grown_safe_distance;
@@ -189,153 +189,120 @@ namespace sfl {
 		/**
 			 In case you want to draw buffered obstacle lines into the map,
 			 call GridFrame::DrawGlobalLine() (or DrawLocalLine() or
-			 DrawDDALine()) with an instance of buffered_obstacle_adder. The
-			 extra Mapper2d::draw_callback constructir argument can be used
-			 to pass through another drawer, which will get called for each
-			 individual cell in the buffered obstacle region.
+			 DrawDDALine()) with an instance of buffered_obstacle_adder.
 		*/
 		class buffered_obstacle_adder
 			: public GridFrame::draw_callback
 		{
 		public:
-			buffered_obstacle_adder(Mapper2d * _m2d, Mapper2d::draw_callback * _cb);
+			/**
+				 The extra Mapper2d::draw_callback constructor argument can be
+				 used to pass through another drawer, which will get called
+				 for each individual cell in the buffered obstacle region.
+			*/
+			buffered_obstacle_adder(Mapper2d * _m2d,
+															/** gets passed to Mapper2d::AddOneObstacle() */
+															bool force,
+															/** gets passed to Mapper2d::AddOneObstacle() */
+															Mapper2d::draw_callback * _cb);
 			virtual void operator () (ssize_t ix, ssize_t iy);
 			Mapper2d * m2d;
+			bool force;
 			Mapper2d::draw_callback * cb;
 			size_t count;
 		};
 		
 		/** \return The number of cells that were changed. */
-		size_t AddBufferedObstacle(double globx, double globy, draw_callback * cb);
-
-		size_t AddBufferedObstacle(index_t source_index, draw_callback * cb);
+		size_t AddOneGlobalObstacle(/** Global X-coordinate of the new
+																		obstacle. */
+																double globx,
+																/** Global Y-coordinate of the new
+																		obstacle. */
+																double globy,
+																/** If force==true then always apply
+																		the obstacle buffer mask, even if
+																		the travmap says there already is
+																		a W-space obstacle here. This is
+																		used from within
+																		RemoveOneObstacle() and
+																		UpdateObstacles(). */
+																bool force,
+																/** If non-null, this gets informed of cost
+																		changes. */
+																draw_callback * cb);
 		
-		
-	protected:
-		struct sprite_element {
-      sprite_element(ssize_t _x, ssize_t _y, int _v): x(_x), y(_y), v(_v) { }
-      ssize_t x, y;
-      int v;
-    };
-    
-    typedef std::vector<sprite_element> sprite_t;
-		
-		
-		void InitSprite(travmap_cost_decay const & decay);
-		
-		/** Default implementation does nothing. Quick hack for
-				ReflinkMapper2d rfct. */
-		virtual void ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend,
-															ssize_t grid_ybegin, ssize_t grid_yend);
-		
-		/** Default implementation does nothing. Quick hack for
-				ReflinkMapper2d rfct. */		
-		virtual bool AddReference(index_t source_index,
-															ssize_t target_ix, ssize_t target_iy,
-															int value);
-		
-		/** We use obstacle+1 to keep track of those cells that are non-CS
-				expanded obstacles, to distinguish them from obstacle cells
-				that do not contain any actual workspace points. */
-		boost::shared_ptr<TraversabilityMap> m_travmap;
-		boost::shared_ptr<RWlock> m_trav_rwlock;
-		sprite_t m_sprite;
-		ssize_t m_sprite_x0, m_sprite_y0, m_sprite_x1, m_sprite_y1;	// bbox
-		
-		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
-	};
-	
-	
-	/**
-		 Experimental way of implementing RemoveBufferedObstacle().
-	*/
-  class ReflinkMapper2d
-		: public Mapper2d
-	{
-	protected:
-		ReflinkMapper2d(double robot_radius,
-										double buffer_zone,
-										double padding_factor,
-										/** use linear_travmap_cost_decay for legacy behavior */
-										travmap_cost_decay const & decay,
-										boost::shared_ptr<TraversabilityMap> travmap,
-										boost::shared_ptr<travmap_grow_strategy> grow_strategy,
-										boost::shared_ptr<RWlock> trav_rwlock);
-		
-	public:
-		typedef std::set<index_t> link_t;
-		typedef std::map<index_t, int> fwd_t;
-		typedef std::multimap<int, index_t> rev_t;
-		struct ref_s {
-			fwd_t forward;
-			rev_t reverse;
-		};
-		typedef	flexgrid<link_t> linkmap_t;
-		typedef	flexgrid<ref_s> refmap_t;
-		
-		static boost::shared_ptr<ReflinkMapper2d>
-		Create(double robot_radius,
-					 double buffer_zone,
-					 double padding_factor,
-					 /** use linear_travmap_cost_decay for legacy behavior */
-					 travmap_cost_decay const & decay,
-					 const std::string & traversability_file,
-					 /** Optional. Defaults to never_grow. */
-					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
-					 std::ostream * err_os);
+		/** \return The number of cells that were changed. See also
+				AddOneObstacle(double, double, bool, draw_callback *). */
+		size_t AddOneObstacle(index_t source_index, bool force, draw_callback * cb);
 		
 		/**
 			 Similar to Update(const Frame&, const Scan&, draw_callback*),
-			 but also updates the cells along the whole rays of the scan.
+			 but also updates the cells along the rays of the scan, up to
+			 max_remove_distance.
 			 
 			 \return The number of cells that got changed.
 		*/
 		size_t SwipedUpdate(const Frame & pose,
 												const Multiscanner::raw_scan_collection_t & scans,
+												double max_remove_distance,
 												draw_callback * cb = 0);
 		
-		/** \return The number of cells that were changed. */
-		size_t RemoveBufferedObstacle(index_t source_index, draw_callback * cb);
-		
-		const linkmap_t & GetLinkmap() const { return m_linkmap; }
-		const refmap_t & GetRefmap() const { return m_refmap; }
-		const link_t & GetFreespaceBuffer() const { return m_freespace_buffer; }
-		const link_t & GetObstacleBuffer() const { return m_obstacle_buffer; }
-		
-	protected:
-		virtual void ResizeNotify(ssize_t grid_xbegin, ssize_t grid_xend,
-															ssize_t grid_ybegin, ssize_t grid_yend);
-		
-		/** \note This method does not check if an existing link changes
-				value, but simply returns false if there already is a link
-				from source to target. Changing values of existing links must
-				be done by the caller (or add a ModifyReference() method). */
-		virtual bool AddReference(index_t source_index,
-															ssize_t target_ix, ssize_t target_iy,
-															int value);
+		/** \return An UPPER BOUND on the number of cells that were changed. */
+		size_t RemoveOneObstacle(index_t source_index, draw_callback * cb);
 		
 		/**
-			 \note This method does NOT remove the link from m_linkmap, as
-			 that would make it impossible to loop over targets using an
-			 iterator. Callers must ensure to remove the link from m_linkmap
-			 after having looped over the targets.
+			 Removes and adds W-space obstacles. Forces all operations, so
+			 if there are many duplicates in the buffers then it gets slowed
+			 down.
 			 
-			 \return true if the reference existed, in which case the
-			 influence of the source on the target as well as the new target
-			 value will be set (the new value can be identical to the old in
-			 cases where the influence of this source is overridden by or
-			 equal to another source on the same target).
+			 \note draw_callback can be called multiple times for a given
+			 index, with different costs being fed to it each time.
+			 
+			 \return An UPPER BOUND on the number of cells that were changed.
 		*/
-		bool RemoveReference(index_t source_index,
-												 index_t target_index,
-												 int & influence, int & new_value);
+		size_t UpdateObstacles(/** if non-null, all cells that should become W-obstacles */
+													 index_buffer_t const * add,
+													 bool force_add,
+													 /** if non-null, all W-obstacles that
+															 should become freespace (non-const
+															 pointer because spurious entries get
+															 pruned from it) */
+													 index_buffer_t * remove,
+													 draw_callback * cb);
 		
-		link_t m_freespace_buffer;
-		link_t m_obstacle_buffer;
-		linkmap_t m_linkmap;				// lists all targets of a given source
-		refmap_t m_refmap;					// maps all sources of a given target		
+		index_buffer_t const & GetFreespaceBuffer() const { return m_freespace_buffer; }
+		index_buffer_t const & GetObstacleBuffer() const { return m_obstacle_buffer; }
+		index_buffer_t const & GetSwipeCheckBuffer() const { return m_swipe_check_buffer; }
+		index_buffer_t const & GetSwipeHoleBuffer() const { return m_swipe_hole_buffer; }
+		index_buffer_t const & GetSwipeRepairBuffer() const { return m_swipe_repair_buffer; }
+		
+		
+	protected:
+    typedef std::map<index_t, int> addmask_t; // cell-to-cost map
+		typedef std::map<index_t, bool> removemask_t;	// true: wipe and re-add, false: re-add only
+		
+		void InitAddmask(travmap_cost_decay const & decay);
+		void InitRemovemask();
+		
+		boost::shared_ptr<TraversabilityMap> m_travmap;
+		boost::shared_ptr<RWlock> m_trav_rwlock;
+		addmask_t m_addmask;
+		ssize_t m_addmask_x0, m_addmask_y0, m_addmask_x1, m_addmask_y1;	// bbox
+		
+		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
+		
+		removemask_t m_removemask;
+		
+		// currently unused... could be useful for speedups later
+		ssize_t m_removemask_x0, m_removemask_y0, m_removemask_x1, m_removemask_y1;	// bbox
+		
+		index_buffer_t m_freespace_buffer;
+		index_buffer_t m_obstacle_buffer;
+		index_buffer_t m_swipe_check_buffer;
+		index_buffer_t m_swipe_hole_buffer;
+		index_buffer_t m_swipe_repair_buffer;
 	};
-	
+
 }
 
 #endif // SFL_MAPPER2D_HPP

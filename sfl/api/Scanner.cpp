@@ -87,7 +87,8 @@ namespace sfl {
     // XXXX to do: two raw pointers would do the job, instead of 4 shared ones
     m_buffer.push_back(shared_ptr<Scan>(new Scan(nscans, Timestamp::First(),
 						 Timestamp::Last(),
-						 Pose())));
+						 Pose(),
+						 *mount)));
     m_buffer.push_back(shared_ptr<Scan>(new Scan(*m_buffer.back())));
     m_dirty = m_buffer[0];
     m_clean = m_buffer[1];
@@ -175,8 +176,10 @@ namespace sfl {
     
     m_dirty->tlower = t0;
     m_dirty->tupper = t1;
-    m_dirty->pose.Set(x, y, theta);
-    m_dirty->pose.SetVar(sxx, syy, stt, sxy, sxt, syt);
+    m_dirty->robot_pose.Set(x, y, theta);
+    m_dirty->robot_pose.SetVar(sxx, syy, stt, sxy, sxt, syt);
+    m_dirty->scanner_pose.Set(*mount);
+    m_dirty->robot_pose.To(m_dirty->scanner_pose);
     for(size_t ii(0); ii < nscans; ++ii){
       m_dirty->data[ii].rho = rho[ii];
       m_dirty->data[ii].in_range = rho[ii] < rhomax;
@@ -185,7 +188,7 @@ namespace sfl {
       mount->To(m_dirty->data[ii].locx, m_dirty->data[ii].locy);
       m_dirty->data[ii].globx = m_dirty->data[ii].locx;
       m_dirty->data[ii].globy = m_dirty->data[ii].locy;
-      m_dirty->pose.To(m_dirty->data[ii].globx, m_dirty->data[ii].globy);
+      m_dirty->robot_pose.To(m_dirty->data[ii].globx, m_dirty->data[ii].globy);
     }
     m_mutex->Lock();
     m_acquisition_ok = true;

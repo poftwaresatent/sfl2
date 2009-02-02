@@ -72,10 +72,13 @@ namespace sfl {
 											ssize_t ybegin, ssize_t yend);
 		
 		/**
-			 \note It is not recommended to use <code>obstacle <=
-			 freespace</code> as several clients implicitly assume
-			 <code>obstacle > freespace</code>! Also, grid range ends are
-			 non-inclusive (xend and yend are "one past" the end).
+			 \note
+			 - The value w_obstacle is initialized to obstacle+1.
+			 - It is not recommended to use <code>obstacle <=
+			   freespace</code> as several clients implicitly assume
+			   <code>obstacle > freespace</code>!
+			 - grid range ends are non-inclusive (xend and yend are "one
+         past" the end).
 		*/
 		TraversabilityMap(const GridFrame & origin,
 											ssize_t xbegin, ssize_t xend,
@@ -117,10 +120,10 @@ namespace sfl {
 		
 		bool GetValue(ssize_t index_x, ssize_t index_y, int & value) const;
 		
-		bool GetValue(size_t index_x, size_t index_y, int & value) const
-		{ return GetValue(static_cast<ssize_t>(index_x),
-											static_cast<ssize_t>(index_y),
-											value); }
+// 		bool GetValue(size_t index_x, size_t index_y, int & value) const
+// 		{ return GetValue(static_cast<ssize_t>(index_x),
+// 											static_cast<ssize_t>(index_y),
+// 											value); }
 		
 		bool SetValue(double global_x, double global_y, int value,
 									draw_callback * cb);
@@ -128,14 +131,16 @@ namespace sfl {
 		bool SetValue(ssize_t index_x, ssize_t index_y, int value,
 									draw_callback * cb);
 		
-		bool SetValue(size_t index_x, size_t index_y, int value,
-									draw_callback * cb)
-		{ return SetValue(static_cast<ssize_t>(index_x),
-											static_cast<ssize_t>(index_y),
-											value, cb); }
+// 		bool SetValue(size_t index_x, size_t index_y, int value,
+// 									draw_callback * cb)
+// 		{ return SetValue(static_cast<ssize_t>(index_x),
+// 											static_cast<ssize_t>(index_y),
+// 											value, cb); }
 
 		bool SetObst(double global_x, double global_y, draw_callback * cb);
 		bool SetObst(ssize_t index_x, ssize_t index_y, draw_callback * cb);
+		bool SetWObst(double global_x, double global_y, draw_callback * cb);
+		bool SetWObst(ssize_t index_x, ssize_t index_y, draw_callback * cb);
 		bool SetFree(double global_x, double global_y, draw_callback * cb);
 		bool SetFree(ssize_t index_x, ssize_t index_y, draw_callback * cb);
 		
@@ -177,6 +182,7 @@ namespace sfl {
     GridFrame gframe;						/**< default (0, 0, 0, 1) */
     int freespace;							/**< default 0 */
     int obstacle;								/**< default 127 */
+    int w_obstacle;							/**< default 128 */
     std::string name;						/**< default "world" */
 		
 		typedef flexgrid<int> grid_t;
