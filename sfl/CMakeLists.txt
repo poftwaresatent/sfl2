@@ -1,7 +1,6 @@
 ### Simplified CMake build file for Sunflower.
 ###
-### Works only if the top-level directory is called 'sfl' and if the
-### E* code lives side-by-side with sfl in a directory called 'estar'.
+### Works only if the top-level directory is called 'sfl'.
 
 PROJECT (Sunflower)
 SET (CMAKE_VERBOSE_MAKEFILE ON)
@@ -125,5 +124,4 @@ ADD_LIBRARY (sunflower
              api/Multiscanner.cpp)
 
 INCLUDE_DIRECTORIES (..
-                     ../estar
                      ${PREFIX}/include)
