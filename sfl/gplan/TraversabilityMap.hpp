@@ -115,6 +115,10 @@ namespace sfl {
        \return true if the traversability at the given global
        coordinates is known, in which case the out-parameter
        <code>value</code> is set to it.
+			 
+			 \todo Not good to rely on parameter types to distinguish
+			 between method semantics, shoudlexplicitly name the method
+			 GetGlobalValue() and have a corresponding GetLocalValue().
     */
 		bool GetValue(double global_x, double global_y, int & value) const;
 		
