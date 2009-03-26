@@ -95,7 +95,7 @@ namespace sfl {
 						 double buffer_zone,
 						 double padding_factor,
 						 /** use linear_travmap_cost_decay for legacy behavior */
-						 travmap_cost_decay const & decay,
+						 boost::shared_ptr<travmap_cost_decay const> decay,
 						 boost::shared_ptr<TraversabilityMap> travmap,
 						 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 						 boost::shared_ptr<RWlock> trav_rwlock);
@@ -117,7 +117,7 @@ namespace sfl {
 						 int freespace,
 						 int obstacle,
 						 /** use linear_travmap_cost_decay for legacy behavior */
-						 travmap_cost_decay const & decay,
+						 boost::shared_ptr<travmap_cost_decay const> decay,
 						 const std::string & name,
 						 boost::shared_ptr<RWlock> trav_rwlock,
 						 /** Optional. Defaults to never_grow. */
@@ -130,7 +130,7 @@ namespace sfl {
 					 double buffer_zone,
 					 double padding_factor,
 					 /** use linear_travmap_cost_decay for legacy behavior */
-					 travmap_cost_decay const & decay,
+					 boost::shared_ptr<travmap_cost_decay const> decay,
 					 const std::string & traversability_file,
 					 /** Optional. Defaults to never_grow. */
 					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
@@ -270,6 +270,8 @@ namespace sfl {
 													 index_buffer_t * remove,
 													 draw_callback * cb);
 		
+		int ComputeCost(double dist_from_obstacle) const;
+		
 		index_buffer_t const & GetFreespaceBuffer() const { return m_freespace_buffer; }
 		index_buffer_t const & GetObstacleBuffer() const { return m_obstacle_buffer; }
 		index_buffer_t const & GetSwipeCheckBuffer() const { return m_swipe_check_buffer; }
@@ -281,7 +283,7 @@ namespace sfl {
     typedef std::map<index_t, int> addmask_t; // cell-to-cost map
 		typedef std::map<index_t, bool> removemask_t;	// true: wipe and re-add, false: re-add only
 		
-		void InitAddmask(travmap_cost_decay const & decay);
+		void InitAddmask();
 		void InitRemovemask();
 		
 		boost::shared_ptr<TraversabilityMap> m_travmap;
@@ -290,7 +292,8 @@ namespace sfl {
 		ssize_t m_addmask_x0, m_addmask_y0, m_addmask_x1, m_addmask_y1;	// bbox
 		
 		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
-		
+		boost::shared_ptr<travmap_cost_decay const> m_cost_decay;
+
 		removemask_t m_removemask;
 		
 		// currently unused... could be useful for speedups later

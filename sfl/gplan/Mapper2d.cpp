@@ -89,7 +89,7 @@ namespace sfl {
 					 double padding_factor,
 					 int _freespace,
 					 int _obstacle,
-					 travmap_cost_decay const & decay,
+					 shared_ptr<travmap_cost_decay const> decay,
 					 const std::string & name,
 					 shared_ptr<RWlock> trav_rwlock,
 					 shared_ptr<travmap_grow_strategy> grow_strategy)
@@ -103,9 +103,10 @@ namespace sfl {
 																			grid_xbegin, grid_xend,
 																			grid_ybegin, grid_yend,
 																			_freespace, _obstacle, name)),
-			m_trav_rwlock(trav_rwlock)
+			m_trav_rwlock(trav_rwlock),
+			m_cost_decay(decay)
 	{
-		InitAddmask(decay);
+		InitAddmask();
 		InitRemovemask();
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
@@ -118,7 +119,7 @@ namespace sfl {
 	Mapper2d(double robot_radius,
 					 double _buffer_zone,
 					 double padding_factor,
-					 travmap_cost_decay const & decay,
+					 shared_ptr<travmap_cost_decay const> decay,
 					 shared_ptr<TraversabilityMap> travmap,
 					 shared_ptr<travmap_grow_strategy> grow_strategy,
 					 shared_ptr<RWlock> trav_rwlock)
@@ -129,9 +130,10 @@ namespace sfl {
 			grown_robot_radius(robot_radius
 												 + padding_factor * gridframe.Delta() * sqrt_of_half),
 			m_travmap(travmap),
-			m_trav_rwlock(trav_rwlock)
+			m_trav_rwlock(trav_rwlock),
+			m_cost_decay(decay)
 	{
-		InitAddmask(decay);
+		InitAddmask();
 		InitRemovemask();
 		if (grow_strategy)
 			m_grow_strategy = grow_strategy;
@@ -144,7 +146,7 @@ namespace sfl {
 	Create(double robot_radius,
 				 double buffer_zone,
 				 double padding_factor,
-				 travmap_cost_decay const & decay,
+				 shared_ptr<travmap_cost_decay const> decay,
 				 const std::string & traversability_file,
 				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
@@ -477,43 +479,50 @@ namespace sfl {
 	}
 	
 	
+	/** \todo Could cache a lot of the intermediate values, but this is
+			only called during init. */
+	int Mapper2d::
+	ComputeCost(double dist_from_obstacle) const
+	{
+		if (dist_from_obstacle >= grown_safe_distance)
+			return m_travmap->freespace;
+		int cost(m_travmap->obstacle);
+		if (dist_from_obstacle > grown_robot_radius) {
+			double const normdist((dist_from_obstacle - grown_robot_radius) / buffer_zone);
+			double const vv(m_travmap->freespace + 1
+											+ (*m_cost_decay)(normdist) * (m_travmap->obstacle - m_travmap->freespace - 2));
+			cost = boundval(m_travmap->freespace + 1, static_cast<int>(rint(vv)), m_travmap->obstacle - 1);
+		}
+		return cost;
+	}
+	
+	
 	void Mapper2d::
-	InitAddmask(travmap_cost_decay const & decay)
+	InitAddmask()
 	{
 		m_addmask_x0 = 0;
 		m_addmask_y0 = 0;
 		m_addmask_x1 = 0;
 		m_addmask_y1 = 0;
 		const ssize_t offset(static_cast<ssize_t>(ceil(grown_safe_distance / gridframe.Delta())));
-		int const obstacle(m_travmap->obstacle);
-		int const freespace(m_travmap->freespace);
-		const double bufcostrange(obstacle - freespace - 2);
     for (ssize_t ix(-offset); ix <= offset; ++ix) {
       const double x2(sqr(ix * gridframe.Delta()));
       for (ssize_t iy(-offset); iy <= offset; ++iy) {
-				const double rr(sqrt(sqr(iy * gridframe.Delta()) + x2));
-				if (rr < grown_safe_distance) {
-					int cost(obstacle);
-					if (rr > grown_robot_radius) {
-						double const normdist((rr - grown_robot_radius) / buffer_zone);
-						double const vv(freespace + 1 + decay(normdist) * bufcostrange);
-						cost = boundval(freespace + 1, static_cast<int>(rint(vv)), obstacle - 1);
-					}
-					if (cost > 0) {
-						m_addmask.insert(make_pair(index_t(ix, iy), cost));
-						// update the addmask's bounding box
-						if (ix < m_addmask_x0)
-							m_addmask_x0 = ix;
-						if (ix > m_addmask_x1)
-							m_addmask_x1 = ix;
-						if (iy < m_addmask_y0)
-							m_addmask_y0 = iy;
-						if (iy > m_addmask_y1)
-							m_addmask_y1 = iy;
-					}
+				int const cost(ComputeCost(sqrt(sqr(iy * gridframe.Delta()) + x2)));
+				if (cost > m_travmap->freespace) {
+					m_addmask.insert(make_pair(index_t(ix, iy), cost));
+					// update the addmask's bounding box
+					if (ix < m_addmask_x0)
+						m_addmask_x0 = ix;
+					if (ix > m_addmask_x1)
+						m_addmask_x1 = ix;
+					if (iy < m_addmask_y0)
+						m_addmask_y0 = iy;
+					if (iy > m_addmask_y1)
+						m_addmask_y1 = iy;
 				}
-      }
-    }
+			}
+		}
 	}
 	
 	
