@@ -135,7 +135,7 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   shared_ptr<Mapper2d>
     m2d(Mapper2d::Create(robot_radius, buffer_zone, padding_factor,
 			 ////linear_travmap_cost_decay(),
-			 exponential_travmap_cost_decay(decay_power),
+			 shared_ptr<exponential_travmap_cost_decay>(new exponential_travmap_cost_decay(decay_power)),
 			 traversability_file, grow_strategy, &cerr));
   if ( ! m2d) {
     cerr << "ERROR in Borox::InitAlgorithm():\n"
