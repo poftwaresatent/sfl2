@@ -25,6 +25,7 @@
 #include "Frame.hpp"
 #include "numeric.hpp"
 #include <sfl/api/Pose.hpp>
+#include <sfl/api/Goal.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -133,6 +134,13 @@ namespace sfl {
   
   
   void Frame::
+  To(Goal & goal) const
+  {
+    To(goal._x, goal._y, goal._theta);
+  }
+  
+  
+  void Frame::
   To(double & x, double & y, double & theta) const
   {
     To(x, y);
@@ -177,6 +185,13 @@ namespace sfl {
     From(frame.m_x, frame.m_y);
     RotateFrom(frame.m_costheta, frame.m_sintheta);
     frame.m_theta = mod2pi(frame.m_theta - m_theta);
+  }
+  
+  
+  void Frame::
+  From(Goal & goal) const
+  {
+    From(goal._x, goal._y, goal._theta);
   }
   
   

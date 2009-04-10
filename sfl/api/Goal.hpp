@@ -148,6 +148,8 @@ namespace sfl {
     
     
   protected:
+    friend class Frame;	// quick hack to compensate for historical design choices
+    
     /**
        Default goal disk radius.
     */

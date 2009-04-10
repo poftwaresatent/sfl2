@@ -33,6 +33,7 @@ namespace sfl {
   
   
   class Pose;
+  class Goal;
   
   
   /**
@@ -84,6 +85,10 @@ namespace sfl {
     /** Like To(Frame &) but takes three references to double. */
     void To(double & x, double & y, double & theta) const;
     
+    /** Transform a Goal instance given in this frame to the
+	corresponding coordinates of the enclosing frame. */
+    void To(Goal & goal) const;
+    
     /** Performs only the rotational part of To() for points (x,
 	y). This corresponds to rotating the provided point around the
 	frame's origin by Theta(). */
@@ -104,6 +109,9 @@ namespace sfl {
     
     /** Like From(Frame &) but takes three references to double. */
     void From(double & x, double & y, double & theta) const;
+    
+    /** The inverse of To() for Goal instances. */
+    void From(Goal & goal) const;
     
     /** Performs only the rotational part of From() for points (x,
        y). This corresponds to rotating the provided point around the
