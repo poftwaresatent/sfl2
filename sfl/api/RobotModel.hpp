@@ -48,18 +48,53 @@ namespace sfl {
        Abstract class for providing actual numerical values to
        RobotModel. It would be nice to retrieve this information from
        the HAL, which knows about most other such information anyways.
+     
+       If you play with model parameters, good ballpark figures for
+       the max accelerations are:
+
+       - qddMax approx. 1.0 * qdMax: the robot will take one second to
+         go from zero to full speed
+
+       - sddMax approx. 0.75 * wheelRadius * qddMax: the DWA will cut
+         a small corner off the actuator velocity space, which is
+         important to allow maneuvers at high speeds (otherwise the
+         speed objective function can trump the alignment objective,
+         and the robot will swerve towards the goal only at the last
+         moment).
+
+       - thetaddMax approx. 1.5 * wheelRadius * qddMax / wheelBase:
+         similarly to sddMax, this cuts of a corner for pure rotations
+         (this is much less critical, because pure rotations tend to
+         not compete with the speed objective)
     */
     class Parameters{
     public:
-      const double safetyDistance;
-      const double wheelBase;
-      const double wheelRadius;
-      const double qdMax;
-      const double qddMax;
-      const double sdMax;
-      const double thetadMax;
-      const double sddMax;
-      const double thetaddMax;
+      /** safetyDistance [m]   (the robot outline is virtually expanded by this) */
+      double safetyDistance;
+      
+      /** wheelBase [m]        (distance between wheel center points) */
+      double wheelBase;
+      
+      /** wheelRadius [m]      (distance from floor to wheel center points) */
+      double wheelRadius;
+      
+      /** qdMax [rad/s]        (max wheel rotation speed) */
+      double qdMax;
+      
+      /** qddMax [rad/s/s]     (max wheel rotation acceleration [rad/s/s]) */
+      double qddMax;
+      
+      /** sdMax [m/s]          (max robot translational speed) */
+      double sdMax;
+      
+      /** thetadMax [rad/s]    (max robot rotational speed) */
+      double thetadMax;
+      
+      /** sddMax [m/s/s]       (max robot translational acceleration) */
+      double sddMax;
+      
+      /** thetaddMax [rad/s/s] (max robot rotational acceleration) */
+      double thetaddMax;
       
       Parameters(double safetyDistance,
 		 double wheelBase,
