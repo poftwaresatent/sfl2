@@ -23,6 +23,7 @@
 
 
 #include "RobotModel.hpp"
+#include <iostream>
 #include <cmath>
 
 
@@ -270,6 +271,40 @@ namespace sfl {
       stoptime = absval(qdr) / QddMax();
     stoptime += safety_delay;
     LocalKinematics(sd, thetad, stoptime, dx, dy, dtheta);
+  }
+  
+  
+  void RobotModel::
+  ApplyActuatorLimits(double timestep,
+		      double qdl_cur, double qdr_cur,
+		      double qdl_des, double qdr_des,
+		      double & qdl_cmd, double & qdr_cmd,
+		      std::ostream * verbose_os)
+  {
+    // limit in actuator speed space
+    const double dqd(timestep * m_params.qddMax);
+    const double qdl_max(boundval(- m_params.qdMax, qdl_cur + dqd, m_params.qdMax));
+    const double qdl_min(boundval(- m_params.qdMax, qdl_cur - dqd, m_params.qdMax));
+    const double qdr_max(boundval(- m_params.qdMax, qdr_cur + dqd, m_params.qdMax));
+    const double qdr_min(boundval(- m_params.qdMax, qdr_cur - dqd, m_params.qdMax));
+    const double pqdl(boundval(qdl_min, qdl_des, qdl_max));
+    const double pqdr(boundval(qdr_min, qdr_des, qdr_max));
+    
+    // limit in global speed space
+    double sd, thetad;
+    Actuator2Global(pqdl, pqdr, sd, thetad);
+    sd =     boundval( - m_params.sdMax,     sd,     m_params.sdMax);
+    thetad = boundval( - m_params.thetadMax, thetad, m_params.thetadMax);
+    
+    // transform back to actuator space
+    Global2Actuator(sd, thetad, qdl_cmd, qdr_cmd);
+    
+    if (verbose_os)
+      *verbose_os << "RobotModel::ApplyActuatorLimits()\n"
+		  << "  timestep: " << timestep << "\n"
+		  << "  current: (" << qdl_cur << ", " << qdr_cur << ")\n"
+		  << "  desired: (" << qdl_des << ", " << qdr_des << ")\n"
+		  << "  bound:   (" << qdl_cmd << ", " << qdr_cmd << ")\n";
   }
   
 }

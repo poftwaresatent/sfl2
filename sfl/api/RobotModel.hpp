@@ -232,6 +232,26 @@ namespace sfl {
 				double & deltay,
 				double & deltatheta);
     
+    /**
+       Given the current and a desired (qdl, qdr) as well as a
+       timestep within which to reach that speed, this method applies
+       actuator acceleration limits, actuator speed limits, and global
+       speed limits, and returns the possibly corrected command
+       speeds.
+       
+       Notes:
+       - global acceleration limits are not taken into account,
+         just the actuator acceleration limits.
+       - when speed or acceleration limits are hit, the resulting
+         motion can be on a different radius of curvature than the
+         originally desired (qdl, qdr) would have produced.
+     */
+    void ApplyActuatorLimits(double timestep,
+			     double qdl_cur, double qdr_cur,
+			     double qdl_des, double qdr_des,
+			     double & qdl_cmd, double & qdr_cmd,
+			     std::ostream * verbose_os);
+    
     
   protected:
     const Parameters m_params;
