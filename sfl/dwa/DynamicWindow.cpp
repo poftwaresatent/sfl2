@@ -28,9 +28,6 @@
 #include "SpeedObjective.hpp"
 #include "../api/RobotModel.hpp"
 #include "../api/MotionController.hpp"
-
-// manual dbg
-#define SFL_DEBUG
 #include "../util/pdebug.hpp"
 
 #include <iostream>
