@@ -30,6 +30,7 @@
 
 #include <string>
 #include <map>
+#include <stdexcept>
 
 
 namespace sfl {
@@ -42,6 +43,13 @@ namespace sfl {
     
     /** \note overrides already existing values */
     void SetOption(const std::string & key, const std::string & value);
+    
+    void ReadFlatText(std::istream & is) throw(std::runtime_error);
+    void ReadFlatFile(std::string const & filename) throw(std::runtime_error);
+    
+    void WriteFlatText(std::string const & prefix, std::ostream & os) throw(std::runtime_error);
+    void WriteFlatFile(std::string const & prefix, std::string const & filename, bool append)
+      throw(std::runtime_error);
     
   protected:
     typedef std::map<std::string, std::string> option_t;

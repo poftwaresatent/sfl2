@@ -25,6 +25,10 @@
 
 
 #include "OptionDictionary.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <limits>
 
 using namespace std;
 
@@ -50,5 +54,78 @@ namespace sfl {
     else
       io->second = value;
   }
-
+  
+  
+  void OptionDictionary::
+  ReadFlatText(std::istream & is) throw(std::runtime_error)
+  {
+    string key;
+    while (is >> key){
+      if (key[0] == '#') {
+	is.ignore(numeric_limits<streamsize>::max(), '\n');
+	continue;
+      }
+      string value;
+      while (is >> value) {
+	if (key[0] == '#') {
+	  is.ignore(numeric_limits<streamsize>::max(), '\n');
+	  continue;
+	}
+	break;
+      }
+      if ( ! is) {
+	ostringstream eos;
+	eos << "sfl::OptionDictionary::ReadFlatText(): no value for key \"" << key << "\"";
+	throw runtime_error(eos.str());
+      }
+      SetOption(key, value);
+    }
+  }
+  
+  
+  void OptionDictionary::
+  ReadFlatFile(std::string const & filename) throw(std::runtime_error)
+  {
+    ifstream fileis(filename.c_str());
+    if ( ! fileis) {
+      ostringstream eos;
+      eos << "sfl::OptionDictionary::ReadFlatFile(): error opening file \"" << filename << "\"";
+      throw runtime_error(eos.str());
+    }
+    ReadFlatText(fileis);
+  }
+  
+  
+  void OptionDictionary::
+  WriteFlatText(std::string const & prefix, std::ostream & os) throw(std::runtime_error)
+  {
+    for (option_t::iterator io(m_option.begin()); io != m_option.end(); ++io) {
+      if ( ! os) {
+	ostringstream eos;
+	eos << "sfl::OptionDictionary::WriteFlatText(): output stream not ready (k: \""
+	    << io->first << "\" v:\"" << io->second << "\")";
+	throw runtime_error(eos.str());
+      }
+      os << prefix << io->first << "\t" << io->second << "\n";
+    }
+  }
+  
+  
+  void OptionDictionary::
+  WriteFlatFile(std::string const & prefix, std::string const & filename, bool append)
+    throw(std::runtime_error)
+  {
+    ofstream fileos;
+    if (append)
+      fileos.open(filename.c_str(), ios_base::app);
+    else
+      fileos.open(filename.c_str());
+    if ( ! fileos) {
+      ostringstream eos;
+      eos << "sfl::OptionDictionary::WriteFlatFile(): error opening file \"" << filename << "\"";
+      throw runtime_error(eos.str());
+    }
+    WriteFlatText(prefix, fileos);
+  }
+  
 }

@@ -61,7 +61,8 @@ namespace sfl {
 	     shared_ptr<const Hull> hull):
     m_params(parameters),
     m_hull(hull),
-    m_safety_hull(hull->CreateGrownHull(parameters.safetyDistance))
+    m_safety_hull(hull->CreateGrownHull(parameters.safetyDistance)),
+    m_robot_radius(-1)		// lazy init
   {
   }
   
@@ -305,6 +306,15 @@ namespace sfl {
 		  << "  current: (" << qdl_cur << ", " << qdr_cur << ")\n"
 		  << "  desired: (" << qdl_des << ", " << qdr_des << ")\n"
 		  << "  bound:   (" << qdl_cmd << ", " << qdr_cmd << ")\n";
+  }
+  
+  
+  double RobotModel::
+  RobotRadius() const
+  {
+    if (0 > m_robot_radius)
+      m_robot_radius = m_hull->CalculateRadius();
+    return m_robot_radius;
   }
   
 }

@@ -126,6 +126,12 @@ namespace sfl {
     boost::shared_ptr<const Hull> GetSafetyHull() const;    
     
     /**
+       \return The radius of the robot's (non-grown) hull (max
+       distance from robot center to any of the points on the hull).
+    */
+    double RobotRadius() const;
+    
+    /**
        \return The safety distance.
        \todo should be renamed SafetyDistance().
     */
@@ -257,6 +263,7 @@ namespace sfl {
     const Parameters m_params;
     boost::shared_ptr<const Hull> m_hull;
     boost::shared_ptr<const Hull> m_safety_hull;
+    mutable double m_robot_radius;
   };
 
 }
