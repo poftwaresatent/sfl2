@@ -77,9 +77,6 @@ namespace sfl {
        signature, try using a LegacyDynamicWindow instead.
     */
     DynamicWindow(int dimension,
-		  double grid_width,
-		  double grid_height,
-		  double grid_resolution,
 		  boost::shared_ptr<const RobotModel> robot_model);
     
     /** Add a (subclass of) Objective to the DynamicWindow. The

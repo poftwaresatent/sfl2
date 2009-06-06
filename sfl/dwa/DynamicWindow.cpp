@@ -42,9 +42,6 @@ namespace sfl {
 
   DynamicWindow::
   DynamicWindow(int _dimension,
-		double grid_width,
-		double grid_height,
-		double grid_resolution,
 		shared_ptr<const RobotModel> robot_model)
     : dimension(_dimension),
       maxindex(_dimension - 1),
@@ -376,7 +373,7 @@ namespace sfl {
 		      double alpha_heading,
 		      double alpha_speed,
 		      bool auto_init)
-    : DynamicWindow(dimension, grid_width, grid_height, grid_resolution, robot_model),
+    : DynamicWindow(dimension, robot_model),
       m_distance_objective(new DistanceObjective(*this,
 						 robot_model,
 						 grid_width,
