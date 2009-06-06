@@ -255,6 +255,15 @@ namespace sfl {
     boost::shared_ptr<SpeedObjective const> GetSpeedObjective() const
     { return m_speed_objective; }
     
+    boost::shared_ptr<DistanceObjective> GetDistanceObjective()
+    { return m_distance_objective; }
+    
+    boost::shared_ptr<HeadingObjective> GetHeadingObjective()
+    { return m_heading_objective; }
+    
+    boost::shared_ptr<SpeedObjective> GetSpeedObjective()
+    { return m_speed_objective; }
+    
     void DumpObstacles(std::ostream & os, const char * prefix) const;
     
     /** Same as DynamicWindow::Update(), except when dbgos is non-null
