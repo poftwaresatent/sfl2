@@ -35,7 +35,7 @@ namespace sfl {
   class Frame;
   class HullIterator;
   class DistanceObjective;
-  class DynamicWindow;
+  class LegacyDynamicWindow;
   class RobotModel;
 }
 
@@ -46,14 +46,14 @@ class DODrawing
 public:
   DODrawing(const std::string & name,
 	    boost::shared_ptr<const sfl::DistanceObjective> distobj,
-	    boost::shared_ptr<const sfl::DynamicWindow> dwa,
+	    boost::shared_ptr<const sfl::LegacyDynamicWindow> dwa,
 	    boost::shared_ptr<const sfl::RobotModel> rm);
   
   virtual void Draw();
   
 private:
   boost::shared_ptr<const sfl::DistanceObjective> m_distobj;
-  boost::shared_ptr<const sfl::DynamicWindow> m_dwa;
+  boost::shared_ptr<const sfl::LegacyDynamicWindow> m_dwa;
   boost::shared_ptr<const sfl::RobotModel> m_rm;
   
   void DrawObstaclePaths(size_t iqdl, size_t iqdr);

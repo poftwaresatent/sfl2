@@ -45,7 +45,7 @@ static void DrawHull(sfl::HullIterator ihull,
 DODrawing::
 DODrawing(const std::string & name,
 	  boost::shared_ptr<const sfl::DistanceObjective> distobj,
-	  boost::shared_ptr<const sfl::DynamicWindow> dwa,
+	  boost::shared_ptr<const sfl::LegacyDynamicWindow> dwa,
 	  boost::shared_ptr<const sfl::RobotModel> rm)
   : Drawing(name,
 	    "sfl::DistanceObjective (greyscale with special colors)",
@@ -284,11 +284,10 @@ DrawPose(const sfl::Frame & pose,
 void DODrawing::
 DrawPath()
 {
+  HeadingObjective const & hobj(*m_dwa->GetHeadingObjective());
   glBegin(GL_LINES);
   glColor3d(1, 1, 1);
-  double x, y;
-  m_dwa->GetSubGoal(x, y);
   glVertex2d(0, 0);
-  glVertex2d(x, y);
+  glVertex2d(hobj.local_goal_x, hobj.local_goal_y);
   glEnd();
 }

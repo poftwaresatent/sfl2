@@ -99,7 +99,7 @@ Draw()
 
     for(int ir = qdrMin; ir <= qdrMax; ++ir){
       if(m_dwa.Admissible(il, ir)){
-	double grey(scale * (m_dwa.Objective(il, ir) - objMin));
+	double grey(scale * (m_dwa.GetObjectiveSum(il, ir) - objMin));
 	glColor3d(grey, grey, grey);
       }
       else if(m_dwa.Forbidden(il, ir))
