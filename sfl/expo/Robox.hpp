@@ -28,7 +28,10 @@
 #include <stdexcept>
 
 namespace sfl {
-  class LegacyDynamicWindow;
+  class DynamicWindow;
+  class DistanceObjective;
+  class SpeedObjective;
+  class HeadingObjective;
   class RobotModel;
   class Hull;
   class BubbleBand;
@@ -53,7 +56,8 @@ namespace expo {
   public:
     Robox(expo_parameters const & params,
 	  boost::shared_ptr<sfl::HAL> hal,
-	  boost::shared_ptr<sfl::Multiscanner> mscan);
+	  boost::shared_ptr<sfl::Multiscanner> mscan,
+	  bool use_tobi_distobj);
     
     void SetGoal(double timestep, sfl::Goal const & goal);
     
@@ -87,7 +91,10 @@ namespace expo {
     boost::shared_ptr<sfl::Hull> hull;
     boost::shared_ptr<sfl::RobotModel> robotModel;
     boost::shared_ptr<MotionController> motionController;
-    boost::shared_ptr<sfl::LegacyDynamicWindow> dynamicWindow;
+    boost::shared_ptr<sfl::DynamicWindow> dynamicWindow;
+    boost::shared_ptr<sfl::DistanceObjective> distanceObjective;
+    boost::shared_ptr<sfl::HeadingObjective> headingObjective;
+    boost::shared_ptr<sfl::SpeedObjective> speedObjective;
     boost::shared_ptr<sfl::Odometry> odometry;
     boost::shared_ptr<sfl::BubbleBand> bubbleBand;
     boost::shared_ptr<sfl::Multiscanner> mscan;

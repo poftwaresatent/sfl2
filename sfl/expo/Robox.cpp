@@ -32,6 +32,10 @@
 #include "../api/Multiscanner.hpp"
 #include "../api/RobotModel.hpp"
 #include "../dwa/DynamicWindow.hpp"
+#include "../dwa/DistanceObjective.hpp"
+#include "../dwa/DistanceObjectiveToBI.hpp"
+#include "../dwa/SpeedObjective.hpp"
+#include "../dwa/HeadingObjective.hpp"
 #include "../bband/BubbleBand.hpp"
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
@@ -46,7 +50,8 @@ namespace expo {
   Robox::
   Robox(expo_parameters const & params,
 	shared_ptr<sfl::HAL> hal,
-	shared_ptr<sfl::Multiscanner> _mscan)
+	shared_ptr<sfl::Multiscanner> _mscan,
+	bool use_tobi_distobj)
     : hull(CreateHull()),
       mscan(_mscan)
   {
@@ -71,19 +76,43 @@ namespace expo {
 							    params.bband_maxignoredistance),
 				sfl::RWlock::Create("expo::Robox::bband")));
     
-    dynamicWindow.reset(new sfl::LegacyDynamicWindow(params.dwa_dimension,
-						     params.dwa_grid_width,
-						     params.dwa_grid_height,
-						     params.dwa_grid_resolution,
-						     robotModel,
-						     params.dwa_alpha_distance,
-						     params.dwa_alpha_heading,
-						     params.dwa_alpha_speed,
-						     true));
+    if ( ! use_tobi_distobj) {
+      sfl::LegacyDynamicWindow * dwa(new sfl::LegacyDynamicWindow(params.dwa_dimension,
+								  params.dwa_grid_width,
+								  params.dwa_grid_height,
+								  params.dwa_grid_resolution,
+								  robotModel,
+								  params.dwa_alpha_distance,
+								  params.dwa_alpha_heading,
+								  params.dwa_alpha_speed,
+								  true));
+      dynamicWindow.reset(dwa);
+      distanceObjective = dwa->GetDistanceObjective();
+      speedObjective = dwa->GetSpeedObjective();
+      headingObjective = dwa->GetHeadingObjective();
+    }
+    else {
+      dynamicWindow.reset(new sfl::DynamicWindow(params.dwa_dimension,
+						 robotModel));
+      ssize_t blur_radius(5);	// XXXX to do: blur radius should be configurable
+      distanceObjective.reset(new sfl::DistanceObjectiveToBI(*dynamicWindow,
+							     robotModel,
+							     params.dwa_grid_width,
+							     params.dwa_grid_height,
+							     params.dwa_grid_resolution,
+							     blur_radius));
+      dynamicWindow->AddObjective(distanceObjective, params.dwa_alpha_distance);
+      headingObjective.reset(new sfl::HeadingObjective(*dynamicWindow, *robotModel));
+      dynamicWindow->AddObjective(headingObjective, params.dwa_alpha_heading);
+      speedObjective.reset(new sfl::SpeedObjective(*dynamicWindow, *robotModel));
+      dynamicWindow->AddObjective(speedObjective, params.dwa_alpha_speed);
+      dynamicWindow->Initialize(&cout);
+    }
+    
     motionPlanner.reset(new MotionPlanner(motionController,
 					  dynamicWindow,
-					  dynamicWindow->GetSpeedObjective(),
-					  dynamicWindow->GetHeadingObjective(),
+					  speedObjective,
+					  headingObjective,
 					  mscan,
 					  robotModel,
 					  bubbleBand,
