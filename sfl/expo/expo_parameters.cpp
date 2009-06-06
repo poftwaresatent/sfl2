@@ -88,8 +88,6 @@ void expo_default_parameters(struct expo_parameters * params)
   params->bband_longpath          = 10;
   params->bband_maxignoredistance = 4;
   
-  params->mp_strict_dwa         = 0;
-  params->mp_auto_adapt_dwa     = 0;
   params->mp_dtheta_starthoming = 10 * M_PI / 180;
   params->mp_dtheta_startaiming = 45 * M_PI / 180;
 }
@@ -139,8 +137,6 @@ void expo_parameters_load(expo_parameters & params,
   string_to(opt->GetOption("bband_longpath"), params.bband_longpath);
   string_to(opt->GetOption("bband_maxignoredistance"), params.bband_maxignoredistance);
   
-  string_to_bool(opt->GetOption("mp_strict_dwa"), params.mp_strict_dwa);
-  string_to_bool(opt->GetOption("mp_auto_adapt_dwa"), params.mp_auto_adapt_dwa);
   string_to(opt->GetOption("mp_dtheta_starthoming"), params.mp_dtheta_starthoming);
   string_to(opt->GetOption("mp_dtheta_startaiming"), params.mp_dtheta_startaiming);
 }

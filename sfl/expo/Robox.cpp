@@ -82,6 +82,8 @@ namespace expo {
 						     true));
     motionPlanner.reset(new MotionPlanner(motionController,
 					  dynamicWindow,
+					  dynamicWindow->GetSpeedObjective(),
+					  dynamicWindow->GetHeadingObjective(),
 					  mscan,
 					  robotModel,
 					  bubbleBand,

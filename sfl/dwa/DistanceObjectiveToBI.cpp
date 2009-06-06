@@ -101,14 +101,14 @@ namespace sfl {
     // it is very confusing to see stale value lying around, and
     // resetting the blur is pretty cheap compared with what other
     // operations we perform during update.
-    for (ssize_t iqdl(0); iqdl < dimension; ++iqdl)
-      for (ssize_t iqdr(0); iqdr < dimension; ++iqdr)      
+    for (ssize_t iqdl(0); iqdl < static_cast<ssize_t>(dimension); ++iqdl)
+      for (ssize_t iqdr(0); iqdr < static_cast<ssize_t>(dimension); ++iqdr)      
 	m_blur.at(iqdl, iqdr) = maxValue;
     
     ResetGrid();
     UpdateGrid(local_scan);
-    for (ssize_t iqdl(0); iqdl < dimension; ++iqdl)
-      for (ssize_t iqdr(0); iqdr < dimension; ++iqdr)      
+    for (ssize_t iqdl(0); iqdl < static_cast<ssize_t>(dimension); ++iqdl)
+      for (ssize_t iqdr(0); iqdr < static_cast<ssize_t>(dimension); ++iqdr)      
 	if ( ! m_dynamic_window.Forbidden(iqdl, iqdr)) {
 	  double const ctime(MinTime(iqdl, iqdr));
 	  if ((ctime == invalidTime) || (ctime >= m_max_brake_time))
@@ -149,8 +149,8 @@ namespace sfl {
     // need to go over the entire speed space, DWA just looks inside
     // the [qdxMin, qdqdxMax] range, but let's update all of it for
     // debugging sake.
-    for (ssize_t iqdl(0); iqdl < dimension; ++iqdl)
-      for (ssize_t iqdr(0); iqdr < dimension; ++iqdr)      
+    for (ssize_t iqdl(0); iqdl < static_cast<ssize_t>(dimension); ++iqdl)
+      for (ssize_t iqdr(0); iqdr < static_cast<ssize_t>(dimension); ++iqdr)      
 	m_value[iqdl][iqdr] = minval(m_value[iqdl][iqdr], m_blur.at(iqdl, iqdr));
   }
   

@@ -35,6 +35,7 @@
 #include "../api/Odometry.hpp"
 #include "../bband/BubbleBand.hpp"
 #include "../dwa/DynamicWindow.hpp"
+#include "../dwa/SpeedObjective.hpp"
 #include "../dwa/DistanceObjective.hpp"
 #include <cmath>
 
@@ -316,10 +317,7 @@ namespace expo {
   TurnToward(double timestep, direction_t direction,
 	     shared_ptr<const sfl::Scan> global_scan) const
   {
-// //     if(m_mp->strict_dwa)
-// //       m_mp->dynamic_window->GoStrictSlow();
-// //     else
-      m_mp->dynamic_window->GoSlow();
+    m_mp->speed_objective->GoSlow();
     AskDynamicWindow(timestep, direction, global_scan);
   }
 
@@ -328,10 +326,7 @@ namespace expo {
   GoAlong(double timestep, direction_t direction,
 	  shared_ptr<const sfl::Scan> global_scan) const
   {
-// //     if(m_mp->strict_dwa)
-// //       m_mp->dynamic_window->GoStrictFast();
-// //     else
-      m_mp->dynamic_window->GoFast();
+    m_mp->speed_objective->GoFast();
     AskDynamicWindow(timestep, direction, global_scan);
   }
 
@@ -369,9 +364,8 @@ namespace expo {
   {
     double qdl, qdr;
     m_mp->motion_controller->GetCurrentAct(qdl, qdr);
-    sfl::LegacyDynamicWindow & dwa(*m_mp->dynamic_window);
-    dwa.Update(qdl, qdr,
-	       timestep, direction.first, direction.second, global_scan);
+    sfl::DynamicWindow & dwa(*m_mp->dynamic_window);
+    dwa.Update(qdl, qdr, timestep, direction.first, direction.second, global_scan);
     
     if( ! dwa.OptimalActuators(qdl, qdr)){
       qdl = 0;
@@ -419,11 +413,12 @@ namespace expo {
   {
     direction_t dir(AskBubbleBand());
     dheading = atan2(dir.second, dir.first);
-    if( ! m_mp->go_forward)
+    if( ! m_mp->go_forward) {
       if(dheading > 0)
 	dheading =   M_PI - dheading;
       else
 	dheading = - M_PI - dheading;
+    }
     return dir;
   }
 
@@ -469,11 +464,12 @@ namespace expo {
   {
     direction_t dir(AskBubbleBand());
     dheading = atan2(dir.second, dir.first);
-    if( ! m_mp->go_forward)
+    if( ! m_mp->go_forward) {
       if(dheading > 0)
 	dheading =   M_PI - dheading;
       else
 	dheading = - M_PI - dheading;
+    }
     return dir;
   }
 

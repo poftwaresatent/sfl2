@@ -32,7 +32,9 @@
 
 
 namespace sfl {
-  class LegacyDynamicWindow;
+  class DynamicWindow;
+  class SpeedObjective;
+  class HeadingObjective;
   class Multiscanner;
   class RobotModel;
   class BubbleBand;
@@ -63,7 +65,9 @@ namespace expo {
     };
     
     MotionPlanner(boost::shared_ptr<MotionController> motion_controller,
-		  boost::shared_ptr<sfl::LegacyDynamicWindow> dynamic_window,
+		  boost::shared_ptr<sfl::DynamicWindow> dynamic_window,
+		  boost::shared_ptr<sfl::SpeedObjective> speed_objective,
+		  boost::shared_ptr<sfl::HeadingObjective> heading_objective,
 		  boost::shared_ptr<sfl::Multiscanner> multiscanner,
 		  boost::shared_ptr<const sfl::RobotModel> robot_model,
 		  /** optional: if null then go straight towards goal */
@@ -116,14 +120,16 @@ namespace expo {
     int UpdateAll(double timestep);
     
     boost::shared_ptr<MotionController> motion_controller;
-    boost::shared_ptr<sfl::LegacyDynamicWindow> dynamic_window;
+    boost::shared_ptr<sfl::DynamicWindow> dynamic_window;
+    boost::shared_ptr<sfl::SpeedObjective> speed_objective;
+    boost::shared_ptr<sfl::HeadingObjective> heading_objective;
     boost::shared_ptr<const sfl::RobotModel> robot_model;
     boost::shared_ptr<sfl::BubbleBand> bubble_band; // can be null!
     boost::shared_ptr<const sfl::Odometry> odometry;
     boost::shared_ptr<sfl::Multiscanner> multiscanner;
     
     boost::scoped_ptr<sfl::Goal> goal;
-    bool go_forward, strict_dwa;
+    bool go_forward;
     
     double dtheta_starthoming; 	//!< default 10 * M_PI / 180
     double dtheta_startaiming;	//!< default 45 * M_PI / 180;

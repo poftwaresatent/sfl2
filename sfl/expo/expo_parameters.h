@@ -62,7 +62,6 @@ extern "C" {
     int bband_enabled;
     double bband_shortpath, bband_longpath, bband_maxignoredistance;
     
-    int mp_strict_dwa, mp_auto_adapt_dwa;
     double mp_dtheta_starthoming, mp_dtheta_startaiming;
   };
   

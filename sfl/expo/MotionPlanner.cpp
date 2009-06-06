@@ -36,6 +36,8 @@
 #include "../api/Odometry.hpp"
 #include "../bband/BubbleBand.hpp"
 #include "../dwa/DynamicWindow.hpp"
+#include "../dwa/SpeedObjective.hpp"
+#include "../dwa/HeadingObjective.hpp"
 #include <cmath>
 
 #ifdef WIN32
@@ -51,20 +53,23 @@ namespace expo {
   
   MotionPlanner::
   MotionPlanner(shared_ptr<MotionController> _motion_controller,
-		shared_ptr<sfl::LegacyDynamicWindow> _dynamic_window,
+		shared_ptr<sfl::DynamicWindow> _dynamic_window,
+		shared_ptr<sfl::SpeedObjective> _speed_objective,
+		shared_ptr<sfl::HeadingObjective> _heading_objective,
 		shared_ptr<sfl::Multiscanner> _multiscanner,
 		shared_ptr<const sfl::RobotModel> _robot_model,
 		shared_ptr<sfl::BubbleBand> _bubble_band,
 		shared_ptr<const sfl::Odometry> _odometry)
     : motion_controller(_motion_controller),
       dynamic_window(_dynamic_window),
+      speed_objective(_speed_objective),
+      heading_objective(_heading_objective),
       robot_model(_robot_model),
       bubble_band(_bubble_band),
       odometry(_odometry),
       multiscanner(_multiscanner),
       goal(new sfl::Goal()),
       go_forward(true),
-      strict_dwa(true),
       dtheta_starthoming(10 * M_PI / 180),
       dtheta_startaiming(45 * M_PI / 180),
       m_state_machine(new MotionPlannerStateMachine(this)),
@@ -155,7 +160,8 @@ namespace expo {
   GoForward()
   {
     go_forward = true;
-    dynamic_window->GoForward();
+    heading_objective->angle_offset = 0;
+    speed_objective->GoForward();
   }
   
   
@@ -163,7 +169,8 @@ namespace expo {
   GoBackward()
   {
     go_forward = false;
-    dynamic_window->GoBackward();
+    heading_objective->angle_offset = M_PI;
+    speed_objective->GoBackward();
   }
   
   
