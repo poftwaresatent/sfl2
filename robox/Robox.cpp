@@ -30,6 +30,7 @@
 #include "../common/Lidar.hpp"
 #include "../common/pdebug.hpp"
 #include "../common/Manager.hpp"
+#include <sfl/util/strutil.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
@@ -120,7 +121,9 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
-  m_imp.reset(new npm::VisualRobox(descriptor->name, params, GetHAL(), mscan));
+  bool use_tobi_distobj(false);
+  string_to(descriptor->GetOption("use_tobi_distobj"), use_tobi_distobj);
+  m_imp.reset(new npm::VisualRobox(descriptor->name, params, GetHAL(), mscan, use_tobi_distobj));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));

@@ -45,12 +45,14 @@ static void DrawHull(sfl::HullIterator ihull,
 DODrawing::
 DODrawing(const std::string & name,
 	  boost::shared_ptr<const sfl::DistanceObjective> distobj,
-	  boost::shared_ptr<const sfl::LegacyDynamicWindow> dwa,
+	  boost::shared_ptr<const sfl::HeadingObjective> headobj,
+	  boost::shared_ptr<const sfl::DynamicWindow> dwa,
 	  boost::shared_ptr<const sfl::RobotModel> rm)
   : Drawing(name,
 	    "sfl::DistanceObjective (greyscale with special colors)",
 	    Instance<UniqueManager<Drawing> >()),
     m_distobj(distobj),
+    m_headobj(headobj),
     m_dwa(dwa),
     m_rm(rm)
 {
@@ -69,13 +71,6 @@ Draw()
       const double xx(m_distobj->FindXlength(ix));
       for(size_t iy(0); iy < m_distobj->DimY(); ++iy){
 	const double yy(m_distobj->FindYlength(iy));
-#undef LEGACY
-#ifdef LEGACY
-	if(m_distobj->CellOccupied(ix, iy)){
-	  glColor3d(1, 1, 0);
-	  glRectd(xx - dx, yy - dy, xx + dx, yy + dy);
-	}
-#else // ! LEGACY
 	if(m_distobj->CellOccupied(ix, iy)){
 	  switch(m_distobj->GetRegion(ix, iy)){
 	  case DistanceObjective::NONE:   glColor3d(0, 0, 1); break;
@@ -99,7 +94,6 @@ Draw()
 	  }
 	}
 	glRectd(xx - dx, yy - dy, xx + dx, yy + dy);
-#endif // LEGACY
       }
     }
   }
@@ -117,16 +111,13 @@ Draw()
 //     DrawObstaclePaths(m_dwa->QdlOptIndex(),
 // 		      m_dwa->QdrOptIndex());
     DrawPose(sfl::Frame(), 1, 1, 1);
-    DrawPose(m_dwa->
-	     GetHeadingObjective()->
-	     PredictedStandstill(m_dwa->QdlOptIndex(),
-				 m_dwa->QdrOptIndex()),
+    DrawPose(m_headobj->PredictedStandstill(m_dwa->QdlOptIndex(),
+					    m_dwa->QdrOptIndex()),
 	     0, 1, 0);
   }
 
   DrawPath();
   
-#ifndef LEGACY
   const size_t n_near(m_distobj->GetNNear());
   if(0 < n_near){
     glColor3d(1, 0, 0.5);
@@ -139,20 +130,17 @@ Draw()
     }
     glEnd();
   }
-#endif // ! LEGACY
 }
 
 
 void DODrawing::
 DrawObstaclePaths(size_t iqdl, size_t iqdr)
 {
-#ifndef LEGACY
   for(size_t ix(0); ix < m_distobj->DimX(); ++ix)
     for(size_t iy = 0; iy < m_distobj->DimY(); ++iy)
       if(m_distobj->CellOccupied(ix, iy)
 	 && (DistanceObjective::ZONE == m_distobj->GetRegion(ix, iy)))
 	DrawCollisionPrediction(iqdl, iqdr, ix, iy);
-#endif // ! LEGACY
 }
 
 
@@ -284,10 +272,9 @@ DrawPose(const sfl::Frame & pose,
 void DODrawing::
 DrawPath()
 {
-  HeadingObjective const & hobj(*m_dwa->GetHeadingObjective());
   glBegin(GL_LINES);
   glColor3d(1, 1, 1);
   glVertex2d(0, 0);
-  glVertex2d(hobj.local_goal_x, hobj.local_goal_y);
+  glVertex2d(m_headobj->local_goal_x, m_headobj->local_goal_y);
   glEnd();
 }

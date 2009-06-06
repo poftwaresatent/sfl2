@@ -289,21 +289,17 @@ CreateMePlease(shared_ptr<RobotDescriptor> descriptor, const World & world)
 {
   smartparams params(descriptor);
 	
-	double carrot_distance;
-	if( ! string_to(descriptor->GetOption("carrot_distance"), carrot_distance))
-		carrot_distance = 5;
+	double carrot_distance(5);
+	string_to(descriptor->GetOption("carrot_distance"), carrot_distance);
 	
-	double carrot_stepsize;
-	if( ! string_to(descriptor->GetOption("carrot_stepsize"), carrot_stepsize))
-		carrot_stepsize = 0.5;
+	double carrot_stepsize(0.5);
+	string_to(descriptor->GetOption("carrot_stepsize"), carrot_stepsize);
 	
-	size_t carrot_maxnsteps;
-	if( ! string_to(descriptor->GetOption("carrot_maxnsteps"), carrot_maxnsteps))
-		carrot_maxnsteps = 30;
+	size_t carrot_maxnsteps(30);
+	string_to(descriptor->GetOption("carrot_maxnsteps"), carrot_maxnsteps);
 	
-	double replan_distance;
-	if( ! string_to(descriptor->GetOption("replan_distance"), replan_distance))
-		replan_distance = 3;
+	double replan_distance(3);
+	string_to(descriptor->GetOption("replan_distance"), replan_distance);
 	
 	string traversability_file(descriptor->GetOption("traversability_file"));
 	if(traversability_file == ""){

@@ -50,7 +50,8 @@ namespace npm {
     VisualRobox(std::string const & name,
 		expo_parameters const & params,
 		boost::shared_ptr<sfl::HAL> hal,
-		boost::shared_ptr<sfl::Multiscanner> mscan);
+		boost::shared_ptr<sfl::Multiscanner> mscan,
+		bool use_tobi_distobj);
     
   protected:
     void AddDrawing(Drawing * drawing);

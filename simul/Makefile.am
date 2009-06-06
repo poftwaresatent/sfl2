@@ -85,8 +85,10 @@ endif
 dist_bin_SCRIPTS= birondemo.sh \
                   estardemo.sh \
                   expodemo.sh \
+                  tobi_distobj.sh \
                   layout.expo \
                   robots.expo \
+                  robots.tobi_distobj \
                   expo2.sh \
                   layout.expo2 \
                   layout.expo2.robox \

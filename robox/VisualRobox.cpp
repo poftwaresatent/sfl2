@@ -58,20 +58,15 @@ namespace npm {
   VisualRobox(std::string const & name,
 	      expo_parameters const & params,
 	      boost::shared_ptr<sfl::HAL> hal,
-	      boost::shared_ptr<sfl::Multiscanner> mscan)
-    : expo::Robox(params, hal, mscan)
+	      boost::shared_ptr<sfl::Multiscanner> mscan,
+	      bool use_tobi_distobj)
+    : expo::Robox(params, hal, mscan, use_tobi_distobj)
   {
     AddDrawing(new MPDrawing(name + "_goaldrawing", *motionPlanner));
     AddDrawing(new DWDrawing(name + "_dwdrawing", *dynamicWindow));
-    AddDrawing(new ODrawing(name + "_dodrawing",
-			    dynamicWindow->GetDistanceObjective(),
-			    dynamicWindow));
-    AddDrawing(new ODrawing(name + "_hodrawing",
-			    dynamicWindow->GetHeadingObjective(),
-			    dynamicWindow));
-    AddDrawing(new ODrawing(name + "_sodrawing",
-			    dynamicWindow->GetSpeedObjective(),
-			    dynamicWindow));
+    AddDrawing(new ODrawing(name + "_dodrawing", distanceObjective, dynamicWindow));
+    AddDrawing(new ODrawing(name + "_hodrawing", headingObjective, dynamicWindow));
+    AddDrawing(new ODrawing(name + "_sodrawing", speedObjective, dynamicWindow));
     AddDrawing(new RHDrawing(name + "_rhdrawing",
 			     bubbleBand->GetReplanHandler(),
 			     RHDrawing::AUTODETECT));
@@ -88,7 +83,8 @@ namespace npm {
 				   *odometry,
 				   robotModel->WheelBase() / 2));
     AddDrawing(new DODrawing(name + "_collisiondrawing",
-			     dynamicWindow->GetDistanceObjective(),
+			     distanceObjective,
+			     headingObjective,
 			     dynamicWindow,
 			     robotModel));
     
@@ -102,7 +98,7 @@ namespace npm {
     AddCamera(new GridLayerCamera(name + "_local_glcamera",
 				  bubbleBand->GetReplanHandler()->GetNF1()));
     double a, b, c, d;
-    dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
+    distanceObjective->GetRange(a, b, c, d);
     AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
 			      Instance<UniqueManager<Camera> >()));
   }

@@ -281,6 +281,7 @@ MoreGraphics(std::string const & name,
 				 m_model->WheelBase() / 2));
   AddDrawing(new DODrawing(name + "_collisiondrawing",
 			   m_dwa->GetDistanceObjective(),
+			   m_dwa->GetHeadingObjective(),
 			   m_dwa,
 			   m_model));
   

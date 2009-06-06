@@ -151,12 +151,8 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
   const_cast<double &>(m_radius) = hull->CalculateRadius();
   
-  double foo;
-  if(string_to(descriptor->GetOption("pnf_grid_width"), foo))
-    m_grid_width = foo;
-  size_t bar;
-  if(string_to(descriptor->GetOption("pnf_grid_wdim"), bar))
-    m_grid_wdim = bar;
+  string_to(descriptor->GetOption("pnf_grid_width"), m_grid_width);
+  string_to(descriptor->GetOption("pnf_grid_wdim"), m_grid_wdim);
   
   if( ! string_to(descriptor->GetOption("pnf_enable_thread"), m_enable_thread))
     m_enable_thread = false;
@@ -223,6 +219,7 @@ CreateGfxStuff(const std::string & name)
 				 m_robotModel->WheelBase() / 2));
   AddDrawing(new DODrawing(name + "_collisiondrawing",
 			   m_dynamicWindow->GetDistanceObjective(),
+			   m_dynamicWindow->GetHeadingObjective(),
 			   m_dynamicWindow,
 			   m_robotModel));
   AddDrawing(new PNFDrawing(name + "_global_risk",
