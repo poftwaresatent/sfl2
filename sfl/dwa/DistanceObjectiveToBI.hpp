@@ -54,6 +54,8 @@ namespace sfl {
     
     virtual void Initialize(std::ostream * progress_stream);
     
+    virtual bool UsesEntireVelocitySpace() const { return true; }
+    
     virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 			   size_t qdrMin, size_t qdrMax,
 			   double carrot_lx, double carrot_ly,

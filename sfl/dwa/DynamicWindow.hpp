@@ -109,7 +109,14 @@ namespace sfl {
 	to avoid collision. The DWA uses those objectves whose
 	Objective::YieldsAdmissible() returns true in order to
 	initialize the admissible information at teach update
-	cycle. */
+	cycle.
+	
+	\note There's a bit of an inconsistency if one of the
+	registered Objectives returns true on
+	Objective::UsesEntireVelocitySpace(), in which case even
+	non-reachable velocities can get tagged as admissible, as long
+	as they are not forbidden.
+    */
     bool Admissible(int qdlIndex, int qdrIndex) const;
     
     /** \note The Scan object should be filtered, ie contain only
@@ -182,6 +189,7 @@ namespace sfl {
     boost::shared_ptr<const RobotModel> m_robot_model;
     objmap_t m_objmap;
     admobjlist_t m_admobjlist;
+    bool m_reset_entire_velocity_space;
     
     boost::scoped_array<double> m_qd; //[dimension];
     array2d<speedstate_t> m_state; //[dimension][dimension];

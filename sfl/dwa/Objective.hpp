@@ -59,6 +59,12 @@ namespace sfl {
 	objectives about the set of admissible velocities. */
     virtual bool Admissible(int qdlIndex, int qdrIndex) const = 0;
     
+    /** If true, then this objective subclass updates the entire
+	velocity space, regardless of the (qdlMin, qdlMax, qdrMin,
+	qdrMax) that get passed to Calculate(). Mostly useful just for
+	graphical output though. */
+    virtual bool UsesEntireVelocitySpace() const { return false; }
+    
     /** The method that updates the objective values. If
 	YieldsAdmissible() returns true, then DynamicWindow calls this
 	method early in its update cycle, and then uses the objective

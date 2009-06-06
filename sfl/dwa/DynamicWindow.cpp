@@ -48,6 +48,7 @@ namespace sfl {
       resolution(2 * robot_model->QdMax() / _dimension),
       qddMax(robot_model->QddMax()),
       m_robot_model(robot_model),
+      m_reset_entire_velocity_space(false),
       m_qd(new double[_dimension]),
       m_state(_dimension, _dimension),
       m_objective(_dimension, _dimension),
@@ -69,6 +70,8 @@ namespace sfl {
     m_objmap.insert(make_pair(objective, alpha));
     if (objective->YieldsAdmissible())
       m_admobjlist.push_back(objective);
+    if (objective->UsesEntireVelocitySpace())
+      m_reset_entire_velocity_space = true;
   }
   
   
@@ -266,9 +269,19 @@ namespace sfl {
   void DynamicWindow::
   CalculateAdmissible()
   {
-    for(int il = m_qdlMin; il <= m_qdlMax; ++il)
-      for(int ir = m_qdrMin; ir <= m_qdrMax; ++ir)
-	if (REACHABLE == m_state[il][ir]) {
+    int qdlmin(m_qdlMin);
+    int qdlmax(m_qdlMax);
+    int qdrmin(m_qdrMin);
+    int qdrmax(m_qdrMax);
+    if (m_reset_entire_velocity_space) {
+      qdlmin = 0;
+      qdlmax = maxindex;
+      qdrmin = 0;
+      qdrmax = maxindex;
+    }
+    for (int il(qdlmin); il <= qdlmax; ++il)
+      for (int ir(qdrmin); ir <= qdrmax; ++ir)
+	if (FORBIDDEN != m_state[il][ir]) {
 	  bool adm(true);
 	  for (admobjlist_t::iterator ii(m_admobjlist.begin()); ii != m_admobjlist.end(); ++ii) {
 	    if ( ! (*ii)->Admissible(il, ir)) {
