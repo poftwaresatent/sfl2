@@ -49,20 +49,30 @@ ODrawing(const std::string & name,
 void ODrawing::
 Draw()
 {
-  const int qdlMin(m_dwa->QdlMinIndex());
-  if(qdlMin < 0)
-    return;
-  
-  const int qdlMax(m_dwa->QdlMaxIndex());
-  const int qdrMin(m_dwa->QdrMinIndex());
-  const int qdrMax(m_dwa->QdrMaxIndex());
-  const double funcMin(m_obj->Min(qdlMin, qdlMax, qdrMin, qdrMax));
-  const double funcMax(m_obj->Max(qdlMin, qdlMax, qdrMin, qdrMax));
-  double scale;
-  if(funcMax - funcMin < sfl::epsilon)
-    scale = 0;
-  else
-    scale = 1 / (funcMax - funcMin);
+  int qdlMin, qdlMax, qdrMin, qdrMax;
+  double funcMin, scale;
+  if (m_obj->UsesEntireVelocitySpace()) {
+    qdlMin = 0;
+    qdlMax = m_obj->dimension - 1;
+    qdrMin = 0;
+    qdrMax = m_obj->dimension - 1;
+    scale = 1.0 / (m_obj->maxValue - m_obj->minValue);
+    funcMin = m_obj->minValue;
+  }
+  else {
+    qdlMin = m_dwa->QdlMinIndex();
+    if (qdlMin < 0)
+      return;
+    qdlMax = m_dwa->QdlMaxIndex();
+    qdrMin = m_dwa->QdrMinIndex();
+    qdrMax = m_dwa->QdrMaxIndex();
+    funcMin = m_obj->Min(qdlMin, qdlMax, qdrMin, qdrMax);
+    double const funcMax(m_obj->Max(qdlMin, qdlMax, qdrMin, qdrMax));
+    if (funcMax - funcMin < sfl::epsilon)
+      scale = 0;
+    else
+      scale = 1 / (funcMax - funcMin);
+  }
   
   glPolygonMode(GL_FRONT, GL_FILL);
   double grey;
@@ -74,9 +84,9 @@ Draw()
       }
       else
 	glColor3d(0.7, 0, 0);
-
+      
       glRectd(l, r, l + 1, r + 1);
-
+      
       if(m_dwa->Reachable(l, r)){
 	glColor3d(1, 0, 0);
 	glBegin(GL_LINES);
@@ -87,7 +97,7 @@ Draw()
 	glEnd();
       }
     }
-
+  
   if(m_dwa->QdlOptIndex() >= 0){
     const int qdlOpt(m_dwa->QdlOptIndex());
     const int qdrOpt(m_dwa->QdrOptIndex());

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./nepumuk -w expo -l layout.expo -r robots.tobi_distobj
+./nepumuk -w expo -l layout.tobi_distobj -r robots.tobi_distobj

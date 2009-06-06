@@ -87,6 +87,7 @@ dist_bin_SCRIPTS= birondemo.sh \
                   expodemo.sh \
                   tobi_distobj.sh \
                   layout.expo \
+                  layout.tobi_distobj \
                   robots.expo \
                   robots.tobi_distobj \
                   expo2.sh \
