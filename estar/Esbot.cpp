@@ -188,15 +188,14 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   m_odometry.reset(new Odometry(GetHAL(), RWlock::Create("odometry")));
   m_multiscanner.reset(new Multiscanner(GetHAL()));
   m_dynamicWindow.reset(new LegacyDynamicWindow(params.dwa_dimension,
-					  params.dwa_grid_width,
-					  params.dwa_grid_height,
-					  params.dwa_grid_resolution,
-					  m_robotModel,
-					  *m_motionController,
-					  params.dwa_alpha_distance,
-					  params.dwa_alpha_heading,
-					  params.dwa_alpha_speed,
-					  true));
+						params.dwa_grid_width,
+						params.dwa_grid_height,
+						params.dwa_grid_resolution,
+						m_robotModel,
+						params.dwa_alpha_distance,
+						params.dwa_alpha_heading,
+						params.dwa_alpha_speed,
+						true));
   
   m_multiscanner->Add(m_front);
   m_multiscanner->Add(m_rear);
@@ -434,8 +433,10 @@ PrepareAction(double timestep)
     m_dynamicWindow->GoSlow();
   
   shared_ptr<const Scan> scan(m_multiscanner->CollectScans());
-  m_dynamicWindow->Update(timestep, carx, cary, scan);
+  
   double qdl, qdr;
+  m_motionController->GetCurrentAct(qdl, qdr);
+  m_dynamicWindow->Update(qdl, qdr, timestep, carx, cary, scan);
   if( ! m_dynamicWindow->OptimalActuators(qdl, qdr)){
     qdl = 0;
     qdr = 0;

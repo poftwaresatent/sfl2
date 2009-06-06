@@ -26,7 +26,7 @@
 
 namespace sfl {
   class RobotModel;
-  class DynamicWindow;
+  class LegacyDynamicWindow;
 }
 
 
@@ -51,7 +51,7 @@ public:
   
 protected:
   boost::shared_ptr<sfl::RobotModel const> m_model;
-  boost::shared_ptr<sfl::DynamicWindow> m_dwa;
+  boost::shared_ptr<sfl::LegacyDynamicWindow> m_dwa;
   boost::shared_ptr<asl::DWAPathTracker> m_dwa_ptrack;
 
   virtual

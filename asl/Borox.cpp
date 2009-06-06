@@ -162,22 +162,22 @@ InitAlgorithm(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   }
   
   if ( ! m_dwa)
-    m_dwa.reset(new DynamicWindow(params.dwa_dimension,
-				  params.dwa_grid_width,
-				  params.dwa_grid_height,
-				  params.dwa_grid_resolution,
-				  m_model,
-				  params.dwa_alpha_distance,
-				  params.dwa_alpha_heading,
-				  params.dwa_alpha_speed,
-				  true));
+    m_dwa.reset(new LegacyDynamicWindow(params.dwa_dimension,
+					params.dwa_grid_width,
+					params.dwa_grid_height,
+					params.dwa_grid_resolution,
+					m_model,
+					params.dwa_alpha_distance,
+					params.dwa_alpha_heading,
+					params.dwa_alpha_speed,
+					true));
   
   if ( ! m_mscan) {
     cerr << "ERROR in Borox::InitAlgorithm():\n"
 	 << "  m_mscan is NULL\n";
     exit(EXIT_FAILURE);
   }
-  m_dwa_ptrack.reset(new DWAPathTracker(m_dwa, m_model, m_mscan));
+  m_dwa_ptrack.reset(new DWAPathTracker(m_dwa, m_dwa->GetSpeedObjective(), m_model, m_mscan));
   
   shared_ptr<Planner> planner;
   if (use_simple_query)
