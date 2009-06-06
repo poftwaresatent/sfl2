@@ -27,10 +27,10 @@
 #include "HeadingObjective.hpp"
 #include "SpeedObjective.hpp"
 #include "../api/RobotModel.hpp"
-#include "../api/MotionController.hpp"
 #include "../util/pdebug.hpp"
 
 #include <iostream>
+#include <limits>
 
 
 using namespace boost;
@@ -45,26 +45,12 @@ namespace sfl {
 		double grid_width,
 		double grid_height,
 		double grid_resolution,
-		shared_ptr<const RobotModel> robot_model,
-		double _alpha_distance,
-		double _alpha_heading,
-		double _alpha_speed,
-		bool auto_init)
+		shared_ptr<const RobotModel> robot_model)
     : dimension(_dimension),
       maxindex(_dimension - 1),
       resolution(2 * robot_model->QdMax() / _dimension),
       qddMax(robot_model->QddMax()),
-      alpha_distance(_alpha_distance),
-      alpha_heading(_alpha_heading),
-      alpha_speed(_alpha_speed),
       m_robot_model(robot_model),
-      m_distance_objective(new DistanceObjective(*this,
-						 robot_model,
-						 grid_width,
-						 grid_height,
-						 grid_resolution)),
-      m_heading_objective(new HeadingObjective(*this, *robot_model)),
-      m_speed_objective(new SpeedObjective(*this, *robot_model)),
       m_qd(new double[_dimension]),
       m_state(_dimension, _dimension),
       m_objective(_dimension, _dimension),
@@ -76,33 +62,27 @@ namespace sfl {
       m_qdrOpt(-1),
       m_compute_next_optimum(false)
   {
-    if(auto_init)
-      Initialize(& cerr, false);
   }
   
   
-  bool DynamicWindow::
-  Initialize(ostream * os,
-	     bool paranoid)
+  void DynamicWindow::
+  AddObjective(boost::shared_ptr<Objective> objective,
+	       double alpha)
+  {
+    m_objmap.insert(make_pair(objective, alpha));
+    if (objective->YieldsAdmissible())
+      m_admobjlist.push_back(objective);
+  }
+  
+  
+  void DynamicWindow::
+  Initialize(ostream * os)
   {
     for(int i = 0; i < dimension; ++i)
       m_qd[i] = FindQd(i);
-    
     InitForbidden();
-    
-    m_distance_objective->Initialize(os);
-    
-    if(paranoid){
-      m_heading_objective->Initialize(os);
-      m_speed_objective->Initialize(os);
-      if( ! m_distance_objective->CheckLookup(os))
-	return false;
-    }
-    else{
-      m_heading_objective->Initialize(0);
-      m_speed_objective->Initialize(0);
-    }
-    return true;
+    for (objmap_t::iterator ii(m_objmap.begin()); ii != m_objmap.end(); ++ii)
+      ii->first->Initialize(os);
   }
 
 
@@ -139,52 +119,45 @@ namespace sfl {
 	    timestep, dx, dy, qdl, qdr);
     
     CalculateReachable(timestep, qdl, qdr);
-    m_distance_objective->Calculate(timestep, m_qdlMin, m_qdlMax, m_qdrMin, m_qdrMax,
-				  local_scan);
+    
+    if (m_admobjlist.empty())
+      PDEBUG_OUT("WARNING no objective that yields info about admissible velocities\n");
+    for (admobjlist_t::iterator ii(m_admobjlist.begin()); ii != m_admobjlist.end(); ++ii)
+      (*ii)->Calculate(timestep, m_qdlMin, m_qdlMax, m_qdrMin, m_qdrMax,
+		       dx, dy, local_scan);
     CalculateAdmissible();
     
-    m_heading_objective->local_goal_x = dx;
-    m_heading_objective->local_goal_y = dy;
-    m_heading_objective->Calculate(timestep, m_qdlMin, m_qdlMax, m_qdrMin, m_qdrMax);
-    m_speed_objective->Calculate(m_qdlMin, m_qdlMax, m_qdrMin, m_qdrMax);
+    for (objmap_t::iterator ii(m_objmap.begin()); ii != m_objmap.end(); ++ii)
+      if ( ! ii->first->YieldsAdmissible()) // otherwise already updated above
+	ii->first->Calculate(timestep, m_qdlMin, m_qdlMax, m_qdrMin, m_qdrMax,
+			     dx, dy, local_scan);
     
     m_compute_next_optimum = true;
     
     if(dbgos != 0){
       (*dbgos) << "INFO from DynamicWindow::Update():\n"
-	       << "  obstacles:\n";
-      DumpObstacles((*dbgos), "    ");
-      (*dbgos) << "  dynamic window:\n";
+	       << "  dynamic window:\n";
       DumpObjectives((*dbgos), "    ");
       (*dbgos) << "  FINISHED DynamicWindow::Update():\n";
     }
   }
   
   
-  void DynamicWindow::
-  GetSubGoal(double & local_x,
-	     double & local_y) const
-  {
-    local_x = m_heading_objective->local_goal_x;
-    local_y = m_heading_objective->local_goal_y;
-  }
-
-
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   SetHeadingOffset(double angle)
   {
     m_heading_objective->angle_offset = angle;
   }
 
 
-  double DynamicWindow::
+  double LegacyDynamicWindow::
   GetHeadingOffset() const
   {
     return m_heading_objective->angle_offset;
   }
   
   
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   GoFast()
   {
     PDEBUG("going fast\n");
@@ -192,7 +165,7 @@ namespace sfl {
   }
   
   
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   _GoStrictFast()
   {
     PDEBUG("going fast, but strictly, whatever that means\n");
@@ -200,7 +173,7 @@ namespace sfl {
   }
 
 
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   GoSlow()
   {
     PDEBUG("going slow\n");
@@ -208,7 +181,7 @@ namespace sfl {
   }
 
 
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   _GoStrictSlow()
   {
     PDEBUG("going slow, but strictly, whatever that means\n");
@@ -216,7 +189,7 @@ namespace sfl {
   }
 
 
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   GoForward()
   {
     PDEBUG("going forward\n");
@@ -225,7 +198,7 @@ namespace sfl {
   }
 
 
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   GoBackward()
   {
     PDEBUG("going backward\n");
@@ -238,7 +211,7 @@ namespace sfl {
   OptimalActuators(double & qdl, double & qdr) const
   {
     if(m_compute_next_optimum){
-      CalculateOptimum(alpha_distance, alpha_heading, alpha_speed);
+      CalculateOptimum();
       m_compute_next_optimum = false;
     }
     if((m_qdlOpt < 0) || (m_qdrOpt < 0))
@@ -296,46 +269,53 @@ namespace sfl {
   void DynamicWindow::
   CalculateAdmissible()
   {
-    const double thresh(m_distance_objective->minValue + epsilon);
     for(int il = m_qdlMin; il <= m_qdlMax; ++il)
       for(int ir = m_qdrMin; ir <= m_qdrMax; ++ir)
-	if((m_state[il][ir] != FORBIDDEN) &&
-	   (m_distance_objective->Value(il, ir) > thresh))
-	  m_state[il][ir] = ADMISSIBLE;
+	if (REACHABLE == m_state[il][ir]) {
+	  bool adm(true);
+	  for (admobjlist_t::iterator ii(m_admobjlist.begin()); ii != m_admobjlist.end(); ++ii) {
+	    if ( ! (*ii)->Admissible(il, ir)) {
+	      adm = false;
+	      break;
+	    }
+	  }
+	  if (adm)
+	    m_state[il][ir] = ADMISSIBLE;
+	}
   }
-
-
+  
+  
   void DynamicWindow::
-  CalculateOptimum(double alphaDistance,
-		   double alphaHeading,
-		   double alphaSpeed) const
+  CalculateOptimum() const
   {
     m_qdlOpt = -1;
     m_qdrOpt = -1;
-    m_objectiveMax = 0;
-    m_objectiveMin = alphaDistance + alphaHeading + alphaSpeed;
+    m_objectiveMax = numeric_limits<double>::min();
+    m_objectiveMin = numeric_limits<double>::max();
 
     for(int il = m_qdlMin; il <= m_qdlMax; ++il)
       for(int ir = m_qdrMin; ir <= m_qdrMax; ++ir)
 	if(m_state[il][ir] == ADMISSIBLE){
-	  m_objective[il][ir] =
-	    alphaDistance * m_distance_objective->Value(il, ir)
-	    + alphaHeading  * m_heading_objective->Value(il, ir)
-	    + alphaSpeed    * m_speed_objective->Value(il, ir);
-	
-	  if(m_objective[il][ir] > m_objectiveMax){
-	    m_objectiveMax = m_objective[il][ir];
+	  double obj(0);
+	  for (objmap_t::const_iterator ii(m_objmap.begin()); ii != m_objmap.end(); ++ii)
+	    obj += ii->second * ii->first->Value(il, ir);
+	  m_objective[il][ir] = obj;
+
+	  if(obj > m_objectiveMax){
+	    m_objectiveMax = obj;
 	    m_qdlOpt = il;
 	    m_qdrOpt = ir;
 	  }
-	  if(m_objective[il][ir] < m_objectiveMin)
-	    m_objectiveMin = m_objective[il][ir];
+
+	  if(obj < m_objectiveMin)
+	    m_objectiveMin = obj;
 	}
+    
     PDEBUG("DWA [%d   %d]: %g\n", m_qdlOpt, m_qdrOpt, m_objectiveMax);
   }
   
   
-  void DynamicWindow::
+  void LegacyDynamicWindow::
   DumpObstacles(ostream & os,
 		const char * prefix) const
   {
@@ -357,30 +337,30 @@ namespace sfl {
       os << prefix;
       for(int iqdl(0); iqdl < dimension; ++iqdl)
 	if(m_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
-	else                                os << nonforbidden_char;
+	else                                 os << nonforbidden_char;
       os << "\n";
     }
     for(int iqdr(m_qdrMax); iqdr >= m_qdrMin; --iqdr){
       os << prefix;
       for(int iqdl(0); iqdl < m_qdlMin; ++iqdl)
 	if(m_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
-	else                                os << nonforbidden_char;
+	else                                 os << nonforbidden_char;
       for(int iqdl(m_qdlMin); iqdl <= m_qdlMax; ++iqdl){
 	if((iqdl == m_qdlOpt) && (iqdr == m_qdrOpt)) os << optimum_char;
-	else if(m_state[iqdl][iqdr] == FORBIDDEN)   os << forbidden_char;
-	else if(m_state[iqdl][iqdr] == ADMISSIBLE)  os << admissible_char;
-	else                                       os << collision_char;
+	else if(m_state[iqdl][iqdr] == FORBIDDEN)    os << forbidden_char;
+	else if(m_state[iqdl][iqdr] == ADMISSIBLE)   os << admissible_char;
+	else                                         os << collision_char;
       }
       for(int iqdl(m_qdlMax + 1); iqdl < dimension; ++iqdl)
 	if(m_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
-	else                                os << nonforbidden_char;
+	else                                 os << nonforbidden_char;
       os << "\n";
     }
     for(int iqdr(m_qdrMin - 1); iqdr >= 0; --iqdr){
       os << prefix;
       for(int iqdl(0); iqdl < dimension; ++iqdl)
 	if(m_state[iqdl][iqdr] == FORBIDDEN) os << forbidden_char;
-	else                                os << nonforbidden_char;
+	else                                 os << nonforbidden_char;
       os << "\n";
     }
   }
@@ -392,28 +372,43 @@ namespace sfl {
 		      double grid_height,
 		      double grid_resolution,
 		      shared_ptr<const RobotModel> robot_model,
-		      const MotionController & _motion_controller,
 		      double alpha_distance,
 		      double alpha_heading,
 		      double alpha_speed,
 		      bool auto_init)
-    : DynamicWindow(dimension, grid_width, grid_height, grid_resolution,
-		    robot_model, alpha_distance, alpha_heading,
-		    alpha_speed, auto_init),
-      motion_controller(_motion_controller)
+    : DynamicWindow(dimension, grid_width, grid_height, grid_resolution, robot_model),
+      m_distance_objective(new DistanceObjective(*this,
+						 robot_model,
+						 grid_width,
+						 grid_height,
+						 grid_resolution)),
+      m_heading_objective(new HeadingObjective(*this, *robot_model)),
+      m_speed_objective(new SpeedObjective(*this, *robot_model))
   {
+    AddObjective(m_distance_objective, alpha_distance);
+    AddObjective(m_heading_objective,  alpha_heading);
+    AddObjective(m_speed_objective,    alpha_speed);
+    if (auto_init)
+      Initialize(&cerr);
   }
   
   
   void LegacyDynamicWindow::
-  Update(double timestep, double dx, double dy,
+  Update(double qdl,
+	 double qdr,
+	 double timestep,
+	 double dx,
+	 double dy,
 	 boost::shared_ptr<const Scan> local_scan,
-	 ostream * dbgos)
+	 std::ostream * dbgos)
   {
-    double qdl, qdr;
-    motion_controller.GetCurrentAct(qdl, qdr);
-    PDEBUG_OUT("forward with speed = %g  %g\n", qdl, qdr);
     DynamicWindow::Update(qdl, qdr, timestep, dx, dy, local_scan, dbgos);
+    if(dbgos != 0){
+      (*dbgos) << "INFO from LegacyDynamicWindow::Update():\n"
+	       << "  obstacles:\n";
+      DumpObstacles((*dbgos), "    ");
+      (*dbgos) << "  FINISHED LegacyDynamicWindow::Update():\n";
+    }
   }
   
 }

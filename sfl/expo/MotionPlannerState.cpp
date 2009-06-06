@@ -369,37 +369,9 @@ namespace expo {
   {
     double qdl, qdr;
     m_mp->motion_controller->GetCurrentAct(qdl, qdr);
-    sfl::DynamicWindow & dwa(*m_mp->dynamic_window);
+    sfl::LegacyDynamicWindow & dwa(*m_mp->dynamic_window);
     dwa.Update(qdl, qdr,
 	       timestep, direction.first, direction.second, global_scan);
-    if(m_mp->auto_adapt_dwa){
-      PDEBUG("**************************************************\n");
-      shared_ptr<const sfl::DistanceObjective>
-	dobj(dwa.GetDistanceObjective());
-      static int countdown(0);	// BAD DOG, NO BISCUIT!!!
-      if(dobj->GetNNear() > 0){
-	PDEBUG("expo MPS %s: near points, auto adapt DWA\n", m_name.c_str());
-	dwa.alpha_distance = 1;
-	dwa.alpha_speed = 0;
-	dwa.alpha_heading = 0;
-	countdown = 10;
-      }
-      else{
-	if(countdown > 0){
-	  --countdown;
-	  PDEBUG("expo MPS %s: auto adapt countdown %d\n",
-		 m_name.c_str(), countdown);
-	}
-	else{
-	  dwa.alpha_distance = m_mp->orig_alpha_distance;
-	  dwa.alpha_speed = m_mp->orig_alpha_speed;
-	  dwa.alpha_heading = m_mp->orig_alpha_heading;
-	  PDEBUG("expo MPS %s: original DWA %05.2f %05.2f %05.2f\n",
-		 m_name.c_str(), dwa.alpha_distance, dwa.alpha_speed,
-		 dwa.alpha_heading);
-	}
-      }
-    }
     
     if( ! dwa.OptimalActuators(qdl, qdr)){
       qdl = 0;

@@ -54,8 +54,14 @@ namespace sfl {
     HeadingObjective(const DynamicWindow & dynamic_window,
 		     const RobotModel & robot_model);
     
-    void Calculate(double timestep,
-		   size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax);
+    virtual void Initialize(std::ostream * progress_stream) {}
+    virtual bool YieldsAdmissible() const { return false; }
+    virtual bool Admissible(int qdlIndex, int qdrIndex) const { return true; }
+    
+    virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
+			   size_t qdrMin, size_t qdrMax,
+			   double carrot_lx, double carrot_ly,
+			   boost::shared_ptr<const Scan> local_scan);
     
     /** \pre (iqdl, iqdr) is admissible and was within the range of
 	the previous call to Calculate(). */

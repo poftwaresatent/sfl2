@@ -78,7 +78,12 @@ namespace sfl {
 		      double grid_height,
 		      double grid_resolution);
     
-    void Initialize(std::ostream * progress_stream);
+    virtual void Initialize(std::ostream * progress_stream);
+    
+    virtual bool YieldsAdmissible() const { return true; }
+    
+    virtual bool Admissible(int qdlIndex, int qdrIndex) const;
+    
     bool CheckLookup(std::ostream * os) const;
     
     /** \note The Scan object should be filtered, ie contain only
@@ -86,9 +91,10 @@ namespace sfl {
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
-		   size_t qdrMin, size_t qdrMax,
-		   boost::shared_ptr<const Scan> local_scan);
+    virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
+			   size_t qdrMin, size_t qdrMax,
+			   double carrot_lx, double carrot_ly,
+			   boost::shared_ptr<const Scan> local_scan);
     
     void GetRange(double & x0, double & y0, double & x1, double & y1) const;
     size_t DimX() const;

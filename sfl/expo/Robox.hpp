@@ -28,7 +28,7 @@
 #include <stdexcept>
 
 namespace sfl {
-  class DynamicWindow;
+  class LegacyDynamicWindow;
   class RobotModel;
   class Hull;
   class BubbleBand;
@@ -87,7 +87,7 @@ namespace expo {
     boost::shared_ptr<sfl::Hull> hull;
     boost::shared_ptr<sfl::RobotModel> robotModel;
     boost::shared_ptr<MotionController> motionController;
-    boost::shared_ptr<sfl::DynamicWindow> dynamicWindow;
+    boost::shared_ptr<sfl::LegacyDynamicWindow> dynamicWindow;
     boost::shared_ptr<sfl::Odometry> odometry;
     boost::shared_ptr<sfl::BubbleBand> bubbleBand;
     boost::shared_ptr<sfl::Multiscanner> mscan;

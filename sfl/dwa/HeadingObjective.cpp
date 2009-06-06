@@ -47,9 +47,13 @@ namespace sfl {
   
   
   void HeadingObjective::
-  Calculate(double timestep,
-	    size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax)
+  Calculate(double timestep, size_t qdlMin, size_t qdlMax,
+	    size_t qdrMin, size_t qdrMax,
+	    double carrot_lx, double carrot_ly,
+	    boost::shared_ptr<const Scan> local_scan)
   {
+    local_goal_x = carrot_lx;
+    local_goal_y = carrot_ly;
     for(size_t iqdl(qdlMin); iqdl <= qdlMax; iqdl++)
       for(size_t iqdr(qdrMin); iqdr <= qdrMax; iqdr++)
 	if(m_dynamic_window.Admissible(iqdl, iqdr)){

@@ -32,7 +32,7 @@
 
 
 namespace sfl {
-  class DynamicWindow;
+  class LegacyDynamicWindow;
   class Multiscanner;
   class RobotModel;
   class BubbleBand;
@@ -63,7 +63,7 @@ namespace expo {
     };
     
     MotionPlanner(boost::shared_ptr<MotionController> motion_controller,
-		  boost::shared_ptr<sfl::DynamicWindow> dynamic_window,
+		  boost::shared_ptr<sfl::LegacyDynamicWindow> dynamic_window,
 		  boost::shared_ptr<sfl::Multiscanner> multiscanner,
 		  boost::shared_ptr<const sfl::RobotModel> robot_model,
 		  /** optional: if null then go straight towards goal */
@@ -116,20 +116,17 @@ namespace expo {
     int UpdateAll(double timestep);
     
     boost::shared_ptr<MotionController> motion_controller;
-    boost::shared_ptr<sfl::DynamicWindow> dynamic_window;
+    boost::shared_ptr<sfl::LegacyDynamicWindow> dynamic_window;
     boost::shared_ptr<const sfl::RobotModel> robot_model;
     boost::shared_ptr<sfl::BubbleBand> bubble_band; // can be null!
     boost::shared_ptr<const sfl::Odometry> odometry;
     boost::shared_ptr<sfl::Multiscanner> multiscanner;
     
     boost::scoped_ptr<sfl::Goal> goal;
-    bool go_forward, strict_dwa, auto_adapt_dwa;
+    bool go_forward, strict_dwa;
     
     double dtheta_starthoming; 	//!< default 10 * M_PI / 180
     double dtheta_startaiming;	//!< default 45 * M_PI / 180;
-    const double orig_alpha_distance;
-    const double orig_alpha_heading;
-    const double orig_alpha_speed;
     
   private:
     MotionPlannerStateMachine * m_state_machine;

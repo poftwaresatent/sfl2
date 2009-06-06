@@ -71,15 +71,15 @@ namespace expo {
 							    params.bband_maxignoredistance),
 				sfl::RWlock::Create("expo::Robox::bband")));
     
-    dynamicWindow.reset(new sfl::DynamicWindow(params.dwa_dimension,
-					       params.dwa_grid_width,
-					       params.dwa_grid_height,
-					       params.dwa_grid_resolution,
-					       robotModel,
-					       params.dwa_alpha_distance,
-					       params.dwa_alpha_heading,
-					       params.dwa_alpha_speed,
-					       true));  
+    dynamicWindow.reset(new sfl::LegacyDynamicWindow(params.dwa_dimension,
+						     params.dwa_grid_width,
+						     params.dwa_grid_height,
+						     params.dwa_grid_resolution,
+						     robotModel,
+						     params.dwa_alpha_distance,
+						     params.dwa_alpha_heading,
+						     params.dwa_alpha_speed,
+						     true));
     motionPlanner.reset(new MotionPlanner(motionController,
 					  dynamicWindow,
 					  mscan,

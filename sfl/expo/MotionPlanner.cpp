@@ -51,7 +51,7 @@ namespace expo {
   
   MotionPlanner::
   MotionPlanner(shared_ptr<MotionController> _motion_controller,
-		shared_ptr<sfl::DynamicWindow> _dynamic_window,
+		shared_ptr<sfl::LegacyDynamicWindow> _dynamic_window,
 		shared_ptr<sfl::Multiscanner> _multiscanner,
 		shared_ptr<const sfl::RobotModel> _robot_model,
 		shared_ptr<sfl::BubbleBand> _bubble_band,
@@ -65,12 +65,8 @@ namespace expo {
       goal(new sfl::Goal()),
       go_forward(true),
       strict_dwa(true),
-      auto_adapt_dwa(false),
       dtheta_starthoming(10 * M_PI / 180),
       dtheta_startaiming(45 * M_PI / 180),
-      orig_alpha_distance(_dynamic_window->alpha_distance),
-      orig_alpha_heading(_dynamic_window->alpha_heading),
-      orig_alpha_speed(_dynamic_window->alpha_speed),
       m_state_machine(new MotionPlannerStateMachine(this)),
       m_replan_request(false)
   {

@@ -26,21 +26,20 @@
 #define SUNFLOWER_DYNAMICWINDOW_HPP
 
 
-//#include <sfl/util/numeric.hpp>
-//#include <sfl/api/Scan.hpp>
-
 #include <sfl/util/array2d.hpp>
 #include <boost/shared_ptr.hpp>
+#include <map>
+#include <list>
 
 
 namespace sfl {
   
   class RobotModel;
-  class MotionController;
   class Scan;
-  class DistanceObjective;  
-  class HeadingObjective;  
-  class SpeedObjective;  
+  class Objective;
+  class DistanceObjective;
+  class HeadingObjective;
+  class SpeedObjective;
   
   
   /**
@@ -74,28 +73,47 @@ namespace sfl {
     /**
        The speed and acceleration limits are defined in RobotModel.
        
-       \note If you have legacy code that expects to pass a
-       MotionController to this constructor, simply use a
-       LegacyDynamicWindow instead.
+       \note If you have legacy code that expects a different
+       signature, try using a LegacyDynamicWindow instead.
     */
     DynamicWindow(int dimension,
 		  double grid_width,
 		  double grid_height,
 		  double grid_resolution,
-		  boost::shared_ptr<const RobotModel> robot_model,
-		  //// If you expect this parameter, use a LegacyDynamicWindow
-		  //// (see below)
-		  //const MotionController & motion_controller,
-		  double alpha_distance,
-		  double alpha_heading,
-		  double alpha_speed,
-		  bool auto_init);
+		  boost::shared_ptr<const RobotModel> robot_model);
     
-    bool Initialize(std::ostream * os, bool paranoid);
+    /** Add a (subclass of) Objective to the DynamicWindow. The
+	LegacyDynamicWindow constructor automatically adds the three
+	"standard" ones for distance, heading, and speed.
+	
+	\note Objectives get initialized when you call
+	DynamicWindow::Initialize(). Subsequently adding objectives is
+	"probably possible" if you take care of initializing them, but
+	this is not explicitly supported.
+    */
+    void AddObjective(boost::shared_ptr<Objective> objective,
+		      double alpha);
     
+    /** Initialize all objectives registered using AddObjective(), and
+	initialize some of the DWA's own data structures. */
+    void Initialize(std::ostream * os);
+    
+    /** Actuator commands that would violate the global speed limits
+	(sd, thetad) are called "forbidden". */
     bool Forbidden(int qdlIndex, int qdrIndex) const;
-    bool Admissible(int qdlIndex, int qdrIndex) const;
+    
+    /** Actuator commands that lie within the range of current +/-
+	acceleration times timestep are called "reachable", unless
+	they are forbidden. */
     bool Reachable(int qdlIndex, int qdrIndex) const;
+    
+    /** The subset of reachable commands that is called "admissible"
+	denotes those velocities that are (expected to be) guaranteed
+	to avoid collision. The DWA uses those objectves whose
+	Objective::YieldsAdmissible() returns true in order to
+	initialize the admissible information at teach update
+	cycle. */
+    bool Admissible(int qdlIndex, int qdrIndex) const;
     
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
@@ -117,29 +135,7 @@ namespace sfl {
 		boost::shared_ptr<const Scan> local_scan,
 		std::ostream * dbgos = 0);
     
-    void GetSubGoal(double & local_x, double & local_y) const;
-    void SetHeadingOffset(double angle);
-    double GetHeadingOffset() const;
-
-
-    /** Makes the SpeedObjective maximise translational speeds. */
-    void GoFast();
-    void _GoStrictFast();
-
-
-    /** Makes the SpeedObjective attempt to keep the robot at standstill. */
-    void GoSlow();
-    void _GoStrictSlow();
-
-
-    /** Makes the SpeedObjective use forward speeds. Influences GoFast(). */
-    void GoForward();
-
-
-    /** Makes the SpeedObjective use backward speeds. Influences GoFast(). */
-    void GoBackward();
-
-
+    
     /**
        Choose best speed command, based on current alphaSpeed,
        alphaDistance, and alphaHeading. The values are returned through
@@ -166,19 +162,9 @@ namespace sfl {
     double Qd(int index) const { return m_qd[index]; }
     
     /** \pre indices within QdlMinIndex() ... QdrMaxIndex() */
-    double Objective(int qdlIndex, int qdrIndex) const
+    double GetObjectiveSum(int qdlIndex, int qdrIndex) const
     { return m_objective[qdlIndex][qdrIndex]; }
     
-    boost::shared_ptr<DistanceObjective const> GetDistanceObjective() const
-    { return m_distance_objective; }
-    
-    boost::shared_ptr<HeadingObjective const> GetHeadingObjective() const
-    { return m_heading_objective; }
-
-    boost::shared_ptr<SpeedObjective const> GetSpeedObjective() const
-    { return m_speed_objective; }
-    
-    void DumpObstacles(std::ostream & os, const char * prefix) const;
     void DumpObjectives(std::ostream & os, const char * prefix) const;
     
     
@@ -187,36 +173,19 @@ namespace sfl {
     const double resolution;
     const double qddMax;
     
-    double alpha_distance;
-    double alpha_heading;
-    double alpha_speed;
-    
     
   protected:
-    /**
-       Admissible speeds are all those that lie within
-       <ul>
-       <li> the motors' capabilities </li>
-       <li> the chosen maximum translational and rotational speeds </li>
-       </ul>
-
-       Reachable speeds are those admissible speeds that can be reached given
-       the current speed and the motors' acceleration (times the timestep).
-     
-       Forbidden are those speeds among the reachable set that would
-       result in a collision (e.g. time to predicted collision is
-       smaller than the time needed for a full stop).
-    */
     typedef enum {
       ADMISSIBLE, REACHABLE, FORBIDDEN
     } speedstate_t;
-
+    
+    typedef std::map<boost::shared_ptr<Objective>, double> objmap_t;
+    typedef std::list<boost::shared_ptr<Objective> > admobjlist_t;
     
     boost::shared_ptr<const RobotModel> m_robot_model;
-    boost::shared_ptr<DistanceObjective> m_distance_objective;
-    boost::shared_ptr<HeadingObjective> m_heading_objective;
-    boost::shared_ptr<SpeedObjective> m_speed_objective;
-
+    objmap_t m_objmap;
+    admobjlist_t m_admobjlist;
+    
     boost::scoped_array<double> m_qd; //[dimension];
     array2d<speedstate_t> m_state; //[dimension][dimension];
     array2d<double> m_objective; //[dimension][dimension];
@@ -237,18 +206,14 @@ namespace sfl {
     void InitForbidden();
     void CalculateReachable(double timestep, double qdl, double qdr);
     void CalculateAdmissible();
-    void CalculateOptimum(double alphaDistance,
-			  double alphaHeading,
-			  double alphaSpeed) const;
+    void CalculateOptimum() const;
   };
   
   
   /**
-     Provides the "legacy" API where a MotionController was
-     automatically used to get the current wheel speeds at each
-     Update(). The problem with that approach was that it forces
-     clients to (i) instantiate and manage a MotionController and (ii)
-     call its Update() in synch.
+     Provides the "legacy" implementation with "standard" speed,
+     distance, and heading objectives, along with some methods used in
+     old code.
   */
   class LegacyDynamicWindow
     : public DynamicWindow
@@ -259,24 +224,53 @@ namespace sfl {
 			double grid_height,
 			double grid_resolution,
 			boost::shared_ptr<const RobotModel> robot_model,
-			const MotionController & motion_controller,
 			double alpha_distance,
 			double alpha_heading,
 			double alpha_speed,
 			bool auto_init);
     
-    /** Gets the current speeds from the registered MotionController
-	and then forwards the call to DynamicWindow::Update(). This
-	requires you to call MotionController::Update() in synch prior
-	to this method (which is the way it is done in legacy
-	code). */
-    void Update(double timestep,
+    void SetHeadingOffset(double angle);
+    double GetHeadingOffset() const;
+    
+    /** Makes the SpeedObjective maximise translational speeds. */
+    void GoFast();
+    void _GoStrictFast();
+    
+    /** Makes the SpeedObjective attempt to keep the robot at standstill. */
+    void GoSlow();
+    void _GoStrictSlow();
+    
+    /** Makes the SpeedObjective use forward speeds. Influences GoFast(). */
+    void GoForward();
+    
+    /** Makes the SpeedObjective use backward speeds. Influences GoFast(). */
+    void GoBackward();
+    
+    boost::shared_ptr<DistanceObjective const> GetDistanceObjective() const
+    { return m_distance_objective; }
+    
+    boost::shared_ptr<HeadingObjective const> GetHeadingObjective() const
+    { return m_heading_objective; }
+    
+    boost::shared_ptr<SpeedObjective const> GetSpeedObjective() const
+    { return m_speed_objective; }
+    
+    void DumpObstacles(std::ostream & os, const char * prefix) const;
+    
+    /** Same as DynamicWindow::Update(), except when dbgos is non-null
+	it also dumps the obstacles. */
+    void Update(double qdl,
+		double qdr,
+		double timestep,
 		double dx,
 		double dy,
 		boost::shared_ptr<const Scan> local_scan,
 		std::ostream * dbgos = 0);
     
-    const MotionController & motion_controller;
+  protected:
+    boost::shared_ptr<DistanceObjective> m_distance_objective;
+    boost::shared_ptr<HeadingObjective> m_heading_objective;
+    boost::shared_ptr<SpeedObjective> m_speed_objective;
   };
   
 }

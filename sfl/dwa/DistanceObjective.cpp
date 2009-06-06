@@ -258,8 +258,8 @@ namespace sfl {
   
   
   void DistanceObjective::
-  Calculate(double timestep, size_t qdlMin, size_t qdlMax, size_t qdrMin,
-	    size_t qdrMax, shared_ptr<const Scan> local_scan)
+  Calculate(double timestep, size_t qdlMin, size_t qdlMax, size_t qdrMin, size_t qdrMax,
+	    double carrot_lx, double carrot_ly, shared_ptr<const Scan> local_scan)
   {
     ResetGrid();
     UpdateGrid(local_scan);
@@ -598,6 +598,13 @@ namespace sfl {
   ObstacleInHull() const
   {
     return m_point_in_hull;
+  }
+  
+  
+  bool DistanceObjective::
+  Admissible(int qdlIndex, int qdrIndex) const
+  {
+    return m_value[qdlIndex][qdrIndex] > minValue + epsilon;
   }
   
 }
