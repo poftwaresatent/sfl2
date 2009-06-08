@@ -118,6 +118,6 @@ AC_SUBST(SFL_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile sunflower.pc Doxyfile
                 contrib/Makefile gplan/Makefile expo/Makefile
-                cwrap/Makefile util/Makefile bband/Makefile api/Makefile
+                util/Makefile bband/Makefile api/Makefile
                 dwa/Makefile)
 AC_OUTPUT
