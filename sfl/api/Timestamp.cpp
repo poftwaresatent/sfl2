@@ -95,12 +95,30 @@ namespace sfl {
   }
   
   
+  bool operator <= (const Timestamp & left, const Timestamp & right)
+  {
+    return
+      (   left.m_stamp.tv_sec  <= right.m_stamp.tv_sec ) ||
+      ( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
+	( left.m_stamp.tv_nsec <= right.m_stamp.tv_nsec )   );
+  }
+  
+  
   bool operator > (const Timestamp & left, const Timestamp & right)
   {
     return
       (   left.m_stamp.tv_sec  >  right.m_stamp.tv_sec ) ||
       ( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
 	( left.m_stamp.tv_nsec >  right.m_stamp.tv_nsec )   );
+  }
+  
+  
+  bool operator >= (const Timestamp & left, const Timestamp & right)
+  {
+    return
+      (   left.m_stamp.tv_sec  >= right.m_stamp.tv_sec ) ||
+      ( ( left.m_stamp.tv_sec  == right.m_stamp.tv_sec ) &&
+	( left.m_stamp.tv_nsec >= right.m_stamp.tv_nsec )   );
   }
   
   

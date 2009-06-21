@@ -114,9 +114,13 @@ namespace sfl {
        \endcode
     */
     friend bool operator < (const Timestamp & left, const Timestamp & right);
+
+    friend bool operator <= (const Timestamp & left, const Timestamp & right);
     
     /** The opposite of Timestamp::operator<(). */
     friend bool operator > (const Timestamp & left, const Timestamp & right);
+    
+    friend bool operator >= (const Timestamp & left, const Timestamp & right);
     
     /** Equality operator. */
     friend bool operator == (const Timestamp & left, const Timestamp & right);
