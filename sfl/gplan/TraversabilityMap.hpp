@@ -184,7 +184,11 @@ namespace sfl {
 		bool IsFree(ssize_t index_x, ssize_t index_y) const;
 		
 		void DumpMap(std::ostream * os) const;
-    
+		
+		ssize_t GetXBegin() const { return grid.xbegin(); }
+		ssize_t GetXEnd() const { return grid.xend(); }
+		ssize_t GetYBegin() const { return grid.ybegin(); }
+		ssize_t GetYEnd() const { return grid.yend(); }
 		
     GridFrame gframe;						/**< default (0, 0, 0, 1) */
     int freespace;							/**< default 0 */
