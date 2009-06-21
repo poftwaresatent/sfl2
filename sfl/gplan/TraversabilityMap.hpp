@@ -89,6 +89,9 @@ namespace sfl {
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
     
+		/** Fill all cells of the traversability map with the given value
+				(e.g. zero for freespace). */
+		void Reset(int value);
 		
 		/** \return true if the given index lies within the grid. */
 		bool IsValid(ssize_t index_x, ssize_t index_y) const;

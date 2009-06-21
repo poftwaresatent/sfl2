@@ -443,4 +443,12 @@ namespace sfl {
 		return Autogrow(idx.v0, idx.v1, fill_value);
 	}
 	
+	
+	void TraversabilityMap::
+	Reset(int value)
+	{
+		for (grid_t::iterator ii(grid.begin()); ii != grid.end(); ++ii)
+			*ii = value;
+	}
+	
 }
