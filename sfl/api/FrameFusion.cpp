@@ -25,22 +25,42 @@
 namespace sfl {
 	
 	
+	/** Beware: ringbuf indices go from youngest to oldest! */
 	template<typename data_type>
 	stamped<data_type> const *
 	find_matching_recurse(Timestamp const & tstamp,
 												ringbuf<stamped<data_type> > const & buf,
-												ssize_t ilow, ssize_t ihigh)
+												ssize_t ilow, ssize_t ihigh,
+												std::ostream * debug_os)
 	{
-		if ((ilow == ihigh)
-				|| (buf[ilow].tstamp <= tstamp))
+		if (debug_os)
+			*debug_os << "  ilow: " << ilow << "  ihigh: " << ihigh << "  t: " << tstamp << "\n";
+		
+		if (ilow == ihigh) {
+			if (debug_os)
+				*debug_os << "  ilow == ihigh\n";
 			return &buf[ilow];
-		if (buf[ihigh].tstamp >= tstamp)
+		}
+		
+		if (buf[ihigh].tstamp <= tstamp) {
+			if (debug_os)
+				*debug_os << "  buf[ihigh].tstamp == " << buf[ihigh].tstamp << " <= tstamp\n";
 			return &buf[ihigh];
+		}
+		
+		if (buf[ilow].tstamp >= tstamp) {
+			if (debug_os)
+				*debug_os << "  buf[ilow].tstamp == " << buf[ilow].tstamp << " >= tstamp\n";
+			return &buf[ilow];
+		}
 		
 		ssize_t const isplit((ilow + ihigh) / 2);
+		if (debug_os)
+			*debug_os << "  isplit: " << isplit << "\n";
+		
 		if (buf[isplit].tstamp >= tstamp)
-			return find_matching_recurse(tstamp, buf, ilow, isplit);
-		return find_matching_recurse(tstamp, buf, isplit, ihigh);
+			return find_matching_recurse(tstamp, buf, ilow, isplit, debug_os);
+		return find_matching_recurse(tstamp, buf, isplit, ihigh, debug_os);
 	}
 	
 	
@@ -48,14 +68,17 @@ namespace sfl {
 	template<typename data_type>
 	stamped<data_type> const *
 	find_matching(Timestamp const & tstamp,
-								ringbuf<stamped<data_type> > const & buf)
+								ringbuf<stamped<data_type> > const & buf,
+								std::ostream * debug_os)
 	{
 		ssize_t const buflen(buf.size());
+		if (debug_os)
+			*debug_os << "sfl::FrameFusion: find_matching: " << tstamp << "  buflen: " << buflen << "\n";
 		if (0 == buflen)
 			return 0;
 		if (1 == buflen)
 			return &buf[0];
-		return find_matching_recurse(tstamp, buf, 0, buflen - 1);
+		return find_matching_recurse(tstamp, buf, 0, buflen - 1, debug_os);
 	}
 	
 	
@@ -119,7 +142,7 @@ namespace sfl {
 		
     m_loc.push_back(frame_t(tstamp, slampos));
     
-    frame_t const * match(find_matching<Frame>(tstamp, m_odom));
+    frame_t const * match(find_matching<Frame>(tstamp, m_odom, m_debug_os));
 		if ( ! match) {
 			if (m_error_os)
 				*m_error_os << "sfl::FrameFusion::UpdateOdomCorrection(): no odometry for time "

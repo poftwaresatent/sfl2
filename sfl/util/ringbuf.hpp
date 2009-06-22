@@ -41,6 +41,9 @@ namespace sfl {
       data.reserve(len);
     }
     
+		/** Append a value to the ring buffer, possibly pushing out older
+				value. Afterwards, ringbuf[0] will return the value last
+				passed to push_back(). */
     void push_back(const value_t & val){
       if(data.size() >= len){
 				data[oldest] = val;
@@ -65,7 +68,8 @@ namespace sfl {
     
     bool empty() const
     { return data.empty(); }
-    
+		
+		/** ringbuf[0] returns the youngest elements, and ringbuf[size()-1] the oldest. */
     value_t & operator [] (size_t idx){
       if(youngest >= idx)
 				return data[youngest - idx];
@@ -74,6 +78,7 @@ namespace sfl {
       return data[data.size() + youngest - idx - 1];
     }
     
+		/** ringbuf[0] returns the youngest elements, and ringbuf[size()-1] the oldest. */
     const value_t & operator [] (size_t idx) const {
       if(youngest >= idx)
 				return data[youngest - idx];
@@ -82,6 +87,9 @@ namespace sfl {
       return data[data.size() + youngest - idx - 1];
     }
     
+		/** The maximum amount of values in the ringbuf. The size can be
+				smaller than len, if fewer than len values have been added
+				using push_back(). */
     const size_t len;
     std::vector<value_t> data;
     size_t youngest, oldest;

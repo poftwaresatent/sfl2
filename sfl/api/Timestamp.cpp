@@ -27,6 +27,7 @@
 #include <sstream>
 #include <limits>
 #include <iomanip>
+#include <cmath>
 
 
 using namespace std;
@@ -153,6 +154,21 @@ namespace sfl {
       ++m_stamp.tv_sec;
     }
     return * this;
+  }
+  
+  
+  double Timestamp::
+  ToSeconds() const
+  {
+    return 1.0 * m_stamp.tv_sec + 1.0e-9 * m_stamp.tv_nsec;
+  }
+  
+  
+  void Timestamp::
+  FromSeconds(double sec)
+  {
+    m_stamp.tv_sec = static_cast<time_t>(floor(sec));
+    m_stamp.tv_nsec = static_cast<long>(floor(1.0e9 * (sec - m_stamp.tv_sec)));
   }
   
 }

@@ -82,7 +82,7 @@ namespace sfl {
     
     void AddRawOdometry(Timestamp const & tstamp,
 												Frame const & pos);
-    
+		
     void AddSpeedCommand(Timestamp const & tstamp,
 												 double sd, double thetad);
     

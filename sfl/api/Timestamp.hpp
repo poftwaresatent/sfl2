@@ -135,6 +135,9 @@ namespace sfl {
     const timespec_t & Get() const
     { return m_stamp; }
     
+    double ToSeconds() const;
+    void FromSeconds(double sec);
+    
   private:
     timespec_t m_stamp;
   };
