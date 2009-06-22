@@ -127,23 +127,12 @@ namespace sfl {
 		
 		bool GetValue(ssize_t index_x, ssize_t index_y, int & value) const;
 		
-// 		bool GetValue(size_t index_x, size_t index_y, int & value) const
-// 		{ return GetValue(static_cast<ssize_t>(index_x),
-// 											static_cast<ssize_t>(index_y),
-// 											value); }
-		
 		bool SetValue(double global_x, double global_y, int value,
 									draw_callback * cb);
 		
 		bool SetValue(ssize_t index_x, ssize_t index_y, int value,
 									draw_callback * cb);
 		
-// 		bool SetValue(size_t index_x, size_t index_y, int value,
-// 									draw_callback * cb)
-// 		{ return SetValue(static_cast<ssize_t>(index_x),
-// 											static_cast<ssize_t>(index_y),
-// 											value, cb); }
-
 		bool SetObst(double global_x, double global_y, draw_callback * cb);
 		bool SetObst(ssize_t index_x, ssize_t index_y, draw_callback * cb);
 		bool SetWObst(double global_x, double global_y, draw_callback * cb);

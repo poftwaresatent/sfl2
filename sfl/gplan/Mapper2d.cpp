@@ -572,4 +572,14 @@ namespace sfl {
 		return pow(1 - normdist, power);
 	}
 	
+	
+	void Mapper2d::
+	ClearAllObstacles(draw_callback * cb)
+	{
+		for (ssize_t ix(m_travmap->GetXBegin()); ix < m_travmap->GetXEnd(); ++ix)
+			for (ssize_t iy(m_travmap->GetYBegin()); iy < m_travmap->GetYEnd(); ++iy)
+				if ( ! m_travmap->IsFree(ix, iy))
+					m_travmap->SetFree(ix, iy, cb);
+	}
+	
 }

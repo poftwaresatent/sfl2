@@ -270,6 +270,9 @@ namespace sfl {
 													 index_buffer_t * remove,
 													 draw_callback * cb);
 		
+		/** Maintain the map size, but set all cells to freespace. */
+		void ClearAllObstacles(draw_callback * cb);
+		
 		int ComputeCost(double dist_from_obstacle) const;
 		
 		index_buffer_t const & GetFreespaceBuffer() const { return m_freespace_buffer; }
