@@ -103,9 +103,11 @@ void init()
     RobotModel::LocalKinematics(vel_cmd[ii].data.sd, vel_cmd[ii].data.thetad, tick, dx, dy, dth);
     pos.Add(dx, dy, dth);
     true_pose.push_back(frame_t(vel_cmd[ii].tstamp, pos));
-    odom_noise.push_back(frame_t(vel_cmd[ii].tstamp, Frame(ii * 0.02,
-							   ii * 0.007 - 0.1,
-							   0.3 - ii * 0.01)));
+// 		Frame const noise(ii * 0.02,
+// 											ii * 0.007 - 0.1,
+// 											0.3 - ii * 0.01);
+		Frame const noise;
+    odom_noise.push_back(frame_t(vel_cmd[ii].tstamp, noise));
   }
   
   for (size_t ii(0); ii < odom_noise.size(); ++ii) {

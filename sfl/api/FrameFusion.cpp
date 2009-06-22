@@ -19,6 +19,7 @@
  */
 
 #include "FrameFusion.hpp"
+#include "RobotModel.hpp"
 #include <iostream>
 #include <cmath>
 
@@ -27,40 +28,41 @@ namespace sfl {
 	
 	/** Beware: ringbuf indices go from youngest to oldest! */
 	template<typename data_type>
-	stamped<data_type> const *
-	find_matching_recurse(Timestamp const & tstamp,
-												ringbuf<stamped<data_type> > const & buf,
-												ssize_t ilow, ssize_t ihigh,
-												std::ostream * debug_os)
+	ssize_t	find_matchindex_recurse(Timestamp const & tstamp,
+																	ringbuf<stamped<data_type> > const & buf,
+																	ssize_t iyoung, ssize_t iold,
+																	std::ostream * debug_os)
 	{
 		if (debug_os)
-			*debug_os << "  ilow: " << ilow << "  ihigh: " << ihigh << "  t: " << tstamp << "\n";
+			*debug_os << "  iyoung: " << iyoung << "  iold: " << iold << "  t: " << tstamp << "\n";
 		
-		if (ilow == ihigh) {
+		if (iyoung == iold) {
 			if (debug_os)
-				*debug_os << "  ilow == ihigh\n";
-			return &buf[ilow];
+				*debug_os << "  iyoung == iold\n";
+			return iyoung;
 		}
 		
-		if (buf[ihigh].tstamp <= tstamp) {
+		if (buf[iold].tstamp >= tstamp) {
 			if (debug_os)
-				*debug_os << "  buf[ihigh].tstamp == " << buf[ihigh].tstamp << " <= tstamp\n";
-			return &buf[ihigh];
+				*debug_os << "  buf[iold].tstamp == " << buf[iold].tstamp
+									<< " >= tstamp == " << tstamp << "\n";
+			return iold;
 		}
 		
-		if (buf[ilow].tstamp >= tstamp) {
+		if (buf[iyoung].tstamp <= tstamp) {
 			if (debug_os)
-				*debug_os << "  buf[ilow].tstamp == " << buf[ilow].tstamp << " >= tstamp\n";
-			return &buf[ilow];
+				*debug_os << "  buf[iyoung].tstamp == " << buf[iyoung].tstamp
+									<< " <= tstamp == " << tstamp << "\n";
+			return iyoung;
 		}
 		
-		ssize_t const isplit((ilow + ihigh) / 2);
+		ssize_t const isplit((iyoung + iold) / 2);
 		if (debug_os)
 			*debug_os << "  isplit: " << isplit << "\n";
 		
-		if (buf[isplit].tstamp >= tstamp)
-			return find_matching_recurse(tstamp, buf, ilow, isplit, debug_os);
-		return find_matching_recurse(tstamp, buf, isplit, ihigh, debug_os);
+		if (buf[isplit].tstamp < tstamp)
+			return find_matchindex_recurse(tstamp, buf, iyoung, isplit, debug_os);
+		return find_matchindex_recurse(tstamp, buf, isplit, iold, debug_os);
 	}
 	
 	
@@ -69,6 +71,7 @@ namespace sfl {
 	stamped<data_type> const *
 	find_matching(Timestamp const & tstamp,
 								ringbuf<stamped<data_type> > const & buf,
+								size_t * imatch,
 								std::ostream * debug_os)
 	{
 		ssize_t const buflen(buf.size());
@@ -76,9 +79,15 @@ namespace sfl {
 			*debug_os << "sfl::FrameFusion: find_matching: " << tstamp << "  buflen: " << buflen << "\n";
 		if (0 == buflen)
 			return 0;
-		if (1 == buflen)
+		if (1 == buflen) {
+			if (imatch)
+				*imatch = 0;
 			return &buf[0];
-		return find_matching_recurse(tstamp, buf, 0, buflen - 1, debug_os);
+		}
+		size_t const ii(find_matchindex_recurse(tstamp, buf, 0, buflen - 1, debug_os));
+		if (imatch)
+			*imatch = ii;
+		return &buf[ii];
 	}
 	
 	
@@ -142,7 +151,7 @@ namespace sfl {
 		
     m_loc.push_back(frame_t(tstamp, slampos));
     
-    frame_t const * match(find_matching<Frame>(tstamp, m_odom, m_debug_os));
+    frame_t const * match(find_matching<Frame>(tstamp, m_odom, 0, m_debug_os));
 		if ( ! match) {
 			if (m_error_os)
 				*m_error_os << "sfl::FrameFusion::UpdateOdomCorrection(): no odometry for time "
@@ -201,8 +210,56 @@ namespace sfl {
 									<< "  latest raw odom: " << latest_odom << "\n"
 									<< "  corrected odom:  " << ext << "\n";
 		
-		// XXXX TO DO: extrapolate velocities
+		size_t i_vel_com;
+    speed_t const *
+			vel_com(find_matching<global_speed_s>(latest_odom.tstamp, m_vel_com, &i_vel_com, m_debug_os));
+		if (vel_com) {
+			if (m_debug_os)
+				*m_debug_os << "  vel_com matching raw_odom starting at index " << i_vel_com << "\n";
+			while (i_vel_com > 0) {
+				Timestamp duration(m_vel_com[i_vel_com - 1].tstamp);
+				duration -= vel_com->tstamp;
+				double dx, dy, dth;
+				RobotModel::LocalKinematics(vel_com->data.sd, vel_com->data.thetad, duration.ToSeconds(),
+																		dx, dy, dth);
+				ext.Add(dx, dy, dth);
+				if (m_debug_os)
+					*m_debug_os << "    vel_com " << i_vel_com << " " << *vel_com
+											<< " during " << duration.ToSeconds() << "s\n"
+											<< "      delta " << dx << " " << dy << " " << dth << "\n"
+											<< "      extrapolated " << ext << "\n";
+				--i_vel_com;
+				vel_com = &(m_vel_com[i_vel_com]);
+			}
+			{
+				Timestamp duration(tstamp);
+				duration -= vel_com->tstamp;
+				double dx, dy, dth;
+				RobotModel::LocalKinematics(vel_com->data.sd, vel_com->data.thetad, duration.ToSeconds(),
+																		dx, dy, dth);
+				ext.Add(dx, dy, dth);
+				if (m_debug_os)
+					*m_debug_os << "    vel_com " << i_vel_com << " " << *vel_com
+											<< " during " << duration.ToSeconds() << "s\n"
+											<< "      delta " << dx << " " << dy << "" << dth << "\n"
+											<< "      extrapolated " << ext << "\n";
+			}
+		}
+		
+		if (m_debug_os)
+			*m_debug_os << "  final extrapolation:  " << ext << "\n";
+		
 		return ext;
 	}
   
+}
+
+
+namespace std {
+	
+	ostream & operator << (ostream & os, sfl::global_speed_s const & rhs) {
+		os << "(" << rhs.sd << " " << rhs.thetad << ")";
+		return os;
+	}
+	
 }

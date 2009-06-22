@@ -42,6 +42,14 @@ namespace sfl {
     Timestamp tstamp;
     data_t data;
   };
+	
+	
+  struct global_speed_s {
+    global_speed_s(): sd(0), thetad(0) {}
+    global_speed_s(double _sd, double _thetad): sd(_sd), thetad(_thetad) {}
+    
+    double sd, thetad;
+  };
 
 }
 
@@ -52,19 +60,14 @@ namespace std {
 		os << "[" << rhs.tstamp << " " << rhs.data << "]";
 		return os;
 	}
-
+	
+	ostream & operator << (ostream & os, sfl::global_speed_s const & rhs);
+	
 }
 
 namespace sfl {
+  
 	
-  struct global_speed_s {
-    global_speed_s(): sd(0), thetad(0) {}
-    global_speed_s(double _sd, double _thetad): sd(_sd), thetad(_thetad) {}
-    
-    double sd, thetad;
-  };
-  
-  
   class FrameFusion
   {
   public:
