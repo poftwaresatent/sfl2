@@ -40,7 +40,7 @@ namespace sfl {
   class Odometry;
   class RobotModel;
   class BubbleFactory;
-  class ReplanHandler;
+  class ReplanHandlerAPI;
   class Multiscanner;
   
   /**
@@ -78,10 +78,18 @@ namespace sfl {
       UNSUREBAND
     } state_t;
     
-    
+    /** Legacy constructor: uses the default ReplanHandler. */
     BubbleBand(const RobotModel & robot_model,
 	       const Odometry & odometry,
 	       const Multiscanner & multiscanner,
+	       BubbleList::Parameters parameters,
+	       boost::shared_ptr<RWlock> rwlock);
+
+    /** Flexible constructor: you can specify a custom replan handler. */
+    BubbleBand(const RobotModel & robot_model,
+	       const Odometry & odometry,
+	       const Multiscanner & multiscanner,
+	       boost::shared_ptr<ReplanHandlerAPI> replan_handler,
 	       BubbleList::Parameters parameters,
 	       boost::shared_ptr<RWlock> rwlock);
     
@@ -116,7 +124,7 @@ namespace sfl {
     const BubbleList * ActiveBlist() const { return m_active_blist; }
     
     /** \note Used for plotting. */
-    const ReplanHandler * GetReplanHandler() const
+    const ReplanHandlerAPI * GetReplanHandler() const
     { return m_replan_handler.get(); }
     
     double NF1GoalRadius() const { return m_nf1_goal_radius; }
@@ -156,7 +164,7 @@ namespace sfl {
     const Multiscanner & m_multiscanner;
     
     boost::scoped_ptr<BubbleFactory> m_bubble_factory;
-    boost::scoped_ptr<ReplanHandler> m_replan_handler;
+    boost::shared_ptr<ReplanHandlerAPI> m_replan_handler;
     boost::shared_ptr<const Frame> m_frame;
     BubbleList * m_active_blist;
     const double m_reaction_radius;

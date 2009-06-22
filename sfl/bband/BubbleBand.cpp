@@ -83,6 +83,34 @@ namespace sfl {
   
   
   BubbleBand::
+  BubbleBand(const RobotModel & robot_model,
+	     const Odometry & odometry,
+	     const Multiscanner & multiscanner,
+	     boost::shared_ptr<ReplanHandlerAPI> replan_handler,
+	     BubbleList::Parameters _parameters,
+	     shared_ptr<RWlock> rwlock)
+    : parameters(_parameters),
+      robot_radius(robot_model.GetHull()->CalculateRadius()),
+      robot_diameter(2 * robot_radius),
+      ignore_radius(0.9 * robot_radius),
+      deletion_diameter(1.8 * robot_diameter),
+      addition_diameter(1.2 * robot_diameter),
+      m_odometry(odometry),
+      m_multiscanner(multiscanner),
+      m_bubble_factory(new BubbleFactory(50)), // hax: hardcoded initlevel
+      m_replan_handler(replan_handler),
+      m_frame(new Frame()),
+      m_active_blist(new BubbleList(*this, *m_bubble_factory, _parameters)),
+      m_reaction_radius(2.0 * robot_radius),
+      m_replan_request(false),
+      m_state(NOBAND),
+      m_rwlock(rwlock),
+      m_planstep(IDLE)
+  {
+  }
+  
+  
+  BubbleBand::
   ~BubbleBand()
   {
     delete m_active_blist;

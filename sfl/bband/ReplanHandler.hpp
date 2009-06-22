@@ -40,9 +40,24 @@ namespace sfl {
   class NF1;
   class Frame;
   class Scan;
+  
+  
+  class ReplanHandlerAPI {
+  public:
+    virtual ~ReplanHandlerAPI() {}
+    
+    virtual bool GeneratePlan(boost::shared_ptr<const Frame> pose,
+			      boost::shared_ptr<const Scan> scan) = 0;
+
+    virtual bool GenerateBand(boost::shared_ptr<const Frame> pose,
+			      boost::shared_ptr<const Scan> scan) = 0;
+
+    virtual BubbleList * SwapBubbleList(BubbleList * replace) = 0;
+  };
 
 
   class ReplanHandler
+    : public ReplanHandlerAPI
   {
   public:
     ReplanHandler(BubbleBand & bubble_band,
