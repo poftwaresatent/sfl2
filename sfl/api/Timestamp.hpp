@@ -128,6 +128,9 @@ namespace sfl {
     /** Decrement operator. */
     Timestamp & operator -= (const Timestamp & other);
     
+    /** Increment operator. */
+    Timestamp & operator += (const Timestamp & other);
+    
     /** const access to the underlying timespec instance */
     const timespec_t & Get() const
     { return m_stamp; }
@@ -137,5 +140,8 @@ namespace sfl {
   };
 
 }
+
+sfl::Timestamp operator - (sfl::Timestamp const & lhs, sfl::Timestamp const & rhs);
+sfl::Timestamp operator + (sfl::Timestamp const & lhs, sfl::Timestamp const & rhs);
 
 #endif // SUNFLOWER_TIMESTAMP_HPP

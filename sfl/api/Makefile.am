@@ -12,3 +12,10 @@ include_HEADERS=    Pose.hpp Scan.hpp Multiscanner.hpp RobotModel.hpp \
                     MotionController.hpp Odometry.hpp Timestamp.hpp HAL.hpp \
                     FrameFusion.hpp
 includedir=         @includedir@/sfl/api
+
+check_PROGRAMS=          testFrameFusion
+LDADD=                   ../libsunflower.la
+testFrameFusion_SOURCES= testFrameFusion.cpp
+
+../libsunflower.la:
+	$(MAKE) -C ..

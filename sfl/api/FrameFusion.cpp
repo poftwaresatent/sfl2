@@ -64,8 +64,10 @@ namespace sfl {
 							size_t buflen_loc,
 							size_t buflen_vel_com,
 							size_t buflen_vel_act,
-							std::ostream * error_os)
+							std::ostream * error_os,
+							std::ostream * debug_os)
     : m_error_os(error_os),
+			m_debug_os(debug_os),
 			m_odom(buflen_odom),
       m_loc(buflen_loc),
       m_corr(buflen_loc),
@@ -79,6 +81,8 @@ namespace sfl {
   AddRawOdometry(Timestamp const & tstamp,
 								 Frame const & pos)
   {
+		if (m_debug_os)
+			*m_debug_os << "sfl::FrameFusion::AddRawOdometry(" << tstamp << "  " << pos << ")\n";
     m_odom.push_back(frame_t(tstamp, pos));
   }
   
@@ -87,6 +91,9 @@ namespace sfl {
   AddSpeedCommand(Timestamp const & tstamp,
 									double sd, double thetad)
   {
+		if (m_debug_os)
+			*m_debug_os << "sfl::FrameFusion::AddSpeedCommand(" << tstamp << "  "
+									<< sd << " " << thetad << ")\n";
     m_vel_com.push_back(speed_t(tstamp, global_speed_s(sd, thetad)));
   }
   
@@ -95,6 +102,9 @@ namespace sfl {
   AddSpeedActual(Timestamp const & tstamp,
 								 double sd, double thetad)
   {
+		if (m_debug_os)
+			*m_debug_os << "sfl::FrameFusion::AddSpeedActual(" << tstamp << "  "
+									<< sd << " " << thetad << ")\n";
     m_vel_act.push_back(speed_t(tstamp, global_speed_s(sd, thetad)));
   }
   
@@ -103,6 +113,10 @@ namespace sfl {
   UpdateOdomCorrection(Timestamp const & tstamp,
 											 Frame const & slampos)
   {
+		if (m_debug_os)
+			*m_debug_os << "sfl::FrameFusion::UpdateOdomCorrection(" << tstamp
+									<< "  " << slampos << ")\n";
+		
     m_loc.push_back(frame_t(tstamp, slampos));
     
     frame_t const * match(find_matching<Frame>(tstamp, m_odom));
@@ -112,6 +126,8 @@ namespace sfl {
 										<< tstamp << "\n";
 			return false;
 		}
+		if (m_debug_os)
+			*m_debug_os << "  match: " << match->tstamp << "  " << match->data << "\n";
 		
     Frame const & raw_odom(match->data);
     double const corr_th(slampos.Theta() - raw_odom.Theta());
@@ -122,6 +138,13 @@ namespace sfl {
     
     m_corr.push_back(frame_t(tstamp, Frame(corr_x, corr_y, corr_th)));
 		
+		if (m_debug_os) {
+			Frame check(match->data);
+			m_corr[0].data.To(check);
+			*m_debug_os << "  correction:  " << m_corr[0].data << "\n"
+									<< "  check match: " << check << "\n";
+		}
+		
 		return true;
   }
   
@@ -130,14 +153,30 @@ namespace sfl {
 	Extrapolate(Timestamp const & tstamp)
 	{
 		Frame ext;
+		
 		if (m_odom.empty()) {
 			if (m_error_os)
 				*m_error_os << "sfl::FrameFusion::Extrapolate(): no odometry data\n";
 			return ext;
 		}
 		
-		frame_t const & latest_odom(m_odom[m_odom.size() - 1]);
+		frame_t const & latest_odom(m_odom[0]);
 		ext.Set(latest_odom.data);
+		
+		if (m_corr.empty()) {
+			if (m_error_os)
+				*m_error_os << "sfl::FrameFusion::Extrapolate(): no correction data\n";
+			return ext;
+		}
+		
+		// apply latest odometry correction
+		m_corr[0].data.To(ext);
+		
+		if (m_debug_os)
+			*m_debug_os << "sfl::FrameFusion::Extrapolate()\n"
+									<< "  correction:      " << m_corr[0] << "\n"
+									<< "  latest raw odom: " << latest_odom << "\n"
+									<< "  corrected odom:  " << ext << "\n";
 		
 		// XXXX TO DO: extrapolate velocities
 		return ext;

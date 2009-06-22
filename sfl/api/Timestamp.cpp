@@ -142,4 +142,33 @@ namespace sfl {
     return * this;
   }
   
+  
+  Timestamp & Timestamp::
+  operator += (const Timestamp & other)
+  {
+    m_stamp.tv_sec  += other.m_stamp.tv_sec;
+    m_stamp.tv_nsec += other.m_stamp.tv_nsec;
+    if (m_stamp.tv_nsec > 1000000000) {
+      m_stamp.tv_nsec -= 1000000000;
+      ++m_stamp.tv_sec;
+    }
+    return * this;
+  }
+  
+}
+
+
+sfl::Timestamp operator - (sfl::Timestamp const & lhs, sfl::Timestamp const & rhs)
+{
+  sfl::Timestamp result(lhs);
+  result -= rhs;
+  return result;
+}
+
+
+sfl::Timestamp operator + (sfl::Timestamp const & lhs, sfl::Timestamp const & rhs)
+{
+  sfl::Timestamp result(lhs);
+  result += rhs;
+  return result;
 }

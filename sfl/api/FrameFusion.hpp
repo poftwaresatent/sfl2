@@ -24,6 +24,7 @@
 #include <sfl/api/Timestamp.hpp>
 #include <sfl/util/ringbuf.hpp>
 #include <sfl/util/Frame.hpp>
+#include <iostream>
 
 namespace sfl {
   
@@ -37,12 +38,25 @@ namespace sfl {
     
     stamped(Timestamp const & _tstamp, data_t const & _data)
       : tstamp(_tstamp), data(_data) {}
-    
+		
     Timestamp tstamp;
     data_t data;
   };
-  
-  
+
+}
+
+namespace std {
+	
+	template<typename data_type>
+	ostream & operator << (ostream & os, sfl::stamped<data_type> const & rhs) {
+		os << "[" << rhs.tstamp << " " << rhs.data << "]";
+		return os;
+	}
+
+}
+
+namespace sfl {
+	
   struct global_speed_s {
     global_speed_s(): sd(0), thetad(0) {}
     global_speed_s(double _sd, double _thetad): sd(_sd), thetad(_thetad) {}
@@ -63,7 +77,8 @@ namespace sfl {
 								size_t buflen_loc,
 								size_t buflen_vel_com,
 								size_t buflen_vel_act,
-								std::ostream * error_os);
+								std::ostream * error_os,
+								std::ostream * debug_os);
     
     void AddRawOdometry(Timestamp const & tstamp,
 												Frame const & pos);
@@ -81,6 +96,7 @@ namespace sfl {
     
   protected:
 		std::ostream * m_error_os;
+		std::ostream * m_debug_os;
 		
     framebuf_t m_odom;
     framebuf_t m_loc;
