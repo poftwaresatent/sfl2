@@ -43,6 +43,7 @@
 #include "../common/StillCamera.hpp"
 #include "../common/Manager.hpp"
 #include <sfl/expo/MotionPlanner.hpp>
+#include <sfl/bband/ReplanHandler.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
 #include <sfl/dwa/HeadingObjective.hpp>
@@ -67,18 +68,23 @@ namespace npm {
     AddDrawing(new ODrawing(name + "_dodrawing", distanceObjective, dynamicWindow));
     AddDrawing(new ODrawing(name + "_hodrawing", headingObjective, dynamicWindow));
     AddDrawing(new ODrawing(name + "_sodrawing", speedObjective, dynamicWindow));
-    AddDrawing(new RHDrawing(name + "_rhdrawing",
-			     bubbleBand->GetReplanHandler(),
-			     RHDrawing::AUTODETECT));
+    sfl::ReplanHandler const * rph(dynamic_cast<sfl::ReplanHandler const *>(bubbleBand->GetReplanHandler()));
+    if (rph) {
+      AddDrawing(new RHDrawing(name + "_rhdrawing",
+			       rph,
+			       RHDrawing::AUTODETECT));
+    }
     AddDrawing(new BBDrawing(name + "_bbdrawing",
 			     *bubbleBand,
 			     BBDrawing::AUTODETECT));
-    AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
-				    bubbleBand->GetReplanHandler()->GetNF1(),
-				    false));
-    AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
-				    bubbleBand->GetReplanHandler()->GetNF1(),
-				    true));
+    if (rph) {
+      AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
+				      rph->GetNF1(),
+				      false));
+      AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
+				      rph->GetNF1(),
+				      true));
+    }
     AddDrawing(new OdometryDrawing(name + "_odomdrawing",
 				   *odometry,
 				   robotModel->WheelBase() / 2));
@@ -95,8 +101,10 @@ namespace npm {
 			      dynamicWindow->Dimension(),
 			      Instance<UniqueManager<Camera> >()));
     AddCamera(new OCamera(name + "_ocamera", *dynamicWindow));
-    AddCamera(new GridLayerCamera(name + "_local_glcamera",
-				  bubbleBand->GetReplanHandler()->GetNF1()));
+    if (rph) {
+      AddCamera(new GridLayerCamera(name + "_local_glcamera",
+				    rph->GetNF1()));
+    }
     double a, b, c, d;
     distanceObjective->GetRange(a, b, c, d);
     AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
