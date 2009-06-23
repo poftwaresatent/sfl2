@@ -34,6 +34,7 @@
 # include <time.h>
 #endif // WIN32
 
+struct timezone;
 
 namespace sfl {
 
@@ -137,6 +138,10 @@ namespace sfl {
     
     double ToSeconds() const;
     void FromSeconds(double sec);
+    
+    /** Use gettimeofday() to set the time.
+	\note If gettimeofday() fails, the returned timestamp will be 0. */
+    static Timestamp Now(struct timezone * tz = 0);
     
   private:
     timespec_t m_stamp;

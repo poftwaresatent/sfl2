@@ -28,6 +28,8 @@
 #include <limits>
 #include <iomanip>
 #include <cmath>
+#include <sys/time.h>
+#include <time.h>
 
 
 using namespace std;
@@ -163,6 +165,19 @@ namespace sfl {
   {
     m_stamp.tv_sec = static_cast<time_t>(floor(sec));
     m_stamp.tv_nsec = static_cast<long>(floor(1.0e9 * (sec - m_stamp.tv_sec)));
+  }
+  
+  
+  Timestamp Timestamp::
+  Now(struct timezone * tz)
+  {
+    Timestamp now;
+    struct timeval tv;
+    if (0 != gettimeofday(&tv, tz))
+      return now;
+    now.m_stamp.tv_sec = tv.tv_sec;
+    now.m_stamp.tv_nsec = tv.tv_usec * 1000;
+    return now;
   }
   
 }

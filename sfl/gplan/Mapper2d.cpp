@@ -50,7 +50,6 @@ namespace local {
 		sfl::Mapper2d::index_buffer_t & freespace_buffer;
 		const sfl::TraversabilityMap & travmap;
 		
-#warning 'swipe buf should be optional, just a waste unless debugging'
 		swipe_cb(sfl::Mapper2d::index_buffer_t & _swipe_buffer,
 						 sfl::Mapper2d::index_buffer_t & _freespace_buffer,
 						 const sfl::TraversabilityMap & _travmap)
