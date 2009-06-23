@@ -251,6 +251,22 @@ namespace sfl {
 		
 		return ext;
 	}
+	
+	
+	Frame FrameFusion::
+	GetOdomCorrection() const
+	{
+		Frame corr;
+		
+		if (m_corr.empty()) {
+			if (m_error_os)
+				*m_error_os << "sfl::FrameFusion::GetOdomCorrection(): no correction data\n";
+			return corr;
+		}
+		
+		corr = m_corr[0].data;
+		return corr;
+	}
   
 }
 

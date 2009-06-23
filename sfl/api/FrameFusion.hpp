@@ -97,6 +97,8 @@ namespace sfl {
 		
 		Frame Extrapolate(Timestamp const & tstamp);
     
+		Frame GetOdomCorrection() const;
+
   protected:
 		std::ostream * m_error_os;
 		std::ostream * m_debug_os;
