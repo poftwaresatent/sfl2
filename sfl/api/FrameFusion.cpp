@@ -115,13 +115,14 @@ namespace sfl {
 		
 		if (m_odom.empty()) {
 			if (m_error_os)
-				*m_error_os << "sfl::FrameFusion::GetLastRawOdometry(): no correction data\n";
+				*m_error_os << "sfl::FrameFusion::GetLastRawOdometry(): no odometry data\n";
 			return last;
 		}
 		
 		last = m_odom[0].data;
 		return last;
 	}
+
 
 	Frame FrameFusion::
 	GetLastSlamPos()
@@ -130,7 +131,7 @@ namespace sfl {
 		
 		if (m_loc.empty()) {
 			if (m_error_os)
-				*m_error_os << "sfl::FrameFusion::GetLastRawOdometry(): no correction data\n";
+				*m_error_os << "sfl::FrameFusion::GetLastSlamPos(): no SLAM data\n";
 			return last;
 		}
 		
