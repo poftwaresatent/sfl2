@@ -83,6 +83,10 @@ namespace sfl {
 								std::ostream * error_os,
 								std::ostream * debug_os);
     
+		Frame GetLastRawOdometry();
+
+		Frame GetLastSlamPos();
+
     void AddRawOdometry(Timestamp const & tstamp,
 												Frame const & pos);
 		

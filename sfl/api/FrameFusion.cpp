@@ -108,6 +108,36 @@ namespace sfl {
   {
   }
   
+	Frame FrameFusion::
+	GetLastRawOdometry()
+	{
+		Frame last;
+		
+		if (m_odom.empty()) {
+			if (m_error_os)
+				*m_error_os << "sfl::FrameFusion::GetLastRawOdometry(): no correction data\n";
+			return last;
+		}
+		
+		last = m_odom[0].data;
+		return last;
+	}
+
+	Frame FrameFusion::
+	GetLastSlamPos()
+	{
+		Frame last;
+		
+		if (m_loc.empty()) {
+			if (m_error_os)
+				*m_error_os << "sfl::FrameFusion::GetLastRawOdometry(): no correction data\n";
+			return last;
+		}
+		
+		last = m_loc[0].data;
+		return last;
+	}
+
   
   void FrameFusion::
   AddRawOdometry(Timestamp const & tstamp,
