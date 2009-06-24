@@ -50,4 +50,9 @@ int main(int argc, char ** argv)
   if (t1 <= t0) cout << "FAILED t1 <= t0\n";
   if (t2 <= t1) cout << "FAILED t2 <= t1\n";
   if (t3 <= t2) cout << "FAILED t3 <= t2\n";
+	
+	Timestamp const tmili(Timestamp::FromMilliseconds(123456789));
+	cout << "check tmili " << tmili << "\n";
+	if (tmili.Get().tv_sec != 123456) cout << "FAILED sec == 123456\n";
+	if (tmili.Get().tv_nsec != 789000000) cout << "FAILED nsec == 789000000\n";
 }

@@ -139,6 +139,15 @@ namespace sfl {
     double ToSeconds() const;
     void FromSeconds(double sec);
     
+    /** Convert a timestamp from a single-value milliseconds
+	measure. */
+    template<typename milli_t>
+    static Timestamp FromMilliseconds(milli_t milli) {
+      long const seconds(milli / 1000);
+      long const nanoseconds((milli - 1000 * seconds) * 1000000);
+      return Timestamp(seconds, nanoseconds);
+    }
+    
     /** Use gettimeofday() to set the time.
 	\note If gettimeofday() fails, the returned timestamp will be 0. */
     static Timestamp Now(struct timezone * tz = 0);
