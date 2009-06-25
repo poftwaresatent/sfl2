@@ -363,4 +363,16 @@ namespace sfl {
     }
   }
   
+  
+  GridFrame & GridFrame::
+  operator = (GridFrame const & rhs)
+  {
+    if (&rhs != this) {
+      Frame::Set(rhs);
+      m_delta = rhs.m_delta;
+      m_delta_inv = rhs.m_delta_inv;
+    }
+    return *this;
+  }
+  
 }
