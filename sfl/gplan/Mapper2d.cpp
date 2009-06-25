@@ -581,4 +581,11 @@ namespace sfl {
 					m_travmap->SetFree(ix, iy, cb);
 	}
 	
+	
+	boost::shared_ptr<TraversabilityMap const> Mapper2d::
+	GetTravmap() const
+	{
+		return m_travmap;
+	}
+	
 }

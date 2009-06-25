@@ -281,6 +281,9 @@ namespace sfl {
 		index_buffer_t const & GetSwipeHoleBuffer() const { return m_swipe_hole_buffer; }
 		index_buffer_t const & GetSwipeRepairBuffer() const { return m_swipe_repair_buffer; }
 		
+		/** Use at your own risk: gives non-rwlock-protected access to the
+				underlying travmap. */
+		boost::shared_ptr<TraversabilityMap const> GetTravmap() const;
 		
 	protected:
     typedef std::map<index_t, int> addmask_t; // cell-to-cost map
