@@ -34,15 +34,19 @@ using namespace boost;
 using namespace std;
 
 
+static const int default_freespace(0);
+static const int default_obstacle(127);
+
+
 namespace sfl {
   
   
   TraversabilityMap::
   TraversabilityMap()
-    : gframe(0, 0, 0, 1),
-			freespace(0),
-			obstacle(127),
-			w_obstacle(128),
+    : GridRepresentation<int>(),
+			freespace(default_freespace),
+			obstacle(default_obstacle),
+			w_obstacle(default_obstacle+1),
 			name("world")
   {
   }
@@ -52,13 +56,12 @@ namespace sfl {
 	TraversabilityMap(const GridFrame & origin,
 										ssize_t xbegin, ssize_t xend,
 										ssize_t ybegin, ssize_t yend)
-		: gframe(origin),
-			freespace(0),
-			obstacle(127),
-			w_obstacle(128),
+		: GridRepresentation<int>(origin, xbegin, xend, ybegin, yend, default_freespace),
+			freespace(default_freespace),
+			obstacle(default_obstacle),
+			w_obstacle(default_obstacle+1),
 			name("world")
 	{
-		grid.resize(xbegin, xend, ybegin, yend, freespace); 
 	}
 	
 	
@@ -67,7 +70,7 @@ namespace sfl {
 										ssize_t xbegin, ssize_t xend,
 										ssize_t ybegin, ssize_t yend,
 										int _freespace, int _obstacle, const string & _name)
-		: gframe(origin),
+		: GridRepresentation<int>(origin, xbegin, xend, ybegin, yend, _freespace),
 			freespace(_freespace),
 			obstacle(_obstacle),
 			w_obstacle(_obstacle + 1),
@@ -228,21 +231,14 @@ namespace sfl {
   bool TraversabilityMap::
   GetValue(double global_x, double global_y, int & value) const
   {
-    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-    if( ! grid.valid(idx.v0, idx.v1))
-      return false;
-    value = grid.at(idx.v0, idx.v1);
-    return true;
+		return GetValueCoord(global_x, global_y, value);
   }
   
 
   bool TraversabilityMap::
   GetValue(ssize_t index_x, ssize_t index_y, int & value) const
   {
-    if( ! grid.valid(index_x, index_y))
-      return false;
-    value = grid.at(index_x, index_y);
-    return true;
+		return GetValueIdx(index_x, index_y, value);
   }
 	
 	
@@ -250,11 +246,12 @@ namespace sfl {
 	SetValue(double global_x, double global_y, int value,
 					 draw_callback * cb)
   {
-    const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-    if( ! grid.valid(idx.v0, idx.v1))
-      return false;
+		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
+		int old_value;
+		if ( ! GetValueIdx(idx.v0, idx.v1, old_value))
+			return false;
 		if(cb)
-			(*cb)(idx.v0, idx.v1, grid.at(idx.v0, idx.v1), value);
+			(*cb)(idx.v0, idx.v1, old_value, value);
     grid.at(idx.v0, idx.v1) = value;
     return true;
 	}
@@ -264,8 +261,9 @@ namespace sfl {
 	SetValue(ssize_t index_x, ssize_t index_y, int value,
 					 draw_callback * cb)
   {
-    if( ! grid.valid(index_x, index_y))
-      return false;
+		int old_value;
+		if ( ! GetValueIdx(index_x, index_y, old_value))
+			return false;
 		if(cb)
 			(*cb)(index_x, index_y, grid.at(index_x, index_y), value);
     grid.at(index_x, index_y) = value;
@@ -405,50 +403,28 @@ namespace sfl {
 	bool TraversabilityMap::
 	IsValid(ssize_t index_x, ssize_t index_y) const
 	{
-		return grid.valid(index_x, index_y);
+		return IsValidIdx(index_x, index_y);
 	}
 	
 	
 	bool TraversabilityMap::
 	IsValid(double global_x, double global_y) const
 	{
-		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-		return grid.valid(idx.v0, idx.v1);
+		return IsValidCoord(global_x, global_y);
 	}
 	
 	
 	bool TraversabilityMap::
 	Autogrow(ssize_t index_x, ssize_t index_y, int fill_value)
 	{
-		if (grid.valid(index_x, index_y))
-			return false;
-		
-		if (index_x < grid.xbegin())
-			grid.resize_xbegin(index_x, fill_value);
-		if (index_x >= grid.xend())
-			grid.resize_xend(index_x + 1, fill_value);
-		if (index_y < grid.ybegin())
-			grid.resize_ybegin(index_y, fill_value);
-		if (index_y >= grid.yend())
-			grid.resize_yend(index_y + 1, fill_value);
-		
-		return true;
+		return AutogrowIdx(index_x, index_y, fill_value);
 	}
 	
 	
 	bool TraversabilityMap::
 	Autogrow(double global_x, double global_y, int fill_value)
 	{
-		const GridFrame::index_t idx(gframe.GlobalIndex(global_x, global_y));
-		return Autogrow(idx.v0, idx.v1, fill_value);
-	}
-	
-	
-	void TraversabilityMap::
-	Reset(int value)
-	{
-		for (grid_t::iterator ii(grid.begin()); ii != grid.end(); ++ii)
-			*ii = value;
+		return AutogrowCoord(global_x, global_y, fill_value);
 	}
 	
 }
