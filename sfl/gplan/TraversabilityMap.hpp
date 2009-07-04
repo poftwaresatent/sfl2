@@ -27,7 +27,9 @@
 #define SUNFLOWER_TRAVERSABILITY_MAP_HPP
 
 
-#include <sfl/gplan/GridRepresentation.hpp>
+#include <sfl/util/flexgrid.hpp>
+#include <sfl/gplan/GridFrame.hpp>
+#include <sfl/util/Frame.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <iosfwd>
@@ -37,7 +39,6 @@ namespace sfl {
   
   
   class TraversabilityMap
-		: public GridRepresentation<int>
   {
   public:
 		/** \todo rename to change_notify or so... "draw_callback" is an
@@ -88,12 +89,9 @@ namespace sfl {
     static boost::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
     
-		// in superclass:
-		//   void Reset(int value);
-		//   ssize_t GetXBegin() const { return grid.xbegin(); }
-		//   ssize_t GetXEnd() const { return grid.xend(); }
-		//   ssize_t GetYBegin() const { return grid.ybegin(); }
-		//   ssize_t GetYEnd() const { return grid.yend(); }
+		/** Fill all cells of the traversability map with the given value
+				(e.g. zero for freespace). */
+		void Reset(int value);
 		
 		/** \return true if the given index lies within the grid. */
 		bool IsValid(ssize_t index_x, ssize_t index_y) const;
@@ -176,10 +174,21 @@ namespace sfl {
 		
 		void DumpMap(std::ostream * os) const;
 		
+		ssize_t GetXBegin() const { return grid.xbegin(); }
+		ssize_t GetXEnd() const { return grid.xend(); }
+		ssize_t GetYBegin() const { return grid.ybegin(); }
+		ssize_t GetYEnd() const { return grid.yend(); }
+		
+    GridFrame gframe;						/**< default (0, 0, 0, 1) */
     int freespace;							/**< default 0 */
     int obstacle;								/**< default 127 */
     int w_obstacle;							/**< default 128 */
     std::string name;						/**< default "world" */
+		
+		typedef flexgrid<int> grid_t;
+		typedef flexgrid<int const> const const_grid_t;
+		
+		grid_t grid;
   };
   
 }
