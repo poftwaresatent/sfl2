@@ -127,6 +127,12 @@ namespace sfl {
 		
 		bool GetValue(ssize_t index_x, ssize_t index_y, int & value) const;
 		
+		/**
+			 \note It is NOT checked whether the given value actually
+			 differs from the value currently stored in the map.
+			 
+			 \return true if the point lies within the grid.
+		*/
 		bool SetValue(double global_x, double global_y, int value,
 									draw_callback * cb);
 		
