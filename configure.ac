@@ -248,15 +248,15 @@ AC_ARG_ENABLE(ros,
   AC_HELP_STRING([--enable-ros], [enable ROS (rospack must be in PATH)]),
   [ NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS"
     for component in roscpp std_msgs; do
-      cflags=`rospack export/cpp/cflags $component`
+      cflags=`rospack export --lang=cpp --attrib=cflags $component`
       if test "x$cflags" = "x"; then
-        AC_MSG_ERROR([cannot rospack export/cpp/cflags $component])
+        AC_MSG_ERROR([cannot rospack export --lang=cpp --attrib=cflags $component])
       fi
       NPM_ROS_CPPFLAGS="$NPM_ROS_CPPFLAGS $cflags"
       AC_MSG_NOTICE([$component: cflags are $cflags])
-      lflags=`rospack export/cpp/lflags $component`
+      lflags=`rospack export --lang=cpp --attrib=lflags $component`
       if test "x$lflags" = "x"; then
-        AC_MSG_ERROR([cannot rospack export/cpp/lflags $component])
+        AC_MSG_ERROR([cannot rospack export --lang=cpp --attrib=lflags $component])
       fi
       NPM_ROS_LDFLAGS="$lflags $NPM_ROS_LDFLAGS"
       AC_MSG_NOTICE([$component: lflags are $lflags])
@@ -268,8 +268,6 @@ AC_ARG_ENABLE(ros,
     else
       CPPFLAGS="$NPM_CPPFLAGS $NPM_ROS_CPPFLAGS -I$prefix/include"
     fi
-    AC_CHECK_HEADER([rosthread/mutex.h], [], [
-      AC_MSG_ERROR([cannot compile rosthread/mutex.h (CPPFLAGS=$CPPFLAGS)])], [])
     AC_CHECK_HEADER([XmlRpc.h], [], [
       AC_MSG_ERROR([cannot compile XmlRpc.h (CPPFLAGS=$CPPFLAGS)])], [])
     AC_CHECK_HEADER([ros/node.h], [], [

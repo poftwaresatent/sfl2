@@ -32,6 +32,7 @@
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <cmath>
 
+#include <stdio.h>
 
 using namespace sfl;
 using namespace npm;
