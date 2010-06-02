@@ -216,68 +216,6 @@ if test -z "$NPM_HAVE_ESTAR_TRUE"; then
   CPPFLAGS="$oldCPPFLAGS"
 fi
 
-AC_ARG_WITH(genom,
-  AC_HELP_STRING([--with-genom=PATH], [specify openrobots install dir]),
-  [ if test "x$withval" != "x" ; then
-      NPM_CPPFLAGS="$NPM_CPPFLAGS -DNPM_HAVE_GENOM -I${withval}/include -I${withval}"
-      NPM_LDFLAGS="-L${withval}/lib -L${withval} -lposterLib $NPM_LDFLAGS"
-    else
-      NPM_LDFLAGS="-lposterLib $NPM_LDFLAGS"
-    fi
-    AM_CONDITIONAL([NPM_HAVE_GENOM], [true])
-    oldCPPFLAGS="$CPPFLAGS"
-    if test "$prefix" = "NONE"; then
-      CPPFLAGS="$NPM_CPPFLAGS"
-    else
-      CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
-    fi
-    AC_CHECK_HEADER([posterLib.h], [], [
-      AC_MSG_ERROR([cannot compile posterLib.h (CPPFLAGS=$CPPFLAGS)])], [])
-    CPPFLAGS="$oldCPPFLAGS"
-  ],[
-    AM_CONDITIONAL([NPM_HAVE_GENOM], [false])])
-
-NPM_ROS_CPPFLAGS=""
-NPM_ROS_LDFLAGS=""
-AC_ARG_ENABLE(ros,
-  AC_HELP_STRING([--enable-ros], [enable ROS (rospack must be in PATH)]),
-  [ NPM_ROS_CPPFLAGS="-DNPM_HAVE_ROS"
-    for component in roscpp std_msgs; do
-      cflags=`rospack export --lang=cpp --attrib=cflags $component`
-      if test "x$cflags" = "x"; then
-        AC_MSG_ERROR([cannot rospack export --lang=cpp --attrib=cflags $component])
-      fi
-      NPM_ROS_CPPFLAGS="$NPM_ROS_CPPFLAGS $cflags"
-      AC_MSG_NOTICE([$component: cflags are $cflags])
-      lflags=`rospack export --lang=cpp --attrib=lflags $component`
-      if test "x$lflags" = "x"; then
-        AC_MSG_ERROR([cannot rospack export --lang=cpp --attrib=lflags $component])
-      fi
-      NPM_ROS_LDFLAGS="$lflags $NPM_ROS_LDFLAGS"
-      AC_MSG_NOTICE([$component: lflags are $lflags])
-    done
-    AM_CONDITIONAL([NPM_HAVE_ROS], [true])
-    oldCPPFLAGS="$CPPFLAGS"
-    if test "$prefix" = "NONE"; then
-      CPPFLAGS="$NPM_CPPFLAGS $NPM_ROS_CPPFLAGS"
-    else
-      CPPFLAGS="$NPM_CPPFLAGS $NPM_ROS_CPPFLAGS -I$prefix/include"
-    fi
-    AC_CHECK_HEADER([XmlRpc.h], [], [
-      AC_MSG_ERROR([cannot compile XmlRpc.h (CPPFLAGS=$CPPFLAGS)])], [])
-    AC_CHECK_HEADER([ros/node.h], [], [
-      AC_MSG_ERROR([cannot compile ros/node.h (CPPFLAGS=$CPPFLAGS)])], [])
-    AC_CHECK_HEADER([rostools/Header.h], [], [
-      AC_MSG_ERROR([cannot compile rostools/Header.h (CPPFLAGS=$CPPFLAGS)])], [])
-    AC_CHECK_HEADER([std_msgs/BaseVel.h], [], [
-      AC_MSG_ERROR([cannot compile std_msgs/BaseVel.h (CPPFLAGS=$CPPFLAGS)])], [])
-    AC_CHECK_HEADER([std_msgs/LaserScan.h], [], [
-      AC_MSG_ERROR([cannot compile std_msgs/LaserScan.h (CPPFLAGS=$CPPFLAGS)])], [])
-    AC_CHECK_HEADER([std_msgs/RobotBase2DOdom.h], [], [
-      AC_MSG_ERROR([cannot compile std_msgs/RobotBase2DOdom.h (CPPFLAGS=$CPPFLAGS)])], [])
-    CPPFLAGS="$oldCPPFLAGS"
-  ],[
-    AM_CONDITIONAL([NPM_HAVE_ROS], [false])])
 
 AC_ARG_WITH(png,
   AC_HELP_STRING([--with-png=PATH], [specify libpng install dir]),
@@ -318,12 +256,10 @@ AC_SUBST(NPM_LDFLAGS)
 AC_SUBST(NPM_GLUTLIBS)
 AC_SUBST(NPM_XCF_CPPFLAGS)
 AC_SUBST(NPM_XCF_LDFLAGS)
-AC_SUBST(NPM_ROS_CPPFLAGS)
-AC_SUBST(NPM_ROS_LDFLAGS)
 AC_SUBST(NPM_ESTAR_CPPFLAGS)
 AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                ros/Makefile laas/Makefile biron/Makefile estar/Makefile asl/Makefile
+                biron/Makefile estar/Makefile asl/Makefile
                 simul/Makefile])
 AC_OUTPUT

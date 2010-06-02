@@ -8,11 +8,6 @@ if NPM_HAVE_XCF
   BIRON_LIBADD= biron/libbiron.la
 endif
 
-if NPM_HAVE_ROS
-  ROS_DIR=    ros
-  ROS_LIBADD= ros/libnpmros.la
-endif
-
 if NPM_HAVE_ESTAR
   ESTAR_DIR=    estar
   ESTAR_LIBADD= estar/libestar.la
@@ -23,13 +18,8 @@ if NPM_HAVE_ASL
   ASL_LIBADD= asl/libasl.la
 endif 
 
-if NPM_HAVE_GENOM
-  LAAS_DIR=    laas
-  LAAS_LIBADD= laas/liblaas.la
-endif
-
 SUBDIRS= common robox visitor \
-         $(ROS_DIR) $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
+         $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
          . simul
 
 lib_LTLIBRARIES=       libnepumuk.la
@@ -37,8 +27,6 @@ libnepumuk_la_SOURCES=
 libnepumuk_la_LIBADD=  common/libcommon.la \
                        robox/librobox.la \
                        visitor/libvisitor.la \
-                       $(ROS_LIBADD) \
-                       $(LAAS_LIBADD) \
                        $(BIRON_LIBADD) \
                        $(ESTAR_LIBADD) \
                        $(ASL_LIBADD)
