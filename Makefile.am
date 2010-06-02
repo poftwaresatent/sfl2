@@ -28,16 +28,9 @@ if NPM_HAVE_GENOM
   LAAS_LIBADD= laas/liblaas.la
 endif
 
-if NPM_ENABLE_QT
-  QT_DIR= qt
-else
-  QT_DIR=
-endif
-
 SUBDIRS= common robox visitor \
          $(ROS_DIR) $(LAAS_DIR) $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
-         . simul \
-         $(QT_DIR)
+         . simul
 
 lib_LTLIBRARIES=       libnepumuk.la
 libnepumuk_la_SOURCES= 

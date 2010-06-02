@@ -30,7 +30,6 @@ echo "  [-m|--make]    <PATH>       GNU Make executable (name or path)"
 echo "  [-j|--jobs]    <NUM>        number of parallel make jobs"
 echo "  [-d|--debug]                enable debug messages and symbols"
 echo "  [-s|--skipbs]               do not bootstrap build system"
-echo "  [-q|--qt]                   enable Qt support (experimental)"
 echo "  [-r|--ros]                  enable ROS support (experimental)"
         exit 0;;
 	-p|--prefix)
@@ -72,9 +71,6 @@ echo "  [-r|--ros]                  enable ROS support (experimental)"
 	    shift; shift; continue;;
 	-s|--skipbs)
 	    RUN_BOOTSTRAP="no"
-	    shift; continue;;
-	-q|--qt)
-	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-qt"
 	    shift; continue;;
 	-r|--ros)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-ros"

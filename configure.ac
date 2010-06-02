@@ -86,11 +86,6 @@ AC_ARG_ENABLE(pedantic,
   [ NPM_CFLAGS="$NPM_CFLAGS -pedantic" ],
   [ NPM_CFLAGS="$NPM_CFLAGS -Wall" ])
 
-AC_ARG_ENABLE(qt,
-  AC_HELP_STRING([--enable-qt], [enable QtNepumuk (experimental)]),
-  [ AM_CONDITIONAL([NPM_ENABLE_QT], [true]) ],
-  [ AM_CONDITIONAL([NPM_ENABLE_QT], [false]) ])
-
 AC_ARG_WITH(boost,
   AS_HELP_STRING([--with-boost=PATH], [specify boost install dir]),
   [ if test "x$withval" != "x" ; then
@@ -330,5 +325,5 @@ AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
                 ros/Makefile laas/Makefile biron/Makefile estar/Makefile asl/Makefile
-                simul/Makefile qt/Makefile qt/QtNepumuk.pro])
+                simul/Makefile])
 AC_OUTPUT
