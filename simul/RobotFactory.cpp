@@ -27,10 +27,6 @@
 #include "../visitor/Visitor.hpp"
 #include "../robox/Robox.hpp"
 
-#ifdef NPM_HAVE_XCF
-# include "../biron/Biron.hpp"
-#endif // NPM_HAVE_XCF
-
 #ifdef NPM_HAVE_ESTAR
 # include "../estar/Esbot.hpp"
 #endif // NPM_HAVE_ESTAR
@@ -63,11 +59,6 @@ namespace npm {
 
     else if(descriptor->model == "visitor")
       rob = new Visitor(descriptor, world);
-
-#ifdef NPM_HAVE_XCF
-    else if(descriptor->model == "biron")
-      rob = new Biron(descriptor, world);
-#endif // NPM_HAVE_XCF
 
 #ifdef NPM_HAVE_ESTAR
     else if(descriptor->model == "esbot")

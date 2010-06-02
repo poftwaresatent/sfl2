@@ -131,54 +131,6 @@ AC_CHECK_HEADER([sfl/util/numeric.hpp], [], [
   AC_MSG_ERROR([cannot compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])])
 CPPFLAGS="$oldCPPFLAGS"
 
-NPM_XCF_CPPFLAGS=""
-NPM_XCF_LDFLAGS=""
-AC_ARG_WITH(xcf,
-  AC_HELP_STRING([--with-xcf=PATH], [enable XCF (installed in PATH)]),
-  [ if test "x$withval" = "x" ; then
-      if test "$prefix" != "NONE"; then
-        NPM_XCF_CPPFLAGS="-I$prefix/include/sigc++-1.2 -I$prefix/lib/sigc++-1.2/include"
-      fi
-      NPM_XCF_LDFLAGS="-lsigc-1.2 -lxcf -lxmltio"
-    else
-      NPM_XCF_CPPFLAGS="-I${withval}/include/sigc++-1.2 -I${withval}/lib/sigc++-1.2/include -I${withval}/include -I${withval}"
-      NPM_XCF_LDFLAGS="-lsigc-1.2 -lxcf -lxmltio -L${withval}/lib -L${withval}"
-    fi
-    NPM_CPPFLAGS="$NPM_CPPFLAGS -DNPM_HAVE_XCF"
-    oldCPPFLAGS="$CPPFLAGS"
-    if test "$prefix" = "NONE"; then
-      CPPFLAGS="$NPM_CPPFLAGS $XCF_CPPFLAGS"
-    else
-      CPPFLAGS="$NPM_CPPFLAGS $XCF_CPPFLAGS -I$prefix/include"
-    fi
-    AC_CHECK_HEADER([xcf/Subscriber.hpp], [], [
-      AC_MSG_ERROR([cannot compile xcf/Subscriber.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-    CPPFLAGS="$oldCPPFLAGS"
-    AM_CONDITIONAL([NPM_HAVE_XCF], [true]) ],
-  [ AM_CONDITIONAL([NPM_HAVE_XCF], [false]) ])
-
-AC_ARG_WITH(xcfglue,
-  AC_HELP_STRING([--with-xcfglue=PATH], [special XCFGLUE install PATH]),
-  [ if test ! -z "$NPM_HAVE_XCF_TRUE"; then
-      AC_MSG_ERROR([--with-xcfglue requires --with-xcf])
-    fi
-    if test "x$withval" != "x" ; then
-      NPM_XCF_CPPFLAGS="$NPM_XCF_CPPFLAGS -I${withval}/include -I${withval}"
-      NPM_XCF_LDFLAGS="-lxcfglue -L${withval}/lib -L${withval} $NPM_XCF_LDFLAGS"
-    fi ], [])
-
-if test -z "$NPM_HAVE_XCF_TRUE"; then
-  oldCPPFLAGS="$CPPFLAGS"
-  if test "$prefix" = "NONE"; then
-    CPPFLAGS="$NPM_CPPFLAGS $NPM_XCF_CPPFLAGS"
-  else
-    CPPFLAGS="$NPM_CPPFLAGS $NPM_XCF_CPPFLAGS -I$prefix/include"
-  fi
-  AC_CHECK_HEADER([xcfwrap/xcfglue.h], [], [
-    AC_MSG_ERROR([cannot compile xcfwrap/xcfglue.h (CPPFLAGS=$CPPFLAGS)])], [])
-  CPPFLAGS="$oldCPPFLAGS"
-fi
-
 NPM_ESTAR_CPPFLAGS=""
 NPM_ESTAR_LDFLAGS=""
 AC_ARG_WITH(estar,
@@ -267,8 +219,6 @@ AC_SUBST(NPM_CFLAGS)
 AC_SUBST(NPM_CXXFLAGS)
 AC_SUBST(NPM_LDFLAGS)
 AC_SUBST(NPM_GLUTLIBS)
-AC_SUBST(NPM_XCF_CPPFLAGS)
-AC_SUBST(NPM_XCF_LDFLAGS)
 AC_SUBST(NPM_ESTAR_CPPFLAGS)
 AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)

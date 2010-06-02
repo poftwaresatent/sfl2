@@ -3,11 +3,6 @@ CFLAGS=   @NPM_CFLAGS@
 CXXFLAGS= @NPM_CXXFLAGS@
 LDFLAGS=  @NPM_LDFLAGS@
 
-if NPM_HAVE_XCF
-  BIRON_DIR=    biron
-  BIRON_LIBADD= biron/libbiron.la
-endif
-
 if NPM_HAVE_ESTAR
   ESTAR_DIR=    estar
   ESTAR_LIBADD= estar/libestar.la
@@ -19,7 +14,7 @@ if NPM_HAVE_ASL
 endif 
 
 SUBDIRS= common robox visitor \
-         $(BIRON_DIR) $(ESTAR_DIR) $(ASL_DIR) \
+         $(ESTAR_DIR) $(ASL_DIR) \
          . simul
 
 lib_LTLIBRARIES=       libnepumuk.la
@@ -27,7 +22,6 @@ libnepumuk_la_SOURCES=
 libnepumuk_la_LIBADD=  common/libcommon.la \
                        robox/librobox.la \
                        visitor/libvisitor.la \
-                       $(BIRON_LIBADD) \
                        $(ESTAR_LIBADD) \
                        $(ASL_LIBADD)
 
