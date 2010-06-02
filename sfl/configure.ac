@@ -29,7 +29,10 @@ case $host_os in
   linux*)  AC_MSG_NOTICE([detected Linux])
 	   SFL_LDFLAGS="-lpthread $SFL_LDFLAGS"
            AC_DISABLE_STATIC;;
-  darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
+  darwin10*)  AC_MSG_NOTICE([detected NEW Darwin (around OS X 10.6 or so?)])
+           SFL_CPPFLAGS="$SFL_CPPFLAGS -DOSX"
+           AC_DISABLE_STATIC;;
+  darwin*) AC_MSG_NOTICE([detected OLD Darwin (OS X)])
            SFL_CPPFLAGS="$SFL_CPPFLAGS -Wno-long-double"
            AC_DISABLE_SHARED;;
   *openbsd*) AC_MSG_NOTICE([detected OpenBSD])
