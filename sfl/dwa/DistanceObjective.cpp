@@ -29,7 +29,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
-
+#include <stdio.h>
 
 #ifdef SFL_DEBUG
 # define PDEBUG PDEBUG_ERR

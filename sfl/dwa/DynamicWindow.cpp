@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <limits>
+#include <stdio.h>
 
 
 using namespace boost;

@@ -46,6 +46,7 @@ inline void PDEBUG_OFF(char const * fmt, ...) {}
 #endif // SFL_VERBOSE_DEBUG
 
 #ifdef SFL_DEBUG
+# include <stdio.h>
 # define PDEBUG PDEBUG_OUT
 #else // ! SFL_DEBUG
 # define PDEBUG PDEBUG_OFF
