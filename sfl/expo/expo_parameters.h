@@ -25,32 +25,16 @@
 #ifndef EXPO_PARAMETERS_H
 #define EXPO_PARAMETERS_H
 
-#ifdef __cplusplus
-
-# include <boost/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace sfl {
   class OptionDictionary;
 }
 
-extern "C" {
-
-#endif // __cplusplus  
-  
   struct expo_parameters
   {
-#ifdef __cplusplus
     explicit expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
-#endif // __cplusplus
       
-    int front_channel, front_nscans;
-    double front_mount_x, front_mount_y, front_mount_theta;
-    double front_rhomax, front_phi0, front_phirange;
-    
-    int rear_channel, rear_nscans;
-    double rear_mount_x, rear_mount_y, rear_mount_theta;
-    double rear_rhomax, rear_phi0, rear_phirange;
-    
     double model_security_distance, model_wheelbase, model_wheelradius;
     double model_qd_max, model_qdd_max, model_sd_max, model_thetad_max;
     double model_sdd_max, model_thetadd_max;  
@@ -67,12 +51,8 @@ extern "C" {
   
   void expo_default_parameters(struct expo_parameters * params);
   
-#ifdef __cplusplus
-  
   void expo_parameters_load(expo_parameters & params,
 			    boost::shared_ptr<sfl::OptionDictionary> opt);
 
-}
-#endif // __cplusplus  
 
 #endif // EXPO_PARAMETERS_H

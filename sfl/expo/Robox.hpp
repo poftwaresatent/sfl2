@@ -55,6 +55,9 @@ namespace expo {
   {
   public:
     Robox(expo_parameters const & params,
+	  /** If you do not have a special hull, then simply use
+	      expo::Robox::CreateDefaultHull() here. */
+	  boost::shared_ptr<sfl::Hull> hull,
 	  boost::shared_ptr<sfl::HAL> hal,
 	  boost::shared_ptr<sfl::Multiscanner> mscan,
 	  bool use_tobi_distobj);
@@ -85,7 +88,7 @@ namespace expo {
     
     int UpdateMotionController(double timestep, std::ostream * err_os);
     
-    static boost::shared_ptr<sfl::Hull> CreateHull();    
+    static boost::shared_ptr<sfl::Hull> CreateDefaultHull();
     
     
     boost::shared_ptr<sfl::Hull> hull;

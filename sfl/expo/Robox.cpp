@@ -49,10 +49,11 @@ namespace expo {
   
   Robox::
   Robox(expo_parameters const & params,
+	boost::shared_ptr<sfl::Hull> _hull,
 	shared_ptr<sfl::HAL> hal,
 	shared_ptr<sfl::Multiscanner> _mscan,
 	bool use_tobi_distobj)
-    : hull(CreateHull()),
+    : hull(_hull),
       mscan(_mscan)
   {
     sfl::RobotModel::Parameters const
@@ -130,7 +131,7 @@ namespace expo {
   
   
   shared_ptr<sfl::Hull> Robox::
-  CreateHull()
+  CreateDefaultHull()
   {
     shared_ptr<sfl::Hull> hull(new sfl::Hull());
     static const double octoSmall = 0.178;
