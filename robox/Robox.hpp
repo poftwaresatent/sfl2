@@ -26,6 +26,11 @@
 #define ROBOX_HPP
 
 #include <npm/common/RobotClient.hpp>
+#include <map>
+
+namespace sfl {
+  class Hull;
+}
 
 namespace npm {
   class VisualRobox;
@@ -34,6 +39,14 @@ namespace npm {
 namespace local {
   class NGKeyListener;
 }
+
+struct scanner_desc_s {
+  /** Defaults like the front scanner of Robox. */
+  scanner_desc_s();
+  int nscans;
+  double mount_x, mount_y, mount_theta;
+  double rhomax, phi0, phirange;
+};
 
 
 class Robox
@@ -44,12 +57,22 @@ private:
   
 protected:
   Robox(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	const npm::World & world);
+	const npm::World & world,
+	boost::shared_ptr<sfl::Hull> hull,
+	std::map<int, scanner_desc_s> const & scanners);
+  
+  Robox(boost::shared_ptr<npm::RobotDescriptor> descriptor,
+	const npm::World & world,
+	boost::shared_ptr<sfl::Hull> hull);
   
 public:
   static Robox *
   Create(boost::shared_ptr<npm::RobotDescriptor> descriptor,
 	 const npm::World & world);
+  
+  static Robox *
+  CreateCustom(boost::shared_ptr<npm::RobotDescriptor> descriptor,
+	       const npm::World & world);
   
   virtual bool PrepareAction(double timestep);
   virtual void SetGoal(double timestep, const sfl::Goal & goal);

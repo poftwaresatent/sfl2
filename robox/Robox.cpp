@@ -23,6 +23,7 @@
 
 
 #include "Robox.hpp"
+#include "robox_parameters.hpp"
 #include "VisualRobox.hpp"
 #include "../common/World.hpp"
 #include "../common/HAL.hpp"
@@ -90,12 +91,68 @@ namespace local {
 }
 
 
+scanner_desc_s::
+scanner_desc_s()
+  : nscans(181),
+    mount_x(0.15),
+    mount_y(0),
+    mount_theta(0),
+    rhomax(8),
+    phi0(-M_PI/2),
+    phirange(M_PI)
+{
+}
+
+
 Robox::
-Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
+Robox(boost::shared_ptr<npm::RobotDescriptor> descriptor,
+      const npm::World & world,
+      boost::shared_ptr<sfl::Hull> hull,
+      std::map<int, scanner_desc_s> const & scanners)
   : RobotClient(descriptor, world, 2, true),
     m_ngkl(new local::NGKeyListener())
 {
+  boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(GetHAL()));
+  for (std::map<int, scanner_desc_s>::const_iterator iscan(scanners.begin());
+       iscan != scanners.end(); ++iscan) {
+    mscan->Add(DefineLidar(Frame(iscan->second.mount_x,
+				 iscan->second.mount_y,
+				 iscan->second.mount_theta),
+			   iscan->second.nscans,
+			   iscan->second.rhomax,
+			   iscan->second.phi0,
+			   iscan->second.phirange,
+			   iscan->first)->GetScanner());
+  }
+  
   expo_parameters params(descriptor);
+  m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
+  
+  bool use_tobi_distobj(false);
+  string_to(descriptor->GetOption("use_tobi_distobj"), use_tobi_distobj);
+  m_imp.reset(new npm::VisualRobox(descriptor->name, params, hull,
+				   GetHAL(), mscan, use_tobi_distobj));
+  
+  for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
+    AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
+    PDEBUG("line %05.2f %05.2f %05.2f %05.2f\n",
+	   ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1());
+  }
+  
+  world.AddKeyListener(m_ngkl);
+  shared_ptr<KeyListener> listener(new local::MPKeyListener(m_imp->motionPlanner));
+  world.AddKeyListener(listener);
+}
+
+
+Robox::
+Robox(shared_ptr<RobotDescriptor> descriptor,
+      const World & world,
+      boost::shared_ptr<sfl::Hull> hull)
+  : RobotClient(descriptor, world, 2, true),
+    m_ngkl(new local::NGKeyListener())
+{
+  robox_parameters params(descriptor);
   
   boost::shared_ptr<sfl::Scanner>
     front = DefineLidar(Frame(params.front_mount_x,
@@ -123,7 +180,8 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
   
   bool use_tobi_distobj(false);
   string_to(descriptor->GetOption("use_tobi_distobj"), use_tobi_distobj);
-  m_imp.reset(new npm::VisualRobox(descriptor->name, params, GetHAL(), mscan, use_tobi_distobj));
+  m_imp.reset(new npm::VisualRobox(descriptor->name, params, hull,
+				   GetHAL(), mscan, use_tobi_distobj));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
@@ -140,7 +198,39 @@ Robox(shared_ptr<RobotDescriptor> descriptor, const World & world)
 Robox * Robox::
 Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
 {
-  Robox * robox(new Robox(descriptor, world));
+  Robox * robox(new Robox(descriptor, world, expo::Robox::CreateDefaultHull()));
+  if( ! robox->StartThreads()){
+    delete robox;
+    return 0;
+  }
+  return robox;
+}
+
+
+Robox * Robox::
+CreateCustom(shared_ptr<RobotDescriptor> descriptor, const World & world)
+{
+  std::map<int, scanner_desc_s> scanners;
+  scanners[0] = scanner_desc_s();
+  scanners[1] = scanners[0];
+  scanners[1].mount_x = -0.15;
+  scanners[1].mount_theta = M_PI;
+  
+  boost::scoped_ptr<sfl::Polygon> polygon;
+  polygon.reset(new sfl::Polygon());
+  polygon->AddPoint( 0.430,  0.178);
+  polygon->AddPoint( 0.178,  0.430);
+  polygon->AddPoint(-0.178,  0.430);
+  polygon->AddPoint(-0.430,  0.178);
+  polygon->AddPoint(-0.430, -0.178);
+  polygon->AddPoint(-0.178, -0.430);
+  polygon->AddPoint( 0.178, -0.430);
+  polygon->AddPoint( 0.430, -0.178);
+  
+  boost::shared_ptr<sfl::Hull> hull(new sfl::Hull());
+  hull->AddPolygon(*polygon);
+  
+  Robox * robox(new Robox(descriptor, world, hull, scanners));
   if( ! robox->StartThreads()){
     delete robox;
     return 0;
