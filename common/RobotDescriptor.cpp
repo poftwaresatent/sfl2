@@ -95,5 +95,19 @@ namespace npm {
     if(m_goal.size() <= static_cast<size_t>(m_current_goal))
       m_current_goal = 0;
   }
-
+  
+  
+  void RobotDescriptor::
+  AddCustomLine(std::string const & line)
+  {
+    m_custom_lines.push_back(line);
+  }
+  
+  
+  std::vector<std::string> const & RobotDescriptor::
+  GetCustomLines() const
+  {
+    return m_custom_lines;
+  }
+  
 }

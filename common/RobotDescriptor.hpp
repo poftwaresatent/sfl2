@@ -75,6 +75,14 @@ namespace npm {
     /** Used to cycle through the goals registered with AddGoal(). */
     void NextGoal();
     
+    /** Stash a line of text into a buffer. You can get at it later
+	using GetCustomLines(). */
+    void AddCustomLine(std::string const & line);
+    
+    /** Get the list of all lines stashed away using
+	AddCustomLine(). It's simply a FIFO. */
+    std::vector<std::string> const & GetCustomLines() const;
+    
     const std::string model;
     const std::string name;
     
@@ -85,6 +93,7 @@ namespace npm {
     goal_t m_goal;
     ssize_t m_current_goal;
     ssize_t m_stop_loop_idx;
+    std::vector<std::string> m_custom_lines;
   };
 
 }
