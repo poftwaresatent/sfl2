@@ -55,7 +55,20 @@ case $host_os in
                [ AC_MSG_ERROR([Nepumuk requires GLUT development packages (which in turn requires GL and GLU)])])
              CPPFLAGS="$oldCPPFLAGS"
              AC_DISABLE_STATIC;;
-  darwin*) AC_MSG_NOTICE([detected Darwin (OS X)])
+  darwin10*)  AC_MSG_NOTICE([detected NEW Darwin (around OS X 10.6 or so?)])
+           NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -I/usr/X11/include"
+	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
+           NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
+	   oldCPPFLAGS="$CPPFLAGS"
+	   if test "$prefix" = "NONE"; then
+	     CPPFLAGS="$NPM_CPPFLAGS"
+	   else
+	     CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+	   fi
+	   AC_CHECK_HEADER([GL/glut.h], [],
+	     [ AC_MSG_ERROR([cannot find GL/glut.h]) ])
+           AC_DISABLE_STATIC;;
+  darwin*) AC_MSG_NOTICE([detected OLD Darwin (around OS X 10.3 or 10.4 or so?)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -Wno-long-double"
            NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
 	   oldCPPFLAGS="$CPPFLAGS"
@@ -260,6 +273,6 @@ AC_SUBST(NPM_ESTAR_CPPFLAGS)
 AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                biron/Makefile estar/Makefile asl/Makefile
+                estar/Makefile asl/Makefile
                 simul/Makefile])
 AC_OUTPUT
