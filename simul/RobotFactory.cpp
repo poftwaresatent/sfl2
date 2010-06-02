@@ -27,10 +27,6 @@
 #include "../visitor/Visitor.hpp"
 #include "../robox/Robox.hpp"
 
-#ifdef NPM_HAVE_GENOM
-# include "../laas/LAAS.hpp"
-#endif // NPM_HAVE_GENOM
-
 #ifdef NPM_HAVE_XCF
 # include "../biron/Biron.hpp"
 #endif // NPM_HAVE_XCF
@@ -43,10 +39,6 @@
 # include "../asl/Smart.hpp"
 # include "../asl/Borox.hpp"
 #endif // NPM_HAVE_ASL
-
-#ifdef NPM_HAVE_ROS
-# include "../ros/ROSbot.hpp"
-#endif // NPM_HAVE_ROS
 
 //#include "../theater/TheaterRobot.hpp"
 ////#include "../braitenberg/Braitenberg.hpp"
@@ -65,6 +57,9 @@ namespace npm {
 
     if(descriptor->model == "robox")
       rob = Robox::Create(descriptor, world);
+
+    else if(descriptor->model == "custom")
+      rob = Robox::CreateCustom(descriptor, world);
 
     else if(descriptor->model == "visitor")
       rob = new Visitor(descriptor, world);
@@ -85,20 +80,6 @@ namespace npm {
     else if (descriptor->model == "borox")
       rob = new Borox(descriptor, world);
 #endif // NPM_HAVE_ASL
-
-#ifdef NPM_HAVE_GENOM
-    else if(descriptor->model == "jido")
-      rob = new Jido(descriptor, world);
-    else if(descriptor->model == "rackham")
-      rob = new Rackham(descriptor, world);
-#endif // NPM_HAVE_GENOM
-
-#ifdef NPM_HAVE_ROS
-    else if ((descriptor->model == "ros")
-	     || (descriptor->model == "ROS")
-	     || (descriptor->model == "ROSbot"))
-      rob = new ROSbot(descriptor, world);
-#endif // NPM_HAVE_ROS
 
     return shared_ptr<RobotClient>(rob);
   }

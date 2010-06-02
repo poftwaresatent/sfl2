@@ -1,7 +1,7 @@
-CPPFLAGS= @NPM_CPPFLAGS@ @NPM_XCF_CPPFLAGS@ @NPM_ESTAR_CPPFLAGS@ @NPM_ROS_CPPFLAGS@
+CPPFLAGS= @NPM_CPPFLAGS@ @NPM_XCF_CPPFLAGS@ @NPM_ESTAR_CPPFLAGS@
 CFLAGS=   @NPM_CFLAGS@
 CXXFLAGS= @NPM_CXXFLAGS@
-LDFLAGS=  @NPM_LDFLAGS@ @NPM_GLUTLIBS@ @NPM_ROS_LDFLAGS@
+LDFLAGS=  @NPM_LDFLAGS@ @NPM_GLUTLIBS@
 
 noinst_LTLIBRARIES=  libsimul.la
 libsimul_la_SOURCES= RobotFactory.cpp Simulator.cpp
@@ -82,8 +82,7 @@ endif
 
 # ===> scripts and config files
 
-dist_bin_SCRIPTS= birondemo.sh \
-                  estardemo.sh \
+dist_bin_SCRIPTS= estardemo.sh \
                   expodemo.sh \
                   tobi_distobj.sh \
                   layout.expo \
@@ -95,11 +94,7 @@ dist_bin_SCRIPTS= birondemo.sh \
                   layout.expo2.robox \
                   robots.expo2 \
                   testestar.sh \
-                  layout.biron \
-                  layout.laas \
                   layout.estar \
-                  robots.biron \
-                  robots.laas \
                   robots.estar \
                   smart0.sh \
                     layout.smart0 \
@@ -156,7 +151,4 @@ dist_bin_SCRIPTS= birondemo.sh \
                   borox1.sh \
                     layout.borox1 \
                     robots.borox1 \
-                    travmap.borox1 \
-                  ros0.sh \
-                    layout.ros0 \
-                    robots.ros0
+                    travmap.borox1
