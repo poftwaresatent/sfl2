@@ -21,8 +21,6 @@
  * USA
  */
 
-#define NPM_DEBUG
-
 #include "Simulator.hpp"
 #include "RobotFactory.hpp"
 #include "../common/World.hpp"

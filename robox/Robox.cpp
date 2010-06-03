@@ -21,8 +21,6 @@
  * USA
  */
 
-#define NPM_DEBUG
-
 #include "Robox.hpp"
 #include "robox_parameters.hpp"
 #include "VisualRobox.hpp"
