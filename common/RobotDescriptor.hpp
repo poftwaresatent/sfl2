@@ -77,11 +77,13 @@ namespace npm {
     
     /** Stash a line of text into a buffer. You can get at it later
 	using GetCustomLines(). */
-    void AddCustomLine(std::string const & line);
+    void AddCustomLine(int linenumber, std::string const & line);
+    
+    typedef std::map<int, std::string> custom_line_t;
     
     /** Get the list of all lines stashed away using
 	AddCustomLine(). It's simply a FIFO. */
-    std::vector<std::string> const & GetCustomLines() const;
+    custom_line_t const & GetCustomLines() const;
     
     const std::string model;
     const std::string name;
@@ -93,7 +95,7 @@ namespace npm {
     goal_t m_goal;
     ssize_t m_current_goal;
     ssize_t m_stop_loop_idx;
-    std::vector<std::string> m_custom_lines;
+    custom_line_t m_custom_lines;
   };
 
 }

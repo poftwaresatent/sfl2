@@ -21,6 +21,7 @@
  * USA
  */
 
+#define NPM_DEBUG
 
 #include "Robox.hpp"
 #include "robox_parameters.hpp"
@@ -210,32 +211,149 @@ Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
 Robox * Robox::
 CreateCustom(shared_ptr<RobotDescriptor> descriptor, const World & world)
 {
-  std::map<int, scanner_desc_s> scanners;
-  scanners[0] = scanner_desc_s();
-  scanners[1] = scanners[0];
-  scanners[1].mount_x = -0.15;
-  scanners[1].mount_theta = M_PI;
-  
-  boost::scoped_ptr<sfl::Polygon> polygon;
-  polygon.reset(new sfl::Polygon());
-  polygon->AddPoint( 0.430,  0.178);
-  polygon->AddPoint( 0.178,  0.430);
-  polygon->AddPoint(-0.178,  0.430);
-  polygon->AddPoint(-0.430,  0.178);
-  polygon->AddPoint(-0.430, -0.178);
-  polygon->AddPoint(-0.178, -0.430);
-  polygon->AddPoint( 0.178, -0.430);
-  polygon->AddPoint( 0.430, -0.178);
-  
-  boost::shared_ptr<sfl::Hull> hull(new sfl::Hull());
-  hull->AddPolygon(*polygon);
-  
-  Robox * robox(new Robox(descriptor, world, hull, scanners));
-  if( ! robox->StartThreads()){
-    delete robox;
+  try {
+    std::map<int, scanner_desc_s> scanners;
+    boost::scoped_ptr<sfl::Polygon> polygon;
+    boost::shared_ptr<sfl::Hull> hull;
+    typedef RobotDescriptor::custom_line_t::const_iterator line_it_t;
+    line_it_t iline(descriptor->GetCustomLines().begin());
+    line_it_t endline(descriptor->GetCustomLines().end());
+    for (/**/; iline != endline; ++iline) {
+      std::string lno("line " + sfl::to_string(iline->first) + ": ");
+      std::istringstream is(iline->second);
+      PDEBUG ("line %d: %s\n", iline->first, iline->second.c_str());
+      string token;
+      is >> token;
+      if (token == "scanner") {
+	int channel;
+	string keyword;
+	is >> channel >> keyword;
+	if ( ! is) {
+	  throw std::runtime_error(lno + "invalid channel or keyword for scanner");
+	}
+	if (keyword == "mount") {
+	  double xx, yy, theta;
+	  is >> xx >> yy >> theta;
+	  if ( ! is) {
+	    throw std::runtime_error(lno + "invalid mount for scanner");
+	  }
+	  scanners[channel].mount_x = xx;
+	  scanners[channel].mount_y = yy;
+	  scanners[channel].mount_theta = theta;
+	  PDEBUG ("scanner[%d].mount = %g %g %g\n", channel, xx, yy, theta);
+	}
+	else if (keyword == "nscans") {
+	  int nscans;
+	  is >> nscans;
+	  if (( ! is) || (0 >= nscans)) {
+            throw std::runtime_error(lno + "invalid nscans for scanner");
+          }
+	  scanners[channel].nscans = nscans;
+	  PDEBUG ("scanner[%d].nscans = %d\n", channel, nscans);
+	}
+	else if (keyword == "rhomax") {
+          double rhomax;
+          is >> rhomax;
+          if (( ! is) || (0 >= rhomax)) {
+            throw std::runtime_error(lno + "invalid rhomax for scanner");
+          }
+          scanners[channel].rhomax = rhomax;
+	  PDEBUG ("scanner[%d].rhomax = %g\n", channel, rhomax);
+        }
+	else if (keyword == "phi") {
+          double phi0, phirange;
+          is >> phi0 >> phirange;
+          if ( ! is) {
+            throw std::runtime_error(lno + "invalid phi0 or phirange for scanner");
+          }
+          scanners[channel].phi0 = phi0;
+          scanners[channel].phirange = phirange;
+	  PDEBUG ("scanner[%d].phi = %g %g\n", channel, phi0, phirange);
+        }
+	else {
+	  throw std::runtime_error(lno + "invalid keyword `" + keyword + "' for scanner");
+	}
+      } // endif "scanner"
+      else if (token == "hull") {
+	string keyword;
+	is >> keyword;
+	if ( ! is) {
+          throw std::runtime_error(lno + "invalid keyword for hull");
+        }
+	if ((keyword == "point") || (keyword == "points")) {
+	  if ( ! polygon) {
+	    polygon.reset(new sfl::Polygon());
+	  }
+	  double xx, yy;
+	  while (is >> xx >> yy) {
+	    polygon->AddPoint(xx, yy);
+	    PDEBUG ("hull point %g %g\n", xx, yy);
+	  }
+	}
+	else if (keyword == "break") {
+	  if (polygon) {
+	    if ( ! hull) {
+	      hull.reset(new sfl::Hull());
+	    }
+	    hull->AddPolygon(*polygon);
+	    polygon.reset();
+	  }
+	  PDEBUG ("hull break\n");
+	}
+	else {
+	  throw std::runtime_error(lno + "invalid keyword `" + keyword + "' for hull");
+	}
+      } // endif "hull"
+      else if (token == "diffdrive") {
+	double wheelbase, wheelradius;
+	is >> wheelbase >> wheelradius;
+	if ( ! is) {
+	  throw std::runtime_error(lno + "invalid diffdrive");
+	}
+	descriptor->SetOption("model_wheelbase", sfl::to_string(wheelbase));
+	descriptor->SetOption("model_wheelradius", sfl::to_string(wheelradius));
+	PDEBUG ("diffdrive %g %g\n", wheelbase, wheelradius);
+      } // endif "diffdrive"
+      else {
+	throw std::runtime_error(lno + "invalid token `" + token + "'");
+      }
+    } // end for line
+    
+    // make sure we have at least one laser scanner
+    if (scanners.empty()) {
+      scanners[0] = scanner_desc_s();
+      PDEBUG ("added default scanner\n");
+    }
+    
+    // make sure we finalize the last (possibly only) polygon
+    if (polygon) {
+      if ( ! hull) {
+	hull.reset(new sfl::Hull());
+      }
+      hull->AddPolygon(*polygon);
+      PDEBUG ("finalized hull\n");
+    }
+    
+    // make sure we have a hull
+    if ( ! hull) {
+      hull = expo::Robox::CreateDefaultHull();
+      PDEBUG ("set default hull\n");
+    }
+    
+    Robox * robox(new Robox(descriptor, world, hull, scanners));
+    if( ! robox->StartThreads()){
+      std::cerr << "ERROR in Robox::CreateCustom(): failed to StartThreads()\n";
+      delete robox;
+      return 0;
+    }
+    return robox;
+    
+  }
+  catch (std::runtime_error const & ee) {
+    std::cerr << "ERROR in Robox::CreateCustom(): " << ee.what() << "\n";
     return 0;
   }
-  return robox;
+  return 0;			// we never get here though.
 }
 
 

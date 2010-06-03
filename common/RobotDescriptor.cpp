@@ -98,13 +98,13 @@ namespace npm {
   
   
   void RobotDescriptor::
-  AddCustomLine(std::string const & line)
+  AddCustomLine(int linenumber, std::string const & line)
   {
-    m_custom_lines.push_back(line);
+    m_custom_lines[linenumber] = line;
   }
   
   
-  std::vector<std::string> const & RobotDescriptor::
+  RobotDescriptor::custom_line_t const & RobotDescriptor::
   GetCustomLines() const
   {
     return m_custom_lines;
