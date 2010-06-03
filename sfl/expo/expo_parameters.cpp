@@ -64,8 +64,9 @@ void expo_default_parameters(struct expo_parameters * params)
   params->dwa_alpha_distance  = 0.6;
   params->dwa_alpha_heading   = 0.3;
   params->dwa_alpha_speed     = 0.1;
+  params->dwa_use_tobi_distobj = false;
   
-  params->bband_enabled           = 1;
+  params->bband_enabled           = true;
   params->bband_shortpath         = 2;
   params->bband_longpath          = 10;
   params->bband_maxignoredistance = 4;
@@ -95,6 +96,7 @@ void expo_parameters_load(expo_parameters & params,
   string_to(opt->GetOption("dwa_alpha_distance"), params.dwa_alpha_distance);
   string_to(opt->GetOption("dwa_alpha_heading"), params.dwa_alpha_heading);
   string_to(opt->GetOption("dwa_alpha_speed"), params.dwa_alpha_speed);
+  string_to_bool(opt->GetOption("dwa_use_tobi_distobj"), params.dwa_use_tobi_distobj);
   
   string_to_bool(opt->GetOption("bband_enabled"), params.bband_enabled);
   string_to(opt->GetOption("bband_shortpath"), params.bband_shortpath);

@@ -51,8 +51,7 @@ namespace expo {
   Robox(expo_parameters const & params,
 	boost::shared_ptr<sfl::Hull> _hull,
 	shared_ptr<sfl::HAL> hal,
-	shared_ptr<sfl::Multiscanner> _mscan,
-	bool use_tobi_distobj)
+	shared_ptr<sfl::Multiscanner> _mscan)
     : hull(_hull),
       mscan(_mscan)
   {
@@ -70,14 +69,16 @@ namespace expo {
     motionController.
       reset(new MotionController(robotModel, hal, sfl::RWlock::Create("expo::Robox::motor")));
     odometry.reset(new sfl::Odometry(hal, sfl::RWlock::Create("expo::Robox::odometry")));
-    bubbleBand.
-      reset(new sfl::BubbleBand(*robotModel, *odometry, *mscan,
-				sfl::BubbleList::Parameters(params.bband_shortpath,
-							    params.bband_longpath,
-							    params.bband_maxignoredistance),
-				sfl::RWlock::Create("expo::Robox::bband")));
+    if (params.bband_enabled) {
+      bubbleBand.
+	reset(new sfl::BubbleBand(*robotModel, *odometry, *mscan,
+				  sfl::BubbleList::Parameters(params.bband_shortpath,
+							      params.bband_longpath,
+							      params.bband_maxignoredistance),
+				  sfl::RWlock::Create("expo::Robox::bband")));
+    }
     
-    if ( ! use_tobi_distobj) {
+    if ( ! params.dwa_use_tobi_distobj) {
       sfl::LegacyDynamicWindow * dwa(new sfl::LegacyDynamicWindow(params.dwa_dimension,
 								  params.dwa_grid_width,
 								  params.dwa_grid_height,

@@ -59,8 +59,7 @@ namespace expo {
 	      expo::Robox::CreateDefaultHull() here. */
 	  boost::shared_ptr<sfl::Hull> hull,
 	  boost::shared_ptr<sfl::HAL> hal,
-	  boost::shared_ptr<sfl::Multiscanner> mscan,
-	  bool use_tobi_distobj);
+	  boost::shared_ptr<sfl::Multiscanner> mscan);
     
     void SetGoal(double timestep, sfl::Goal const & goal);
     
