@@ -21,6 +21,7 @@
  * USA
  */
 
+#define NPM_DEBUG
 
 #include "Simulator.hpp"
 #include "RobotFactory.hpp"
@@ -92,7 +93,7 @@ namespace npm {
     vector<rdesc_t> rdesc;
     ifstream config(robot_config_filename.c_str());
     string token;
-    while(config >> token){
+    for (int linenumber(1); config >> token; ++linenumber) {
       if(token[0] == '#'){
 	config.ignore(numeric_limits<streamsize>::max(), '\n');
 	continue;
@@ -221,9 +222,19 @@ namespace npm {
 	rdesc.back()->SetOption(name, value);
 	continue;
       }
-      cerr << "ERROR in Simulator::InitRobots(): unknown token \""
-	   << token << "\"\n";
-      exit(EXIT_FAILURE);
+      else {
+	string rest;
+	getline(config, rest);
+	if ( ! config) {
+	  cerr << "ERROR in Simulator::InitRobots():\n"
+	       << "  cannot extract rest of line aftern token `" << token << "'\n";
+	  exit(EXIT_FAILURE);
+	}
+	ostringstream os;
+	os << token << " " << rest;
+	rdesc.back()->AddCustomLine(linenumber, os.str());
+	PDEBUG ("added custom line %d: %s\n", linenumber, os.str().c_str());
+      }
     }
     
     // Historic quirk: set the goals of all applicable robots *after*
@@ -235,7 +246,8 @@ namespace npm {
       // create robot from descriptor
       shared_ptr<RobotClient> rob(RobotFactory::Create(rdesc[ii], *m_world));
       if ( ! rob)
-	errx(EXIT_FAILURE, "Simulator::InitRobots(): unknown model \"%s\"",
+	errx(EXIT_FAILURE,
+	     "Simulator::InitRobots(): unknown model \"%s\" or parse error in robot construction",
 	     rdesc[ii]->model.c_str());
 
       // hook it into the simulation
