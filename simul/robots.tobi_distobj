@@ -8,7 +8,7 @@ Robot robox Robox
 	Goal 15  10  3.2  0.5  3.2
 	Option camera_zoom 4
 
-        Option use_tobi_distobj true
+        Option dwa_use_tobi_distobj true
 
 ##################################################
 # The full set of parameters that can be tweaked for the Expo.02

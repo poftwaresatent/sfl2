@@ -129,10 +129,7 @@ Robox(boost::shared_ptr<npm::RobotDescriptor> descriptor,
   expo_parameters params(descriptor);
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
-  bool use_tobi_distobj(false);
-  string_to(descriptor->GetOption("use_tobi_distobj"), use_tobi_distobj);
-  m_imp.reset(new npm::VisualRobox(descriptor->name, params, hull,
-				   GetHAL(), mscan, use_tobi_distobj));
+  m_imp.reset(new npm::VisualRobox(descriptor->name, params, hull, GetHAL(), mscan));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
@@ -179,10 +176,7 @@ Robox(shared_ptr<RobotDescriptor> descriptor,
   
   m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   
-  bool use_tobi_distobj(false);
-  string_to(descriptor->GetOption("use_tobi_distobj"), use_tobi_distobj);
-  m_imp.reset(new npm::VisualRobox(descriptor->name, params, hull,
-				   GetHAL(), mscan, use_tobi_distobj));
+  m_imp.reset(new npm::VisualRobox(descriptor->name, params, hull, GetHAL(), mscan));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));

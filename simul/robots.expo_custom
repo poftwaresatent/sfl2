@@ -10,6 +10,7 @@ Robot custom Robox
 	hull points  0.250  0.000   0.210  0.125   0.120  0.210   0.000  0.250
 	hull points -0.120  0.210  -0.210  0.120  -0.250  0.000  -0.210 -0.120
 	hull points -0.120 -0.210   0.000 -0.250   0.120 -0.210   0.210 -0.120
+	Option bband_enabled false
 
 ##################################################
 # The full set of parameters that can be tweaked for the Expo.02

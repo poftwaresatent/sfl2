@@ -43,6 +43,7 @@
 #include "../common/StillCamera.hpp"
 #include "../common/Manager.hpp"
 #include <sfl/expo/MotionPlanner.hpp>
+#include <sfl/expo/expo_parameters.h>
 #include <sfl/bband/ReplanHandler.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
@@ -60,31 +61,33 @@ namespace npm {
 	      expo_parameters const & params,
 	      boost::shared_ptr<sfl::Hull> hull,
 	      boost::shared_ptr<sfl::HAL> hal,
-	      boost::shared_ptr<sfl::Multiscanner> mscan,
-	      bool use_tobi_distobj)
-    : expo::Robox(params, hull, hal, mscan, use_tobi_distobj)
+	      boost::shared_ptr<sfl::Multiscanner> mscan)
+    : expo::Robox(params, hull, hal, mscan)
   {
     AddDrawing(new MPDrawing(name + "_goaldrawing", *motionPlanner));
     AddDrawing(new DWDrawing(name + "_dwdrawing", *dynamicWindow));
     AddDrawing(new ODrawing(name + "_dodrawing", distanceObjective, dynamicWindow));
     AddDrawing(new ODrawing(name + "_hodrawing", headingObjective, dynamicWindow));
     AddDrawing(new ODrawing(name + "_sodrawing", speedObjective, dynamicWindow));
-    sfl::ReplanHandler const * rph(dynamic_cast<sfl::ReplanHandler const *>(bubbleBand->GetReplanHandler()));
-    if (rph) {
-      AddDrawing(new RHDrawing(name + "_rhdrawing",
-			       rph,
-			       RHDrawing::AUTODETECT));
-    }
-    AddDrawing(new BBDrawing(name + "_bbdrawing",
-			     *bubbleBand,
-			     BBDrawing::AUTODETECT));
-    if (rph) {
-      AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
-				      rph->GetNF1(),
-				      false));
-      AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
-				      rph->GetNF1(),
-				      true));
+    sfl::ReplanHandler const * rph(0);
+    if (params.bband_enabled) {
+      rph = dynamic_cast<sfl::ReplanHandler const *>(bubbleBand->GetReplanHandler());
+      if (rph) {
+	AddDrawing(new RHDrawing(name + "_rhdrawing",
+				 rph,
+				 RHDrawing::AUTODETECT));
+      }
+      AddDrawing(new BBDrawing(name + "_bbdrawing",
+			       *bubbleBand,
+			       BBDrawing::AUTODETECT));
+      if (rph) {
+	AddDrawing(new GridLayerDrawing(name + "_local_gldrawing",
+					rph->GetNF1(),
+					false));
+	AddDrawing(new GridLayerDrawing(name + "_global_gldrawing",
+					rph->GetNF1(),
+					true));
+      }
     }
     AddDrawing(new OdometryDrawing(name + "_odomdrawing",
 				   *odometry,
