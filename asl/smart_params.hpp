@@ -30,9 +30,18 @@ struct smartparams
   : public expo_parameters
 {
   explicit smartparams(boost::shared_ptr<sfl::OptionDictionary> opt);
+
   double model_axlewidth;
   double model_phi_max;
   double model_phid_max;
+
+  int front_channel, front_nscans;
+  double front_mount_x, front_mount_y, front_mount_theta;
+  double front_rhomax, front_phi0, front_phirange;
+  
+  int rear_channel, rear_nscans;
+  double rear_mount_x, rear_mount_y, rear_mount_theta;
+  double rear_rhomax, rear_phi0, rear_phirange;
 };
 
 #endif // SMARTPARAMS_HPP

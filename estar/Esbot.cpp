@@ -28,6 +28,7 @@
 #include "../robox/ODrawing.hpp"
 #include "../robox/DODrawing.hpp"
 #include "../robox/DWDrawing.hpp"
+#include "../robox/robox_parameters.hpp"
 #include "../common/pdebug.hpp"
 #include "../common/Lidar.hpp"
 #include "../common/GoalInstanceDrawing.hpp"
@@ -51,7 +52,6 @@
 #include <sfl/dwa/HeadingObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/gplan/GridFrame.hpp>
-#include <sfl/expo/expo_parameters.h>
 #include <estar/Facade.hpp>
 #include <estar/dump.hpp>
 #include <pnf/Flow.hpp>
@@ -157,7 +157,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   if( ! string_to(descriptor->GetOption("pnf_enable_thread"), m_enable_thread))
     m_enable_thread = false;
   
-  expo_parameters params(descriptor);
+  robox_parameters params(descriptor);
   
   m_front = DefineLidar(Frame(params.front_mount_x,
 			      params.front_mount_y,
