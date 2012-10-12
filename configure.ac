@@ -143,7 +143,7 @@ AC_ARG_WITH(estar,
       NPM_ESTAR_LDFLAGS="-lestar"
     else
       NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR -I${withval}/include -I${withval}"
-      NPM_ESTAR_LDFLAGS="-lestar -L${withval}/lib -L${withval}"
+      NPM_ESTAR_LDFLAGS="-L${withval}/lib -L${withval} -lestar"
     fi
     AM_CONDITIONAL([NPM_HAVE_ESTAR], [true]) ],
   [ AM_CONDITIONAL([NPM_HAVE_ESTAR], [false]) ])
