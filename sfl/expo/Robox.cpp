@@ -96,13 +96,12 @@ namespace expo {
     else {
       dynamicWindow.reset(new sfl::DynamicWindow(params.dwa_dimension,
 						 robotModel));
-      ssize_t blur_radius(5);	// XXXX to do: blur radius should be configurable
       distanceObjective.reset(new sfl::DistanceObjectiveToBI(*dynamicWindow,
 							     robotModel,
 							     params.dwa_grid_width,
 							     params.dwa_grid_height,
 							     params.dwa_grid_resolution,
-							     blur_radius));
+							     params.dwa_tobi_distobj_blur));
       dynamicWindow->AddObjective(distanceObjective, params.dwa_alpha_distance);
       headingObjective.reset(new sfl::HeadingObjective(*dynamicWindow, *robotModel));
       dynamicWindow->AddObjective(headingObjective, params.dwa_alpha_heading);

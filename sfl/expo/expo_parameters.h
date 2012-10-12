@@ -43,6 +43,7 @@ namespace sfl {
     double dwa_grid_width, dwa_grid_height, dwa_grid_resolution;
     double dwa_alpha_distance, dwa_alpha_heading, dwa_alpha_speed;
     bool dwa_use_tobi_distobj;
+    int dwa_tobi_distobj_blur;
     
     bool bband_enabled;
     double bband_shortpath, bband_longpath, bband_maxignoredistance;
