@@ -1,2 +1,3 @@
 #!/bin/sh
-autoreconf --install --force --verbose
+test -d m4 || mkdir m4
+autoreconf --verbose --install --force

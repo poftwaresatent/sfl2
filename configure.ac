@@ -3,8 +3,11 @@ AC_INIT([nepumuk],
         [0.0pre],
         [libsunflower-devel AT lists DOT sourceforge DOT net])
 AC_CONFIG_AUX_DIR([.])
+AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
+AM_PROG_AR
 
 AC_LANG(C++)
 
