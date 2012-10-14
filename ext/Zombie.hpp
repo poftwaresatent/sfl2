@@ -22,8 +22,8 @@
  */
 
 
-#ifndef ZOMBIE_HPP
-#define ZOMBIE_HPP
+#ifndef NPM_EXT_ZOMBIE_HPP
+#define NPM_EXT_ZOMBIE_HPP
 
 
 #include <npm/RobotClient.hpp>
@@ -49,4 +49,4 @@ private:
   boost::shared_ptr<sfl::Goal> m_goal;
 };
 
-#endif // ZOMBIE_HPP
+#endif // NPM_EXT_ZOMBIE_HPP

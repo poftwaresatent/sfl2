@@ -28,6 +28,7 @@
 #include "gfx/WorldDrawing.hpp"
 #include "gfx/WorldCamera.hpp"
 #include "BBox.hpp"
+#include "pdebug.hpp"
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Random.hpp>
@@ -36,14 +37,6 @@
 #include <sstream>
 #include <cmath>
 #include <err.h>
-
-
-#ifdef NPM_DEBUG
-# define PDEBUG PDEBUG_OUT
-#else // ! NPM_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // NPM_DEBUG
-#define PVDEBUG PDEBUG_OFF
 
 
 using namespace sfl;

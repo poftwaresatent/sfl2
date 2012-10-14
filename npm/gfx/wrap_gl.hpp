@@ -22,8 +22,8 @@
  */
 
 
-#ifndef WRAP_GL_HPP
-#define WRAP_GL_HPP
+#ifndef NPM_GFX_WRAP_GL_HPP
+#define NPM_GFX_WRAP_GL_HPP
 
 #if defined(LINUX) | defined(OPENBSD)
 # include <GL/gl.h>
@@ -33,4 +33,4 @@
 # warning "no OS selected, cannot include GL header"
 #endif
 
-#endif // WRAP_GL_HPP
+#endif // NPM_GFX_WRAP_GL_HPP

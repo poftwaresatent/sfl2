@@ -26,7 +26,7 @@
 #include <stdlib.h>
 
 #include "wrap_gl.hpp"
-#include <iostream>		// hax: should use exceptions
+#include <iostream>
 using std::cerr;
 
 namespace npm {

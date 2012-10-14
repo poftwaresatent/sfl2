@@ -29,17 +29,8 @@
 #include "View.hpp"
 #include "BBox.hpp"
 #include <sfl/util/numeric.hpp>
-#include <sfl/util/pdebug.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <math.h>
-
-
-#ifdef ASL_DEBUG
-# define PDEBUG PDEBUG_OUT
-#else // ! ASL_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // ASL_DEBUG
-#define PVDEBUG PDEBUG_OFF
 
 
 using namespace sfl;

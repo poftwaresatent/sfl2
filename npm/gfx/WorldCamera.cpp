@@ -24,15 +24,6 @@
 
 #include "WorldCamera.hpp"
 
-
-
-/**
- *  \file
- *
- *  \brief Implementation
- */
-
-
 #include "World.hpp"
 #include "BBox.hpp"
 #include "View.hpp"

@@ -41,16 +41,6 @@ using namespace std;
 
 
 namespace npm {
-  
-  
-//   template<>
-//   shared_ptr<UniqueManager<View> > Instance()
-//   {
-//     static shared_ptr<UniqueManager<View> > instance;
-//     if( ! instance)
-//       instance.reset(new UniqueManager<View>());
-//     return instance;
-//   }
     
   
   View::

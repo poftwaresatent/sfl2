@@ -29,7 +29,7 @@
 #include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 
-#include <stdio.h>
+////#include <stdio.h>
 
 namespace npm {
   

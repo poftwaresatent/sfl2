@@ -22,19 +22,10 @@
  */
 
 
-#ifndef SIMPLEIMAGE_H
-#define SIMPLEIMAGE_H
+#ifndef NPM_GFX_SIMPLE_IMAGE_HPP
+#define NPM_GFX_SIMPLE_IMAGE_HPP
 
 
-
-/**
- *  \file
- *
- *  \brief Interface declaration
- */
-
-
-// well, config.h shouldn't be distributed, so we shouldn't include it...
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 # ifdef HAVE_PNG_H
@@ -46,7 +37,7 @@ typedef int8_t png_byte;
 typedef int8_t * png_bytep;
 # endif // HAVE_PNG_H
 #else  // ! HAVE_CONFIG_H
-# include <png.h>		// figure out how to treat this correctly!
+# include <png.h>
 #endif // HAVE_CONFIG_H
 
 
@@ -86,4 +77,4 @@ namespace npm {
 
 }
 
-#endif // SIMPLEIMAGE_H
+#endif // NPM_GFX_SIMPLE_IMAGE_HPP

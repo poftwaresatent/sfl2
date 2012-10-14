@@ -22,8 +22,8 @@
  */
 
 
-#ifndef WRAP_GLU_HPP
-#define WRAP_GLU_HPP
+#ifndef NPM_GFX_WRAP_GLU_HPP
+#define NPM_GFX_WRAP_GLU_HPP
 
 #if defined(LINUX) | defined(OPENBSD)
 # include <GL/glu.h>
@@ -35,4 +35,4 @@
 
 GLUquadricObj * wrap_glu_quadric_instance();
 
-#endif // WRAP_GLU_HPP
+#endif // NPM_GFX_WRAP_GLU_HPP

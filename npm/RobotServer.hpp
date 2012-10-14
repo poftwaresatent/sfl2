@@ -43,7 +43,6 @@ namespace npm {
   class Sharp;
   class RobotDescriptor;
   class HAL;
-  class HALFactory;
   class Drawing;
   class Camera;
   class Drive;

@@ -25,17 +25,10 @@
 #include "MapperUpdateDrawing.hpp"
 #include "wrap_gl.hpp"
 #include "Manager.hpp"
+#include "pdebug.hpp"
 #include <sfl/gplan/Mapper2d.hpp>
-#include <sfl/util/pdebug.hpp>
 #include <cmath>
 #include <err.h>
-
-#ifdef NPM_DEBUG
-# define PDEBUG PDEBUG_OUT
-#else // ! NPM_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // NPM_DEBUG
-#define PVDEBUG PDEBUG_OFF
 
 
 using namespace sfl;

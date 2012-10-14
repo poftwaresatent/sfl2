@@ -37,7 +37,6 @@ namespace sfl {
 namespace npm {
   
   class HAL;
-  class HALFactory;
   class RobotDescriptor;
   class Lidar;
   class Sharp;

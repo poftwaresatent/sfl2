@@ -22,8 +22,8 @@
  */
 
 
-#ifndef ARGTOOL_HPP
-#define ARGTOOL_HPP
+#ifndef NPM_ARGTOOL_HPP
+#define NPM_ARGTOOL_HPP
 
 
 #include <boost/shared_ptr.hpp>
@@ -150,4 +150,4 @@ operator () (const char * argument)
 			     + ": invalid argument \"" + argument + "\"");
 }
 
-#endif // ARGTOOL_H
+#endif // NPM_ARGTOOL_HPP

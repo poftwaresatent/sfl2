@@ -22,8 +22,8 @@
  */
 
 
-#ifndef WRAP_GLUT_HPP
-#define WRAP_GLUT_HPP
+#ifndef NPM_GFX_WRAP_GLUT_HPP
+#define NPM_GFX_WRAP_GLUT_HPP
 
 #if defined(LINUX) || defined(OPENBSD)
 # include <GL/glut.h>
@@ -33,4 +33,4 @@
 # warning "no OS selected, cannot include GLUT header"
 #endif
 
-#endif // WRAP_GLUT_HPP
+#endif // NPM_GFX_WRAP_GLUT_HPP

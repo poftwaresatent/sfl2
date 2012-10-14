@@ -22,8 +22,8 @@
  */
 
 
-#ifndef DRAWER_HPP
-#define DRAWER_HPP
+#ifndef NPM_GFX_DRAWER_HPP
+#define NPM_GFX_DRAWER_HPP
 
 class Drawer
 {
@@ -35,4 +35,4 @@ public:
   }
 };
 
-#endif // DRAWER_HPP
+#endif // NPM_GFX_DRAWER_HPP
