@@ -25,7 +25,6 @@ AC_CANONICAL_HOST
 case $host_os in
   linux*)  AC_MSG_NOTICE([detected Linux])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DLINUX"
-	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
            NPM_GLUTLIBS="-lglut -lGLU -lGL"
 	   oldCPPFLAGS="$CPPFLAGS"
 	   if test "$prefix" = "NONE"; then
@@ -39,7 +38,7 @@ case $host_os in
            AM_DISABLE_STATIC;;
   *openbsd*) AC_MSG_NOTICE([detected OpenBSD])
              NPM_CPPFLAGS="$NPM_CPPFLAGS -DOPENBSD -I/usr/local/include -I/usr/X11R6/include"
-	     NPM_LDFLAGS="-lpthread $NPM_LDFLAGS -L/usr/local/lib -L/usr/X11R6/lib"
+	     NPM_LDFLAGS="$NPM_LDFLAGS -L/usr/local/lib -L/usr/X11R6/lib"
 
              NPM_GLUTLIBS="-lX11 -lXi -lXmu -lglut -lGLU -lGL"
              oldCPPFLAGS="$CPPFLAGS"
@@ -54,7 +53,6 @@ case $host_os in
              AM_DISABLE_STATIC;;
   darwin10*)  AC_MSG_NOTICE([detected NEW Darwin (around OS X 10.6 or so?)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -I/usr/X11/include"
-	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
            NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
 	   oldCPPFLAGS="$CPPFLAGS"
 	   if test "$prefix" = "NONE"; then
