@@ -23,9 +23,9 @@
 
 
 #include "Visitor.hpp"
-#include <npm/common/HAL.hpp>
-#include <npm/common/HoloDrive.hpp>
-#include <npm/common/RobotServer.hpp>
+#include <npm/HAL.hpp>
+#include <npm/HoloDrive.hpp>
+#include <npm/RobotServer.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/api/Goal.hpp>

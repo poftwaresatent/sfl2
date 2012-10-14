@@ -26,7 +26,7 @@
 #define VISITOR_HPP
 
 
-#include <npm/common/RobotClient.hpp>
+#include <npm/RobotClient.hpp>
 
 
 class Visitor:

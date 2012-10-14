@@ -25,7 +25,7 @@
 #include "RobotFactory.hpp"
 #include <npm/RobotDescriptor.hpp>
 #include <npm/RobotClient.hpp>
-// #include "../visitor/Visitor.hpp"
+#include "Visitor.hpp"
 // #include "../robox/Robox.hpp"
 
 // #ifdef NPM_HAVE_ESTAR
@@ -51,6 +51,9 @@ namespace npm {
   Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
   {
     RobotClient * rob(0);
+    
+    if(descriptor->model == "visitor")
+      rob = new Visitor(descriptor, world);
 
 //     if(descriptor->model == "robox")
 //       rob = Robox::Create(descriptor, world);
@@ -58,8 +61,6 @@ namespace npm {
 //     else if(descriptor->model == "custom")
 //       rob = Robox::CreateCustom(descriptor, world);
 
-//     else if(descriptor->model == "visitor")
-//       rob = new Visitor(descriptor, world);
 
 // #ifdef NPM_HAVE_ESTAR
 //     else if(descriptor->model == "esbot")

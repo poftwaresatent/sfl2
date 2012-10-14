@@ -7,7 +7,8 @@ ACLOCAL_AMFLAGS= -I m4
 
 SUBDIRS=               npm \
                        npm/gfx \
-                       bin
+                       bin \
+                       run
 
 SRCDIR=                @abs_top_srcdir@
 BUILDDIR=              @abs_top_builddir@

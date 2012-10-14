@@ -157,5 +157,6 @@ AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile
                  npm/Makefile
                  npm/gfx/Makefile
-                 bin/Makefile])
+                 bin/Makefile
+                 run/Makefile])
 AC_OUTPUT

@@ -4,7 +4,9 @@ AM_CXXFLAGS= @NPM_CXXFLAGS@
 AM_LDFLAGS=  @NPM_LDFLAGS@ @NPM_GLUTLIBS@
 
 noinst_LTLIBRARIES=   libnpmbin.la
-libnpmbin_la_SOURCES= RobotFactory.cpp Simulator.cpp
+libnpmbin_la_SOURCES= RobotFactory.cpp \
+                      Visitor.cpp \
+                      Simulator.cpp
 
 bin_PROGRAMS=         nepumuk dumpworld xfig2world
 
@@ -19,5 +21,3 @@ dumpworld_LDADD=      libnpmbin.la \
                       -lsunflower
 
 xfig2world_SOURCES=   xfig2world.cpp
-
-## dist_bin_SCRIPTS= estardemo.sh expodemo.sh ...
