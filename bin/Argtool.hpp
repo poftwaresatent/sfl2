@@ -22,8 +22,8 @@
  */
 
 
-#ifndef INTERLOCK_HPP
-#define INTERLOCK_HPP
+#ifndef ARGTOOL_HPP
+#define ARGTOOL_HPP
 
 
 #include <boost/shared_ptr.hpp>
@@ -42,7 +42,7 @@ struct option;
    \todo The exception mechanism should be replaced by a return value
    of BaseCallback::operator() and an error message stream.
 */
-class Interlock
+class Argtool
 {
 public:
   class BaseCallback {
@@ -58,7 +58,7 @@ public:
       throw(std::runtime_error) = 0;
 
   protected:
-    friend class Interlock;
+    friend class Argtool;
 
     const char        _shortopt;
     const std::string _longopt_name;
@@ -96,7 +96,7 @@ public:
   };
 
   
-  Interlock();
+  Argtool();
   
   void Add(boost::shared_ptr<BaseCallback> callback) throw(std::runtime_error);
   
@@ -125,7 +125,7 @@ private:
 
 
 template<typename T>
-Interlock::Callback<T>::
+Argtool::Callback<T>::
 Callback(option_t & option,
 	 char shortopt,
 	 const char * longopt_name,
@@ -137,7 +137,7 @@ Callback(option_t & option,
 
 
 template<typename T>
-void Interlock::Callback<T>::
+void Argtool::Callback<T>::
 operator () (const char * argument)
   throw(std::runtime_error)
 {
@@ -150,4 +150,4 @@ operator () (const char * argument)
 			     + ": invalid argument \"" + argument + "\"");
 }
 
-#endif // INTERLOCK_H
+#endif // ARGTOOL_H

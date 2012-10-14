@@ -22,7 +22,7 @@
  */
 
 
-#include "Interlock.hpp"
+#include "Argtool.hpp"
 #include <npm/World.hpp>
 #include <iostream>
 
@@ -70,18 +70,18 @@ int main(int argc, char ** argv)
 void parse_options(int argc,
 		   char ** argv)
 {
-  typedef Interlock::Callback<string> StringCB;
+  typedef Argtool::Callback<string> StringCB;
 
-  Interlock ilock;
-  ilock.Add(new StringCB(params.world_name,
+  Argtool atl;
+  atl.Add(new StringCB(params.world_name,
 			 'w', "world", "Name of the world (expo|mini|tta)."));
-  ilock.Add(new Interlock::BoolCallback(params.windows_eol,
+  atl.Add(new Argtool::BoolCallback(params.windows_eol,
 					'd', "dos",
 					"Windows-compatible line endings."));
   
-  ilock.UsageMessage(cerr, string(argv[0]) + " <options>");
+  atl.UsageMessage(cerr, string(argv[0]) + " <options>");
   try {
-    ilock.Parse(argc, argv, 0);
+    atl.Parse(argc, argv, 0);
   }
   catch(runtime_error e){
     cerr << "ERROR in parse_options():\n  " << e.what() << "\n";

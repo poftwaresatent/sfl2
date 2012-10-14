@@ -7,6 +7,7 @@ ACLOCAL_AMFLAGS= -I m4
 
 SUBDIRS=               npm \
                        npm/gfx \
+                       ext \
                        bin \
                        run
 

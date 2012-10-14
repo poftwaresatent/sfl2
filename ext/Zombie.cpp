@@ -22,7 +22,7 @@
  */
 
 
-#include "Visitor.hpp"
+#include "Zombie.hpp"
 #include <npm/HAL.hpp>
 #include <npm/HoloDrive.hpp>
 #include <npm/RobotServer.hpp>
@@ -36,8 +36,8 @@ using namespace sfl;
 using namespace boost;
 
 
-Visitor::
-Visitor(shared_ptr<RobotDescriptor> descriptor,
+Zombie::
+Zombie(shared_ptr<RobotDescriptor> descriptor,
 	const World & world)
   : RobotClient(descriptor, world, 3, false),
     m_goal(new Goal())
@@ -54,7 +54,7 @@ Visitor(shared_ptr<RobotDescriptor> descriptor,
 }
 
 
-bool Visitor::
+bool Zombie::
 PrepareAction(double timestep)
 {
   static const double dthetathresh(5 * M_PI / 180);
@@ -85,20 +85,20 @@ PrepareAction(double timestep)
 }
 
 
-void Visitor::
+void Zombie::
 InitPose(double x, double y, double theta)
 {
 }
 
 
-void Visitor::
+void Zombie::
 SetPose(double x, double y, double theta)
 {
 }
 
 
 
-void Visitor::
+void Zombie::
 GetPose(double &x, double &y, double &theta)
 {
   const Frame & pose(GetServer()->GetTruePose());
@@ -108,21 +108,21 @@ GetPose(double &x, double &y, double &theta)
 }
 
 
-void Visitor::
+void Zombie::
 SetGoal(double timestep, const Goal & goal)
 {
   *m_goal = goal;
 }
 
 
-shared_ptr<const Goal> Visitor::
+shared_ptr<const Goal> Zombie::
 GetGoal()
 {
   return m_goal;
 }
 
 
-bool Visitor::
+bool Zombie::
 GoalReached()
 {
   return m_goal->DistanceReached(GetServer()->GetTruePose());

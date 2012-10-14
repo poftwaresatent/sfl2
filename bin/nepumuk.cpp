@@ -23,7 +23,7 @@
 
 
 #include "Simulator.hpp"
-#include "Interlock.hpp"
+#include "Argtool.hpp"
 #include <npm/World.hpp>
 #include <npm/gfx/wrap_glut.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
@@ -276,31 +276,31 @@ void parse_options(int argc, char ** argv)
     cout << " " << argv[ii];
   cout << "\n  use -h to display some help\n";
   
-  typedef Interlock::Callback<string> StringCB;
-  typedef Interlock::BoolCallback BoolCB;
+  typedef Argtool::Callback<string> StringCB;
+  typedef Argtool::BoolCallback BoolCB;
   
-  Interlock ilock;
-  ilock.Add(new StringCB(params.layout_config_filename,
+  Argtool atl;
+  atl.Add(new StringCB(params.layout_config_filename,
 			 'l', "layout", "Name of the layout config file."));
-  ilock.Add(new StringCB(params.robot_config_filename,
+  atl.Add(new StringCB(params.robot_config_filename,
 			 'r', "robot", "Name of the robot config file."));
-  ilock.Add(new StringCB(params.world_name,
+  atl.Add(new StringCB(params.world_name,
 			 'w', "world", "Name of the world (expo|mini|tta)."));
-  ilock.Add(new StringCB(params.world_filename,
+  atl.Add(new StringCB(params.world_filename,
 			 'W', "worldfile", "World file."));
-  ilock.Add(new StringCB(params.world_from_trav,
+  atl.Add(new StringCB(params.world_from_trav,
 			 'M', "world-trav", "Add travmap lines to world."));
-  ilock.Add(new BoolCB(params.no_glut,
+  atl.Add(new BoolCB(params.no_glut,
 		       'n', "no-glut", "Disable graphic output."));
-  ilock.Add(new BoolCB(params.fatal_warnings,
+  atl.Add(new BoolCB(params.fatal_warnings,
 		       'f', "fwarn", "Fatal warnings."));
-  ilock.Add(new BoolCB(params.dump,
+  atl.Add(new BoolCB(params.dump,
 		       'd', "dump", "Dump available drawings and cameras."));
-  ilock.Add(new BoolCB(params.help,
+  atl.Add(new BoolCB(params.help,
 		       'h', "help", "Print a help message."));
   
   try {
-    ilock.Parse(argc, argv, 0);
+    atl.Parse(argc, argv, 0);
   }
   catch(runtime_error e){
     cerr << "ERROR: parse_options() failed:\n  " << e.what() << "\n"
@@ -309,7 +309,7 @@ void parse_options(int argc, char ** argv)
   }
   
   if (params.help) {
-    ilock.UsageMessage(cout, string(argv[0]) + " <options>");
+    atl.UsageMessage(cout, string(argv[0]) + " <options>");
     exit(EXIT_SUCCESS);
   }
 }

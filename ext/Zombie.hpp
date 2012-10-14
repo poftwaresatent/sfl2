@@ -22,19 +22,19 @@
  */
 
 
-#ifndef VISITOR_HPP
-#define VISITOR_HPP
+#ifndef ZOMBIE_HPP
+#define ZOMBIE_HPP
 
 
 #include <npm/RobotClient.hpp>
 
 
-class Visitor:
+class Zombie:
   public npm::RobotClient
 {
 public:
-  Visitor(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	  const npm::World & world);
+  Zombie(boost::shared_ptr<npm::RobotDescriptor> descriptor,
+	 const npm::World & world);
   
   virtual bool PrepareAction(double timestep);
   virtual void InitPose(double x, double y, double theta);
@@ -49,4 +49,4 @@ private:
   boost::shared_ptr<sfl::Goal> m_goal;
 };
 
-#endif // VISITOR_HPP
+#endif // ZOMBIE_HPP

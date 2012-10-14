@@ -25,20 +25,12 @@
 #include "RobotFactory.hpp"
 #include <npm/RobotDescriptor.hpp>
 #include <npm/RobotClient.hpp>
-#include "Visitor.hpp"
+#include "Zombie.hpp"
 // #include "../robox/Robox.hpp"
 
 // #ifdef NPM_HAVE_ESTAR
 // # include "../estar/Esbot.hpp"
 // #endif // NPM_HAVE_ESTAR
-
-// #ifdef NPM_HAVE_ASL
-// # include "../asl/Smart.hpp"
-// # include "../asl/Borox.hpp"
-// #endif // NPM_HAVE_ASL
-
-//#include "../theater/TheaterRobot.hpp"
-////#include "../braitenberg/Braitenberg.hpp"
 
 
 using namespace boost;
@@ -52,9 +44,10 @@ namespace npm {
   {
     RobotClient * rob(0);
     
-    if(descriptor->model == "visitor")
-      rob = new Visitor(descriptor, world);
-
+    if (descriptor->model == "zombie"
+	|| descriptor->model == "visitor")
+      rob = new Zombie(descriptor, world);
+    
 //     if(descriptor->model == "robox")
 //       rob = Robox::Create(descriptor, world);
 
@@ -66,13 +59,6 @@ namespace npm {
 //     else if(descriptor->model == "esbot")
 //       rob = new Esbot(descriptor, world);
 // #endif // NPM_HAVE_ESTAR
-
-// #ifdef NPM_HAVE_ASL
-//     else if (descriptor->model == "smart")
-//       rob = new Smart(descriptor, world);
-//     else if (descriptor->model == "borox")
-//       rob = new Borox(descriptor, world);
-// #endif // NPM_HAVE_ASL
 
     return shared_ptr<RobotClient>(rob);
   }

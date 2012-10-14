@@ -22,7 +22,7 @@
  */
 
 
-#include "Interlock.hpp"
+#include "Argtool.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -37,7 +37,7 @@ extern "C" {
 }
 
 
-Interlock::BoolCallback::
+Argtool::BoolCallback::
 BoolCallback(bool & option,
 	     char shortopt,
 	     const char * longopt_name,
@@ -48,7 +48,7 @@ BoolCallback(bool & option,
 }
 
 
-void Interlock::BoolCallback::
+void Argtool::BoolCallback::
 operator () (const char * argument)
   throw(runtime_error)
 {
@@ -56,7 +56,7 @@ operator () (const char * argument)
 }
 
 
-Interlock::BaseCallback::
+Argtool::BaseCallback::
 BaseCallback(char shortopt,
 	     const char * longopt_name,
 	     bool requires_arg,
@@ -74,27 +74,27 @@ BaseCallback(char shortopt,
 }
 
 
-Interlock::BaseCallback::
+Argtool::BaseCallback::
 ~BaseCallback()
 {
   delete _longopt;
 }
 
 
-Interlock::
-Interlock()
+Argtool::
+Argtool()
   : _longest_longopt(0)
 {
 }
 
 
-void Interlock::
+void Argtool::
 Add(shared_ptr<BaseCallback> callback)
   throw(runtime_error)
 {
   if(_index_map.find(callback->_shortopt) != _index_map.end()){
     ostringstream os;
-    os << "Interlock::Add(): Option '" << callback->_shortopt
+    os << "Argtool::Add(): Option '" << callback->_shortopt
        << "' already defined";
     throw runtime_error(os.str());
   }
@@ -110,7 +110,7 @@ Add(shared_ptr<BaseCallback> callback)
 }
 
 
-int Interlock::
+int Argtool::
 Parse(int argc,
       char ** argv,
       ostream * dbgos)
@@ -132,7 +132,7 @@ Parse(int argc,
 
   // DEBUG
   if(dbgos != 0){
-    (*dbgos) << "\nINFO from Interlock::Parse()\n"
+    (*dbgos) << "\nINFO from Argtool::Parse()\n"
 	     << "  longopt:\n";
     for(unsigned int i(0); i < _callback.size(); ++i){
       (*dbgos) << "    " << i << ": " << longopt[i].name << " / ";
@@ -161,7 +161,7 @@ Parse(int argc,
     // check for errors and end of options
     if((res == '?') || (res == ':')){
       ostringstream os;
-      os << "Interlock::Parse(): Problems with option '"
+      os << "Argtool::Parse(): Problems with option '"
 	 << (char) optopt << "'";
       throw runtime_error(os.str());
     }
@@ -171,7 +171,7 @@ Parse(int argc,
     // find corresponding callback index
     index_map_t::const_iterator im(_index_map.find(static_cast<char>(res)));
     if(im == _index_map.end())
-      throw runtime_error("Interlock::Parse(): Inconsistent index map.");
+      throw runtime_error("Argtool::Parse(): Inconsistent index map.");
     unsigned int index(im->second);
 
     // DEBUG
@@ -182,7 +182,7 @@ Parse(int argc,
     
     // check for errors
     if(index >= _callback.size())
-      throw runtime_error("Interlock::Parse(): Option index mismatch.");
+      throw runtime_error("Argtool::Parse(): Option index mismatch.");
     
     // flag as present
     _present[index] = true;
@@ -190,7 +190,7 @@ Parse(int argc,
       _argument[index] = optarg;
   }
   
-  // run present callbacks in order of calls to Interlock::Add()
+  // run present callbacks in order of calls to Argtool::Add()
   for(unsigned int i(0); i < _callback.size(); ++i)
     if(_present[i])
       (*_callback[i])(_argument[i]);
@@ -199,7 +199,7 @@ Parse(int argc,
 }
 
 
-void Interlock::
+void Argtool::
 UsageMessage(ostream & os,
 	     const string & synopsis)
 {
