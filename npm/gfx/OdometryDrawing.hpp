@@ -26,7 +26,7 @@
 #define NPM_ODOMETRYDRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 
 
 namespace sfl {

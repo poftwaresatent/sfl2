@@ -26,7 +26,7 @@
 #define NPM_SCANNERDRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 
 
 namespace npm {

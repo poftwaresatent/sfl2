@@ -26,8 +26,8 @@
 #define NPM_HOLODRIVEDRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
-#include <npm/common/HoloDrive.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <npm/HoloDrive.hpp>
 
 namespace npm {
   

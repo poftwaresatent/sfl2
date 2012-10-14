@@ -26,8 +26,8 @@
 #define NPM_BICYCLEDRIVEDRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
-#include <npm/common/BicycleDrive.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <npm/BicycleDrive.hpp>
 
 namespace npm {
 

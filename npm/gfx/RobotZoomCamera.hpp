@@ -26,7 +26,7 @@
 #define NPM_ROBOTZOOMCAMERA_HPP
 
 
-#include <npm/common/Camera.hpp>
+#include <npm/gfx/Camera.hpp>
 
 
 namespace npm {

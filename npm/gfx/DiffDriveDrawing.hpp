@@ -26,8 +26,8 @@
 #define NPM_DIFFDRIVEDRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
-#include <npm/common/DiffDrive.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <npm/DiffDrive.hpp>
 
 namespace npm {
   

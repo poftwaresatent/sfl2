@@ -23,7 +23,7 @@
 
 
 #include "Sharp.hpp"
-#include "SharpDrawing.hpp"
+#include "gfx/SharpDrawing.hpp"
 #include "RobotServer.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Ray.hpp>

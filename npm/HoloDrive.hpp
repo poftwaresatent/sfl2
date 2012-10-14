@@ -26,7 +26,7 @@
 #define NPM_HOLODRIVE_HPP
 
 
-#include <npm/common/Drive.hpp>
+#include <npm/Drive.hpp>
 
 namespace npm {
   

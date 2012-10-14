@@ -26,7 +26,7 @@
 #define NPM_LIDAR_HPP
 
 
-#include <npm/common/Sensor.hpp>
+#include <npm/Sensor.hpp>
 #include <vector>
 
 

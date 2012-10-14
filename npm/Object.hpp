@@ -26,7 +26,7 @@
 #define NPM_OBJECT_HPP
 
 
-#include <npm/common/Manageable.hpp>
+#include <npm/Manageable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 

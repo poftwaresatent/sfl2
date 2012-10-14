@@ -27,8 +27,8 @@
 #define NPM_TRAVERSABILITY_DRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
-#include <npm/common/Camera.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <npm/gfx/Camera.hpp>
 #include <sfl/gplan/RWTravmap.hpp>
 
 

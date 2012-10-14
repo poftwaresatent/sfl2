@@ -26,7 +26,7 @@
 #define NPM_SHARP_HPP
 
 
-#include <npm/common/Sensor.hpp>
+#include <npm/Sensor.hpp>
 
 
 namespace sfl {

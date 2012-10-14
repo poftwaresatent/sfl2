@@ -1,48 +1,46 @@
-AM_CPPFLAGS= @NPM_CPPFLAGS@
+AM_CPPFLAGS= -I@abs_top_srcdir@ @NPM_CPPFLAGS@
 AM_CFLAGS=   @NPM_CFLAGS@
 AM_CXXFLAGS= @NPM_CXXFLAGS@
 AM_LDFLAGS=  @NPM_LDFLAGS@
 
-if NPM_HAVE_ESTAR
-  ESTAR_SRC= MapperUpdateDrawing.cpp
-  ESTAR_HDR= MapperUpdateDrawing.hpp
-else
-  ESTAR_SRC= 
-  ESTAR_HDR= 
-endif
-
-noinst_LTLIBRARIES=   libcommon.la
-libcommon_la_SOURCES= WorldCamera.cpp CheatSheet.cpp \
-                      GoalInstanceDrawing.cpp OdometryDrawing.cpp \
-                      BBox.cpp WorldDrawing.cpp Manageable.cpp Sharp.cpp \
-                      TrajectoryDrawing.cpp HoloDriveDrawing.cpp Object.cpp \
-                      wrap_glu.cpp ScannerDrawing.cpp RobotZoomCamera.cpp \
-                      RobotDrawing.cpp View.cpp StillCamera.cpp \
-                      SimpleImage.cpp Sensor.cpp DiffDriveDrawing.cpp \
-                      SharpDrawing.cpp Camera.cpp Drawing.cpp \
-                      RobotServer.cpp RobotClient.cpp RobotDescriptor.cpp \
-                      Lidar.cpp Manager.cpp World.cpp HAL.cpp Drive.cpp \
-                      DiffDrive.cpp HoloDrive.cpp BicycleDrive.cpp \
-                      TraversabilityDrawing.cpp BicycleDriveDrawing.cpp \
+noinst_LTLIBRARIES=   libnpm.la
+libnpm_la_SOURCES=    BBox.cpp \
+                      BicycleDrive.cpp \
+                      CheatSheet.cpp \
+                      DiffDrive.cpp \
+                      Drive.cpp \
+                      HAL.cpp \
+                      HoloDrive.cpp \
+                      Lidar.cpp \
+                      Manageable.cpp \
+                      Manager.cpp \
                       NoiseModel.cpp \
-                      $(ESTAR_SRC)
+                      Object.cpp \
+                      RobotClient.cpp \
+                      RobotDescriptor.cpp \
+                      RobotServer.cpp \
+                      Sensor.cpp \
+                      Sharp.cpp \
+                      World.cpp
 
-include_HEADERS=      BBox.hpp BicycleDrive.hpp BicycleDriveDrawing.hpp \
-                      Camera.hpp CheatSheet.hpp DiffDrive.hpp \
-                      DiffDriveDrawing.hpp Drawer.hpp Drawing.hpp \
-                      Drive.hpp GoalInstanceDrawing.hpp \
-                      HAL.hpp HoloDrive.hpp HoloDriveDrawing.hpp \
-                      Lidar.hpp Manageable.hpp Manager.hpp \
-                      NoiseModel.hpp Object.hpp OdometryDrawing.hpp \
-                      RobotClient.hpp RobotDescriptor.hpp \
-                      RobotDrawing.hpp RobotServer.hpp \
-                      RobotZoomCamera.hpp ScannerDrawing.hpp \
-                      Sensor.hpp Sharp.hpp SharpDrawing.hpp \
-                      SimpleImage.hpp StillCamera.hpp \
-                      TrajectoryDrawing.hpp TraversabilityDrawing.hpp \
-                      View.hpp World.hpp WorldCamera.hpp \
-                      WorldDrawing.hpp pdebug.hpp wrap_gl.hpp \
-                      wrap_glu.hpp wrap_glut.hpp \
-                      $(ESTAR_HDR)
+include_HEADERS=      BBox.hpp \
+                      BicycleDrive.hpp \
+                      CheatSheet.hpp \
+                      DiffDrive.hpp \
+                      Drive.hpp \
+                      HAL.hpp \
+                      HoloDrive.hpp \
+                      Lidar.hpp \
+                      Manageable.hpp \
+                      Manager.hpp \
+                      NoiseModel.hpp \
+                      Object.hpp \
+                      RobotClient.hpp \
+                      RobotDescriptor.hpp \
+                      RobotServer.hpp \
+                      Sensor.hpp \
+                      Sharp.hpp \
+                      World.hpp \
+                      pdebug.hpp
 
-includedir=           @includedir@/npm/common
+includedir=           @includedir@/npm

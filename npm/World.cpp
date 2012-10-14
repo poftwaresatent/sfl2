@@ -25,8 +25,8 @@
 #include "World.hpp"
 #include "Object.hpp"
 #include "RobotServer.hpp"
-#include "WorldDrawing.hpp"
-#include "WorldCamera.hpp"
+#include "gfx/WorldDrawing.hpp"
+#include "gfx/WorldCamera.hpp"
 #include "BBox.hpp"
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Line.hpp>

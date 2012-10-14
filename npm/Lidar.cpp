@@ -23,7 +23,7 @@
 
 
 #include "Lidar.hpp"
-#include "ScannerDrawing.hpp"
+#include "gfx/ScannerDrawing.hpp"
 #include "RobotServer.hpp"
 #include "World.hpp"
 #include "HAL.hpp"

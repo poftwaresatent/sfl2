@@ -27,7 +27,7 @@
 #define NPM_MAPPER_UPDATE_DRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 
 
 namespace sfl {

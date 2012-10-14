@@ -26,7 +26,7 @@
 #define NPM_CAMERA_HPP
 
 
-#include <npm/common/Manageable.hpp>
+#include <npm/Manageable.hpp>
 
 
 namespace npm {

@@ -24,7 +24,7 @@
 #ifndef NPM_BICYCLE_DRIVE_HPP
 #define NPM_BICYCLE_DRIVE_HPP
 
-#include <npm/common/Drive.hpp>
+#include <npm/Drive.hpp>
 
 namespace npm {
   

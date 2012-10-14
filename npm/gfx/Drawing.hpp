@@ -26,7 +26,7 @@
 #define NPM_DRAWING_HPP
 
 
-#include <npm/common/Manageable.hpp>
+#include <npm/Manageable.hpp>
 
 
 namespace npm {

@@ -1,6 +1,6 @@
 AC_REVISION($Id$)
 AC_INIT([nepumuk],
-        [0.0pre],
+        [1.0pre],
         [libsunflower-devel AT lists DOT sourceforge DOT net])
 AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_MACRO_DIR([m4])
@@ -10,12 +10,6 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AM_PROG_AR
 
 AC_LANG(C++)
-
-AC_PROG_CC
-if test "x${GCC}" != "xyes"; then
-   AC_MSG_WARN([Looks like a non-GNU C compiler, build might break.])
-   AC_MSG_WARN([Update configure.ac with compiler-vendor detection.])
-fi
 
 AC_PROG_CXX
 if test "x${GXX}" != "xyes"; then
@@ -134,57 +128,6 @@ AC_CHECK_HEADER([sfl/util/numeric.hpp], [], [
   AC_MSG_ERROR([cannot compile sfl/util/numeric.hpp (CPPFLAGS=$CPPFLAGS)])])
 CPPFLAGS="$oldCPPFLAGS"
 
-NPM_ESTAR_CPPFLAGS=""
-NPM_ESTAR_LDFLAGS=""
-AC_ARG_WITH(estar,
-  AC_HELP_STRING([--with-estar=PATH], [enable E-Star (installed in PATH)]),
-  [ if test "x$withval" = "x" ; then
-      NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR"
-      NPM_ESTAR_LDFLAGS="-lestar"
-    else
-      NPM_ESTAR_CPPFLAGS="-DNPM_HAVE_ESTAR -I${withval}/include -I${withval}"
-      NPM_ESTAR_LDFLAGS="-L${withval}/lib -L${withval} -lestar"
-    fi
-    AM_CONDITIONAL([NPM_HAVE_ESTAR], [true]) ],
-  [ AM_CONDITIONAL([NPM_HAVE_ESTAR], [false]) ])
-
-AC_ARG_WITH(asl,
-  AC_HELP_STRING([--with-asl=PATH], [ASL 'standard software' install PATH]),
-  [ if test ! -z "$NPM_HAVE_ESTAR_TRUE"; then
-      AC_MSG_ERROR([--with-asl makes no sense without --with-estar])
-    fi
-    if test "x$withval" != "x" ; then
-      NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -DNPM_HAVE_ASL -I${withval}/include -I${withval}"
-      NPM_ESTAR_LDFLAGS="-lasl-mplan -lasl-mcontrol -L${withval}/lib -L${withval} $NPM_ESTAR_LDFLAGS"
-    else
-      NPM_ESTAR_CPPFLAGS="$NPM_ESTAR_CPPFLAGS -DNPM_HAVE_ASL"
-      NPM_ESTAR_LDFLAGS="-lasl-mplan -lasl-mcontrol $NPM_ESTAR_LDFLAGS"
-    fi
-    oldCPPFLAGS="$CPPFLAGS"
-    if test "$prefix" = "NONE"; then
-      CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS"
-    else
-      CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS -I$prefix/include"
-    fi
-    AC_CHECK_HEADER([asl/path_tracking.hpp], [], [
-      AC_MSG_ERROR([cannot compile asl/path_tracking.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-    CPPFLAGS="$oldCPPFLAGS"
-    AM_CONDITIONAL([NPM_HAVE_ASL], [true]) ],
-  [ AM_CONDITIONAL([NPM_HAVE_ASL], [false]) ])
-
-if test -z "$NPM_HAVE_ESTAR_TRUE"; then
-  oldCPPFLAGS="$CPPFLAGS"
-  if test "$prefix" = "NONE"; then
-    CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS"
-  else
-    CPPFLAGS="$NPM_CPPFLAGS $NPM_ESTAR_CPPFLAGS -I$prefix/include"
-  fi
-  AC_CHECK_HEADER([estar/Facade.hpp], [], [
-    AC_MSG_ERROR([cannot compile estar/Facade.hpp (CPPFLAGS=$CPPFLAGS)])], [])
-  CPPFLAGS="$oldCPPFLAGS"
-fi
-
-
 AC_ARG_WITH(png,
   AC_HELP_STRING([--with-png=PATH], [specify libpng install dir]),
   [ if test "x$withval" != "x" ; then
@@ -202,19 +145,7 @@ AC_CHECK_HEADERS([png.h],
   [ AC_MSG_NOTICE([PNG support disabled (CPPFLAGS=$CPPFLAGS)]) ])
 CPPFLAGS="$oldCPPFLAGS"
 
-ABSTOPBUILDDIR=`pwd`
-if test -z "$ABSTOPBUILDDIR" ; then
-  AC_MSG_ERROR([could not determine current working directory])
-fi
-if test "$prefix" = "NONE" ; then
-  NPM_CPPFLAGS="-I${ABSTOPBUILDDIR}/include $NPM_CPPFLAGS"
-else
-  NPM_CPPFLAGS="-I${ABSTOPBUILDDIR}/include $NPM_CPPFLAGS -I${prefix}/include"
-  NPM_LDFLAGS="$NPM_LDFLAGS -L$prefix/lib"
-fi
 NPM_CXXFLAGS="$NPM_CFLAGS"
-
-AM_CONDITIONAL([NPM_SMARTFLOWER], [false])
 
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(NPM_CPPFLAGS)
@@ -222,10 +153,8 @@ AC_SUBST(NPM_CFLAGS)
 AC_SUBST(NPM_CXXFLAGS)
 AC_SUBST(NPM_LDFLAGS)
 AC_SUBST(NPM_GLUTLIBS)
-AC_SUBST(NPM_ESTAR_CPPFLAGS)
-AC_SUBST(NPM_ESTAR_LDFLAGS)
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_FILES([Makefile common/Makefile robox/Makefile visitor/Makefile
-                estar/Makefile asl/Makefile
-                simul/Makefile])
+AC_CONFIG_FILES([Makefile
+                 npm/Makefile
+                 npm/gfx/Makefile])
 AC_OUTPUT
