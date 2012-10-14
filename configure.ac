@@ -36,7 +36,7 @@ case $host_os in
 	   AC_CHECK_HEADER([GL/glut.h], [],
 	     [ AC_MSG_ERROR([cannot find GL/glut.h]) ])
            CPPFLAGS="$oldCPPFLAGS"
-           AC_DISABLE_STATIC;;
+           AM_DISABLE_STATIC;;
   *openbsd*) AC_MSG_NOTICE([detected OpenBSD])
              NPM_CPPFLAGS="$NPM_CPPFLAGS -DOPENBSD -I/usr/local/include -I/usr/X11R6/include"
 	     NPM_LDFLAGS="-lpthread $NPM_LDFLAGS -L/usr/local/lib -L/usr/X11R6/lib"
@@ -51,7 +51,7 @@ case $host_os in
              AC_CHECK_HEADER([GL/glut.h], [],
                [ AC_MSG_ERROR([Nepumuk requires GLUT development packages (which in turn requires GL and GLU)])])
              CPPFLAGS="$oldCPPFLAGS"
-             AC_DISABLE_STATIC;;
+             AM_DISABLE_STATIC;;
   darwin10*)  AC_MSG_NOTICE([detected NEW Darwin (around OS X 10.6 or so?)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -I/usr/X11/include"
 	   NPM_LDFLAGS="-lpthread $NPM_LDFLAGS"
@@ -64,7 +64,7 @@ case $host_os in
 	   fi
 	   AC_CHECK_HEADER([GL/glut.h], [],
 	     [ AC_MSG_ERROR([cannot find GL/glut.h]) ])
-           AC_DISABLE_STATIC;;
+           AM_DISABLE_STATIC;;
   darwin*) AC_MSG_NOTICE([detected OLD Darwin (around OS X 10.3 or 10.4 or so?)])
            NPM_CPPFLAGS="$NPM_CPPFLAGS -DOSX -Wno-long-double"
            NPM_GLUTLIBS="-framework OpenGL -framework GLUT -lobjc"
