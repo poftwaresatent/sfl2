@@ -26,11 +26,6 @@
 #include <npm/RobotDescriptor.hpp>
 #include <npm/RobotClient.hpp>
 #include "Zombie.hpp"
-// #include "../robox/Robox.hpp"
-
-// #ifdef NPM_HAVE_ESTAR
-// # include "../estar/Esbot.hpp"
-// #endif // NPM_HAVE_ESTAR
 
 
 using namespace boost;
@@ -44,22 +39,11 @@ namespace npm {
   {
     RobotClient * rob(0);
     
-    if (descriptor->model == "zombie"
-	|| descriptor->model == "visitor")
+    if (descriptor->model == "Zombie")
       rob = new Zombie(descriptor, world);
+    else if(descriptor->model == "LidarZombie")
+      rob = new LidarZombie(descriptor, world);
     
-//     if(descriptor->model == "robox")
-//       rob = Robox::Create(descriptor, world);
-
-//     else if(descriptor->model == "custom")
-//       rob = Robox::CreateCustom(descriptor, world);
-
-
-// #ifdef NPM_HAVE_ESTAR
-//     else if(descriptor->model == "esbot")
-//       rob = new Esbot(descriptor, world);
-// #endif // NPM_HAVE_ESTAR
-
     return shared_ptr<RobotClient>(rob);
   }
 

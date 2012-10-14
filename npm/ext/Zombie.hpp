@@ -21,32 +21,48 @@
  * USA
  */
 
-
 #ifndef NPM_EXT_ZOMBIE_HPP
 #define NPM_EXT_ZOMBIE_HPP
 
-
 #include <npm/RobotClient.hpp>
 
+namespace npm {
+  
+  
+  class Zombie:
+    public RobotClient
+  {
+  public:
+    Zombie(boost::shared_ptr<RobotDescriptor> descriptor,
+	   const World & world);
+    
+    virtual bool PrepareAction(double timestep);
+    virtual void InitPose(double x, double y, double theta);
+    virtual void SetPose(double x, double y, double theta);
+    virtual void GetPose(double & x, double & y, double & theta);
+    virtual void SetGoal(double timestep, const sfl::Goal & goal);
+    virtual boost::shared_ptr<const sfl::Goal> GetGoal();
+    virtual bool GoalReached();
+    
+  private:
+    boost::shared_ptr<HoloDrive> m_drive;
+    boost::shared_ptr<sfl::Goal> m_goal;
+  };
+  
+  
+  class LidarZombie:
+    public Zombie
+  {
+  public:
+    LidarZombie(boost::shared_ptr<RobotDescriptor> descriptor,
+		const World & world);
+    
+    virtual bool PrepareAction(double timestep);
+    
+  private:
+    boost::shared_ptr<sfl::Scanner> m_scanner;
+  };
 
-class Zombie:
-  public npm::RobotClient
-{
-public:
-  Zombie(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	 const npm::World & world);
-  
-  virtual bool PrepareAction(double timestep);
-  virtual void InitPose(double x, double y, double theta);
-  virtual void SetPose(double x, double y, double theta);
-  virtual void GetPose(double & x, double & y, double & theta);
-  virtual void SetGoal(double timestep, const sfl::Goal & goal);
-  virtual boost::shared_ptr<const sfl::Goal> GetGoal();
-  virtual bool GoalReached();
-  
-private:
-  boost::shared_ptr<npm::HoloDrive> m_drive;
-  boost::shared_ptr<sfl::Goal> m_goal;
-};
+}
 
 #endif // NPM_EXT_ZOMBIE_HPP

@@ -20,4 +20,5 @@ dumpworld_LDADD=      libnpmbin.la \
 
 xfig2world_SOURCES=   xfig2world.cpp
 
-dist_bin_SCRIPTS=     test0.sh layout.test0 robots.test0
+dist_bin_SCRIPTS=     test0.sh layout.test0 robots.test0 \
+                      test1.sh layout.test1 robots.test1
