@@ -22,7 +22,7 @@
  */
 
 #include "Simulator.hpp"
-#include <ext/RobotFactory.hpp>
+#include <npm/ext/RobotFactory.hpp>
 #include <npm/World.hpp>
 #include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>

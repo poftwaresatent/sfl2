@@ -11,7 +11,6 @@ bin_PROGRAMS=         nepumuk dumpworld xfig2world
 nepumuk_SOURCES=      nepumuk.cpp Argtool.cpp
 nepumuk_LDADD=        libnpmbin.la \
                       ../npm/libnpm.la \
-                      ../ext/libext.la \
                       -lsunflower
 
 dumpworld_SOURCES=    dumpworld.cpp Argtool.cpp
@@ -20,3 +19,5 @@ dumpworld_LDADD=      libnpmbin.la \
                       -lsunflower
 
 xfig2world_SOURCES=   xfig2world.cpp
+
+dist_bin_SCRIPTS=     test0.sh layout.test0 robots.test0

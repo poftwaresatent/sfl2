@@ -3,7 +3,11 @@ AM_CFLAGS=   @NPM_CFLAGS@
 AM_CXXFLAGS= @NPM_CXXFLAGS@
 AM_LDFLAGS=  @NPM_LDFLAGS@
 
+SUBDIRS=              ext \
+                      gfx
+
 lib_LTLIBRARIES=      libnpm.la
+libnpm_la_LIBADD=     ext/libext.la
 libnpm_la_SOURCES=    BBox.cpp \
                       BicycleDrive.cpp \
                       CheatSheet.cpp \
