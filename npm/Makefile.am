@@ -21,7 +21,27 @@ libnpm_la_SOURCES=    BBox.cpp \
                       RobotServer.cpp \
                       Sensor.cpp \
                       Sharp.cpp \
-                      World.cpp
+                      World.cpp \
+                      gfx/BicycleDriveDrawing.cpp \
+                      gfx/Camera.cpp \
+                      gfx/DiffDriveDrawing.cpp \
+                      gfx/Drawing.cpp \
+                      gfx/GoalInstanceDrawing.cpp \
+                      gfx/HoloDriveDrawing.cpp \
+                      gfx/MapperUpdateDrawing.cpp \
+                      gfx/OdometryDrawing.cpp \
+                      gfx/RobotDrawing.cpp \
+                      gfx/RobotZoomCamera.cpp \
+                      gfx/ScannerDrawing.cpp \
+                      gfx/SharpDrawing.cpp \
+                      gfx/SimpleImage.cpp \
+                      gfx/StillCamera.cpp \
+                      gfx/TrajectoryDrawing.cpp \
+                      gfx/TraversabilityDrawing.cpp \
+                      gfx/View.cpp \
+                      gfx/WorldCamera.cpp \
+                      gfx/WorldDrawing.cpp \
+                      gfx/wrap_glu.cpp
 
 include_HEADERS=      BBox.hpp \
                       BicycleDrive.hpp \

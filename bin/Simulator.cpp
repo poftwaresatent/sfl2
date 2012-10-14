@@ -23,14 +23,14 @@
 
 #include "Simulator.hpp"
 #include "RobotFactory.hpp"
-#include "../common/World.hpp"
-#include "../common/RobotClient.hpp"
-#include "../common/RobotServer.hpp"
-#include "../common/Manager.hpp"
-#include "../common/SimpleImage.hpp"
-#include "../common/View.hpp"
-#include "../common/RobotDescriptor.hpp"
-#include "../common/pdebug.hpp"
+#include <npm/World.hpp>
+#include <npm/RobotClient.hpp>
+#include <npm/RobotServer.hpp>
+#include <npm/Manager.hpp>
+#include <npm/gfx/SimpleImage.hpp>
+#include <npm/gfx/View.hpp>
+#include <npm/RobotDescriptor.hpp>
+#include <npm/pdebug.hpp>
 #include <sfl/util/Frame.hpp>
 #include <fstream>
 #include <iostream>

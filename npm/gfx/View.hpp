@@ -26,7 +26,7 @@
 #define NPM_VIEW_HPP
 
 
-#include <npm/gfx/Manageable.hpp>
+#include <npm/Manageable.hpp>
 #include <vector>
 
 

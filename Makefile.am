@@ -6,7 +6,8 @@ AM_LDFLAGS=  @NPM_LDFLAGS@
 ACLOCAL_AMFLAGS= -I m4
 
 SUBDIRS=               npm \
-                       npm/gfx
+                       npm/gfx \
+                       bin
 
 SRCDIR=                @abs_top_srcdir@
 BUILDDIR=              @abs_top_builddir@

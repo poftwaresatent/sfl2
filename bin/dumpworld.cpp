@@ -23,7 +23,7 @@
 
 
 #include "Interlock.hpp"
-#include <npm/common/World.hpp>
+#include <npm/World.hpp>
 #include <iostream>
 
 

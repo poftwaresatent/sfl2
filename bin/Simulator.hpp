@@ -26,8 +26,8 @@
 #define NPM_SIMULATOR_HPP
 
 
-#include <npm/common/Manager.hpp>
-#include <npm/common/View.hpp>
+#include <npm/Manager.hpp>
+#include <npm/gfx/View.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>

@@ -156,5 +156,6 @@ AC_SUBST(NPM_GLUTLIBS)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile
                  npm/Makefile
-                 npm/gfx/Makefile])
+                 npm/gfx/Makefile
+                 bin/Makefile])
 AC_OUTPUT

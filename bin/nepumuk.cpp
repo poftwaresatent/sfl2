@@ -24,8 +24,8 @@
 
 #include "Simulator.hpp"
 #include "Interlock.hpp"
-#include "../common/World.hpp"
-#include "../common/wrap_glut.hpp"
+#include <npm/World.hpp>
+#include <npm/gfx/wrap_glut.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <fstream>

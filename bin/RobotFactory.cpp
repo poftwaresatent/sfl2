@@ -23,18 +23,19 @@
 
 
 #include "RobotFactory.hpp"
-#include "../common/RobotDescriptor.hpp"
-#include "../visitor/Visitor.hpp"
-#include "../robox/Robox.hpp"
+#include <npm/RobotDescriptor.hpp>
+#include <npm/RobotClient.hpp>
+// #include "../visitor/Visitor.hpp"
+// #include "../robox/Robox.hpp"
 
-#ifdef NPM_HAVE_ESTAR
-# include "../estar/Esbot.hpp"
-#endif // NPM_HAVE_ESTAR
+// #ifdef NPM_HAVE_ESTAR
+// # include "../estar/Esbot.hpp"
+// #endif // NPM_HAVE_ESTAR
 
-#ifdef NPM_HAVE_ASL
-# include "../asl/Smart.hpp"
-# include "../asl/Borox.hpp"
-#endif // NPM_HAVE_ASL
+// #ifdef NPM_HAVE_ASL
+// # include "../asl/Smart.hpp"
+// # include "../asl/Borox.hpp"
+// #endif // NPM_HAVE_ASL
 
 //#include "../theater/TheaterRobot.hpp"
 ////#include "../braitenberg/Braitenberg.hpp"
@@ -51,26 +52,26 @@ namespace npm {
   {
     RobotClient * rob(0);
 
-    if(descriptor->model == "robox")
-      rob = Robox::Create(descriptor, world);
+//     if(descriptor->model == "robox")
+//       rob = Robox::Create(descriptor, world);
 
-    else if(descriptor->model == "custom")
-      rob = Robox::CreateCustom(descriptor, world);
+//     else if(descriptor->model == "custom")
+//       rob = Robox::CreateCustom(descriptor, world);
 
-    else if(descriptor->model == "visitor")
-      rob = new Visitor(descriptor, world);
+//     else if(descriptor->model == "visitor")
+//       rob = new Visitor(descriptor, world);
 
-#ifdef NPM_HAVE_ESTAR
-    else if(descriptor->model == "esbot")
-      rob = new Esbot(descriptor, world);
-#endif // NPM_HAVE_ESTAR
+// #ifdef NPM_HAVE_ESTAR
+//     else if(descriptor->model == "esbot")
+//       rob = new Esbot(descriptor, world);
+// #endif // NPM_HAVE_ESTAR
 
-#ifdef NPM_HAVE_ASL
-    else if (descriptor->model == "smart")
-      rob = new Smart(descriptor, world);
-    else if (descriptor->model == "borox")
-      rob = new Borox(descriptor, world);
-#endif // NPM_HAVE_ASL
+// #ifdef NPM_HAVE_ASL
+//     else if (descriptor->model == "smart")
+//       rob = new Smart(descriptor, world);
+//     else if (descriptor->model == "borox")
+//       rob = new Borox(descriptor, world);
+// #endif // NPM_HAVE_ASL
 
     return shared_ptr<RobotClient>(rob);
   }
