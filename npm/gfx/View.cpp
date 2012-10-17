@@ -126,9 +126,13 @@ namespace npm {
   void View::
   SavePNG(const string &filename)
   {
-    SimpleImage image(Viewwidth(), Viewheight());
+#ifndef NPM_HAVE_PNG
+    std::cerr << __FILE__": " << __func__ << ": PNG not supported in this build\n";
+#else
+    PNGImage image(Viewwidth(), Viewheight());
     image.read_framebuf(Viewx(), Viewy());
     image.write_png(filename);
+#endif
   }
 
 

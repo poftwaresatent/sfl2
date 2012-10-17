@@ -114,21 +114,27 @@ AC_CHECK_HEADER([sfl/util/numeric.hpp], [], [
 CPPFLAGS="$oldCPPFLAGS"
 
 AC_ARG_WITH(png,
-  AC_HELP_STRING([--with-png=PATH], [specify libpng install dir]),
-  [ if test "x$withval" != "x" ; then
-      NPM_CPPFLAGS="$NPM_CPPFLAGS -I${withval}/include -I${withval}"
-      NPM_LDFLAGS="-L${withval}/lib -L${withval} $NPM_LDFLAGS"
-    fi ], [])
-oldCPPFLAGS="$CPPFLAGS"
-if test "$prefix" = "NONE"; then
-  CPPFLAGS="$NPM_CPPFLAGS"
-else
-  CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
-fi
-AC_CHECK_HEADERS([png.h],
-  [ NPM_LDFLAGS="-lpng -lz $NPM_LDFLAGS" ],
-  [ AC_MSG_NOTICE([PNG support disabled (CPPFLAGS=$CPPFLAGS)]) ])
-CPPFLAGS="$oldCPPFLAGS"
+  AC_HELP_STRING([--with-png=PATH], [enable libpng (for screenshots)]),
+  [ if test "x$with_png" = xno; then
+      AC_MSG_NOTICE([png support explicitly disabled])
+    fi ],
+  [ with_png=check ])
+AS_IF([test "x$with_png" != xno],
+  [ if test "$prefix" = "NONE"; then
+      CPPFLAGS="$NPM_CPPFLAGS"
+    else
+      CPPFLAGS="$NPM_CPPFLAGS -I$prefix/include"
+    fi
+    AC_CHECK_HEADERS([png.h],
+      [ NPM_CPPFLAGS="$NPM_CPPFLAGS -DNPM_HAVE_PNG"
+        NPM_LDFLAGS="-lpng -lz $NPM_LDFLAGS" ],
+      [ if test "x$with_png" != xcheck; then
+          AC_MSG_FAILURE([--with-png was given, but cannot find png.h])
+        else
+          AC_MSG_NOTICE([png.h not found])
+        fi ])
+    CPPFLAGS="$oldCPPFLAGS" ],
+  [])
 
 NPM_CXXFLAGS="$NPM_CFLAGS"
 
@@ -138,7 +144,6 @@ AC_SUBST(NPM_CFLAGS)
 AC_SUBST(NPM_CXXFLAGS)
 AC_SUBST(NPM_LDFLAGS)
 AC_SUBST(NPM_GLUTLIBS)
-AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile
                  npm/Makefile
                  npm/gfx/Makefile

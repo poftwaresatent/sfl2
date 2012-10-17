@@ -31,21 +31,21 @@ using std::cerr;
 
 namespace npm {
 
-  SimpleImage::
-  SimpleImage(png_uint_32 _width,
-	      png_uint_32 _height):
+  PNGImage::
+  PNGImage(png_uint_32 _width,
+	   png_uint_32 _height):
     width(_width),
     height(_height)
   {
     pixel = new png_byte[height * width * BPP];
     if( ! pixel){
-      cerr << "ERROR in SimpleImage::SimpleImage(): couldn't allocate pixels\n";
+      cerr << "ERROR in PNGImage::PNGImage(): couldn't allocate pixels\n";
       exit(EXIT_FAILURE);
     }
 
     row_pointers = new png_bytep[height];
     if( ! pixel){
-      cerr << "ERROR in SimpleImage::SimpleImage(): "
+      cerr << "ERROR in PNGImage::PNGImage(): "
 	   << "couldn't allocate row pointers\n";
       exit(EXIT_FAILURE);
     }
@@ -60,8 +60,8 @@ namespace npm {
 
 
 
-  SimpleImage::
-  ~SimpleImage()
+  PNGImage::
+  ~PNGImage()
   {
     if(pixel)
       delete[] pixel;
@@ -71,28 +71,28 @@ namespace npm {
 
 
 
-  bool SimpleImage::
+  bool PNGImage::
   write_png(const string &filename)
   {
-#ifndef HAVE_PNG_H
-    cerr << "SimpleImage::write_png(\"" << filename
-	 << "\"): PNG support not built\n";
+#ifndef NPM_HAVE_PNG
+    cerr << "PNGImage::write_png(\"" << filename
+	 << "\"): PNG not supported in this build\n";
     return false;
-#else // HAVE_PNG_H
+#else
     FILE *fp;
     png_structp png_ptr;
     png_infop info_ptr;
   
     fp = fopen(filename.c_str(), "wb");
     if( ! fp){
-      cerr << "SimpleImage::write_png(\"" << filename
+      cerr << "PNGImage::write_png(\"" << filename
 	   << "\"): couldn't open file\n";
       return false;
     }
   
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if( ! png_ptr){
-      cerr << "SimpleImage::write_png(\"" << filename
+      cerr << "PNGImage::write_png(\"" << filename
 	   << "\"): couldn't create write struct\n";
       fclose(fp);
       return false;
@@ -100,7 +100,7 @@ namespace npm {
   
     info_ptr = png_create_info_struct(png_ptr);
     if( ! info_ptr){
-      cerr << "SimpleImage::write_png(\"" << filename
+      cerr << "PNGImage::write_png(\"" << filename
 	   << "\"): couldn't create info struct\n";
       fclose(fp);
       png_destroy_write_struct(&png_ptr,  (png_infopp) NULL);
@@ -109,7 +109,7 @@ namespace npm {
   
     if(setjmp(png_jmpbuf(png_ptr)))
       {
-	cerr << "SimpleImage::write_png(\"" << filename
+	cerr << "PNGImage::write_png(\"" << filename
 	     << "\"): couldn't setjmp\n";
 	fclose(fp);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -139,7 +139,7 @@ namespace npm {
 
 
 
-  void SimpleImage::
+  void PNGImage::
   set_pixel(png_uint_32 x,
 	    png_uint_32 y,
 	    png_byte r,
@@ -154,7 +154,7 @@ namespace npm {
 
 
 
-  void SimpleImage::
+  void PNGImage::
   read_framebuf(unsigned int xoff,
 		unsigned int yoff)
   {

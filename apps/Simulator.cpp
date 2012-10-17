@@ -560,15 +560,19 @@ namespace npm {
   void AppWindow::
   PrintScreen()
   {
+#ifndef NPM_HAVE_PNG
+    std::cerr << __FILE__": " << __func__ << ": PNG not supported in this build\n";
+#else
     static unsigned int count(0);
     ostringstream filename;
     filename << "anim/" << name
 	     << setw(6) << setfill('0') << count++
 	     << ".png";
   
-    SimpleImage image(m_width, m_height);
+    PNGImage image(m_width, m_height);
     image.read_framebuf(0, 0);
     image.write_png(filename.str());
+#endif
   }
 
 }

@@ -26,26 +26,22 @@
 #define NPM_GFX_SIMPLE_IMAGE_HPP
 
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-# ifdef HAVE_PNG_H
+#ifdef NPM_HAVE_PNG
 #  include <png.h>
-# else // ! HAVE_PNG_H
+#else
 #  include <stdint.h>
 typedef uint32_t png_uint_32;
 typedef int8_t png_byte;
 typedef int8_t * png_bytep;
-# endif // HAVE_PNG_H
-#else  // ! HAVE_CONFIG_H
-# include <png.h>
-#endif // HAVE_CONFIG_H
-
+#endif
 
 #include <string>
-using std::string;
+
 
 namespace npm {
-
+  
+  using std::string;
+  
   /**
    *  \brief PNG-only image.
    * 
@@ -54,11 +50,11 @@ namespace npm {
    *  \todo Adjust naming conventions to the other classes.
    */
 
-  class SimpleImage
+  class PNGImage
   {
   public:
-    SimpleImage(png_uint_32 width, png_uint_32 height);
-    ~SimpleImage();
+    PNGImage(png_uint_32 width, png_uint_32 height);
+    ~PNGImage();
 
     bool write_png(const string &filename);
     void set_pixel(png_uint_32 x, png_uint_32 y,
