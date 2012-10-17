@@ -22,7 +22,7 @@
  */
 
 
-#include "SimpleImage.hpp"
+#include "PNGImage.hpp"
 #include <stdlib.h>
 
 #include "wrap_gl.hpp"

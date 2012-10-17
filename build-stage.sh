@@ -44,8 +44,12 @@ echo "  [-s|--skipbs]               do not bootstrap build system"
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-boost=$RETVAL"
 	    shift; shift; continue;;
 	-n|--png)
-	    abspath $2
-	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-png=$RETVAL"
+	    if [ "x$2" = "xno" ]; then
+		EXTRA_CFGOPTS="$EXTRA_CFGOPTS --without-png"
+	    else
+		abspath $2
+		EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-png=$RETVAL"
+	    fi
 	    shift; shift; continue;;
 	-f|--sfl)
 	    abspath $2

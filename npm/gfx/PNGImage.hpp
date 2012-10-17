@@ -22,8 +22,8 @@
  */
 
 
-#ifndef NPM_GFX_SIMPLE_IMAGE_HPP
-#define NPM_GFX_SIMPLE_IMAGE_HPP
+#ifndef NPM_GFX_PNG_IMAGE_HPP
+#define NPM_GFX_PNG_IMAGE_HPP
 
 
 #ifdef NPM_HAVE_PNG
@@ -73,4 +73,4 @@ namespace npm {
 
 }
 
-#endif // NPM_GFX_SIMPLE_IMAGE_HPP
+#endif // NPM_GFX_PNG_IMAGE_HPP

@@ -23,7 +23,7 @@
 
 
 #include "View.hpp"
-#include "SimpleImage.hpp"
+#include "PNGImage.hpp"
 #include "Camera.hpp"
 #include "BBox.hpp"
 #include "Drawing.hpp"

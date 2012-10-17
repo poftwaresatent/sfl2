@@ -11,7 +11,7 @@ include_HEADERS=      BicycleDriveDrawing.hpp \
                       RobotZoomCamera.hpp \
                       ScannerDrawing.hpp \
                       SharpDrawing.hpp \
-                      SimpleImage.hpp \
+                      PNGImage.hpp \
                       StillCamera.hpp \
                       TrajectoryDrawing.hpp \
                       TraversabilityDrawing.hpp \

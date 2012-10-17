@@ -38,7 +38,7 @@ libnpm_la_SOURCES=    BBox.cpp \
                       gfx/RobotZoomCamera.cpp \
                       gfx/ScannerDrawing.cpp \
                       gfx/SharpDrawing.cpp \
-                      gfx/SimpleImage.cpp \
+                      gfx/PNGImage.cpp \
                       gfx/StillCamera.cpp \
                       gfx/TrajectoryDrawing.cpp \
                       gfx/TraversabilityDrawing.cpp \

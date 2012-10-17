@@ -27,7 +27,7 @@
 #include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>
 #include <npm/Manager.hpp>
-#include <npm/gfx/SimpleImage.hpp>
+#include <npm/gfx/PNGImage.hpp>
 #include <npm/gfx/View.hpp>
 #include <npm/RobotDescriptor.hpp>
 #include <npm/pdebug.hpp>
