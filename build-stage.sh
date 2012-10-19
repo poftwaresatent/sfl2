@@ -23,9 +23,7 @@ echo "  [-p|--prefix]  <PREFIX>     install prefix ($PREFIX)"
 echo "  [-w|--work]    <DIR>        build work directory ($WORKDIR)"
 echo "  [-b|--boost]   <DIR>        BOOST library install directory"
 echo "  [-n|--png]     <DIR>        PNG install library directory"
-echo "  [-f|--sfl]     <DIR>        libsunflower install directory"
 echo "  [-e|--estar]   <DIR>        E* install directory"
-echo "  [-a|--asl]     <DIR>        ASL install directory"
 echo "  [-m|--make]    <PATH>       GNU Make executable (name or path)"
 echo "  [-j|--jobs]    <NUM>        number of parallel make jobs"
 echo "  [-d|--debug]                enable debug messages and symbols"
@@ -51,17 +49,9 @@ echo "  [-s|--skipbs]               do not bootstrap build system"
 		EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-png=$RETVAL"
 	    fi
 	    shift; shift; continue;;
-	-f|--sfl)
-	    abspath $2
-	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-sfl=$RETVAL"
-	    shift; shift; continue;;
 	-e|--estar)
 	    abspath $2
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-estar=$RETVAL"
-	    shift; shift; continue;;
-	-a|--asl)
-	    abspath $2
-	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --with-asl=$RETVAL"
 	    shift; shift; continue;;
 	-d|--debug)
 	    EXTRA_CFGOPTS="$EXTRA_CFGOPTS --enable-debug"

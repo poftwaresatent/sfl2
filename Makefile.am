@@ -1,15 +1,23 @@
-AM_CPPFLAGS= @NPM_CPPFLAGS@
-AM_CFLAGS=   @NPM_CFLAGS@
-AM_CXXFLAGS= @NPM_CXXFLAGS@
-AM_LDFLAGS=  @NPM_LDFLAGS@
+# AM_CPPFLAGS= @SFL2_CPPFLAGS@
+# AM_CFLAGS=   @SFL2_CFLAGS@
+# AM_CXXFLAGS= @SFL2_CXXFLAGS@
+# AM_LDFLAGS=  @SFL2_LDFLAGS@
 
-ACLOCAL_AMFLAGS= -I m4
+# ACLOCAL_AMFLAGS=       -I m4
 
-SUBDIRS=               npm \
+SUBDIRS=               sfl \
+                       npm \
                        apps
 
 SRCDIR=                @abs_top_srcdir@
 BUILDDIR=              @abs_top_builddir@
 
 EXTRA_DIST=            bootstrap-buildsystem.sh \
-                       build-stage.sh
+                       build-stage.sh \
+                       sfl/doxylogo.png \
+                       sfl/footer.html \
+                       sfl/mainpage.dox \
+                       npm/mainpage.dox \
+
+pkgconfigdir=          $(libdir)/pkgconfig
+pkgconfig_DATA=        sunflower2.pc

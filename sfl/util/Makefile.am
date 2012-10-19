@@ -1,7 +1,7 @@
-AM_CPPFLAGS= @SFL_CPPFLAGS@
-AM_CFLAGS=   @SFL_CFLAGS@
-AM_CXXFLAGS= @SFL_CXXFLAGS@
-AM_LDFLAGS=  @SFL_LDFLAGS@
+# AM_CPPFLAGS= @SFL2_CPPFLAGS@
+# AM_CFLAGS=   @SFL2_CFLAGS@
+# AM_CXXFLAGS= @SFL2_CXXFLAGS@
+# AM_LDFLAGS=  @SFL2_LDFLAGS@
 
 noinst_LTLIBRARIES= libutil.la
 libutil_la_SOURCES= Point.cpp Ray.cpp Frame.cpp Line.cpp Pthread.cpp \
@@ -15,10 +15,10 @@ include_HEADERS=    Point.hpp array2d.hpp functors.hpp Frame.hpp \
 includedir=         @includedir@/sfl/util
 
 check_PROGRAMS=       test-goalmgr test-ringbuf test-pthread
-LDADD=                ../libsunflower.la
+LDADD=                ../libsfl2.la
 test_goalmgr_SOURCES= test-goalmgr.cpp
 test_ringbuf_SOURCES= test-ringbuf.cpp
 test_pthread_SOURCES= test-pthread.cpp
 
-../libsunflower.la:
+../libsfl2.la:
 	$(MAKE) -C ..

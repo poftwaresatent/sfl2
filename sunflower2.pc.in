@@ -3,9 +3,9 @@ exec_prefix= @exec_prefix@
 libdir=      @libdir@
 includedir=  @includedir@
 
-Name:        sunflower
+Name:        Sunflower2
 Description: Mobile Robot Abstraction and Navigation Library
 Version:     @PACKAGE_VERSION@
-URL:         http://libsunflower.sourceforge.net/
-Libs:        -L${libdir} -lsunflower
+URL:         http://github.com/poftwaresatent/sfl2
+Libs:        -L${libdir} -lsfl2
 Cflags:      -I${includedir}
