@@ -1,0 +1,2 @@
+* add 'make doc' target, add Doxygen to configure output and
+  disable things that are not available (ie --with-estar etc)
