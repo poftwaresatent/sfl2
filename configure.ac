@@ -6,6 +6,7 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_PROG_AR
 
 AC_LANG(C++)
 
@@ -67,7 +68,6 @@ esac
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_EGREP
-AM_PROG_AR
 
 AC_ARG_ENABLE(debug,
   AS_HELP_STRING([--enable-debug], [GCC options -g -O0 (else -O3)]),

@@ -1,9 +1,9 @@
-# AM_CPPFLAGS= @SFL2_CPPFLAGS@
-# AM_CFLAGS=   @SFL2_CFLAGS@
-# AM_CXXFLAGS= @SFL2_CXXFLAGS@
-# AM_LDFLAGS=  @SFL2_LDFLAGS@
+AM_CPPFLAGS= @SFL2_CPPFLAGS@
+AM_CFLAGS=   @SFL2_CFLAGS@
+AM_CXXFLAGS= @SFL2_CXXFLAGS@
+AM_LDFLAGS=  @SFL2_LDFLAGS@
 
-# ACLOCAL_AMFLAGS=       -I m4
+ACLOCAL_AMFLAGS=       -I m4
 
 SUBDIRS=               sfl \
                        npm \
@@ -17,7 +17,7 @@ EXTRA_DIST=            bootstrap-buildsystem.sh \
                        sfl/doxylogo.png \
                        sfl/footer.html \
                        sfl/mainpage.dox \
-                       npm/mainpage.dox \
+                       npm/mainpage.dox
 
 pkgconfigdir=          $(libdir)/pkgconfig
 pkgconfig_DATA=        sunflower2.pc
