@@ -1,7 +1,7 @@
-# AM_CPPFLAGS= -I@abs_top_srcdir@ @SFL2_CPPFLAGS@
-# AM_CFLAGS=   @SFL2_CFLAGS@
-# AM_CXXFLAGS= @SFL2_CXXFLAGS@
-# AM_LDFLAGS=  @SFL2_LDFLAGS@ @SFL2_GLUTLIBS@
+AM_CPPFLAGS= -I@abs_top_srcdir@ @SFL2_CPPFLAGS@
+AM_CFLAGS=   @SFL2_CFLAGS@
+AM_CXXFLAGS= @SFL2_CXXFLAGS@
+AM_LDFLAGS=  @SFL2_LDFLAGS@ @SFL2_GLUTLIBS@
 
 noinst_LTLIBRARIES=   libnpmbin.la
 libnpmbin_la_SOURCES= Simulator.cpp
@@ -10,13 +10,13 @@ bin_PROGRAMS=         nepumuk dumpworld xfig2world
 
 nepumuk_SOURCES=      nepumuk.cpp Argtool.cpp
 nepumuk_LDADD=        libnpmbin.la \
-                      ../npm/libnpm.la \
-                      ../sfl/libsfl2.la
+                      ../sfl/libsfl2.la \
+                      ../npm/libnpm.la
 
 dumpworld_SOURCES=    dumpworld.cpp Argtool.cpp
 dumpworld_LDADD=      libnpmbin.la \
-                      ../npm/libnpm.la \
-                      ../sfl/libsfl2.la
+                      ../sfl/libsfl2.la \
+                      ../npm/libnpm.la
 
 xfig2world_SOURCES=   xfig2world.cpp
 
