@@ -33,6 +33,8 @@
 #include <sfl/util/numeric.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
+#include <iostream>
+#include <stdio.h>
 
 
 using namespace sfl;
