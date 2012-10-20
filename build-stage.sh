@@ -2,10 +2,11 @@
 
 PREFIX="$PWD/stage"
 EXTRA_CFGOPTS=""
-RUN_BOOTSTRAP="yes"
+RUN_BOOTSTRAP="no"
 WORKDIR="build"
 EXTRA_MAKEOPTS=""
 MAKE="make"
+RUN_DOXYGEN="no"
 
 function abspath {
     if [ foo`echo $1 | sed 's:\(.\).*:\1:'` = "foo/" ]; then
@@ -27,7 +28,8 @@ echo "  [-e|--estar]   <DIR>        E* install directory"
 echo "  [-m|--make]    <PATH>       GNU Make executable (name or path)"
 echo "  [-j|--jobs]    <NUM>        number of parallel make jobs"
 echo "  [-d|--debug]                enable debug messages and symbols"
-echo "  [-s|--skipbs]               do not bootstrap build system"
+echo "  [-a|--automake]             bootstrap the build system"
+echo "  [-D|--doxygen]              create API docs"
         exit 0;;
 	-p|--prefix)
 	    abspath $2
@@ -62,8 +64,11 @@ echo "  [-s|--skipbs]               do not bootstrap build system"
 	-j|--jobs)
 	    EXTRA_MAKEOPTS="$EXTRA_MAKEOPTS -j $2"
 	    shift; shift; continue;;
-	-s|--skipbs)
-	    RUN_BOOTSTRAP="no"
+	-a|--automake)
+	    RUN_BOOTSTRAP="yes"
+	    shift; continue;;
+	-D|--doxygen)
+	    RUN_DOXYGEN="yes"
 	    shift; continue;;
 	*)
 	    echo "ERROR unhandled option(s) $*" 1>&2
@@ -104,6 +109,13 @@ $MAKE $EXTRA_MAKEOPTS
 if [ $? -ne 0 ]; then
     echo "ERROR $MAKE $EXTRA_MAKEOPTS"
     exit 1
+fi
+
+if [ $RUN_DOXYGEN = "yes" ]; then
+    $MAKE $EXTRA_MAKEOPTS doc
+    if [ $? -ne 0 ]; then
+	echo "WARNING $MAKE $EXTRA_MAKEOPTS doc"
+    fi
 fi
 
 $MAKE $EXTRA_MAKEOPTS install
