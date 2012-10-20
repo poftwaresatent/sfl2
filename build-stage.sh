@@ -81,10 +81,10 @@ CFGOPTS="--prefix=$PREFIX $EXTRA_CFGOPTS"
 echo "configure options: $CFGOPTS"
 
 if [ $RUN_BOOTSTRAP = "yes" ]; then
-    echo "running bootstrap-buildsystem.sh (takes a while)"
-    ./bootstrap-buildsystem.sh
+    echo "running am-regen.sh (takes a while)"
+    ./am-regen.sh
     if [ $? -ne 0 ]; then
-	echo "ERROR bootstrap-buildsystem.sh"
+	echo "ERROR am-regen.sh"
 	exit 1
     fi
 fi

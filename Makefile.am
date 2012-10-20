@@ -12,7 +12,7 @@ SUBDIRS=               sfl \
 SRCDIR=                @abs_top_srcdir@
 BUILDDIR=              @abs_top_builddir@
 
-EXTRA_DIST=            bootstrap-buildsystem.sh \
+EXTRA_DIST=            am-regen.sh \
                        build-stage.sh \
                        sfl/doxylogo.png \
                        sfl/footer.html \
