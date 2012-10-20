@@ -22,7 +22,7 @@
  */
 
 
-#include "expo_parameters.h"
+#include "expo_parameters.hpp"
 #include "../util/OptionDictionary.hpp"
 #include "../util/strutil.hpp"
 #include <cmath>
@@ -33,6 +33,7 @@
 
 using namespace sfl;
 
+namespace expo {
 
 expo_parameters::
 expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt)
@@ -107,4 +108,6 @@ void expo_parameters_load(expo_parameters & params,
   
   string_to(opt->GetOption("mp_dtheta_starthoming"), params.mp_dtheta_starthoming);
   string_to(opt->GetOption("mp_dtheta_startaiming"), params.mp_dtheta_startaiming);
+}
+
 }

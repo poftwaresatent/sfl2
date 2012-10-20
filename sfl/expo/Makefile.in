@@ -225,7 +225,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 include_HEADERS = MotionPlanner.hpp MotionPlannerState.hpp \
-                    MotionController.hpp expo_parameters.h \
+                    MotionController.hpp expo_parameters.hpp \
                     Robox.hpp
 
 all: all-am

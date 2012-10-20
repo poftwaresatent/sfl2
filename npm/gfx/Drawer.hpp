@@ -25,6 +25,8 @@
 #ifndef NPM_GFX_DRAWER_HPP
 #define NPM_GFX_DRAWER_HPP
 
+namespace npm {
+
 class Drawer
 {
 public:
@@ -34,5 +36,7 @@ public:
     drawing->Draw();
   }
 };
+
+}
 
 #endif // NPM_GFX_DRAWER_HPP

@@ -31,6 +31,8 @@ namespace sfl {
   class OptionDictionary;
 }
 
+namespace expo {
+
   struct expo_parameters
   {
     explicit expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
@@ -56,5 +58,6 @@ namespace sfl {
   void expo_parameters_load(expo_parameters & params,
 			    boost::shared_ptr<sfl::OptionDictionary> opt);
 
+}
 
 #endif // EXPO_PARAMETERS_H

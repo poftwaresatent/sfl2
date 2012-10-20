@@ -43,10 +43,10 @@ namespace sfl {
   class Pose;
 }
 
-struct expo_parameters;
 
 namespace expo {
 
+  struct expo_parameters;
   class MotionPlanner;
   class MotionController;
   

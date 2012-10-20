@@ -25,7 +25,7 @@
 #include "Robox.hpp"
 #include "MotionPlanner.hpp"
 #include "MotionController.hpp"
-#include "expo_parameters.h"
+#include "expo_parameters.hpp"
 
 #include "../util/Pthread.hpp"
 #include "../api/Odometry.hpp"

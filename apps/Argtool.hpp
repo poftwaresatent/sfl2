@@ -37,6 +37,8 @@
 
 struct option;
 
+namespace npm {
+
 
 /**
    \todo The exception mechanism should be replaced by a return value
@@ -148,6 +150,8 @@ operator () (const char * argument)
   if( ! is)
     throw std::runtime_error(_longopt_name
 			     + ": invalid argument \"" + argument + "\"");
+}
+
 }
 
 #endif // NPM_ARGTOOL_HPP

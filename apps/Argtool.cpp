@@ -37,6 +37,8 @@ extern "C" {
 }
 
 
+namespace npm {
+
 Argtool::BoolCallback::
 BoolCallback(bool & option,
 	     char shortopt,
@@ -215,4 +217,6 @@ UsageMessage(ostream & os,
       os << "        ";
     os << _callback[i]->_description << "\n";
   }
+}
+
 }
