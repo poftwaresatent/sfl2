@@ -61,15 +61,17 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @top_srcdir@ \
-                         @top_srcdir@/api \
-                         @top_srcdir@/bband \
-                         @top_srcdir@/dwa \
-                         @top_srcdir@/expo \
-                         @top_srcdir@/gplan \
-                         @top_srcdir@/util \
-                         @top_srcdir@/cwrap \
-                         @top_srcdir@/contrib
+INPUT                  = @top_srcdir@/sfl \
+                         @top_srcdir@/sfl/api \
+                         @top_srcdir@/sfl/bband \
+                         @top_srcdir@/sfl/dwa \
+                         @top_srcdir@/sfl/expo \
+                         @top_srcdir@/sfl/gplan \
+                         @top_srcdir@/sfl/util \
+                         @top_srcdir@/npm \
+                         @top_srcdir@/npm/gfx \
+                         @top_srcdir@/npm/ext \
+                         @top_srcdir@/apps
 FILE_PATTERNS          = *.h *.hpp *.c *.cpp *.dox
 RECURSIVE              = NO
 EXCLUDE                = 
@@ -84,7 +86,7 @@ FILTER_SOURCE_FILES    = NO
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
@@ -93,7 +95,7 @@ VERBATIM_HEADERS       = YES
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
-ALPHABETICAL_INDEX     = NO
+ALPHABETICAL_INDEX     = YES
 COLS_IN_ALPHA_INDEX    = 5
 IGNORE_PREFIX          = 
 #---------------------------------------------------------------------------
@@ -103,7 +105,7 @@ GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = 
-HTML_FOOTER            = @top_srcdir@/footer.html
+HTML_FOOTER            = @top_srcdir@/doc/footer.html
 HTML_STYLESHEET        = 
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO

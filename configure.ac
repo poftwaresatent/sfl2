@@ -129,6 +129,7 @@ AC_SUBST(SFL2_LDFLAGS)
 AC_SUBST(SFL2_GLUTLIBS)
 AC_CONFIG_FILES([Makefile
                  sunflower2.pc
+                 doc/Doxyfile
                  sfl/Makefile
                  sfl/gplan/Makefile
                  sfl/expo/Makefile

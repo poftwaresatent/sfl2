@@ -21,3 +21,7 @@ EXTRA_DIST=            bootstrap-buildsystem.sh \
 
 pkgconfigdir=          $(libdir)/pkgconfig
 pkgconfig_DATA=        sunflower2.pc
+
+.PHONY: doc
+doc:
+	cd doc && doxygen Doxyfile
