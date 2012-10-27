@@ -26,8 +26,8 @@
 #define NPM_SIMULATOR_HPP
 
 
-#include <npm/Manager.hpp>
 #include <npm/gfx/View.hpp>
+#include <fpplib/registry.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
@@ -63,7 +63,7 @@ namespace npm {
     
     int m_width, m_height;
     
-    typedef SubManager<View> layout_t;
+    typedef fpplib::PointerRegistry<View*> layout_t; ////rfct
     typedef boost::shared_ptr<layout_t> layout_ptr;
     typedef std::map<unsigned char, layout_ptr> layout_map_t;
     
@@ -71,8 +71,7 @@ namespace npm {
     layout_ptr m_active_layout;
     layout_ptr m_default_layout;
     
-    typedef boost::shared_ptr<View> view_ptr;
-    typedef std::vector<view_ptr> views_t;
+    typedef std::vector<View*> views_t;
     
     views_t m_views;
   };

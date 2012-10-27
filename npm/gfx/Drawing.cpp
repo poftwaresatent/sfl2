@@ -23,32 +23,23 @@
 
 
 #include "Drawing.hpp"
-#include "Manager.hpp"
-#include <boost/shared_ptr.hpp>
 
-
-using namespace boost;
 using namespace std;
 
 
 namespace npm {
-
   
-  template<>
-  shared_ptr<UniqueManager<Drawing> > Instance()
-  {
-    static shared_ptr<UniqueManager<Drawing> > instance;
-    if( ! instance)
-      instance.reset(new UniqueManager<Drawing>());
-    return instance;
-  }
+  
+  Drawing::registry_t *Drawing::registry(new registry_t());
   
   
   Drawing::
-  Drawing(const string & name, const string & comment,
-	  boost::shared_ptr<Manager> manager)
-    : Manageable(name, comment, manager)
+  Drawing(const string & name_, const string & comment_)
+    : name(name_),
+      comment(comment_)
   {
+    if ("" != name_)
+      registry->add(name_, this);
   }
   
 }

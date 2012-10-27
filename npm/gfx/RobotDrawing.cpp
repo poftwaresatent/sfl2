@@ -26,7 +26,6 @@
 #include "RobotServer.hpp"
 #include "Object.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include <sfl/util/Line.hpp>
 
 
@@ -40,9 +39,7 @@ namespace npm {
   RobotDrawing::
   RobotDrawing(const RobotServer * robot)
     : Drawing(robot->GetName() + "_true_drawing",
-	      "true (and noisy if available) outline of \""
-	      + robot->GetName() + "\"",
-	      Instance<UniqueManager<Drawing> >()),
+	      "true (and noisy if available) outline of \"" + robot->GetName() + "\""),
       m_robot(robot)
   {
   }

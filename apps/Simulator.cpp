@@ -26,9 +26,10 @@
 #include <npm/World.hpp>
 #include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>
-#include <npm/Manager.hpp>
 #include <npm/gfx/PNGImage.hpp>
 #include <npm/gfx/View.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <npm/gfx/Camera.hpp>
 #include <npm/RobotDescriptor.hpp>
 #include <npm/pdebug.hpp>
 #include <sfl/util/Frame.hpp>
@@ -275,7 +276,7 @@ namespace npm {
   {
     ifstream config(layout_filename.c_str());
     string token;
-    view_ptr view;
+    View *view = 0;
     ostringstream warnings;
   
     while(config >> token){
@@ -304,7 +305,8 @@ namespace npm {
 	}
 	string foo;
 	config >> foo;
-	view.reset(new View(foo, m_active_layout));
+	view = new View(foo);
+	m_active_layout->add(view->name, view);
 	m_views.push_back(view);
       }
       else if(token == "Camera"){
@@ -393,10 +395,14 @@ namespace npm {
       cerr << warnings.str()
 	   << "\n==================================================\n"
 	   << "CAMERAS:\n\n";
-      Instance<UniqueManager<Camera> >()->PrintCatalog(cerr);
+      for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map().begin());
+	   ic != Camera::registry->map().end(); ++ic)
+	cerr << "  " << ic->first << ": " << ic->second->comment << "\n";
       cerr << "\n==================================================\n"
 	   << "DRAWINGS:\n\n";
-      Instance<UniqueManager<Drawing> >()->PrintCatalog(cerr);
+      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map().begin());
+	   id != Drawing::registry->map().end(); ++id)
+	cerr << "  " << id->first << ": " << id->second->comment << "\n";
       if(m_simul->fatal_warnings)
 	exit(EXIT_FAILURE);
     }
@@ -431,21 +437,24 @@ namespace npm {
     m_width = width;
     m_height = height;
     
-    View::ReshapeWalker const walker(width, height);
     for (layout_map_t::iterator il(m_layout.begin());
 	 il != m_layout.end(); ++il)
-      il->second->Walk(walker);
+      for (size_t iv(0); iv < il->second->size(); ++iv)
+	il->second->at(iv)->Reshape(width, height);
+    
     // It's a bit inefficient to reshape m_default_layout possibly
     // twice, but in case there is only a default layout it never gets
     // put into the m_layout map and we still have to update it.
-    m_default_layout->Walk(walker);
+    for (size_t iv(0); iv < m_default_layout->size(); ++iv)
+      m_default_layout->at(iv)->Reshape(width, height);
   }
   
   
   void AppWindow::
   Draw()
   {
-    m_active_layout->Walk(View::DrawWalker());
+    for (size_t iv(0); iv < m_active_layout->size(); ++iv)
+      m_active_layout->at(iv)->Draw();
   }
 
 

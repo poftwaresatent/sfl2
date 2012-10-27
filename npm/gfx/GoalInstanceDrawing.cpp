@@ -24,7 +24,6 @@
 
 #include "GoalInstanceDrawing.hpp"
 #include "wrap_glu.hpp"
-#include "Manager.hpp"
 #include <sfl/api/Goal.hpp>
 
 
@@ -38,8 +37,7 @@ namespace npm {
   GoalInstanceDrawing(const std::string & name,
 		      const sfl::Goal & goal)
     : Drawing(name,
-	      "the goal with associated radius (but not angular range)",
-	      Instance<UniqueManager<Drawing> >()),
+	      "the goal with associated radius (but not angular range)"),
       m_goal(goal)
   {
   }

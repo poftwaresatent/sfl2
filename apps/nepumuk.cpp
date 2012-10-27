@@ -26,6 +26,8 @@
 #include "Argtool.hpp"
 #include <npm/World.hpp>
 #include <npm/gfx/wrap_glut.hpp>
+#include <npm/gfx/Camera.hpp>
+#include <npm/gfx/Drawing.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <iostream>
 #include <fstream>
@@ -164,10 +166,14 @@ int main(int argc, char ** argv)
   if (params.dump) {
     cout << "==================================================\n"
 	 << "CAMERAS:\n";
-    Instance<UniqueManager<Camera> >()->PrintCatalog(cout);
+    for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map().begin());
+	 ic != Camera::registry->map().end(); ++ic)
+      cout << "  " << ic->first << ": " << ic->second->comment << "\n";
     cerr << "\n==================================================\n"
 	 << "DRAWINGS:\n";
-    Instance<UniqueManager<Drawing> >()->PrintCatalog(cout);
+    for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map().begin());
+	 id != Drawing::registry->map().end(); ++id)
+      cout << "  " << id->first << ": " << id->second->comment << "\n";
     exit(EXIT_SUCCESS);
   }
   simulator->Init();

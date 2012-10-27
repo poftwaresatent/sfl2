@@ -23,7 +23,6 @@
 
 #include "BicycleDriveDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 #include <math.h>
 
@@ -39,8 +38,7 @@ namespace npm {
   BicycleDriveDrawing(const string & name,
 		      shared_ptr<const BicycleDrive> drive)
     : Drawing(name,
-	      "schematic of BicycleDrive at current true robot pose",
-	      Instance<UniqueManager<Drawing> >()),
+	      "schematic of BicycleDrive at current true robot pose"),
       m_drive(drive),
       m_wheelbase(drive->wheelbase),
       m_wheelradius(drive->wheelradius),

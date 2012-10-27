@@ -25,7 +25,6 @@
 
 #include "TraversabilityDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include "View.hpp"
 #include "BBox.hpp"
 #include <sfl/util/numeric.hpp>
@@ -46,8 +45,7 @@ namespace npm {
 												shared_ptr<TravProxyAPI> proxy,
 												color_code_t _color_code)
     : Drawing(name,
-							"traversability map as greyscale with special highlights",
-							Instance<UniqueManager<Drawing> >()),
+							"traversability map as greyscale with special highlights"),
 			color_code(_color_code),
 			m_proxy(proxy)
   {
@@ -59,8 +57,7 @@ namespace npm {
 												TravProxyAPI * proxy,
 												color_code_t _color_code)
     : Drawing(name,
-							"traversability map as greyscale with special highlights",
-							Instance<UniqueManager<Drawing> >()),
+							"traversability map as greyscale with special highlights"),
 			color_code(_color_code),
 			m_proxy(proxy)
   {
@@ -350,8 +347,7 @@ namespace npm {
   TraversabilityCamera(const string & name,
 												shared_ptr<TravProxyAPI> proxy)
     : Camera(name,
-						 "bbox of traversability map",
-						 Instance<UniqueManager<Camera> >()),
+						 "bbox of traversability map"),
 			m_proxy(proxy)
   {
   }
@@ -361,8 +357,7 @@ namespace npm {
   TraversabilityCamera(const string & name,
 											 TravProxyAPI * proxy)
     : Camera(name,
-						 "bbox of traversability map",
-						 Instance<UniqueManager<Camera> >()),
+						 "bbox of traversability map"),
 			m_proxy(proxy)
   {
   }

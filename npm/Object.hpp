@@ -26,7 +26,6 @@
 #define NPM_OBJECT_HPP
 
 
-#include <npm/Manageable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -46,9 +45,11 @@ namespace npm {
      Basic simulated entity.
   */
   class Object
-    : public Manageable
   {
   public:
+    const std::string name;
+    ////rfct: const std::string comment;
+
     Object(const std::string & name, const std::string & comment);
     Object(const Object & original);
     

@@ -43,8 +43,7 @@ namespace npm {
   public:
     StillCamera(const std::string & name,
 		double x0, double y0,
-		double x1, double y1,
-		boost::shared_ptr<Manager> manager);
+		double x1, double y1);
     virtual void ConfigureView(View & view);
     double x0, y0, x1, y1;
   };

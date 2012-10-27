@@ -27,7 +27,6 @@
 #include "World.hpp"
 #include "BBox.hpp"
 #include "View.hpp"
-#include "Manager.hpp"
 
 
 using namespace boost;
@@ -40,8 +39,7 @@ namespace npm {
   WorldCamera::
   WorldCamera(const string & name, const World & world)
     : Camera(name,
-	     "bounding box of the world (environment model)",
-	     Instance<UniqueManager<Camera> >()),
+	     "bounding box of the world (environment model)"),
       m_world(world)
   {
   }

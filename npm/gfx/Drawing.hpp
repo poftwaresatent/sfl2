@@ -25,8 +25,7 @@
 #ifndef NPM_DRAWING_HPP
 #define NPM_DRAWING_HPP
 
-
-#include <npm/Manageable.hpp>
+#include <fpplib/registry.hpp>
 
 
 namespace npm {
@@ -43,9 +42,14 @@ namespace npm {
      coding what should be drawn.
   */
   class Drawing
-    : public Manageable
   {
   public:
+    typedef fpplib::PointerRegistry<Drawing*> registry_t;
+    static registry_t *registry;
+    
+    const std::string name;
+    const std::string comment;
+    
     /**
        Drawing instances always need a Manager. You can typically just
        use the singleton instance by passing in
@@ -53,8 +57,7 @@ namespace npm {
        Manager.hpp.
     */
     Drawing(const std::string & name,
-	    const std::string & comment,
-	    boost::shared_ptr<Manager> manager);
+	    const std::string & comment);
     
     /**
        The whole idea of this class is to have subclasses define this

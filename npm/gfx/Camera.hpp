@@ -25,8 +25,7 @@
 #ifndef NPM_CAMERA_HPP
 #define NPM_CAMERA_HPP
 
-
-#include <npm/Manageable.hpp>
+#include <fpplib/registry.hpp>
 
 
 namespace npm {
@@ -40,9 +39,14 @@ namespace npm {
      generic way to set a View to a specific bounding box. 
   */
   class Camera
-    : public Manageable
   {
   public:
+    typedef fpplib::PointerRegistry<Camera*> registry_t;
+    static registry_t *registry;
+    
+    const std::string name;
+    const std::string comment;
+    
     /**
        Camera instances always need a Manager. You can typically just
        use the singleton instance by passing in
@@ -55,8 +59,7 @@ namespace npm {
        parsed.
     */
     Camera(const std::string & name,
-	   const std::string & comment,
-	   boost::shared_ptr<Manager> manager);
+	   const std::string & comment);
     
     /**
        Configure a View to the Camera's bounding box.

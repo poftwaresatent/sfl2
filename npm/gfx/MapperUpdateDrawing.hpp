@@ -28,6 +28,7 @@
 
 
 #include <npm/gfx/Drawing.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 namespace sfl {

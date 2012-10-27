@@ -5,7 +5,8 @@ AM_LDFLAGS=  @SFL2_LDFLAGS@
 
 ACLOCAL_AMFLAGS=       -I m4
 
-SUBDIRS=               sfl \
+SUBDIRS=               3rdparty \
+                       sfl \
                        npm \
                        apps
 

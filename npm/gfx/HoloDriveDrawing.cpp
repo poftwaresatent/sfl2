@@ -24,7 +24,6 @@
 
 #include "HoloDriveDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -40,8 +39,7 @@ namespace npm {
   HoloDriveDrawing(const string & name,
 		   shared_ptr<const HoloDrive> drive)
     : Drawing(name,
-	      "schematic of HoloDrive at current true robot pose",
-	      Instance<UniqueManager<Drawing> >()),
+	      "schematic of HoloDrive at current true robot pose"),
       m_drive(drive),
       m_halfaxislength(drive->axislength / 2)
   {

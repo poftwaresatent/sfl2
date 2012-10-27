@@ -26,7 +26,6 @@
 #include "RobotServer.hpp"
 #include "wrap_gl.hpp"
 #include "pdebug.hpp"
-#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 #include <stdio.h>
 
@@ -37,9 +36,7 @@ namespace npm {
   TrajectoryDrawing(const RobotServer * owner)
     :
     Drawing(owner->GetName() + "_trajectory",
-	    "true (and noisy if available) trajectory of \""
-	    + owner->GetName() + "\"",
-	    Instance<UniqueManager<Drawing> >()),
+	    "true (and noisy if available) trajectory of \"" + owner->GetName() + "\""),
     m_owner(owner)
   {
   }

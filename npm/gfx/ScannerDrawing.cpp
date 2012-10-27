@@ -26,7 +26,6 @@
 #include "RobotServer.hpp"
 #include "Lidar.hpp"
 #include "wrap_glu.hpp"
-#include "Manager.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Scan.hpp>
@@ -43,8 +42,7 @@ namespace npm {
   ScannerDrawing(const Lidar * lidar)
     : Drawing(lidar->owner->GetName() + "_lidar_"
 	      + to_string(lidar->GetScanner()->hal_channel),
-	      "laser scanner data in global reference frame",
-	      Instance<UniqueManager<Drawing> >()),
+	      "laser scanner data in global reference frame"),
       m_lidar(lidar)
   {
   }

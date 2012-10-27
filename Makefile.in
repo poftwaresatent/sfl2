@@ -51,10 +51,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
+DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/sunflower2.pc.in \
-	$(top_srcdir)/configure $(top_srcdir)/doc/Doxyfile.in COPYING \
-	INSTALL TODO ar-lib config.guess config.sub depcomp install-sh \
+	$(top_srcdir)/configure $(top_srcdir)/doc/Doxyfile.in INSTALL \
+	TODO ar-lib config.guess config.sub depcomp install-sh \
 	ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -289,7 +289,8 @@ AM_CFLAGS = @SFL2_CFLAGS@
 AM_CXXFLAGS = @SFL2_CXXFLAGS@
 AM_LDFLAGS = @SFL2_LDFLAGS@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = sfl \
+SUBDIRS = 3rdparty \
+                       sfl \
                        npm \
                        apps
 

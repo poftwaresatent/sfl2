@@ -27,27 +27,24 @@
 #include "Camera.hpp"
 #include "BBox.hpp"
 #include "Drawing.hpp"
-#include "Manager.hpp"
 #include "wrap_glu.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/numeric.hpp>
-#include <boost/shared_ptr.hpp>
 #include <cmath>
 #include <iostream>
 #include <stdio.h>
 
 
 using namespace sfl;
-using namespace boost;
 using namespace std;
 
 
 namespace npm {
-    
+  
   
   View::
-  View(const std::string & name, boost::shared_ptr<Manager> manager)
-    : Manageable(name, "", manager),
+  View(const std::string & name_)
+    : name(name_),
       camera(0),
       savecount(0),
       mv_enable(false)
@@ -81,7 +78,7 @@ namespace npm {
   bool View::
   SetCamera(const string &name)
   {
-    camera = Instance<UniqueManager<Camera> >()->Retrieve(name);
+    camera = Camera::registry->find(name);
     return 0 != camera;
   }
 
@@ -89,7 +86,7 @@ namespace npm {
   bool View::
   AddDrawing(const string &name)
   {
-    Drawing * dd(Instance<UniqueManager<Drawing> >()->Retrieve(name));
+    Drawing * dd(Drawing::registry->find(name));
     if(0 == dd)
       return false;
     drawing.push_back(dd);

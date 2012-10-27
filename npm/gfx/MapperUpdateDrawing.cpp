@@ -24,7 +24,6 @@
 
 #include "MapperUpdateDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include "pdebug.hpp"
 #include <sfl/gplan/Mapper2d.hpp>
 #include <cmath>
@@ -42,8 +41,7 @@ namespace npm {
 											what_t _what,
 											boost::shared_ptr<const sfl::Mapper2d> mapper)
     : Drawing(name,
-							"most recent changes of a sweeping-update sfl::Mapper2d",
-							Instance<UniqueManager<Drawing> >()),
+							"most recent changes of a sweeping-update sfl::Mapper2d"),
 			what(_what),
       m_mapper(mapper)
   {

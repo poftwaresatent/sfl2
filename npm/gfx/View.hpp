@@ -25,9 +25,8 @@
 #ifndef NPM_VIEW_HPP
 #define NPM_VIEW_HPP
 
-
-#include <npm/Manageable.hpp>
 #include <vector>
+#include <string>
 
 
 namespace npm {
@@ -43,8 +42,7 @@ namespace npm {
      the need to handle OpenGL projection matrix and viewport
      configuration.
      
-     The ViewManager (singleton) keeps a list of views that can then be
-     requested by the Simulator. Each View defines a region of graphic
+     Each View defines a region of graphic
      output, and maintains a list of Drawing instances that should be
      drawn into that region. An associated Camera is used to set the
      bounding box of the View's contents. This bounding box is
@@ -53,13 +51,14 @@ namespace npm {
      View::Configure()).
   */
   class View
-    : public Manageable
   {
   public:
     typedef enum { N, NE, E, SE, S, SW, W, NW, CENTER } anchor_t;
     
-    /** View instances always need a Manager. */
-    View(const std::string & name, boost::shared_ptr<Manager> manager);
+    const std::string name;
+    
+    
+    explicit View(const std::string & name);
     
     void Configure(/// x-coordinate of lower-left corner, range = 0 to 1
 		   double x,
@@ -82,11 +81,6 @@ namespace npm {
     void SavePNG();
     
     void Draw();
-    
-    struct DrawWalker {
-      DrawWalker() {}
-      void Walk(View * host) { host->Draw(); }
-    };
 
     void Redefine(double x, double y, double width, double height);
     void SetBorder(int border);
@@ -122,13 +116,6 @@ namespace npm {
 		 int height	///< new window height (in pixels)
 		 );
     
-    struct ReshapeWalker {
-      ReshapeWalker(int _width, int _height)
-	: width(_width), height(_height) {}
-      void Walk(View * host) { host->Reshape(width, height); }
-      int width, height;
-    };
-      
     /// Prepare the OpenGL parameters such that subsequent drawing
     /// commands draw inside the View, with the bounding box correctly
     /// set.

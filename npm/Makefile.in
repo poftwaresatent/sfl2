@@ -96,15 +96,15 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libnpm_la_DEPENDENCIES = ext/libext.la
 am_libnpm_la_OBJECTS = BBox.lo BicycleDrive.lo CheatSheet.lo \
 	DiffDrive.lo Drive.lo HAL.lo HoloDrive.lo Lidar.lo \
-	Manageable.lo Manager.lo NoiseModel.lo Object.lo \
-	RobotClient.lo RobotDescriptor.lo RobotServer.lo Sensor.lo \
-	Sharp.lo World.lo BicycleDriveDrawing.lo Camera.lo \
-	DiffDriveDrawing.lo Drawing.lo GoalInstanceDrawing.lo \
-	HoloDriveDrawing.lo MapperUpdateDrawing.lo OdometryDrawing.lo \
-	RobotDrawing.lo RobotZoomCamera.lo ScannerDrawing.lo \
-	SharpDrawing.lo PNGImage.lo StillCamera.lo \
-	TrajectoryDrawing.lo TraversabilityDrawing.lo View.lo \
-	WorldCamera.lo WorldDrawing.lo wrap_glu.lo
+	NoiseModel.lo Object.lo RobotClient.lo RobotDescriptor.lo \
+	RobotServer.lo Sensor.lo Sharp.lo World.lo \
+	BicycleDriveDrawing.lo Camera.lo DiffDriveDrawing.lo \
+	Drawing.lo GoalInstanceDrawing.lo HoloDriveDrawing.lo \
+	MapperUpdateDrawing.lo OdometryDrawing.lo RobotDrawing.lo \
+	RobotZoomCamera.lo ScannerDrawing.lo SharpDrawing.lo \
+	PNGImage.lo StillCamera.lo TrajectoryDrawing.lo \
+	TraversabilityDrawing.lo View.lo WorldCamera.lo \
+	WorldDrawing.lo wrap_glu.lo
 libnpm_la_OBJECTS = $(am_libnpm_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -290,7 +290,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I@abs_top_srcdir@ @SFL2_CPPFLAGS@
+AM_CPPFLAGS = -I@abs_top_srcdir@ -I@abs_top_srcdir@/3rdparty/fpplib/include @SFL2_CPPFLAGS@
 AM_CFLAGS = @SFL2_CFLAGS@
 AM_CXXFLAGS = @SFL2_CXXFLAGS@
 AM_LDFLAGS = @SFL2_LDFLAGS@
@@ -307,8 +307,6 @@ libnpm_la_SOURCES = BBox.cpp \
                       HAL.cpp \
                       HoloDrive.cpp \
                       Lidar.cpp \
-                      Manageable.cpp \
-                      Manager.cpp \
                       NoiseModel.cpp \
                       Object.cpp \
                       RobotClient.cpp \
@@ -346,8 +344,6 @@ include_HEADERS = BBox.hpp \
                       HAL.hpp \
                       HoloDrive.hpp \
                       Lidar.hpp \
-                      Manageable.hpp \
-                      Manager.hpp \
                       NoiseModel.hpp \
                       Object.hpp \
                       RobotClient.hpp \
@@ -449,8 +445,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HoloDrive.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HoloDriveDrawing.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lidar.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Manageable.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MapperUpdateDrawing.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NoiseModel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Object.Plo@am__quote@

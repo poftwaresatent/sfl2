@@ -23,32 +23,23 @@
 
 
 #include "Camera.hpp"
-#include "Manager.hpp"
-#include <boost/shared_ptr.hpp>
 
-
-using namespace boost;
 using namespace std;
 
 
 namespace npm {
   
   
-  template<>
-  shared_ptr<UniqueManager<Camera> > Instance()
-  {
-    static shared_ptr<UniqueManager<Camera> > instance;
-    if( ! instance)
-      instance.reset(new UniqueManager<Camera>());
-    return instance;
-  }
+  Camera::registry_t *Camera::registry(new registry_t());
   
   
   Camera::
-  Camera(const string & name, const string & comment,
-	 boost::shared_ptr<Manager> manager)
-    : Manageable(name, comment, manager)
+  Camera(const string & name_, const string & comment_)
+    : name(name_),
+      comment(comment_)
   {
+    if ("" != name_)
+      registry->add(name_, this);
   }
 
 }

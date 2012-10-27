@@ -1,4 +1,4 @@
-AM_CPPFLAGS= -I@abs_top_srcdir@ @SFL2_CPPFLAGS@
+AM_CPPFLAGS= -I@abs_top_srcdir@ -I@abs_top_srcdir@/3rdparty/fpplib/include @SFL2_CPPFLAGS@
 AM_CFLAGS=   @SFL2_CFLAGS@
 AM_CXXFLAGS= @SFL2_CXXFLAGS@
 AM_LDFLAGS=  @SFL2_LDFLAGS@
@@ -16,8 +16,6 @@ libnpm_la_SOURCES=    BBox.cpp \
                       HAL.cpp \
                       HoloDrive.cpp \
                       Lidar.cpp \
-                      Manageable.cpp \
-                      Manager.cpp \
                       NoiseModel.cpp \
                       Object.cpp \
                       RobotClient.cpp \
@@ -55,8 +53,6 @@ include_HEADERS=      BBox.hpp \
                       HAL.hpp \
                       HoloDrive.hpp \
                       Lidar.hpp \
-                      Manageable.hpp \
-                      Manager.hpp \
                       NoiseModel.hpp \
                       Object.hpp \
                       RobotClient.hpp \

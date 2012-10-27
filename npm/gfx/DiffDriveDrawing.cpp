@@ -24,7 +24,6 @@
 
 #include "DiffDriveDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -40,8 +39,7 @@ namespace npm {
   DiffDriveDrawing(const string & name,
 		   shared_ptr<const DiffDrive> drive)
     : Drawing(name,
-	      "schematic of DiffDrive at current true robot pose",
-	      Instance<UniqueManager<Drawing> >()),
+	      "schematic of DiffDrive at current true robot pose"),
       m_drive(drive),
       m_halfwheelbase(drive->wheelbase / 2)
   {

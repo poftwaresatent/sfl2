@@ -15463,7 +15463,7 @@ SFL2_CXXFLAGS="$SFL2_CFLAGS"
 
 
 
-ac_config_files="$ac_config_files Makefile sunflower2.pc doc/Doxyfile sfl/Makefile sfl/gplan/Makefile sfl/expo/Makefile sfl/util/Makefile sfl/bband/Makefile sfl/api/Makefile sfl/dwa/Makefile npm/Makefile npm/gfx/Makefile npm/ext/Makefile apps/Makefile"
+ac_config_files="$ac_config_files Makefile sunflower2.pc doc/Doxyfile 3rdparty/Makefile sfl/Makefile sfl/gplan/Makefile sfl/expo/Makefile sfl/util/Makefile sfl/bband/Makefile sfl/api/Makefile sfl/dwa/Makefile npm/Makefile npm/gfx/Makefile npm/ext/Makefile apps/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16590,6 +16590,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "sunflower2.pc") CONFIG_FILES="$CONFIG_FILES sunflower2.pc" ;;
     "doc/Doxyfile") CONFIG_FILES="$CONFIG_FILES doc/Doxyfile" ;;
+    "3rdparty/Makefile") CONFIG_FILES="$CONFIG_FILES 3rdparty/Makefile" ;;
     "sfl/Makefile") CONFIG_FILES="$CONFIG_FILES sfl/Makefile" ;;
     "sfl/gplan/Makefile") CONFIG_FILES="$CONFIG_FILES sfl/gplan/Makefile" ;;
     "sfl/expo/Makefile") CONFIG_FILES="$CONFIG_FILES sfl/expo/Makefile" ;;

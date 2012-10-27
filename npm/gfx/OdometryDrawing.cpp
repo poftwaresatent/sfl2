@@ -24,7 +24,6 @@
 
 #include "OdometryDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "Manager.hpp"
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Pose.hpp>
 
@@ -42,8 +41,7 @@ namespace npm {
 		  const Odometry & odometry,
 		  double size)
     : Drawing(name,
-	      "the current pose estimation of a robot using sfl::Odometry",
-	      Instance<UniqueManager<Drawing> >()),
+	      "the current pose estimation of a robot using sfl::Odometry"),
       m_odometry(odometry),
       m_size(size)
   {
