@@ -39,6 +39,11 @@ namespace sfl {
   {
   public:
     /**
+       Default constructor (all members are zero).
+    */
+    Line();
+    
+    /**
        Construct a line given its two endpoints.
     */
     Line(const Point & p0, const Point & p1);
@@ -118,7 +123,6 @@ namespace sfl {
     
     Line & operator = (const Line & orig);
     
-  protected:
     Point p0, p1;
   };
 
@@ -170,6 +174,13 @@ namespace sfl {
     return p1.Y();
   }
 
+}
+
+
+namespace std {
+  
+  ostream & operator << (ostream & os, sfl::Line const &rhs);
+  
 }
 
 #endif // SUNFLOWER_LINE_HPP

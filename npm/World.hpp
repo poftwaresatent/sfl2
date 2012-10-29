@@ -25,7 +25,7 @@
 #ifndef NPM_WORLD_HPP
 #define NPM_WORLD_HPP
 
-
+#include <fpplib/configurable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -54,41 +54,38 @@ namespace npm {
   
   /**
      Simulated world. Basically a container for objects and robots.
-     
-     \todo how about storing robots here with smart pointers?
   */
   class World
+    : public fpplib::Configurable
   {
   public:
-    /** \note Beware of boost::shared_ptr and the fact that Robot
-	instances have shared pointers to sensors which might have
-	shared pointers to the world... CAREFUL! */
     typedef std::vector<boost::shared_ptr<Object> > object_t;
     
-    World(const std::string & name);
+    explicit World(const std::string & name);
     
-    /** Factory method for runtime configuration */
-    static boost::shared_ptr<World> Create(const std::string & name);
-    static boost::shared_ptr<World> TicketToAcapulco();
-    static boost::shared_ptr<World> Mini();
-    static boost::shared_ptr<World> Expo();
-    static boost::shared_ptr<World> Stage();
-
-    static boost::shared_ptr<World> Parse(std::istream & is,
-					  std::ostream * os);
-    
+    bool LoadBuiltin(const std::string & name);
+    void LoadMini();
+    void LoadExpo();
+    void LoadStage();
     
     /**
        Adds lines to the world, based on the boundary between obstcale
        and non-obstacle cells in the given traversability map. Cells
        with a value of travmap.obstacle or higher are considered
        obstacles.
+       
+       \todo XXXX to do: plug this into the fpplib configuration approach.
     */
     void
     ApplyTraversability(const sfl::TraversabilityMap & travmap,
 			bool simple = true);
     
-    void AddLine(const sfl::Line & line);
+    /**
+       \todo XXXX always returns true, but needs bool return type for
+       fpplib::Configurable::reflectCallback mechanism (at time of
+       writing).
+    */
+    bool AddLine(const sfl::Line & line);
     
     /** Makes a copy of the argument. */
     void AddObject(const Object & object);

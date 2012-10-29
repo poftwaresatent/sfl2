@@ -56,9 +56,9 @@ This software has been compiled under Linux, Mac OS X, OpenBSD, and
 even once or twice under Windows. For a basic setup, you need
 
 - a C++ compiler (tested with GCC 3 and 4)
-- the Boost [smart_ptr][] library
+- the [Boost][] smart_ptr and bind libraries
 
-[smart_ptr]: http://www.boost.org/libs/smart_ptr/smart_ptr.htm
+[Boost]: http://www.boost.org/
 
 In order to build the Nepumuk simulator which comes bundled with
 Sunflower, you will also need

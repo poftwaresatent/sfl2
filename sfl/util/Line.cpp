@@ -24,9 +24,18 @@
 
 #include "Line.hpp"
 #include <sfl/util/numeric.hpp>
+#include <iostream>
 
 
 namespace sfl {
+
+
+  Line::
+  Line():
+    p0(0.0, 0.0),
+    p1(0.0, 0.0)
+  {
+  }
 
 
   Line::
@@ -88,6 +97,17 @@ namespace sfl {
     p0 = orig.p0;
     p1 = orig.p1;
     return * this;
+  }
+  
+}
+
+namespace std {
+  
+  ostream & operator << (ostream & os, sfl::Line const &rhs)
+  {
+    return os << "("
+	      << rhs.X0() << ", " << rhs.Y0() << ", "
+	      << rhs.X1() << ", " << rhs.Y1() << ")";
   }
   
 }

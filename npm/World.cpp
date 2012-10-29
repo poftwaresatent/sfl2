@@ -33,6 +33,7 @@
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Random.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
+#include <boost/bind.hpp>
 #include <iostream>
 #include <sstream>
 #include <cmath>
@@ -49,63 +50,60 @@ namespace npm {
   
   World::
   World(const string & name)
-    : m_drawing(new WorldDrawing(name, * this)),
+    : fpplib::Configurable(name),
+      m_drawing(new WorldDrawing(name, * this)),
       m_camera(new WorldCamera(name, * this))
   {
     m_object.push_back(shared_ptr<Object>(new Object(name, "THE world")));
+    reflectCallback<string> ("builtin", boost::bind(&World::LoadBuiltin, this, _1));
+    reflectCallback<Line> ("lines", boost::bind(&World::AddLine, this, _1));
   }
   
   
-  shared_ptr<World> World::
-  Create(const string & name)
+  bool World::
+  LoadBuiltin(const string & name)
   {
     if(name == "mini")
-      return Mini();
-    if(name == "tta")
-      return TicketToAcapulco();
-    if(name == "expo")
-      return Expo();
-    if(name == "stage")
-      return Stage();
-    return shared_ptr<World>();
+      LoadMini();
+    else if(name == "expo")
+      LoadExpo();
+    else if(name == "stage")
+      LoadStage();
+    else
+      return false;
+    return true;
   }
   
   
-  shared_ptr<World> World::
-  Mini()
+  void World::
+  LoadMini()
   {
-    shared_ptr<World> mini(new World("mini"));
-    
-    mini->AddLine(Line(0, 3, 1, 3));
-    mini->AddLine(Line(-1, -1, 4, -1));
-    mini->AddLine(Line(4, -1, 4, 4));
-    mini->AddLine(Line(4, 4, -1, 4));
-    mini->AddLine(Line(-1, 4, -1, -1));
-    
-    return mini;
+    AddLine(Line(0, 3, 1, 3));
+    AddLine(Line(-1, -1, 4, -1));
+    AddLine(Line(4, -1, 4, 4));
+    AddLine(Line(4, 4, -1, 4));
+    AddLine(Line(-1, 4, -1, -1));
   }
 
 
-  shared_ptr<World> World::
-  Expo()
+  void World::
+  LoadExpo()
   {
-    shared_ptr<World> expo(new World("expo"));
-
-    expo->AddLine(Line( 0  ,  8  , 12  ,  3  ));
-    expo->AddLine(Line(12  ,  3  , 24  ,  2.3));
-    expo->AddLine(Line(24  ,  2.3, 18  , 24  ));
-    expo->AddLine(Line(18  , 24  , 18  , 28.9));
-    expo->AddLine(Line( 9.4, 27.7, 15.1, 28.9));
-    expo->AddLine(Line(15.1, 28.9, 14  , 24  ));
-    expo->AddLine(Line(14  , 24  , 10  , 24  ));
-    expo->AddLine(Line(10  , 24  ,  4.6, 21.3));
-    expo->AddLine(Line( 4.6, 21.3,  2.6, 22.4));
-    expo->AddLine(Line( 2.6, 22.4,  1.4, 18  ));
-    expo->AddLine(Line( 1.4, 18  ,  3.6, 18  ));
-    expo->AddLine(Line( 3.6, 18  ,  6  , 12  ));
-    expo->AddLine(Line( 6  , 12  , 11.4,  9.9));
-    expo->AddLine(Line(11.4,  9.9, 11  ,  8.6));
-    expo->AddLine(Line(11  ,  8.6,  5.1, 10.3));
+    AddLine(Line( 0  ,  8  , 12  ,  3  ));
+    AddLine(Line(12  ,  3  , 24  ,  2.3));
+    AddLine(Line(24  ,  2.3, 18  , 24  ));
+    AddLine(Line(18  , 24  , 18  , 28.9));
+    AddLine(Line( 9.4, 27.7, 15.1, 28.9));
+    AddLine(Line(15.1, 28.9, 14  , 24  ));
+    AddLine(Line(14  , 24  , 10  , 24  ));
+    AddLine(Line(10  , 24  ,  4.6, 21.3));
+    AddLine(Line( 4.6, 21.3,  2.6, 22.4));
+    AddLine(Line( 2.6, 22.4,  1.4, 18  ));
+    AddLine(Line( 1.4, 18  ,  3.6, 18  ));
+    AddLine(Line( 3.6, 18  ,  6  , 12  ));
+    AddLine(Line( 6  , 12  , 11.4,  9.9));
+    AddLine(Line(11.4,  9.9, 11  ,  8.6));
+    AddLine(Line(11  ,  8.6,  5.1, 10.3));
 
     Object column("column", "");
     column.AddLine(Line(-0.2, -0.2,  0.2, -0.2));
@@ -116,7 +114,7 @@ namespace npm {
       for(int y(6); y <= 18; y += 6){
 	Object col(column);
 	col.TransformTo(Frame(x, y, 0));
-	expo->AddObject(col);
+	AddObject(col);
       }
 
     Object biotop("biotop", "");
@@ -125,64 +123,20 @@ namespace npm {
     biotop.AddLine(Line(3.6, 0, 0, 1.3));
     biotop.AddLine(Line(0, 1.3, -1.3, 0));
     biotop.TransformTo(Frame(12, 16.3, 7 * M_PI / 180));
-    expo->AddObject(biotop);
-
-    return expo;
-  }
-
-
-  shared_ptr<World> World::
-  TicketToAcapulco()
-  {
-    shared_ptr<World> acapulco(new World("acapulco"));
-
-    //////////////////////////////////////////////////
-    // lines
-    acapulco->AddLine(Line(-2,  -2, 12.01, -2)); // hax .01 for visibility
-    acapulco->AddLine(Line(12,  -2, 12,  8));
-    acapulco->AddLine(Line(12,   8, -2,  8));
-    acapulco->AddLine(Line(-2,   8, -2, -2));
-    acapulco->AddLine(Line( 0, 6.5,  2,  4));
-    acapulco->AddLine(Line( 2,   4,  7,  4));
-
-
-    //////////////////////////////////////////////////
-    // objects
-    //   class Object *column = new Object("column");
-    //   column->SetPose(6, 6, 0);
-    //   column->AddLine(-0.2, -0.2,  0.2, -0.2);
-    //   column->AddLine( 0.2, -0.2,  0.2,  0.2);
-    //   column->AddLine( 0.2,  0.2, -0.2,  0.2);
-    //   column->AddLine(-0.2,  0.2, -0.2, -0.2);
-    //   acapulco->AddObject(column, true);
-    //   acapulco->AddObject(column->Clone(12, 6, 0), true);
-
-    //////////////////////////////////////////////////
-    // visitors
-#ifdef UNDEFINED
-    double x[] = {2.5, 4.5, 6  ,  9, 9.5, 11};
-    double y[] = {3  , 1  , 3.5, -1, 1.5,  3};
-    for(int i = 0; i < 6; ++i){
-      Visitor *visitor = new Visitor();
-      visitor->Create(acapulco);
-      visitor->SetPose(x[i], y[i], 0);
-      visitor->AddPose(x[i] + 3, y[i] + 3, 0);
-      acapulco->AddMovingObject(visitor, true);
-    }
-#endif
-  
-    return acapulco;
+    AddObject(biotop);
   }
   
   
-  void World::
+  bool World::
   AddLine(const Line & line)
   {
+    cout << "  DBG " << line << "\n";
     m_object[0]->AddLine(line);
     if( ! m_bbox)
       m_bbox.reset(new BBox(line));
     else
       m_bbox->Update(line);
+    return true;
   }
   
   
@@ -214,11 +168,9 @@ namespace npm {
   }
   
   
-  shared_ptr<World> World::
-  Stage()
+  void World::
+  LoadStage()
   {
-    shared_ptr<World> stage(new World("stage"));
-    
     //////////////////////////////////////////////////
     // H columns
     {
@@ -269,7 +221,7 @@ namespace npm {
       for(int i(0); i < 14; ++i){
 	Object col(column);
 	col.TransformTo(pos[i]);
-	stage->AddObject(col);
+	AddObject(col);
       }
     }
   
@@ -302,7 +254,7 @@ namespace npm {
       for(int i(0); i < 7; ++i){
 	Object col(column);
 	col.TransformTo(pos[i]);
-	stage->AddObject(col);
+	AddObject(col);
       }
     }
 
@@ -324,21 +276,19 @@ namespace npm {
       for(int i(0); i < 2; ++i){
 	Object col(column);
 	col.TransformTo(pos[i]);
-	stage->AddObject(col);
+	AddObject(col);
       }
     }
   
     //////////////////////////////////////////////////
     // walls
   
-    stage->AddLine(Line(0.0000, 0.0000, 0.0000, 7.9400));
-    stage->AddLine(Line(8.8760, 0.0000, 8.8760, 7.9400));
-    stage->AddLine(Line(0.0000, 7.9400, 8.8760, 7.9400));
-  
-    return stage;
+    AddLine(Line(0.0000, 0.0000, 0.0000, 7.9400));
+    AddLine(Line(8.8760, 0.0000, 8.8760, 7.9400));
+    AddLine(Line(0.0000, 7.9400, 8.8760, 7.9400));
   }
-
-
+  
+  
   void World::
   DumpLines(ostream & os, bool use_windows_eol) const
   {
@@ -467,83 +417,6 @@ namespace npm {
   }
   
   
-  shared_ptr<World> World::
-  Parse(istream & is, ostream * os)
-  {
-    shared_ptr<World> world;
-    try {
-      string name("");
-      vector<Line> line;
-      string textline;
-      double probability(-1);
-      while(getline(is, textline)){
-	istringstream tls(textline);
-	if(textline[0] == '#')
-	  continue;
-	string token;
-	if( ! (tls >> token))
-	  continue;
-	if(token == "name"){
-	  tls >> name;
-	  if( ! tls){
-	    if(os) *os << "ERROR: could not parse name from \""
-		       << tls.str() << "\"\n";
-	    return world;
-	  }
-	  PVDEBUG("name: %s\n", name.c_str());
-	}
-	else if(token == "line"){
-	  double x0, y0, x1, y1;
-	  tls >> x0 >> y0 >> x1 >> y1;
-	  if( ! tls){
-	    if(os) *os << "ERROR: could not parse line from \""
-		       << tls.str() << "\"\n";
-	    return world;
-	  }
-	  line.push_back(Line(x0, y0, x1, y1));
-	  PVDEBUG("line %g  %g  %g  %g\n", x0, y0, x1, y1);
-	}
-	else if(token == "probability"){
-	  tls >> probability;
-	  if( ! tls){
-	    if(os) *os << "ERROR: could not parse probability from \""
-		       << tls.str() << "\"\n";
-	    return world;
-	  }
-	  PVDEBUG("probability %g\n", probability);
-	}
-	else{
-	  if(os) *os << "ERROR: could not parse \""
-		     << tls.str() << "\"\n";
-	  return world;
-	}
-      }
-      if(name.empty()){
-	if(os) *os << "ERROR: no name specified\n";
-	return world;
-      }
-      if(line.empty()){
-	if(os) *os << "ERROR: no lines specified\n";
-	return world;
-      }
-      world.reset(new World(name));
-      if(probability < 0)
-	for(size_t il(0); il < line.size(); ++il)
-	  world->AddLine(line[il]);
-      else
-	for(size_t il(0); il < line.size(); ++il)
-	  if(Random::Uniform(probability))
-	    world->AddLine(line[il]);
-      PVDEBUG("bbox %g  %g  %g  %g\n", world->m_bbox->X0(), world->m_bbox->Y0(),
-	      world->m_bbox->X1(), world->m_bbox->Y1());
-    }
-    catch (runtime_error ee) {
-      errx(EXIT_FAILURE, "exception in World::Parse(): %s", ee.what());
-    }
-    return world;
-  }
-  
-  
   void World::
   AddKeyListener(boost::shared_ptr<KeyListener> listener) const
   {
@@ -559,4 +432,3 @@ namespace npm {
   }
   
 }
-

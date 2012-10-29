@@ -76,7 +76,6 @@ namespace sfl {
     
     Point & operator = (const Point & orig);
     
-  protected:
     double _x, _y;
   };
   

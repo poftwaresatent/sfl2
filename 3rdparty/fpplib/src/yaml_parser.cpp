@@ -115,6 +115,38 @@ namespace fpplib {
     
     return true;
   }
+  
+  
+  bool YamlParser::
+  processCallback(BaseCallback * cb,
+		  YAML::Node const & value)
+  {
+    if (dbg) {
+      *dbg << "  looking up converter for callback " << cb->name << " : " << cb->type << "\n";
+    }
+    
+    BaseValueConverter * cc(converters_.find(cb->type));
+    if (0 == cc) {
+      error = "no converter for callback type '" + cb->type
+	+ "' of callback '" + cb->name + "'";
+      return false;
+    }
+    
+    if (dbg) {
+      *dbg << "  parsing...\n";
+    }
+    
+    if ( ! cc->parse(value, cb->quickhack_)) {
+      error = "failed quickhack parse for callback '" + cb->name + "'";
+      return false;
+    }
+    
+    if (dbg) {
+      cb->dump("    ", *dbg);
+    }
+    
+    return cb->call();
+  }
 
 
   bool YamlParser::
@@ -186,6 +218,27 @@ namespace fpplib {
 	  return false;
 	}
 	continue;
+      }
+      
+      BaseCallback * cb(dynamic_cast<BaseCallback*>(rr));
+      if (cb) {
+	YAML::NodeType::value const nt(irefl.second().Type());
+	if (nt == YAML::NodeType::Scalar) {
+	  if ( ! processCallback(cb, irefl.second())) {
+	    return false;
+	  }
+	  continue;
+	}
+	if (nt == YAML::NodeType::Sequence) {
+	  for (YAML::Iterator ival(irefl.second().begin()); ival != irefl.second().end(); ++ival) {
+	    if ( ! processCallback(cb, *ival)) {
+	      return false;
+	    }
+	  }
+	  continue;
+	}
+	error = "callback '" + cb->name + "' must be scalar or sequence";
+	return false;
       }
       
       BaseSlot * ss(dynamic_cast<BaseSlot*>(rr));

@@ -29,12 +29,15 @@
 #include <npm/gfx/Camera.hpp>
 #include <npm/gfx/Drawing.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
+#include <fpplib/yaml_parser.hpp>
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <signal.h>
 #include <err.h>
 #include <unistd.h>
+
+#include <sfl/util/Line.hpp>
 
 
 using namespace npm;
@@ -49,8 +52,7 @@ public:
   Parameters():
     robot_config_filename("robots.config"),
     layout_config_filename("layout.config"),
-    world_name(""),
-    world_filename(""),
+    config_filename("npm.yaml"),
     world_from_trav(""),
     no_glut(false),
     fatal_warnings(false),
@@ -61,14 +63,43 @@ public:
   
   string robot_config_filename;
   string layout_config_filename;
-  string world_name;
-  string world_filename;
+  string config_filename;
   string world_from_trav;
   bool no_glut;
   bool fatal_warnings;
   bool dump;
   bool help;
 };
+
+
+class NPMFactory
+  : public fpplib::Factory
+{
+public:
+  NPMFactory()
+  {
+    declare<World>("world");
+  }
+  
+  World * GetWorld()
+  {
+    fpplib::Registry<World> const *wr(findRegistry<World>());
+    if ( !wr)
+      errx (EXIT_FAILURE, __FILE__": %s: no world registry", __func__);
+    if (wr->size() != 1)
+      errx (EXIT_FAILURE, __FILE__": %s: expected one world, but got %zu", __func__, wr->size());
+    return wr->at(0);
+  }
+};
+
+
+void operator >> (const YAML::Node & node, Line & ll)
+{
+  node[0] >> ll.p0._x;
+  node[1] >> ll.p0._y;
+  node[2] >> ll.p1._x;
+  node[3] >> ll.p1._y;
+}
 
 
 typedef map<int, AppWindow*> appwin_handle_t;
@@ -107,55 +138,32 @@ int main(int argc, char ** argv)
   
   parse_options(argc, argv);
   
-  shared_ptr<World> world;
-  if( ! params.world_name.empty()){
-    world = World::Create(params.world_name);
-    if( ! world){
-      cerr << "ERROR: invalid world name \"" << params.world_name << "\"\n";
-      exit(EXIT_FAILURE);
-    }
-  }
-
-  if( ! params.world_filename.empty()){
-    ifstream is(params.world_filename.c_str());
-    if( ! is){
-      cerr << "ERROR: invalid world file \""
-	   << params.world_filename << "\".\n";
-      exit(EXIT_FAILURE);
-    }
-    world = World::Parse(is, &cerr);
-    if( ! world){
-      cerr << "ERROR: parsing world file \"" << params.world_filename
-	   << "\" failed\n";
-      exit(EXIT_FAILURE);
-    }
-  }
+  NPMFactory ff;
+  fpplib::YamlParser pp(ff);
+  pp.dbg = &cout;
+  pp.addConverter<sfl::Line>();
+  if ( ! pp.parseFile (params.config_filename))
+    errx (EXIT_FAILURE, "%s: %s", params.config_filename.c_str(), pp.error.c_str());
   
-  if( ! params.world_from_trav.empty()){
-    ifstream trav(params.world_from_trav.c_str());
-    if( ! trav){
-      cerr << "ERROR: invalid traversability file \""
-	   << params.world_from_trav << "\".\n";
-      exit(EXIT_FAILURE);
-    }
-    shared_ptr<TraversabilityMap>
-      traversability(TraversabilityMap::Parse(trav, &cerr));
-    if( ! traversability){
-      cerr << "ERROR: parsing of traversability file \""
-	   << params.world_from_trav << "\" failed.\n";
-      exit(EXIT_FAILURE);
-    }
-    if( ! world)
-      world.reset(new World(traversability->name));
-    world->ApplyTraversability(*traversability);
-  }
-  
-  if( ! world){
-    cerr << "ERROR: no world creation method specified.\n"
-	 << "  use one of -w, -W, or -M\n"
-	 << "  see -h for more help\n";
-    exit(EXIT_FAILURE);
-  }
+  shared_ptr<World> world(ff.GetWorld());
+  // if( ! params.world_from_trav.empty()){
+  //   ifstream trav(params.world_from_trav.c_str());
+  //   if( ! trav){
+  //     cerr << "ERROR: invalid traversability file \""
+  // 	   << params.world_from_trav << "\".\n";
+  //     exit(EXIT_FAILURE);
+  //   }
+  //   shared_ptr<TraversabilityMap>
+  //     traversability(TraversabilityMap::Parse(trav, &cerr));
+  //   if( ! traversability){
+  //     cerr << "ERROR: parsing of traversability file \""
+  // 	   << params.world_from_trav << "\" failed.\n";
+  //     exit(EXIT_FAILURE);
+  //   }
+  //   if( ! world)
+  //     world.reset(new World(traversability->name));
+  //   world->ApplyTraversability(*traversability);
+  // }
   
   simulator.
     reset(new Simulator(world, 0.000001 * timestep_usec,
@@ -290,10 +298,8 @@ void parse_options(int argc, char ** argv)
 			 'l', "layout", "Name of the layout config file."));
   atl.Add(new StringCB(params.robot_config_filename,
 			 'r', "robot", "Name of the robot config file."));
-  atl.Add(new StringCB(params.world_name,
-			 'w', "world", "Name of the world (expo|mini|tta)."));
-  atl.Add(new StringCB(params.world_filename,
-			 'W', "worldfile", "World file."));
+  atl.Add(new StringCB(params.config_filename,
+			 'c', "config", "Configuration file."));
   atl.Add(new StringCB(params.world_from_trav,
 			 'M', "world-trav", "Add travmap lines to world."));
   atl.Add(new BoolCB(params.no_glut,

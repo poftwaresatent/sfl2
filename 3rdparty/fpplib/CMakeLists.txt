@@ -106,5 +106,8 @@ target_link_libraries (test-npm fpp)
 add_executable (idea src/idea.cpp)
 target_link_libraries (idea fpp)
 
+add_executable (test-callback src/test-callback.cpp)
+target_link_libraries (test-callback fpp)
+
 add_executable (tut01-basic-parameters src/tut01-basic-parameters.cpp)
 target_link_libraries (tut01-basic-parameters fpp)

@@ -36,6 +36,7 @@
 
 #include <fpplib/factory.hpp>
 #include <fpplib/parameter.hpp>
+#include <fpplib/callback.hpp>
 #include <fpplib/slot.hpp>
 #include <yaml-cpp/yaml.h>
 #include <iosfwd>
@@ -184,6 +185,8 @@ namespace fpplib {
     bool configure(Configurable * instance, YAML::Node const & dict);
     
     bool processParameter(BaseParameter * pp, YAML::Node const & value);
+    
+    bool processCallback(BaseCallback * cb, YAML::Node const & value);
     
     bool processSlot(BaseSlot * ss, YAML::Node const & value);
   };

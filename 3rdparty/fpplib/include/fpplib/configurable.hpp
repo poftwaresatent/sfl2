@@ -36,6 +36,7 @@
 
 #include <fpplib/registry.hpp>
 #include <fpplib/parameter.hpp>
+#include <fpplib/callback.hpp>
 #include <fpplib/slot.hpp>
 #include <string>
 #include <iosfwd>
@@ -145,6 +146,16 @@ namespace fpplib {
       VectorParameter<value_type> * pp(new VectorParameter<value_type>(name, instance));
       reflected_.add(name, pp);
       return pp;
+    }
+    
+    template<typename value_type, typename callable_type>
+    Callback<value_type, callable_type> * reflectCallback(string const & name,
+							  callable_type callback)
+    {
+      Callback<value_type, callable_type> * cb;
+      cb = new Callback<value_type, callable_type>(name, callback);
+      reflected_.add(name, cb);
+      return cb;
     }
     
     /**
