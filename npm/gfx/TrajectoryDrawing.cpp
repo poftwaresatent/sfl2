@@ -23,9 +23,9 @@
 
 
 #include "TrajectoryDrawing.hpp"
-#include "RobotServer.hpp"
+#include <npm/RobotServer.hpp>
 #include "wrap_gl.hpp"
-#include "pdebug.hpp"
+#include <npm/pdebug.hpp>
 #include <sfl/util/Frame.hpp>
 #include <stdio.h>
 

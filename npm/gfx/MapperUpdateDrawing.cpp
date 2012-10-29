@@ -24,7 +24,7 @@
 
 #include "MapperUpdateDrawing.hpp"
 #include "wrap_gl.hpp"
-#include "pdebug.hpp"
+#include <npm/pdebug.hpp>
 #include <sfl/gplan/Mapper2d.hpp>
 #include <cmath>
 #include <err.h>

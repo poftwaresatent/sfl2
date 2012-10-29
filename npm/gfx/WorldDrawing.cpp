@@ -23,8 +23,8 @@
 
 
 #include "WorldDrawing.hpp"
-#include "World.hpp"
-#include "Object.hpp"
+#include <npm/World.hpp>
+#include <npm/Object.hpp>
 #include "wrap_gl.hpp"
 #include <sfl/util/Line.hpp>
 

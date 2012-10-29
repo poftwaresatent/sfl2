@@ -24,8 +24,8 @@
 
 #include "WorldCamera.hpp"
 
-#include "World.hpp"
-#include "BBox.hpp"
+#include <npm/World.hpp>
+#include <npm/BBox.hpp>
 #include "View.hpp"
 
 

@@ -23,7 +23,7 @@
 
 
 #include "SharpDrawing.hpp"
-#include "Sharp.hpp"
+#include <npm/Sharp.hpp>
 #include "wrap_gl.hpp"
 #include <sfl/util/Ray.hpp>
 

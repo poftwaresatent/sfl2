@@ -26,7 +26,7 @@
 #include "TraversabilityDrawing.hpp"
 #include "wrap_gl.hpp"
 #include "View.hpp"
-#include "BBox.hpp"
+#include <npm/BBox.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
 #include <math.h>

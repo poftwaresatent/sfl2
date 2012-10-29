@@ -23,8 +23,8 @@
 
 
 #include "ScannerDrawing.hpp"
-#include "RobotServer.hpp"
-#include "Lidar.hpp"
+#include <npm/RobotServer.hpp>
+#include <npm/Lidar.hpp>
 #include "wrap_glu.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/api/Scanner.hpp>

@@ -25,7 +25,7 @@
 #include "View.hpp"
 #include "PNGImage.hpp"
 #include "Camera.hpp"
-#include "BBox.hpp"
+#include <npm/BBox.hpp>
 #include "Drawing.hpp"
 #include "wrap_glu.hpp"
 #include <sfl/util/strutil.hpp>

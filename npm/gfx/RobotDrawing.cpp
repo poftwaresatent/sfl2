@@ -23,8 +23,8 @@
 
 
 #include "RobotDrawing.hpp"
-#include "RobotServer.hpp"
-#include "Object.hpp"
+#include <npm/RobotServer.hpp>
+#include <npm/Object.hpp>
 #include "wrap_gl.hpp"
 #include <sfl/util/Line.hpp>
 

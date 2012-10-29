@@ -23,7 +23,7 @@
 
 
 #include "RobotZoomCamera.hpp"
-#include "RobotServer.hpp"
+#include <npm/RobotServer.hpp>
 #include "View.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
