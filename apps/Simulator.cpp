@@ -396,13 +396,13 @@ namespace npm {
       cerr << warnings.str()
 	   << "\n==================================================\n"
 	   << "CAMERAS:\n\n";
-      for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map().begin());
-	   ic != Camera::registry->map().end(); ++ic)
+      for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map_.begin());
+	   ic != Camera::registry->map_.end(); ++ic)
 	cerr << "  " << ic->first << ": " << ic->second->comment << "\n";
       cerr << "\n==================================================\n"
 	   << "DRAWINGS:\n\n";
-      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map().begin());
-	   id != Drawing::registry->map().end(); ++id)
+      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map_.begin());
+	   id != Drawing::registry->map_.end(); ++id)
 	cerr << "  " << id->first << ": " << id->second->comment << "\n";
       if(m_simul->fatal_warnings)
 	exit(EXIT_FAILURE);

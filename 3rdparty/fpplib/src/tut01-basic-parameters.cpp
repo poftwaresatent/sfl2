@@ -36,6 +36,7 @@
 //#include <fpplib/yaml_parser.hpp>
 #include <iostream>
 #include <err.h>
+#include <stdlib.h>
 
 
 class Example

@@ -37,6 +37,7 @@
 #include <fpplib/reflectable.hpp>
 #include <iostream>
 #include <vector>
+#include <typeinfo>
 
 
 namespace fpplib {

@@ -83,12 +83,12 @@ namespace fpplib {
       return vector_[index];
     }
     
-    inline map_t map() const
-    {
-      return map_;
-    }
+  //   inline map_t map__() const
+  //   {
+  //     return map_;
+  //   }
     
-  protected:
+  // protected:
     typedef vector<instance_type> vector_t;
     
     map_t map_;

@@ -32,6 +32,7 @@
 #include <sfl/util/numeric.hpp>
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 #include <stdio.h>
 
 

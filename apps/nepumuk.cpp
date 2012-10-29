@@ -174,13 +174,13 @@ int main(int argc, char ** argv)
   if (params.dump) {
     cout << "==================================================\n"
 	 << "CAMERAS:\n";
-    for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map().begin());
-	 ic != Camera::registry->map().end(); ++ic)
+    for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map_.begin());
+	 ic != Camera::registry->map_.end(); ++ic)
       cout << "  " << ic->first << ": " << ic->second->comment << "\n";
     cerr << "\n==================================================\n"
 	 << "DRAWINGS:\n";
-    for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map().begin());
-	 id != Drawing::registry->map().end(); ++id)
+    for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map_.begin());
+	 id != Drawing::registry->map_.end(); ++id)
       cout << "  " << id->first << ": " << id->second->comment << "\n";
     exit(EXIT_SUCCESS);
   }
