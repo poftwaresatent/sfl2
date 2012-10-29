@@ -25,15 +25,13 @@
 #ifndef NPM_ROBOTFACTORY_HPP
 #define NPM_ROBOTFACTORY_HPP
 
-
-#include <boost/shared_ptr.hpp>
+#include <string>
 
 
 namespace npm {
 
 
-  class RobotDescriptor;
-  class RobotClient;
+  class RobotServer;
   class World;
   
   
@@ -41,11 +39,11 @@ namespace npm {
   {
   public:
     /** \return 0 if unknown model or other errors. */
-    static boost::shared_ptr<npm::RobotClient>
-    Create(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	   const npm::World & world);
+    static npm::RobotServer * Create(std::string const &model,
+				     std::string const &name,
+				     World & world);
   };
-
+  
 }
 
 #endif // NPM_ROBOTFACTORY_HPP

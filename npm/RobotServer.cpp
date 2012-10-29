@@ -23,7 +23,7 @@
 
 
 #include "RobotServer.hpp"
-#include "RobotDescriptor.hpp"
+#include "RobotClient.hpp"
 #include "HAL.hpp"
 #include "Object.hpp"
 #include "gfx/RobotDrawing.hpp"
@@ -56,91 +56,35 @@ using namespace std;
 namespace npm {
   
   
-  size_t RobotServer::next_identifier(0);
-  
-  
   RobotServer::
-  RobotServer(shared_ptr<RobotDescriptor> descriptor,
-	      const World & world,
-	      bool enable_trajectory)
-    : m_identifier(next_identifier++),
-      m_enable_trajectory(enable_trajectory),
+  RobotServer(RobotClient *client,
+	      const World & world)
+    : m_client(client),
       m_world(world),
-      m_descriptor(descriptor),
-      m_true_body(new Object(descriptor->name, "true_body")),
+      m_hal(new HAL(this)),
+      m_true_body(new Object(client->name, "true_body")),
       m_true_pose(new Frame())
   {
-    bool noisy_odometry(false);
-    string_to(descriptor->GetOption("noisy_odometry"), noisy_odometry);
-    if(noisy_odometry){
+    if(client->m_noisy_odometry){
       m_noisy_pose.reset(new Frame());
-      m_noisy_body.reset(new Object(descriptor->name, "noisy_body"));
+      m_noisy_body.reset(new Object(client->name, "noisy_body"));
       m_noisy_trajectory.reset(new trajectory_t());
-      double odometry_noise_min_factor(0.95); // factors <0 are ignored
-      double odometry_noise_max_factor(1.05);
-      double odometry_noise_min_offset(1); // if min>max then offsets
-      double odometry_noise_max_offset(-1); // are ignored
-      string_to(descriptor->GetOption("odometry_noise_min_factor"),
-		odometry_noise_min_factor);
-      string_to(descriptor->GetOption("odometry_noise_max_factor"),
-		odometry_noise_max_factor);
-      string_to(descriptor->GetOption("odometry_noise_min_offset"),
-		odometry_noise_min_offset);
-      string_to(descriptor->GetOption("odometry_noise_max_offset"),
-		odometry_noise_max_offset);
-      m_odometry_noise_model.reset(new NoiseModel(odometry_noise_min_factor,
-						  odometry_noise_max_factor,
-						  odometry_noise_min_offset,
-						  odometry_noise_max_offset));
+      m_odometry_noise_model.reset(new NoiseModel(client->m_odometry_noise_min_factor,
+						  client->m_odometry_noise_max_factor,
+						  client->m_odometry_noise_min_offset,
+						  client->m_odometry_noise_max_offset));
     }
     
-    bool noisy_scanners(false);
-    string_to(descriptor->GetOption("noisy_scanners"), noisy_scanners);
-    if(noisy_scanners){
-      double scanner_noise_min_factor(-1); // factors <0 are ignored
-      double scanner_noise_max_factor(-1);
-      double scanner_noise_min_offset(-0.1); // if min>max then offsets
-      double scanner_noise_max_offset( 0.1); // are ignored
-      string_to(descriptor->GetOption("scanner_noise_min_factor"),
-		scanner_noise_min_factor);
-      string_to(descriptor->GetOption("scanner_noise_max_factor"),
-		scanner_noise_max_factor);
-      string_to(descriptor->GetOption("scanner_noise_min_offset"),
-		scanner_noise_min_offset);
-      string_to(descriptor->GetOption("scanner_noise_max_offset"),
-		scanner_noise_max_offset);
-      m_scanner_noise_model.reset(new NoiseModel(scanner_noise_min_factor,
-						 scanner_noise_max_factor,
-						 scanner_noise_min_offset,
-						 scanner_noise_max_offset));
+    if(client->m_noisy_scanners){
+      m_scanner_noise_model.reset(new NoiseModel(client->m_scanner_noise_min_factor,
+						 client->m_scanner_noise_max_factor,
+						 client->m_scanner_noise_min_offset,
+						 client->m_scanner_noise_max_offset));
     }
     
     AddDrawing(new RobotDrawing(this));
     AddDrawing(new TrajectoryDrawing(this));
-    double zoom(2);
-    if(descriptor->GetOption("camera_zoom") != ""){
-      istringstream is(descriptor->GetOption("camera_zoom"));
-      if( ! (is >> zoom)){
-	cerr << "WARNING: cannot read camera_zoom from \""
-	     << descriptor->GetOption("camera_zoom") << "\"\n";
-	zoom = 2;
-      }
-    }
-    AddCamera(new RobotZoomCamera(this, zoom));
-  }
-  
-  
-  RobotServer * RobotServer::
-  Create(shared_ptr<RobotDescriptor> descriptor,
-	 const World & world,
-	 size_t n_dof,
-	 bool enable_trajectory)
-  {
-    RobotServer * that(new RobotServer(descriptor,
-				       world,
-				       enable_trajectory));
-    that->m_hal.reset(new npm::HAL(that, n_dof));
-    return that;
+    AddCamera(new RobotZoomCamera(this, client->m_camera_zoom));
   }
   
   
@@ -149,7 +93,7 @@ namespace npm {
 	      double phi0, double phirange, int hal_channel)
   {
     ostringstream os;
-    os << m_descriptor->name << "-lidar-" << hal_channel;
+    os << m_client->name << "-lidar-" << hal_channel;
     shared_ptr<Mutex> mutex(Mutex::Create(os.str()));
     if( ! mutex){
       cerr << "sfl::Mutex::Create() failed in RobotServer::DefineLidar()\n";
@@ -197,7 +141,7 @@ namespace npm {
       return shared_ptr<DiffDrive>();
     shared_ptr<DiffDrive> dd(new DiffDrive(GetHAL(), wheelbase, wheelradius));
     m_drive = dd;
-    AddDrawing(new DiffDriveDrawing(m_descriptor->name + "_drive", dd));
+    AddDrawing(new DiffDriveDrawing(m_client->name + "_drive", dd));
     return dd;
   }
   
@@ -209,7 +153,7 @@ namespace npm {
       return shared_ptr<HoloDrive>();
     shared_ptr<HoloDrive> hd(new HoloDrive(GetHAL(), axislength));
     m_drive = hd;
-    AddDrawing(new HoloDriveDrawing(m_descriptor->name + "_drive", hd));
+    AddDrawing(new HoloDriveDrawing(m_client->name + "_drive", hd));
     return hd;
   }
 
@@ -221,7 +165,7 @@ namespace npm {
     shared_ptr<BicycleDrive>
       hd(new BicycleDrive(GetHAL(), wheelbase, wheelradius, axlewidth));
     m_drive = hd;
-    AddDrawing(new BicycleDriveDrawing(m_descriptor->name + "_drive", hd));
+    AddDrawing(new BicycleDriveDrawing(m_client->name + "_drive", hd));
     return hd;
   }
   
@@ -267,13 +211,6 @@ namespace npm {
   GetHAL()
   {
     return m_hal;
-  }
-  
-  
-  shared_ptr<RobotDescriptor> RobotServer::
-  GetDescriptor()
-  {
-    return m_descriptor;
   }
   
   
@@ -333,7 +270,7 @@ namespace npm {
   AddTruePose(shared_ptr<const Frame> pose)
   {
     m_true_pose->Set( * pose);
-    if(m_enable_trajectory)
+    if(m_client->m_enable_trajectory)
       m_true_trajectory.push_back(pose);
     m_true_body->TransformTo( * m_true_pose);
   }
@@ -345,7 +282,7 @@ namespace npm {
     if( ! m_noisy_pose)
       return;
     m_noisy_pose->Set( * pose);
-    if(m_enable_trajectory && m_noisy_trajectory)
+    if(m_client->m_enable_trajectory && m_noisy_trajectory)
       m_noisy_trajectory->push_back(pose);
     if(m_noisy_body)
       m_noisy_body->TransformTo( * m_noisy_pose);
@@ -355,7 +292,7 @@ namespace npm {
   const string & RobotServer::
   GetName() const
   {
-    return m_descriptor->name;
+    return m_client->name;
   }
   
   
@@ -398,13 +335,6 @@ namespace npm {
   GetNoisyTrajectory() const
   {
     return m_noisy_trajectory.get();
-  }
-  
-  
-  size_t RobotServer::
-  GetIdentifier() const
-  {
-    return m_identifier;
   }
   
   

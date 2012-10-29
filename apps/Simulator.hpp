@@ -37,7 +37,9 @@ namespace npm {
 
 
   class World;
+  class RobotServer;
   class RobotClient;
+  class RobotDescriptor;	// rfct: will be removed
   class Simulator;
   
   
@@ -103,9 +105,17 @@ namespace npm {
     std::vector<boost::shared_ptr<AppWindow> > m_appwin;
     
     struct robot_s {
-      robot_s(boost::shared_ptr<RobotClient> _robot)
-	: robot(_robot), runnable(true) {}
-      boost::shared_ptr<RobotClient> robot;
+      robot_s(boost::shared_ptr<RobotServer> _server,
+	      RobotClient *_client,
+	      boost::shared_ptr<RobotDescriptor> _rdesc)
+	: server(_server),
+	  client(_client),
+	  rdesc(_rdesc),
+	  runnable(true)
+      {}
+      boost::shared_ptr<RobotServer> server;
+      RobotClient *client;
+      boost::shared_ptr<RobotDescriptor> rdesc; // rfct: will disappear
       bool runnable;
     };
   

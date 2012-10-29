@@ -21,7 +21,7 @@
 #ifndef NPM_ROBOTCLIENT_HPP
 #define NPM_ROBOTCLIENT_HPP
 
-
+#include <fpplib/configurable.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -37,7 +37,6 @@ namespace sfl {
 namespace npm {
   
   class HAL;
-  class RobotDescriptor;
   class Lidar;
   class Sharp;
   class Drawing;
@@ -46,23 +45,18 @@ namespace npm {
   class HoloDrive;
   class BicycleDrive;
   class RobotServer;
-  class World;
   
   
   /**
-     Pure abstract interface. Allows subclasses of Robot to "construct"
-     their hardware and register drawings and such.
+     Base class for implementing robots.
   */
   class RobotClient
+    : public fpplib::Configurable
   {
   public:
-    RobotClient(boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world,
-		/** number of degrees of freedom */
-		size_t n_dof,
-		bool enable_trajectory);
+    RobotClient(std::string const &name);
     
-    virtual ~RobotClient();
+    virtual bool Initialize(RobotServer &server);
     
     /** Entry point for simulating the robot. It should calculate the
 	next action based on sensor readings (which are updated by the
@@ -86,10 +80,10 @@ namespace npm {
     /** Hook for knowing where the robot thinks it is, default
 	implementation uses the true pose, which should in principle
 	not be available to subclasses. */
-    virtual void GetPose(double & x, double & y, double & theta);
+    virtual bool GetPose(double & x, double & y, double & theta) { return false; }
     
     /** Hook to set the robot's goal, empty default implementation. */
-    virtual void SetGoal(double timestep, const sfl::Goal & goal) = 0;//{}
+    virtual void SetGoal(double timestep, const sfl::Goal & goal) {}
     
     /** Hook to query the robot's current goal, default implementation
 	returns an 'invalid' pointer. */
@@ -99,70 +93,27 @@ namespace npm {
 	goal, default implementation always returns false. */
     virtual bool GoalReached() { return false; }
     
-    /** npm::HAL subclasses sfl::HAL to easily interface libsunflower. */
-    boost::shared_ptr<HAL> GetHAL();
-    
-    /** This allows you to retrieve runtime options, a bit like
-	environment variables. */
-    boost::shared_ptr<RobotDescriptor> GetDescriptor();
-    
-    /** using this means you're cheating... */
-    boost::shared_ptr<RobotServer> GetServer() { return m_server; }
-    
-    /** using this means you're cheating... */
-    boost::shared_ptr<const RobotServer> GetServer() const { return m_server; }
-    
   protected:
-    /** Add a line to the robot's body. */
-    void AddLine(double x0, double y0, double x1, double y1);
+    boost::shared_ptr<HAL> m_hal; // set via Initialize
     
-    /** Add a line to the robot's body. */
-    void AddLine(const sfl::Line & line);
+  private:
+    friend class RobotServer;
     
-    /** Add all lines of a Polygon to the robot's body. */
-    void AddPolygon(const sfl::Polygon & polygon);
+    bool m_enable_trajectory;
     
-    /** Add a Drawing subclass to the robot. */
-    void AddDrawing(boost::shared_ptr<Drawing> drawing);
+    bool m_noisy_odometry;
+    double m_odometry_noise_min_factor;//(0.95); // factors <0 are ignored
+    double m_odometry_noise_max_factor;//(1.05);
+    double m_odometry_noise_min_offset;//(1); // if min>max then offsets
+    double m_odometry_noise_max_offset;//(-1); // are ignored
     
-    /** Convenient shortcut if you want to transfer ownership anyways. */
-    void AddDrawing(Drawing * drawing);
+    bool m_noisy_scanners;
+    double m_scanner_noise_min_factor;//(-1); // factors <0 are ignored
+    double m_scanner_noise_max_factor;//(-1);
+    double m_scanner_noise_min_offset;//(-0.1); // if min>max then offsets
+    double m_scanner_noise_max_offset;//( 0.1); // are ignored
     
-    /** Add a Camera subclass to the robot. */
-    void AddCamera(boost::shared_ptr<Camera> camera);
-    
-    /** Convenient shortcut if you want to transfer ownership anyways. */
-    void AddCamera(Camera * camera);
-    
-    /** Factory method for robot subclasses to create their sensors. */
-    boost::shared_ptr<Lidar>
-    DefineLidar(const sfl::Frame & mount, size_t nscans, double rhomax,
-		double phi0, double phirange, int hal_channel);
-    
-    /** Variant for clients who created their own scanner... */
-    boost::shared_ptr<Lidar>
-    DefineLidar(boost::shared_ptr<sfl::Scanner> scanner);
-
-    /** See DefineLidar(). */
-    boost::shared_ptr<Sharp>
-    DefineSharp(const sfl::Frame & mount, double rmax, int channel);
-    
-    /** Factory method for creating a differential drive actuator. */
-    boost::shared_ptr<DiffDrive>
-    DefineDiffDrive(double wheelbase, double wheelradius);
-    
-    /** Factory method for creating a holonomic drive actuator. */
-    boost::shared_ptr<HoloDrive>
-    DefineHoloDrive(double axislength);
-
-    /** Factory method for creating a bicycle drive actuator. */
-    boost::shared_ptr<BicycleDrive>
-    DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth);
-    
-      //  private:
-  public:
-    friend class Simulator;
-    boost::shared_ptr<RobotServer> m_server;
+    double m_camera_zoom;//(2);
   };
   
 }

@@ -93,7 +93,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libnpm_la_DEPENDENCIES = ext/libext.la
+libnpm_la_DEPENDENCIES = ../3rdparty/libnpm3p.la ext/libext.la
 am_libnpm_la_OBJECTS = BBox.lo BicycleDrive.lo CheatSheet.lo \
 	DiffDrive.lo Drive.lo HAL.lo HoloDrive.lo Lidar.lo \
 	NoiseModel.lo Object.lo RobotClient.lo RobotDescriptor.lo \
@@ -298,7 +298,9 @@ SUBDIRS = ext \
                       gfx
 
 lib_LTLIBRARIES = libnpm.la
-libnpm_la_LIBADD = ext/libext.la
+libnpm_la_LIBADD = ../3rdparty/libnpm3p.la \
+                      ext/libext.la
+
 libnpm_la_SOURCES = BBox.cpp \
                       BicycleDrive.cpp \
                       CheatSheet.cpp \

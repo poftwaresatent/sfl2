@@ -243,18 +243,19 @@ namespace npm {
     for (size_t ii(0); ii < rdesc.size(); ++ii) {
       
       // create robot from descriptor
-      shared_ptr<RobotClient> rob(RobotFactory::Create(rdesc[ii], *m_world));
+      shared_ptr<RobotServer> rob(RobotFactory::Create(rdesc[ii]->model,
+						       rdesc[ii]->name,
+						       *m_world));
       if ( ! rob)
 	errx(EXIT_FAILURE,
 	     "Simulator::InitRobots(): unknown model \"%s\" or parse error in robot construction",
 	     rdesc[ii]->model.c_str());
-
+      
       // hook it into the simulation
-      m_robot.push_back(robot_s(rob));
-      m_world->AddRobot(rob->m_server.get());
+      m_robot.push_back(robot_s(rob, rob->m_client, rdesc[ii]));
       shared_ptr<const Frame> pose(rdesc[ii]->GetInitialPose());
-      rob->m_server->InitializePose(*pose);
-      rob->SetPose(pose->X(), pose->Y(), pose->Theta());
+      rob->InitializePose(*pose);
+      rob->m_client->SetPose(pose->X(), pose->Y(), pose->Theta());
       
       // did this robot request a standalone window?
       string const layout_file(rdesc[ii]->GetOption("standalone_window"));
@@ -264,9 +265,9 @@ namespace npm {
     }
     
     for (size_t ir(0); ir < m_robot.size(); ++ir) {
-      rdesc_t rd(m_robot[ir].robot->GetDescriptor());
+      rdesc_t rd(m_robot[ir].rdesc);
       if(rd->HaveGoals())
-	m_robot[ir].robot->SetGoal(m_timestep, *rd->GetCurrentGoal());
+	m_robot[ir].client->SetGoal(m_timestep, *rd->GetCurrentGoal());
     }
   }
 
@@ -480,7 +481,7 @@ namespace npm {
   UpdateAllSensors()
   {
     for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir)
-      ir->robot->m_server->UpdateAllSensors();
+      ir->server->UpdateAllSensors();
   }
 
 
@@ -491,7 +492,7 @@ namespace npm {
   
     UpdateAllSensors();
     for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir){
-      ir->runnable = ir->robot->PrepareAction(m_timestep);
+      ir->runnable = ir->client->PrepareAction(m_timestep);
       if(( ! ir->runnable) && m_continuous){
 	m_continuous = false;
 	m_step = true;
@@ -499,18 +500,18 @@ namespace npm {
     }
     for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir)
       if(ir->runnable)
-	ir->robot->m_server->SimulateAction(m_timestep);
+	ir->server->SimulateAction(m_timestep);
   
     for(robot_t::iterator ir(m_robot.begin()); ir != m_robot.end(); ++ir){
       if( ! ir->runnable)
 	continue;
-      if( ! ir->robot->GoalReached())
+      if( ! ir->client->GoalReached())
 	continue;
-      RobotDescriptor & desc(*ir->robot->GetDescriptor());
+      RobotDescriptor & desc(*ir->rdesc); // rfct
       if( ! desc.HaveGoals())
 	continue;
       desc.NextGoal();
-      ir->robot->SetGoal(m_timestep, *desc.GetCurrentGoal());
+      ir->client->SetGoal(m_timestep, *desc.GetCurrentGoal());
     }
   }
 

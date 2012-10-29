@@ -27,7 +27,6 @@
 
 
 #include <sfl/api/HAL.hpp>
-#include <boost/scoped_array.hpp>
 
 
 namespace npm {
@@ -41,9 +40,8 @@ namespace npm {
     : public sfl::HAL
   {
   public:
-    const size_t ndof;
-    
-    HAL(RobotServer * owner, size_t ndof);
+    explicit HAL(RobotServer * owner);
+    virtual ~HAL();
     
     virtual int time_get(struct ::timespec * stamp);
     virtual int odometry_set(double x, double y, double theta,
@@ -68,9 +66,10 @@ namespace npm {
     void DisableScannerNoise();
     
   private:
+    size_t m_ndof;
     RobotServer * m_owner;
-    boost::scoped_array<double> m_wanted_speed;
-    boost::scoped_array<double> m_current_speed;
+    double *m_wanted_speed;
+    double *m_current_speed;
     const NoiseModel * m_odometry_noise;
     bool m_noisy_scanners;
   };

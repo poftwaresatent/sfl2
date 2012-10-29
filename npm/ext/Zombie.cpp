@@ -38,20 +38,35 @@ namespace npm {
   
   
   Zombie::
-  Zombie(shared_ptr<RobotDescriptor> descriptor,
-	 const World & world)
-    : RobotClient(descriptor, world, 3, false),
+  Zombie(std::string const &name)
+    : RobotClient(name),
+      m_width(0.6),
+      m_length(0.3),
+      m_server(0),
       m_goal(new Goal())
   {
-    m_drive = DefineHoloDrive(0.6);
+    reflectParameter("width", &m_width);
+    reflectParameter("length", &m_length);
+  }
+  
+  
+  bool Zombie::
+  Initialize(RobotServer &server)
+  {
+    if ( !RobotClient::Initialize(server)) {
+      return false;
+    }
     
-    static const double foo(0.15);
-    static const double bar(0.30);
+    m_server = &server;		// as a "cheat" so we don't need localization etc
     
-    AddLine(Line(-foo, -bar, -foo,  bar));
-    AddLine(Line(-foo,  bar,  foo,  bar));
-    AddLine(Line( foo,  bar,  foo, -bar));
-    AddLine(Line( foo, -bar, -foo, -bar));
+    m_drive = server.DefineHoloDrive(0.6);
+    
+    server.AddLine(Line(-m_length/2.0, -m_width/2.0, -m_length/2.0,  m_width/2.0));
+    server.AddLine(Line(-m_length/2.0,  m_width/2.0,  m_length/2.0,  m_width/2.0));
+    server.AddLine(Line( m_length/2.0,  m_width/2.0,  m_length/2.0, -m_width/2.0));
+    server.AddLine(Line( m_length/2.0, -m_width/2.0, -m_length/2.0, -m_width/2.0));
+    
+    return true;
   }
   
   
@@ -62,7 +77,7 @@ namespace npm {
     static const double thetadmax(0.8 * M_PI);
     static const double sdmax(0.4);
     
-    const Frame & pose(GetServer()->GetTruePose());
+    const Frame & pose(m_server->GetTruePose());
     double dx(m_goal->X() - pose.X());
     double dy(m_goal->Y() - pose.Y());
     pose.RotateFrom(dx, dy);
@@ -82,7 +97,7 @@ namespace npm {
     };
     size_t len(3);
     
-    return (0 == GetHAL()->speed_set(qd, &len)) && (3 == len);
+    return (0 == m_hal->speed_set(qd, &len)) && (3 == len);
   }
   
   
@@ -98,13 +113,14 @@ namespace npm {
   }
   
   
-  void Zombie::
+  bool Zombie::
   GetPose(double &x, double &y, double &theta)
   {
-    const Frame & pose(GetServer()->GetTruePose());
+    const Frame & pose(m_server->GetTruePose());
     x = pose.X();
     y = pose.Y();
     theta = pose.Theta();
+    return true;
   }
   
   
@@ -125,19 +141,29 @@ namespace npm {
   bool Zombie::
   GoalReached()
   {
-    return m_goal->DistanceReached(GetServer()->GetTruePose());
+    return m_goal->DistanceReached(m_server->GetTruePose());
   }
   
   
   LidarZombie::
-  LidarZombie(shared_ptr<RobotDescriptor> descriptor,
-	      const World & world)
-    : Zombie(descriptor, world)
+  LidarZombie(std::string const &name)
+    : Zombie(name)
   {
-    m_scanner = DefineLidar(Frame(0.0, 0.0, 0.0),
-			    361, 8.0, -M_PI/2, M_PI,
-			    0)->GetScanner();
   }
+  
+  
+  bool LidarZombie::
+  Initialize(RobotServer &server)
+  {
+    if ( !Zombie::Initialize(server)) {
+      return false;
+    }
+    m_scanner = server.DefineLidar(Frame(0.0, 0.0, 0.0),
+				   361, 8.0, -M_PI/2, M_PI,
+				   0)->GetScanner();
+    return true;
+  }
+
   
   
   bool LidarZombie::

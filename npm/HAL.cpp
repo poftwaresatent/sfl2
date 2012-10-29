@@ -43,15 +43,21 @@ namespace npm {
   
   
   HAL::
-  HAL(RobotServer * owner, size_t _ndof)
-    : ndof(_ndof),
+  HAL(RobotServer * owner)
+    : m_ndof(0),
       m_owner(owner),
-      m_wanted_speed(new double[_ndof]),
-      m_current_speed(new double[_ndof]),
-      m_odometry_noise(0) // not all compilers seem to do this automatically
+      m_wanted_speed(0),
+      m_current_speed(0),
+      m_odometry_noise(0)
   {
-    bzero(m_wanted_speed.get(), sizeof(double) * _ndof);
-    bzero(m_current_speed.get(), sizeof(double) * _ndof);
+  }
+  
+  
+  HAL::
+  ~HAL()
+  {
+    free(m_wanted_speed);
+    free(m_current_speed);
   }
   
   
@@ -121,19 +127,34 @@ namespace npm {
       return -1;
     }
     
-    // it would be more efficient to use memcpy...
-
+    if (*qdot_len > m_ndof) {
+      double *tmp1, *tmp2;
+      tmp1 = (double*) realloc(m_wanted_speed, *qdot_len * sizeof *tmp1);
+      if ( !tmp1) {
+	PDEBUG("out of memory");
+	return -2;
+      }
+      tmp2 = (double*) realloc(m_current_speed, *qdot_len * sizeof *tmp2);
+      if ( !tmp2) {
+	PDEBUG("out of memory");
+	return -2;
+      }
+      m_wanted_speed = tmp1;
+      m_current_speed = tmp2;
+      m_ndof = *qdot_len;
+    }
+    
     PVDEBUG("ndof: %zu  qdot_len: %zu\n", ndof, *qdot_len);
-    for (size_t ii(0); ii < ndof; ++ii) {
+    for (size_t ii(0); ii < m_ndof; ++ii) {
       if (ii >= *qdot_len) {
-	for (/**/; ii < ndof; ++ii)
+	for (/**/; ii < m_ndof; ++ii)
 	  m_wanted_speed[ii] = 0;
 	break;
       }
       PVDEBUG("  m_wanted_speed[%zu] = qdot[%zu] = %g\n", ii, ii, qdot[ii]);
       m_wanted_speed[ii] = qdot[ii];
     }
-    *qdot_len = ndof;
+    *qdot_len = m_ndof;
     return 0;
   }
   
@@ -141,15 +162,30 @@ namespace npm {
   int HAL::
   speed_get(double * qdot, size_t * qdot_len)
   {
-    // it would be more efficient to use memcpy when we do not have
-    // m_odometry_noise, but what the hey...
+    if (*qdot_len > m_ndof) {
+      double *tmp1, *tmp2;
+      tmp1 = (double*) realloc(m_wanted_speed, *qdot_len * sizeof *tmp1);
+      if ( !tmp1) {
+	PDEBUG("out of memory");
+	return -2;
+      }
+      tmp2 = (double*) realloc(m_current_speed, *qdot_len * sizeof *tmp2);
+      if ( !tmp2) {
+	PDEBUG("out of memory");
+	return -2;
+      }
+      m_wanted_speed = tmp1;
+      m_current_speed = tmp2;
+      for (size_t ii(m_ndof); ii < *qdot_len; ++ii) {
+	tmp1[ii] = 0.0;
+	tmp2[ii] = 0.0;
+      }
+      m_ndof = *qdot_len;
+    }
     
-    if (m_odometry_noise)
-      PVDEBUG("noisy speed baby!\n");
-    
-    PVDEBUG("ndof: %zu  qdot_len: %zu\n", ndof, *qdot_len);
+    PVDEBUG("ndof: %zu  qdot_len: %zu\n", m_ndof, *qdot_len);
     for (size_t ii(0); ii < *qdot_len; ++ii) {
-      if (ii >= ndof) {
+      if (ii >= m_ndof) {
 	for (/**/; ii < *qdot_len; ++ii)
 	  qdot[ii] = 0;
 	break;
@@ -166,7 +202,7 @@ namespace npm {
       }
     }
     
-    *qdot_len = ndof;
+    *qdot_len = m_ndof;
     return 0;
   }
   
@@ -196,7 +232,7 @@ namespace npm {
   void HAL::
   UpdateSpeeds()
   {
-    memcpy(m_current_speed.get(), m_wanted_speed.get(), sizeof(double) * ndof);
+    memcpy(m_current_speed, m_wanted_speed, sizeof(double) * m_ndof);
   }
   
   

@@ -23,28 +23,38 @@
 
 
 #include "RobotFactory.hpp"
-#include <npm/RobotDescriptor.hpp>
+#include <npm/RobotServer.hpp>
 #include <npm/RobotClient.hpp>
+#include <npm/World.hpp>
 #include "Zombie.hpp"
-
-
-using namespace boost;
 
 
 namespace npm {
 
 
-  shared_ptr<RobotClient> RobotFactory::
-  Create(shared_ptr<RobotDescriptor> descriptor, const World & world)
+  RobotServer * RobotFactory::
+  Create(std::string const &model,
+	 std::string const &name,
+	 World & world)
   {
-    RobotClient * rob(0);
+    RobotClient *client(0);
     
-    if (descriptor->model == "Zombie")
-      rob = new Zombie(descriptor, world);
-    else if(descriptor->model == "LidarZombie")
-      rob = new LidarZombie(descriptor, world);
+    if (model == "Zombie") {
+      client = new Zombie(name);
+    }
+    else if(model == "LidarZombie") {
+      client = new LidarZombie(name);
+    }
     
-    return shared_ptr<RobotClient>(rob);
+    RobotServer *server(new RobotServer(client, world));
+    if ( !client->Initialize(*server)) {
+      delete server;
+      delete client;
+      return 0;
+    }
+    
+    world.AddRobot(server);
+    return server;
   }
-
+  
 }

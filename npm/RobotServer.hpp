@@ -35,13 +35,13 @@ namespace sfl {
 
 
 namespace npm {
-  
+
+  class RobotClient;  
   class Sensor;
   class Object;
   class World;
   class Lidar;
   class Sharp;
-  class RobotDescriptor;
   class HAL;
   class Drawing;
   class Camera;
@@ -54,18 +54,11 @@ namespace npm {
   
   class RobotServer
   {
-  private:
-    RobotServer(const RobotServer &);
-    RobotServer(boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world, bool enable_trajectory);
-    
   public:
     typedef std::vector<boost::shared_ptr<const sfl::Frame> > trajectory_t;
     
-    static RobotServer * Create(boost::shared_ptr<RobotDescriptor> descriptor,
-				const World & world,
-				size_t n_dof,
-				bool enable_trajectory);
+    RobotServer(RobotClient *client,
+		World const &world);
     
     void UpdateAllSensors();
     void UpdateSensor(Sensor & sensor) const;
@@ -76,8 +69,8 @@ namespace npm {
   private:
     void AddTruePose(boost::shared_ptr<const sfl::Frame> pose);
     void AddNoisyPose(boost::shared_ptr<const sfl::Frame> pose);
-  public:
     
+  public:
     const std::string & GetName() const;
     const sfl::Frame & GetTruePose() const;
     const sfl::Frame * GetNoisyPose() const;
@@ -85,12 +78,10 @@ namespace npm {
     const Object * GetNoisyBody() const;
     const trajectory_t & GetTrueTrajectory() const;
     const trajectory_t * GetNoisyTrajectory() const;
-    size_t GetIdentifier() const;
     const World & GetWorld() const;
     boost::shared_ptr<const Lidar> GetLidar(int channel) const;
     boost::shared_ptr<const Sharp> GetSharp(int channel) const;
     boost::shared_ptr<HAL> GetHAL();
-    boost::shared_ptr<RobotDescriptor> GetDescriptor();
     
     void AddLine(const sfl::Line & line);
     void AddDrawing(boost::shared_ptr<Drawing> drawing);
@@ -117,13 +108,12 @@ namespace npm {
     boost::shared_ptr<BicycleDrive>
     DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth);
     
-  private:    
-    static size_t next_identifier;
-    const size_t m_identifier;
-    const bool m_enable_trajectory;
-    const World & m_world;
+  private:
+    friend class Simulator;
+    
+    RobotClient *m_client;
+    World const &m_world;
     boost::shared_ptr<HAL> m_hal;
-    boost::shared_ptr<RobotDescriptor> m_descriptor;
     std::vector<boost::shared_ptr<Drawing> > m_drawing;
     std::vector<boost::shared_ptr<Camera> > m_camera;
     std::vector<boost::shared_ptr<Sensor> > m_sensor;

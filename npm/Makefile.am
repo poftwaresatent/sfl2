@@ -7,7 +7,8 @@ SUBDIRS=              ext \
                       gfx
 
 lib_LTLIBRARIES=      libnpm.la
-libnpm_la_LIBADD=     ext/libext.la
+libnpm_la_LIBADD=     ../3rdparty/libnpm3p.la \
+                      ext/libext.la
 libnpm_la_SOURCES=    BBox.cpp \
                       BicycleDrive.cpp \
                       CheatSheet.cpp \

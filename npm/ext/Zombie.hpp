@@ -33,18 +33,23 @@ namespace npm {
     public RobotClient
   {
   public:
-    Zombie(boost::shared_ptr<RobotDescriptor> descriptor,
-	   const World & world);
+    Zombie(std::string const &name);
     
+    virtual bool Initialize(RobotServer &server);
     virtual bool PrepareAction(double timestep);
     virtual void InitPose(double x, double y, double theta);
     virtual void SetPose(double x, double y, double theta);
-    virtual void GetPose(double & x, double & y, double & theta);
+    virtual bool GetPose(double & x, double & y, double & theta);
     virtual void SetGoal(double timestep, const sfl::Goal & goal);
     virtual boost::shared_ptr<const sfl::Goal> GetGoal();
     virtual bool GoalReached();
     
+  protected:
+    double m_width;
+    double m_length;
+    
   private:
+    RobotServer *m_server;
     boost::shared_ptr<HoloDrive> m_drive;
     boost::shared_ptr<sfl::Goal> m_goal;
   };
@@ -54,9 +59,9 @@ namespace npm {
     public Zombie
   {
   public:
-    LidarZombie(boost::shared_ptr<RobotDescriptor> descriptor,
-		const World & world);
+    LidarZombie(std::string const &name);
     
+    virtual bool Initialize(RobotServer &server);
     virtual bool PrepareAction(double timestep);
     
   private:
