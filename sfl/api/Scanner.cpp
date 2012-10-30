@@ -33,14 +33,6 @@
 #include <cmath>
 
 
-#ifdef SFL_DEBUG
-# define PDEBUG PDEBUG_ERR
-#else // ! SFL_DEBUG
-# define PDEBUG PDEBUG_OFF
-#endif // SFL_DEBUG
-#define PVDEBUG PDEBUG_OFF
-
-
 using namespace boost;
 using namespace std;
 

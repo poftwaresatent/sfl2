@@ -101,7 +101,7 @@ namespace npm {
   bool View::
   AddDrawing(const string &name)
   {
-    PDEBUG ("DBG View::AddDrawing(`%s')\n", name.c_str());
+    PVDEBUG ("DBG View::AddDrawing(`%s')\n", name.c_str());
     Drawing * dd(Drawing::registry->find(name));
     if(0 == dd) {
       cerr << "ERROR in npm::View::AddDrawing: drawing " << name << " not found\n"

@@ -24,21 +24,19 @@
 
 #include "Simulator.hpp"
 #include "Argtool.hpp"
+#include <npm/Factory.hpp>
 #include <npm/World.hpp>
 #include <npm/gfx/wrap_glut.hpp>
 #include <npm/gfx/Camera.hpp>
 #include <npm/gfx/Drawing.hpp>
-#include <sfl/gplan/TraversabilityMap.hpp>
-#include <fpplib/yaml_parser.hpp>
+// #include <sfl/gplan/TraversabilityMap.hpp>
+// #include <fpplib/yaml_parser.hpp>
 #include <iostream>
-#include <fstream>
-#include <map>
-#include <signal.h>
+// #include <fstream>
+// #include <map>
+// #include <signal.h>
 #include <err.h>
-#include <unistd.h>
-
-#include <npm/ext/Zombie.hpp>	// XXXX rfct
-#include <sfl/util/Line.hpp>
+// #include <unistd.h>
 
 
 using namespace npm;
@@ -67,65 +65,6 @@ public:
   bool dump;
   bool help;
 };
-
-
-class NPMFactory
-  : public fpplib::Factory
-{
-public:
-  NPMFactory()
-  {
-    declare<World>("world");
-    declare<Zombie>("zombie");
-    declare<View>("view");
-  }
-  
-  World * GetWorld()
-  {
-    fpplib::Registry<World> const *wr(findRegistry<World>());
-    if ( !wr)
-      errx (EXIT_FAILURE, __FILE__": %s: no world registry", __func__);
-    if (wr->size() != 1)
-      errx (EXIT_FAILURE, __FILE__": %s: expected one world, but got %zu", __func__, wr->size());
-    return wr->at(0);
-  }
-};
-
-
-void operator >> (const YAML::Node & node, Line & ll)
-{
-  node[0] >> ll.p0._x;
-  node[1] >> ll.p0._y;
-  node[2] >> ll.p1._x;
-  node[3] >> ll.p1._y;
-}
-
-
-void operator >> (const YAML::Node & node, qhgoal_s & gg)
-{
-  node[0] >> gg.x;
-  node[1] >> gg.y;
-  node[2] >> gg.theta;
-  node[3] >> gg.dr;
-  node[4] >> gg.dtheta;
-}
-
-
-void operator >> (const YAML::Node & node, qhpose_s & pp)
-{
-  node[0] >> pp.x;
-  node[1] >> pp.y;
-  node[2] >> pp.theta;
-}
-
-
-void operator >> (const YAML::Node & node, qhwin_s & ww)
-{
-  node[0] >> ww.x;
-  node[1] >> ww.y;
-  node[2] >> ww.w;
-  node[3] >> ww.h;
-}
 
 
 typedef map<int, AppWindow*> appwin_handle_t;
@@ -164,15 +103,9 @@ int main(int argc, char ** argv)
   
   parse_options(argc, argv);
   
-  NPMFactory ff;
-  fpplib::YamlParser pp(ff);
-  pp.dbg = &cout;
-  pp.addConverter<sfl::Line>();
-  pp.addConverter<qhgoal_s>();
-  pp.addConverter<qhpose_s>();
-  pp.addConverter<qhwin_s>();
-  if ( ! pp.parseFile (params.config_filename))
-    errx (EXIT_FAILURE, "%s: %s", params.config_filename.c_str(), pp.error.c_str());
+  npm::Factory ff;
+  if ( !ff.ParseFile (params.config_filename, &cerr, &cerr))
+    errx (EXIT_FAILURE, "%s: parse error (see above messages)", params.config_filename.c_str());
   
   shared_ptr<World> world(ff.GetWorld());
   // if( ! params.world_from_trav.empty()){

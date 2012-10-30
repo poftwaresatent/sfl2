@@ -191,6 +191,7 @@ list (APPEND SFL2_SRCS
   sfl/util/Ray.cpp
   sfl/util/strutil.cpp
   npm/BBox.cpp
+  npm/Factory.cpp
   npm/BicycleDrive.cpp
   npm/CheatSheet.cpp
   npm/DiffDrive.cpp
