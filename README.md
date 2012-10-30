@@ -2,23 +2,23 @@
 
 **For the Impatient**
 
-Build everything using the provided script:
+You need CMake, Boost, OpenGL, GLU, and GLUT.
 
-    ./build-stage.sh
-
-By default, this builds the software underneath the build/ directory
-and installs it under the stage/ directory. This includes the
-`stage/bin/nepumuk` binary, which is a simulator. To try it out,
-launch one of the example scripts also installed there.
-
-Documentation (if not included in the tarball you downloaded) can be
-created if you have Doxygen and Graphviz installed:
-
+    mkdir build
     cd build
-    make doc
+    cmake ..
+    make
+    ./nepumuk -c ../apps/test0.yaml
 
-This will create `html/index.html` underneath the top-level source
-directory.
+Press `c` for continuous simulation and `q` to quit.
+
+To create the API docs, you need Doxygen.
+
+    cd doc
+    doxygen Doxyfile
+
+This creates the `html/` folder, with an `index.html` file to start
+browsing.
 
 ```
 ----------------------------------------------------------------------------
@@ -71,33 +71,16 @@ a separate directory:
 
     $ mkdir build
     $ cd build
-    $ ../configure --prefix=/install/path
+    $ cmake ..
     $ make
-    $ make install
-
-The provided `build-statge.sh` script will take care of this for you,
-and install everything underneath the top-level source directory in a
-subdirectory called `stage.` The behavior of `build-stage.sh` script
-can be controlled by passing arguments to it, read the output of
-`./build-stage.sh -h` for more details.
-
-Running `configure` manually gives you more fine-grained control,
-however. Some of the commonly used configure options are
-
-    --enable-debug       switches on debug options when you use GCC
-    --enable-pedantic    switches on pedantic warnings when you use GCC
-    --with-boost=PATH    lets you specify a non-standard location of the
-                         required boost library
-    --without-png        disable PNG support (problematic on Mac OS X)
-
-Read the output of `configure --help` for more details.
-
 
 ## Running
 
 If you have built the Nepumuk simulator (should happen automatically
 if you have all required prerequisites), then you can start running
-the examples that get installed into the `bin` directory.
+the examples, such as
+
+    ./nepumuk -c ../apps/test0.yaml
 
 In Nepumuk's GL window, press `c` for continuous mode, `SPACE` for
 step-by-step simulation, and `q` to exit the program. Some more
@@ -109,9 +92,13 @@ keybindings exist, check the `apps/Simulator.cpp` code.
 Sunflower uses [Doxygen][] to provide documentation through comments
 inside the sourcecode. You can either rely on the fact that the vast
 majority of these comments is in the class declarations (ie header
-files), or use the `make doc` target which generates the HTML
-documentation and places it underneath the top-level source directory
-into a directory called `html.`
+files), or go into the `doc/` subfolder and run Doxygen there.
+
+    cd doc
+    doxygen Doxyfile
+
+Open the resulting `html/index.html` file to start browsing the
+documentation. It's still somewhat under construction, of course...
 
 [Doxygen]: http://www.doxygen.org
 

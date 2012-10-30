@@ -4,8 +4,8 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "Sunflower Mobile Robot Library"
-PROJECT_NUMBER         = @PACKAGE_VERSION@
-OUTPUT_DIRECTORY       = @top_srcdir@
+PROJECT_NUMBER         = 2.0-pre
+OUTPUT_DIRECTORY       = .
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
 BRIEF_MEMBER_DESC      = YES
@@ -13,7 +13,7 @@ REPEAT_BRIEF           = YES
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = @top_srcdir@
+STRIP_FROM_PATH        = ..
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = YES
 MULTILINE_CPP_IS_BRIEF = NO
@@ -61,23 +61,24 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @top_srcdir@/sfl \
-                         @top_srcdir@/sfl/api \
-                         @top_srcdir@/sfl/bband \
-                         @top_srcdir@/sfl/dwa \
-                         @top_srcdir@/sfl/expo \
-                         @top_srcdir@/sfl/gplan \
-                         @top_srcdir@/sfl/util \
-                         @top_srcdir@/npm \
-                         @top_srcdir@/npm/gfx \
-                         @top_srcdir@/npm/ext \
-                         @top_srcdir@/apps
+INPUT                  = ../3rdparty/fpplib/include/fpplib \
+                         ../sfl \
+                         ../sfl/api \
+                         ../sfl/bband \
+                         ../sfl/dwa \
+                         ../sfl/expo \
+                         ../sfl/gplan \
+                         ../sfl/util \
+                         ../npm \
+                         ../npm/gfx \
+                         ../npm/ext \
+                         ../apps
 FILE_PATTERNS          = *.h *.hpp *.c *.cpp *.dox
 RECURSIVE              = NO
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
-EXAMPLE_PATH           = @top_srcdir@
+EXAMPLE_PATH           = ..
 EXAMPLE_PATTERNS       = 
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 
@@ -105,7 +106,7 @@ GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = 
-HTML_FOOTER            = @top_srcdir@/doc/footer.html
+HTML_FOOTER            = footer.html
 HTML_STYLESHEET        = 
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
