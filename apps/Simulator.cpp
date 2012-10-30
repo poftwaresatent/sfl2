@@ -129,13 +129,16 @@ namespace npm {
   }
   
   
-  void AppWindow::
-  Draw()
+  bool AppWindow::
+  rfctDraw()
   {
     for (View::registry_t::vector_t::const_iterator iv(View::registry->vector_.begin());
 	 iv != View::registry->vector_.end(); ++iv) {
-      (*iv)->Draw();
+      if ( !(*iv)->rfctDraw()) {
+	return false;
+      }
     }
+    return true;
   }
 
 

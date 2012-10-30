@@ -56,11 +56,11 @@ namespace npm {
   {
     registry->add(name, this);
     Configure(0, 0, 1, 1);
-    reflectCallback<string>("camera", boost::bind(&View::SetCamera, this, _1));
-    reflectCallback<string>("drawings", boost::bind(&View::AddDrawing, this, _1));
-    reflectCallback<qhwin_s>("window", boost::bind(&View::SetWindow, this, _1));
-    reflectCallback<int>("border", boost::bind(&View::SetBorder, this, _1));
-    reflectCallback<string>("anchor", boost::bind(&View::SetAnchorCB, this, _1));
+    reflectParameter("camera", &pcamera);
+    reflectVectorParameter("drawings", &pdrawing);
+    reflectCallback<qhwin_s>("window", false, boost::bind(&View::SetWindow, this, _1));
+    reflectCallback<int>("border", false, boost::bind(&View::SetBorder, this, _1));
+    reflectCallback<string>("anchor", false, boost::bind(&View::SetAnchorCB, this, _1));
   }
   
   
@@ -117,12 +117,27 @@ namespace npm {
   }
 
 
-  void View::
-  Draw()
+  bool View::
+  rfctDraw()
   {
-    if(camera == 0)
-      return;
-
+    if (camera == 0) {
+      if ( !SetCamera(pcamera)) {
+	return false;
+      }
+    }
+    
+    if (drawing.empty()) {
+      if (pdrawing.empty()) {
+	cerr << "ERROR in npm::View::Draw: no drawings were specified\n";
+	return false;
+      }
+      for (size_t id(0); id < pdrawing.size(); ++id) {
+	if ( !AddDrawing(pdrawing[id])) {
+	  return false;
+	}
+      }
+    }
+    
     camera->ConfigureView(*this);
 
     glMatrixMode(GL_PROJECTION);
@@ -131,6 +146,8 @@ namespace npm {
     for_each(drawing.begin(), drawing.end(), mem_fun(&Drawing::Draw));
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
+    
+    return true;
   }
 
 

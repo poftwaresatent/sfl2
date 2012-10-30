@@ -86,7 +86,7 @@ namespace npm {
     void SavePNG(const std::string & filename);
     void SavePNG();
     
-    void Draw();
+    bool rfctDraw();
 
     bool SetWindow(qhwin_s const &win);
     bool SetBorder(int border);
@@ -125,6 +125,9 @@ namespace npm {
     bool HaveCamera() const;
     
   private:
+    std::string pcamera;
+    std::vector<std::string> pdrawing;
+
     Camera * camera;
     std::vector<Drawing *> drawing;
     

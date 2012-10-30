@@ -150,10 +150,11 @@ namespace fpplib {
     
     template<typename value_type, typename callable_type>
     Callback<value_type, callable_type> * reflectCallback(string const & name,
+							  bool sequence_mode,
 							  callable_type callback)
     {
       Callback<value_type, callable_type> * cb;
-      cb = new Callback<value_type, callable_type>(name, callback);
+      cb = new Callback<value_type, callable_type>(name, sequence_mode, callback);
       reflected_.add(name, cb);
       return cb;
     }

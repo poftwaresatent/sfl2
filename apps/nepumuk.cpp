@@ -170,6 +170,7 @@ int main(int argc, char ** argv)
   pp.addConverter<sfl::Line>();
   pp.addConverter<qhgoal_s>();
   pp.addConverter<qhpose_s>();
+  pp.addConverter<qhwin_s>();
   if ( ! pp.parseFile (params.config_filename))
     errx (EXIT_FAILURE, "%s: %s", params.config_filename.c_str(), pp.error.c_str());
   
@@ -276,7 +277,9 @@ void draw()
   for (appwin_handle_t::iterator ih(appwin_handle.begin()); ih != appwin_handle.end(); ++ih) {
     glutSetWindow(ih->first);
     glClear(GL_COLOR_BUFFER_BIT);
-    ih->second->Draw();
+    if ( !ih->second->rfctDraw()) {
+      errx (EXIT_FAILURE, "drawing failed");
+    }
     glFlush();
     glutSwapBuffers();
   }

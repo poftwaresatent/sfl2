@@ -52,8 +52,8 @@ namespace {
     TestCB (string const & name)
       : Configurable (name)
     {
-      reflectCallback<double> ("some_double", boost::bind(&TestCB::someDouble, this, _1));
-      reflectCallback<int> ("some_int", boost::bind(&TestCB::someIntRef, this, _1));
+      reflectCallback<double> ("some_double", true, boost::bind(&TestCB::someDouble, this, _1));
+      reflectCallback<int> ("some_int", false, boost::bind(&TestCB::someIntRef, this, _1));
     }
     
     bool someDouble(double some_double)
@@ -88,7 +88,7 @@ int main (int argc, char **argv)
   TestCBFactory ff;
   YamlParser pp(ff);
   pp.dbg = &cout;
-  if ( ! pp.parseString("[ { testcb: { name: hello, some_double: 9.87, some_int: [ 42, 17] } }, { testcb: { name: byebye, some_double: [ -9, -10, -11 ] } } ]")) {
+  if ( ! pp.parseString("[ { testcb: { name: hello, some_double: 9.87, some_int: 42 } }, { testcb: { name: byebye, some_double: [ -9, -10, -11 ] } } ]")) {
     cout << "parse error: " << pp.error << "\n";
     return 42;
   }

@@ -63,7 +63,7 @@ namespace npm {
     reflectParameter("scanner_noise_min_offset", &m_scanner_noise_min_offset);
     reflectParameter("scanner_noise_max_offset", &m_scanner_noise_max_offset);
     reflectParameter("camera_zoom", &m_camera_zoom);
-    reflectCallback<qhgoal_s>("goals", boost::bind(&RobotClient::AppendGoal, this, _1));
+    reflectCallback<qhgoal_s>("goals", true, boost::bind(&RobotClient::AppendGoal, this, _1));
     reflectParameter("pose", &m_initial_pose);
   }
   

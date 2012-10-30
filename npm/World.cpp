@@ -55,8 +55,8 @@ namespace npm {
       m_camera(new WorldCamera(name, * this))
   {
     m_object.push_back(shared_ptr<Object>(new Object(name, "THE world")));
-    reflectCallback<string> ("builtin", boost::bind(&World::LoadBuiltin, this, _1));
-    reflectCallback<Line> ("lines", boost::bind(&World::AddLine, this, _1));
+    reflectCallback<string> ("builtin", false, boost::bind(&World::LoadBuiltin, this, _1));
+    reflectCallback<Line> ("lines", true, boost::bind(&World::AddLine, this, _1));
   }
   
   

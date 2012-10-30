@@ -46,8 +46,10 @@ namespace fpplib {
   public:
     BaseCallback(string const & type,
 		 string const & name,
+		 bool sequence_mode_,
 		 BaseParameter * quickhack)
       : Reflectable(type, name),
+	sequence_mode(sequence_mode_),
 	quickhack_(quickhack)
     {}
     
@@ -58,6 +60,7 @@ namespace fpplib {
     
     virtual bool call () = 0;
     
+    bool const sequence_mode;
     BaseParameter * quickhack_;
   };
   
@@ -68,8 +71,9 @@ namespace fpplib {
   {
   public:
     Callback(string const & name,
+	     bool sequence_mode,
 	     callable_type callback)
-      : BaseCallback(typeid(value_type).name(), name,
+      : BaseCallback(typeid(value_type).name(), name, sequence_mode,
 		     new Parameter<value_type>(name, &tmp, 0)),
 	callback_(callback)
     {

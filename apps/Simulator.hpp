@@ -60,7 +60,7 @@ namespace npm {
 	      int width, int height, Simulator * simul);
     
     void Reshape(int width, int height);
-    void Draw();
+    bool rfctDraw();
     void Keyboard(unsigned char key, int x, int y);
     void PrintScreen();
     
