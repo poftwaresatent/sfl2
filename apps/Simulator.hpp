@@ -26,6 +26,7 @@
 #define NPM_SIMULATOR_HPP
 
 
+#include <npm/RobotServer.hpp>
 #include <npm/gfx/View.hpp>
 #include <fpplib/registry.hpp>
 #include <boost/shared_ptr.hpp>
@@ -82,17 +83,14 @@ namespace npm {
   class Simulator
   {
   public:
-    std::string const robot_config_filename; // rfct
     bool const fatal_warnings;	// rfct
     
     Simulator(boost::shared_ptr<World> world, double timestep,
-	      std::string const & robot_config_filename,
 	      std::string const & layout_filename,
 	      bool fatal_warnings);
     ~Simulator();
   
-    void InitRobots();
-    void Init();
+    bool Initialize();
     bool Idle();
   
     void SetContinuous(bool printscreen = false);
@@ -105,17 +103,16 @@ namespace npm {
     std::vector<boost::shared_ptr<AppWindow> > m_appwin;
     
     struct robot_s {
-      robot_s(boost::shared_ptr<RobotServer> _server,
-	      RobotClient *_client,
-	      boost::shared_ptr<RobotDescriptor> _rdesc)
+      robot_s(RobotServer * _server,
+	      RobotClient *_client)
 	: server(_server),
 	  client(_client),
-	  rdesc(_rdesc),
+	  goalidx(0),
 	  runnable(true)
       {}
       boost::shared_ptr<RobotServer> server;
       RobotClient *client;
-      boost::shared_ptr<RobotDescriptor> rdesc; // rfct: will disappear
+      size_t goalidx;
       bool runnable;
     };
   

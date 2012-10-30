@@ -30,9 +30,9 @@
 #include <npm/gfx/View.hpp>
 #include <npm/gfx/Drawing.hpp>
 #include <npm/gfx/Camera.hpp>
-#include <npm/RobotDescriptor.hpp>
 #include <npm/pdebug.hpp>
 #include <sfl/util/Frame.hpp>
+#include <sfl/api/Pose.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -63,11 +63,9 @@ namespace npm {
   
   Simulator::
   Simulator(shared_ptr<World> world, double timestep,
-	    std::string const & _robot_config_filename,
 	    std::string const & layout_filename,
 	    bool _fatal_warnings)
-    : robot_config_filename(_robot_config_filename),
-      fatal_warnings(_fatal_warnings),
+    : fatal_warnings(_fatal_warnings),
       m_world(world),
       m_step(false),
       m_continuous(false),
@@ -85,190 +83,35 @@ namespace npm {
   }
 
 
-  void Simulator::
-  InitRobots()
+  bool Simulator::
+  Initialize()
   {
-    typedef shared_ptr<RobotDescriptor> rdesc_t;
-    vector<rdesc_t> rdesc;
-    ifstream config(robot_config_filename.c_str());
-    string token;
-    for (int linenumber(1); config >> token; ++linenumber) {
-      if(token[0] == '#'){
-	config.ignore(numeric_limits<streamsize>::max(), '\n');
-	continue;
+    for (size_t ic(0); ic < RobotClient::registry->size(); ++ic) {
+      RobotClient *client(RobotClient::registry->at(ic));
+      RobotServer *server(new RobotServer(client, *m_world));
+      if ( !client->Initialize(*server)) {
+	delete server;
+	delete client;
+	return false;
       }
-      if(token == "Robot"){
-	string model;
-	if( ! (config >> model)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read robot model\n";
-	  exit(EXIT_FAILURE);
-	}
-	string name;
-	if( ! (config >> name)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read robot name\n";
-	  exit(EXIT_FAILURE);
-	}
-	rdesc.push_back(rdesc_t(new RobotDescriptor(model, name)));
-	continue;
+      m_world->AddRobot(server);
+      m_robot.push_back(robot_s(server, client));
+      Frame const pose(client->m_initial_pose.x, client->m_initial_pose.y, client->m_initial_pose.theta);
+      server->InitializePose(pose);
+      client->SetPose(Pose(client->m_initial_pose.x, client->m_initial_pose.y, client->m_initial_pose.theta));
+      if (client->m_goals.size() > 0) {
+	client->SetGoal(m_timestep, client->m_goals[0]);
       }
-      if(token == "Pose"){
-	double x;
-	if( ! (config >> x)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read initial x\n";
-	  exit(EXIT_FAILURE);
-	}
-	double y;
-	if( ! (config >> y)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read initial y\n";
-	  exit(EXIT_FAILURE);
-	}
-	double theta;
-	if( ! (config >> theta)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read initial theta\n";
-	  exit(EXIT_FAILURE);
-	}
-	rdesc.back()->SetInitialPose(x, y, theta);
-	continue;
-      }
-      if(token == "Goal"){
-	//      double x, y, theta, dr, dtheta;
-	double x;
-	if( ! (config >> x)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal x\n";
-	  exit(EXIT_FAILURE);
-	}
-	double y;
-	if( ! (config >> y)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal y\n";
-	  exit(EXIT_FAILURE);
-	}
-	double theta;
-	if( ! (config >> theta)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal theta\n";
-	  exit(EXIT_FAILURE);
-	}
-	double dr;
-	if( ! (config >> dr)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal dr\n";
-	  exit(EXIT_FAILURE);
-	}
-	double dtheta;
-	if( ! (config >> dtheta)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal dtheta\n";
-	  exit(EXIT_FAILURE);
-	}
-	rdesc.back()->AddGoal(x, y, theta, dr, dtheta);
-	continue;
-      }
-      if(token == "EndGoal"){
-	//      double x, y, theta, dr, dtheta;
-	double x;
-	if( ! (config >> x)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal x\n";
-	  exit(EXIT_FAILURE);
-	}
-	double y;
-	if( ! (config >> y)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal y\n";
-	  exit(EXIT_FAILURE);
-	}
-	double theta;
-	if( ! (config >> theta)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal theta\n";
-	  exit(EXIT_FAILURE);
-	}
-	double dr;
-	if( ! (config >> dr)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal dr\n";
-	  exit(EXIT_FAILURE);
-	}
-	double dtheta;
-	if( ! (config >> dtheta)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read goal dtheta\n";
-	  exit(EXIT_FAILURE);
-	}
-	rdesc.back()->AddEndGoal(x, y, theta, dr, dtheta);
-	continue;
-      }
-      if(token == "Option"){
-	string name;
-	if( ! (config >> name)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read option name\n";
-	  exit(EXIT_FAILURE);
-	}
-	string value;
-	if( ! (config >> value)){
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  can't read option value\n";
-	  exit(EXIT_FAILURE);
-	}
-	rdesc.back()->SetOption(name, value);
-	continue;
-      }
-      else {
-	string rest;
-	getline(config, rest);
-	if ( ! config) {
-	  cerr << "ERROR in Simulator::InitRobots():\n"
-	       << "  cannot extract rest of line aftern token `" << token << "'\n";
-	  exit(EXIT_FAILURE);
-	}
-	ostringstream os;
-	os << token << " " << rest;
-	rdesc.back()->AddCustomLine(linenumber, os.str());
-	PDEBUG ("added custom line %d: %s\n", linenumber, os.str().c_str());
-      }
+      
+      // This was a nice feature that might be worth resurrecting using fpplib
+      // if ( ! layout_file.empty())
+      // 	m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow(rdesc[ii]->name, layout_file,
+      // 							       640, 480, this)));
     }
     
-    // Historic quirk: set the goals of all applicable robots *after*
-    // creating all robots, some code depends on the presence of all
-    // other robots inside SetGoal.
+    UpdateAllSensors();
     
-    for (size_t ii(0); ii < rdesc.size(); ++ii) {
-      
-      // create robot from descriptor
-      shared_ptr<RobotServer> rob(RobotFactory::Create(rdesc[ii]->model,
-						       rdesc[ii]->name,
-						       *m_world));
-      if ( ! rob)
-	errx(EXIT_FAILURE,
-	     "Simulator::InitRobots(): unknown model \"%s\" or parse error in robot construction",
-	     rdesc[ii]->model.c_str());
-      
-      // hook it into the simulation
-      m_robot.push_back(robot_s(rob, rob->m_client, rdesc[ii]));
-      shared_ptr<const Frame> pose(rdesc[ii]->GetInitialPose());
-      rob->InitializePose(*pose);
-      rob->m_client->SetPose(pose->X(), pose->Y(), pose->Theta());
-      
-      // did this robot request a standalone window?
-      string const layout_file(rdesc[ii]->GetOption("standalone_window"));
-      if ( ! layout_file.empty())
-	m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow(rdesc[ii]->name, layout_file,
-							       640, 480, this)));
-    }
-    
-    for (size_t ir(0); ir < m_robot.size(); ++ir) {
-      rdesc_t rd(m_robot[ir].rdesc);
-      if(rd->HaveGoals())
-	m_robot[ir].client->SetGoal(m_timestep, *rd->GetCurrentGoal());
-    }
+    return true;
   }
 
 
@@ -418,13 +261,6 @@ namespace npm {
     // inform all views about our window size (in pixels)
     Reshape(m_width, m_height);
   }
-  
-  
-  void Simulator::
-  Init()
-  {
-    UpdateAllSensors();
-  }
 
 
   void AppWindow::
@@ -507,11 +343,10 @@ namespace npm {
 	continue;
       if( ! ir->client->GoalReached())
 	continue;
-      RobotDescriptor & desc(*ir->rdesc); // rfct
-      if( ! desc.HaveGoals())
+      if(ir->client->m_goals.size() <= 1)
 	continue;
-      desc.NextGoal();
-      ir->client->SetGoal(m_timestep, *desc.GetCurrentGoal());
+      ir->goalidx = (ir->goalidx + 1) % ir->client->m_goals.size();
+      ir->client->SetGoal(m_timestep, ir->client->m_goals[ir->goalidx]);
     }
   }
 

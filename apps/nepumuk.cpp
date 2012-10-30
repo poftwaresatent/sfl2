@@ -37,6 +37,7 @@
 #include <err.h>
 #include <unistd.h>
 
+#include <npm/ext/Zombie.hpp>	// XXXX rfct
 #include <sfl/util/Line.hpp>
 
 
@@ -50,7 +51,6 @@ class Parameters
 {
 public:
   Parameters():
-    robot_config_filename("robots.config"),
     layout_config_filename("layout.config"),
     config_filename("npm.yaml"),
     world_from_trav(""),
@@ -61,7 +61,6 @@ public:
   {
   }
   
-  string robot_config_filename;
   string layout_config_filename;
   string config_filename;
   string world_from_trav;
@@ -79,6 +78,7 @@ public:
   NPMFactory()
   {
     declare<World>("world");
+    declare<Zombie>("zombie");
   }
   
   World * GetWorld()
@@ -99,6 +99,24 @@ void operator >> (const YAML::Node & node, Line & ll)
   node[1] >> ll.p0._y;
   node[2] >> ll.p1._x;
   node[3] >> ll.p1._y;
+}
+
+
+void operator >> (const YAML::Node & node, qhgoal_s & gg)
+{
+  node[0] >> gg.x;
+  node[1] >> gg.y;
+  node[2] >> gg.theta;
+  node[3] >> gg.dr;
+  node[4] >> gg.dtheta;
+}
+
+
+void operator >> (const YAML::Node & node, qhpose_s & pp)
+{
+  node[0] >> pp.x;
+  node[1] >> pp.y;
+  node[2] >> pp.theta;
 }
 
 
@@ -142,6 +160,8 @@ int main(int argc, char ** argv)
   fpplib::YamlParser pp(ff);
   pp.dbg = &cout;
   pp.addConverter<sfl::Line>();
+  pp.addConverter<qhgoal_s>();
+  pp.addConverter<qhpose_s>();
   if ( ! pp.parseFile (params.config_filename))
     errx (EXIT_FAILURE, "%s: %s", params.config_filename.c_str(), pp.error.c_str());
   
@@ -167,10 +187,11 @@ int main(int argc, char ** argv)
   
   simulator.
     reset(new Simulator(world, 0.000001 * timestep_usec,
-			params.robot_config_filename,
 			params.layout_config_filename,
 			params.fatal_warnings));
-  simulator->InitRobots();
+  if ( !simulator->Initialize()) {
+    errx (EXIT_FAILURE, "failed to initialize simulator");
+  }
   if (params.dump) {
     cout << "==================================================\n"
 	 << "CAMERAS:\n";
@@ -184,7 +205,6 @@ int main(int argc, char ** argv)
       cout << "  " << id->first << ": " << id->second->comment << "\n";
     exit(EXIT_SUCCESS);
   }
-  simulator->Init();
   
   if(params.no_glut){
     simulator->SetContinuous();
@@ -221,7 +241,6 @@ void init_glut(int argc, char ** argv)
     printf("appwin %zu: %s\n", ii, appwin->name.c_str());
     appwin_handle.insert(make_pair(handle, appwin));
     
-    // all windows get draw, reshape, and keyboard functions
     glutDisplayFunc(draw);
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
@@ -296,8 +315,6 @@ void parse_options(int argc, char ** argv)
   Argtool atl;
   atl.Add(new StringCB(params.layout_config_filename,
 			 'l', "layout", "Name of the layout config file."));
-  atl.Add(new StringCB(params.robot_config_filename,
-			 'r', "robot", "Name of the robot config file."));
   atl.Add(new StringCB(params.config_filename,
 			 'c', "config", "Configuration file."));
   atl.Add(new StringCB(params.world_from_trav,

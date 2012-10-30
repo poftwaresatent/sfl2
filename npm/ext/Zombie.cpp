@@ -42,8 +42,7 @@ namespace npm {
     : RobotClient(name),
       m_width(0.6),
       m_length(0.3),
-      m_server(0),
-      m_goal(new Goal())
+      m_server(0)
   {
     reflectParameter("width", &m_width);
     reflectParameter("length", &m_length);
@@ -78,8 +77,8 @@ namespace npm {
     static const double sdmax(0.4);
     
     const Frame & pose(m_server->GetTruePose());
-    double dx(m_goal->X() - pose.X());
-    double dy(m_goal->Y() - pose.Y());
+    double dx(m_goal.X() - pose.X());
+    double dy(m_goal.Y() - pose.Y());
     pose.RotateFrom(dx, dy);
     double dtheta(atan2(dy, dx));
     
@@ -102,46 +101,24 @@ namespace npm {
   
   
   void Zombie::
-  InitPose(double x, double y, double theta)
+  SetGoal(double timestep, const Goal & goal)
   {
-  }
-  
-  
-  void Zombie::
-  SetPose(double x, double y, double theta)
-  {
+    m_goal = goal;
   }
   
   
   bool Zombie::
-  GetPose(double &x, double &y, double &theta)
+  GetGoal(Goal &goal)
   {
-    const Frame & pose(m_server->GetTruePose());
-    x = pose.X();
-    y = pose.Y();
-    theta = pose.Theta();
+    goal = m_goal;
     return true;
-  }
-  
-  
-  void Zombie::
-  SetGoal(double timestep, const Goal & goal)
-  {
-    *m_goal = goal;
-  }
-  
-  
-  shared_ptr<const Goal> Zombie::
-  GetGoal()
-  {
-    return m_goal;
   }
   
   
   bool Zombie::
   GoalReached()
   {
-    return m_goal->DistanceReached(m_server->GetTruePose());
+    return m_goal.DistanceReached(m_server->GetTruePose());
   }
   
   
@@ -163,7 +140,6 @@ namespace npm {
 				   0)->GetScanner();
     return true;
   }
-
   
   
   bool LidarZombie::

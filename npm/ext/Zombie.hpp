@@ -37,11 +37,11 @@ namespace npm {
     
     virtual bool Initialize(RobotServer &server);
     virtual bool PrepareAction(double timestep);
-    virtual void InitPose(double x, double y, double theta);
-    virtual void SetPose(double x, double y, double theta);
-    virtual bool GetPose(double & x, double & y, double & theta);
+    virtual void InitPose(sfl::Pose const &pose) {}
+    virtual void SetPose(sfl::Pose const &pose) {}
+    virtual bool GetPose(sfl::Pose &pose) { return false; }
     virtual void SetGoal(double timestep, const sfl::Goal & goal);
-    virtual boost::shared_ptr<const sfl::Goal> GetGoal();
+    virtual bool GetGoal(sfl::Goal &goal);
     virtual bool GoalReached();
     
   protected:
@@ -51,7 +51,7 @@ namespace npm {
   private:
     RobotServer *m_server;
     boost::shared_ptr<HoloDrive> m_drive;
-    boost::shared_ptr<sfl::Goal> m_goal;
+    sfl::Goal m_goal;
   };
   
   

@@ -220,7 +220,6 @@ list (APPEND SFL2_SRCS
   npm/NoiseModel.cpp
   npm/Object.cpp
   npm/RobotClient.cpp
-  npm/RobotDescriptor.cpp
   npm/RobotServer.cpp
   npm/Sensor.cpp
   npm/Sharp.cpp

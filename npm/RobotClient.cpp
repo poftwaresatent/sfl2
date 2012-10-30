@@ -23,7 +23,7 @@
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Polygon.hpp>
-
+#include <boost/bind.hpp>
 
 using namespace sfl;
 using namespace boost;
@@ -31,6 +31,8 @@ using namespace boost;
 
 namespace npm {
 
+  RobotClient::registry_t *RobotClient::registry(new registry_t());
+  
   
   RobotClient::
   RobotClient(std::string const &name)
@@ -47,8 +49,8 @@ namespace npm {
       m_scanner_noise_min_offset(-0.1), // if min>max then offsets are ignored
       m_scanner_noise_max_offset( 0.1),
       m_camera_zoom(2)
-
   {
+    registry->add(name, this);
     reflectParameter("enable_trajectory", &m_enable_trajectory);
     reflectParameter("noisy_odometry", &m_noisy_odometry);
     reflectParameter("odometry_noise_min_factor", &m_odometry_noise_min_factor);
@@ -61,6 +63,8 @@ namespace npm {
     reflectParameter("scanner_noise_min_offset", &m_scanner_noise_min_offset);
     reflectParameter("scanner_noise_max_offset", &m_scanner_noise_max_offset);
     reflectParameter("camera_zoom", &m_camera_zoom);
+    reflectCallback<qhgoal_s>("goals", boost::bind(&RobotClient::AppendGoal, this, _1));
+    reflectParameter("pose", &m_initial_pose);
   }
   
   
@@ -70,28 +74,6 @@ namespace npm {
     m_hal = server.GetHAL();
     return true;
   }
-
-  
-  
-  shared_ptr<const Goal> RobotClient::
-  GetGoal()
-  {
-    return shared_ptr<const Goal>();
-  }
-
-
-  // void RobotClient::
-  // AddLine(double x0, double y0, double x1, double y1)
-  // {
-  //   m_server->AddLine(Line(x0, y0, x1, y1));
-  // }
-  
-  
-  // void RobotClient::
-  // AddLine(const Line & line)
-  // {
-  //   m_server->AddLine(line);
-  // }
   
   
   // void RobotClient::
@@ -111,75 +93,26 @@ namespace npm {
   // }
   
   
-  // void RobotClient::
-  // AddDrawing(shared_ptr<Drawing> drawing)
-  // {
-  //   m_server->AddDrawing(drawing);
-  // }
+  bool RobotClient::
+  AppendGoal(qhgoal_s const &goal)
+  {
+    m_goals.push_back(sfl::Goal(goal.x, goal.y, goal.theta, goal.dr, goal.dtheta));
+    return true;
+  }
   
-  
-  // void RobotClient::
-  // AddDrawing(Drawing * drawing)
-  // {
-  //   m_server->AddDrawing(drawing);
-  // }
-  
-  
-  // void RobotClient::
-  // AddCamera(shared_ptr<Camera> camera)
-  // {
-  //   m_server->AddCamera(camera);
-  // }
-  
-  
-  // void RobotClient::
-  // AddCamera(Camera * camera)
-  // {
-  //   m_server->AddCamera(camera);
-  // }
-  
-  
-  // shared_ptr<Lidar> RobotClient::
-  // DefineLidar(const Frame & mount, size_t nscans, double rhomax,
-  // 	      double phi0, double phirange, int hal_channel)
-  // {
-  //   return m_server->DefineLidar(mount, nscans, rhomax, phi0,
-  // 				 phirange, hal_channel);
-  // }
-  
-  
-  // shared_ptr<Lidar> RobotClient::
-  // DefineLidar(shared_ptr<Scanner> scanner)
-  // {
-  //   return m_server->DefineLidar(scanner);
-  // }
-  
-  
-  // shared_ptr<Sharp> RobotClient::
-  // DefineSharp(const Frame & mount, double rmax, int channel)
-  // {
-  //   return m_server->DefineSharp(mount, rmax, channel);
-  // }
-  
-  
-  // shared_ptr<DiffDrive> RobotClient::
-  // DefineDiffDrive(double wheelbase, double wheelradius)
-  // {
-  //   return m_server->DefineDiffDrive(wheelbase, wheelradius);
-  // }
-  
-  
-  // shared_ptr<HoloDrive> RobotClient::
-  // DefineHoloDrive(double axislength)
-  // {
-  //   return m_server->DefineHoloDrive(axislength);
-  // }
+}
 
 
-  // shared_ptr<BicycleDrive> RobotClient::
-  // DefineBicycleDrive(double wheelbase, double wheelradius, double axlebase)
-  // {
-  //   return m_server->DefineBicycleDrive(wheelbase, wheelradius, axlebase);
-  // }
+namespace std {
   
+  ostream & operator << (ostream &os, npm::qhgoal_s const &rhs)
+  {
+    return os << "(" << rhs.x << ", " << rhs.y << ", " << rhs.theta << ", " << rhs.dr << ", " << rhs.dtheta << ")";
+  }
+  
+  ostream & operator << (ostream &os, npm::qhpose_s const &rhs)
+  {
+    return os << "(" << rhs.x << ", " << rhs.y << ", " << rhs.theta << ")";
+  }
+
 }
