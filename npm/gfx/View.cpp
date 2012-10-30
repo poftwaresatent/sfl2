@@ -26,10 +26,12 @@
 #include "PNGImage.hpp"
 #include "Camera.hpp"
 #include <npm/BBox.hpp>
+#include <npm/pdebug.hpp>
 #include "Drawing.hpp"
 #include "wrap_glu.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/numeric.hpp>
+#include <boost/bind.hpp>
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -43,14 +45,22 @@ using namespace std;
 namespace npm {
   
   
+  View::registry_t *View::registry(new registry_t());
+  
+  
   View::
-  View(const std::string & name_)
-    : name(name_),
+  View(const std::string & name)
+    : fpplib::Configurable(name),
       camera(0),
-      savecount(0),
-      mv_enable(false)
+      savecount(0)
   {
+    registry->add(name, this);
     Configure(0, 0, 1, 1);
+    reflectCallback<string>("camera", boost::bind(&View::SetCamera, this, _1));
+    reflectCallback<string>("drawings", boost::bind(&View::AddDrawing, this, _1));
+    reflectCallback<qhwin_s>("window", boost::bind(&View::SetWindow, this, _1));
+    reflectCallback<int>("border", boost::bind(&View::SetBorder, this, _1));
+    reflectCallback<string>("anchor", boost::bind(&View::SetAnchorCB, this, _1));
   }
   
   
@@ -79,17 +89,29 @@ namespace npm {
   bool View::
   SetCamera(const string &name)
   {
-    camera = Camera::registry->find(name);
-    return 0 != camera;
+    Camera *cc(Camera::registry->find(name));
+    if( !cc) {
+      return false;
+    }
+    camera = cc;
+    return true;
   }
-
-
+  
+  
   bool View::
   AddDrawing(const string &name)
   {
+    PDEBUG ("DBG View::AddDrawing(`%s')\n", name.c_str());
     Drawing * dd(Drawing::registry->find(name));
-    if(0 == dd)
+    if(0 == dd) {
+      cerr << "ERROR in npm::View::AddDrawing: drawing " << name << " not found\n"
+	   << "  available Drawings:\n";
+      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map_.begin());
+	   id != Drawing::registry->map_.end(); ++id) {
+	cerr << "    " << id->first << ": " << id->second->comment << "\n";
+      }
       return false;
+    }
     drawing.push_back(dd);
     return true;
   }
@@ -106,18 +128,7 @@ namespace npm {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     PrepareProjection();
-    const bool mv(mv_enable);	// multithreading paranoia
-    if(mv){
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glTranslated(mv_x, mv_y, 0);
-      glRotated(mv_theta_deg, 0, 0, 1);
-    }
     for_each(drawing.begin(), drawing.end(), mem_fun(&Drawing::Draw));
-    if(mv){
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-    }
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
   }
@@ -147,31 +158,65 @@ namespace npm {
   }
 
 
-  void View::
-  Redefine(double x,
-	   double y,
-	   double width,
-	   double height)
+  bool View::
+  SetWindow(qhwin_s const &win)
   {
-    basewidth  = maxval(0.0, minval(1.0, width));
-    baseheight = maxval(0.0, minval(1.0, height));
-    basex      = maxval(0.0, minval(1.0, x));
-    basey      = maxval(0.0, minval(1.0, y));
+    basewidth  = maxval(0.0, minval(1.0, win.w));
+    baseheight = maxval(0.0, minval(1.0, win.h));
+    basex      = maxval(0.0, minval(1.0, win.x));
+    basey      = maxval(0.0, minval(1.0, win.y));
 
     Reshape(totalwidth, totalheight);
+    
+    return true;
   }
 
 
-  void View::
+  bool View::
   SetBorder(int border)
   {
     winborder = border;
     doublewinborder = 2 * border;
 
     CalculateViewport();
+    
+    return true;
   }
-
-
+  
+  
+  bool View::
+  SetAnchorCB(string const &anchor)
+  {
+    static map<string, anchor_t> mm;
+    if (mm.empty()) {
+      mm["N"] = N;
+      mm["NE"] = NE;
+      mm["E"] = E;
+      mm["SE"] = SE;
+      mm["S"] = S;
+      mm["SW"] = SW;
+      mm["W"] = W;
+      mm["NW"] = NW;
+      mm["CENTER"] = CENTER;
+      mm["n"] = N;
+      mm["ne"] = NE;
+      mm["e"] = E;
+      mm["se"] = SE;
+      mm["s"] = S;
+      mm["sw"] = SW;
+      mm["w"] = W;
+      mm["nw"] = NW;
+      mm["center"] = CENTER;
+    }
+    map<string, anchor_t>::const_iterator im(mm.find(anchor));
+    if (im == mm.end()) {
+      return false;
+    }
+    SetAnchor(im->second);
+    return true;
+  }
+  
+  
   void View::
   SetAnchor(anchor_t anchor)
   {
@@ -448,29 +493,21 @@ namespace npm {
       viewy = 0;
     }
   }
-
-
-  void View::
-  SetModelview(double x, double y, double theta)
-  {
-    mv_enable = true;
-    mv_x = x;
-    mv_y = y;
-    mv_theta_deg = 180 * theta / M_PI;
-  }
-
-
-  void View::
-  UnsetModelview()
-  {
-    mv_enable = false;
-  }
   
   
   bool View::
   HaveCamera() const
   {
     return camera != 0;
+  }
+  
+}
+
+namespace std {
+
+  ostream & operator << (ostream &os, npm::qhwin_s const &rhs)
+  {
+    return os << "(" << rhs.x << "," << rhs.y << "," << rhs.w << "," << rhs.h << ")";
   }
   
 }

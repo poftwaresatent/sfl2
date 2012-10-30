@@ -22,7 +22,6 @@
  */
 
 #include "Simulator.hpp"
-#include <npm/ext/RobotFactory.hpp>
 #include <npm/World.hpp>
 #include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>
@@ -50,10 +49,9 @@ namespace npm {
 
 
   AppWindow::
-  AppWindow(std::string const & _name, std::string const & _layout_filename,
+  AppWindow(std::string const & _name,
 	    int width, int height, Simulator * simul)
     : name(_name),
-      layout_filename(_layout_filename),
       m_simul(simul),
       m_width(width),
       m_height(height)
@@ -63,7 +61,6 @@ namespace npm {
   
   Simulator::
   Simulator(shared_ptr<World> world, double timestep,
-	    std::string const & layout_filename,
 	    bool _fatal_warnings)
     : fatal_warnings(_fatal_warnings),
       m_world(world),
@@ -72,8 +69,7 @@ namespace npm {
       m_printscreen(false),
       m_timestep(timestep)
   {
-    m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow("nepumuk", layout_filename,
-							   640, 480, this)));
+    m_appwin.push_back(shared_ptr<AppWindow>(new AppWindow("nepumuk", 640, 480, this)));
   }
 
 
@@ -113,156 +109,8 @@ namespace npm {
     
     return true;
   }
-
-
-  void AppWindow::
-  InitLayout()
-  {
-    ifstream config(layout_filename.c_str());
-    string token;
-    View *view = 0;
-    ostringstream warnings;
   
-    while(config >> token){
-      if(token[0] == '#'){
-	config.ignore(numeric_limits<streamsize>::max(), '\n');
-	continue;
-      }
-      if (token == "Layout") {
-	string foo;
-	config >> foo;
-	if (foo.empty()) {
-	  cerr << "ERROR in Simulator::InitLayout(): empty key for Layout \""
-	       << token << "\"\n";
-	  exit(EXIT_FAILURE);
-	}
-	unsigned char const key(foo[0]);
-	m_active_layout.reset(new layout_t());
-	if ( ! m_default_layout)
-	  m_default_layout = m_active_layout;
-	m_layout[key] = m_active_layout;
-      }
-      else if(token == "View"){
-	if ( ! m_active_layout) {
-	  m_active_layout.reset(new layout_t());
-	  m_default_layout = m_active_layout;
-	}
-	string foo;
-	config >> foo;
-	view = new View(foo);
-	m_active_layout->add(view->name, view);
-	m_views.push_back(view);
-      }
-      else if(token == "Camera"){
-	string foo;
-	config >> foo;
-	if( ! view)
-	  warnings << "  No View for Camera \"" << foo << "\".\n";
-	else if( ! view->SetCamera(foo)){
-	  warnings << "  View \"" << view->name << "\": "
-		   << "no Camera \"" << foo << "\".\n";
-	}
-      }
-      else if(token == "Drawing"){
-	string foo;
-	config >> foo;
-	if( ! view)
-	  warnings << "  No View for Drawing \"" << foo << "\".\n";
-	else if( ! view->AddDrawing(foo)){
-	  warnings << "  View \"" << view->name << "\": "
-		   << "no Drawing \"" << foo << "\".\n";
-	}
-      }
-      else if(token == "Window"){
-	double x0, y0, x1, y1;
-	config >> x0 >> y0 >> x1 >> y1;
-	if( ! view)
-	  warnings << "  No View for Window \"" << x0 << ", " << y0 << ", "
-		   << x1 << ", " << y1 << "\".\n";
-	else
-	  view->Configure(x0, y0, x1 - x0, y1 - y0);
-      }
-      else if(token == "Border"){
-	int border;
-	config >> border;
-	if(border < 0){
-	  warnings << "  Border \"" << border << "\" < 0 for View \""
-		   << view->name << "\", force 0.\n";
-	  border = 0;
-	}
-	if( ! view)
-	  warnings << "  No View for Border \"" << border << "\".\n";
-	else
-	  view->SetBorder(border);
-      }
-      else if(token == "Anchor"){
-	string anchor;
-	config >> anchor;
-	if( ! view)
-	  warnings << "  No View for Anchor \"" << anchor << "\".\n";
-	else {
-	  if(anchor == "N")
-	    view->SetAnchor(View::N);
-	  else if(anchor == "NE")
-	    view->SetAnchor(View::NE);
-	  else if(anchor == "E")
-	    view->SetAnchor(View::E);
-	  else if(anchor == "SE")
-	    view->SetAnchor(View::SE);
-	  else if(anchor == "S")
-	    view->SetAnchor(View::S);
-	  else if(anchor == "SW")
-	    view->SetAnchor(View::SW);
-	  else if(anchor == "W")
-	    view->SetAnchor(View::W);
-	  else if(anchor == "NW")
-	    view->SetAnchor(View::NW);
-	  else if(anchor == "CENTER")
-	    view->SetAnchor(View::CENTER);
-	  else
-	    warnings << "  Unknown anchor \"" << anchor << "\" for View \""
-		     << view->name << "\".\n";
-	}
-      }
-      else{
-	cerr << "ERROR in Simulator::InitLayout(): unknown token \""
-	     << token << "\"\n";
-	exit(EXIT_FAILURE);
-      }
-    }
   
-    if( ! warnings.str().empty()){
-      if(m_simul->fatal_warnings)
-	cerr << "ERROR in Simulator::InitLayout():\n";
-      else
-	cerr << "WARNING in Simulator::InitLayout():\n";
-      cerr << warnings.str()
-	   << "\n==================================================\n"
-	   << "CAMERAS:\n\n";
-      for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map_.begin());
-	   ic != Camera::registry->map_.end(); ++ic)
-	cerr << "  " << ic->first << ": " << ic->second->comment << "\n";
-      cerr << "\n==================================================\n"
-	   << "DRAWINGS:\n\n";
-      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map_.begin());
-	   id != Drawing::registry->map_.end(); ++id)
-	cerr << "  " << id->first << ": " << id->second->comment << "\n";
-      if(m_simul->fatal_warnings)
-	exit(EXIT_FAILURE);
-    }
-    
-    if ( ! m_default_layout) {
-      cerr << "ERROR in Simulator::InitLayout(): no default layout\n"
-	   << "  you must specify at least one View\n";
-      exit(EXIT_FAILURE);
-    }    
-    m_active_layout = m_default_layout;
-    
-    // inform all views about our window size (in pixels)
-    Reshape(m_width, m_height);
-  }
-
-
   void AppWindow::
   Reshape(int width,
 	  int height)
@@ -274,24 +122,20 @@ namespace npm {
     m_width = width;
     m_height = height;
     
-    for (layout_map_t::iterator il(m_layout.begin());
-	 il != m_layout.end(); ++il)
-      for (size_t iv(0); iv < il->second->size(); ++iv)
-	il->second->at(iv)->Reshape(width, height);
-    
-    // It's a bit inefficient to reshape m_default_layout possibly
-    // twice, but in case there is only a default layout it never gets
-    // put into the m_layout map and we still have to update it.
-    for (size_t iv(0); iv < m_default_layout->size(); ++iv)
-      m_default_layout->at(iv)->Reshape(width, height);
+    for (View::registry_t::vector_t::const_iterator iv(View::registry->vector_.begin());
+	 iv != View::registry->vector_.end(); ++iv) {
+      (*iv)->Reshape(width, height);
+    }
   }
   
   
   void AppWindow::
   Draw()
   {
-    for (size_t iv(0); iv < m_active_layout->size(); ++iv)
-      m_active_layout->at(iv)->Draw();
+    for (View::registry_t::vector_t::const_iterator iv(View::registry->vector_.begin());
+	 iv != View::registry->vector_.end(); ++iv) {
+      (*iv)->Draw();
+    }
   }
 
 
@@ -380,15 +224,19 @@ namespace npm {
     case 'q':
       cout << "\nbye bye!\n";
       exit(EXIT_SUCCESS);
-    default:
-      layout_map_t::const_iterator il(m_layout.find(key));
-      if (il != m_layout.end()) {
-	if ((m_active_layout == m_default_layout)
-	    || (m_active_layout != il->second))
-	  m_active_layout = il->second;
-	else
-	  m_active_layout = m_default_layout;
-      }
+      //    default:
+      //// used to have fancy layout switching... that could be
+      //// resurected with a little 'layout-key' parameter for each
+      //// View.
+      //
+      // layout_map_t::const_iterator il(m_layout.find(key));
+      // if (il != m_layout.end()) {
+      // 	if ((m_active_layout == m_default_layout)
+      // 	    || (m_active_layout != il->second))
+      // 	  m_active_layout = il->second;
+      // 	else
+      // 	  m_active_layout = m_default_layout;
+      // }
     }
   }
 

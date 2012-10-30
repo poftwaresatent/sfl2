@@ -44,16 +44,21 @@ namespace npm {
   class Simulator;
   
   
+  /**
+     \todo XXXX to do: the multi-window idea could easily be
+     resurrected by having an "app-window" parameter of each view, and
+     simply creating AppWindow instances on the fly. Similarly, having
+     multiple layouts that can be switched by pressing keys can be
+     done by adding a "layout-key" parameter or so.
+   */
   class AppWindow
   {
   public:
     std::string const name;
-    std::string const layout_filename;
     
-    AppWindow(std::string const & name, std::string const & layout_filename,
+    AppWindow(std::string const & name,
 	      int width, int height, Simulator * simul);
     
-    void InitLayout();
     void Reshape(int width, int height);
     void Draw();
     void Keyboard(unsigned char key, int x, int y);
@@ -63,20 +68,7 @@ namespace npm {
     
   private:
     Simulator * m_simul;
-    
     int m_width, m_height;
-    
-    typedef fpplib::PointerRegistry<View*> layout_t; ////rfct
-    typedef boost::shared_ptr<layout_t> layout_ptr;
-    typedef std::map<unsigned char, layout_ptr> layout_map_t;
-    
-    layout_map_t m_layout;
-    layout_ptr m_active_layout;
-    layout_ptr m_default_layout;
-    
-    typedef std::vector<View*> views_t;
-    
-    views_t m_views;
   };
   
   
@@ -86,7 +78,6 @@ namespace npm {
     bool const fatal_warnings;	// rfct
     
     Simulator(boost::shared_ptr<World> world, double timestep,
-	      std::string const & layout_filename,
 	      bool fatal_warnings);
     ~Simulator();
   

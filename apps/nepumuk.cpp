@@ -51,7 +51,6 @@ class Parameters
 {
 public:
   Parameters():
-    layout_config_filename("layout.config"),
     config_filename("npm.yaml"),
     world_from_trav(""),
     no_glut(false),
@@ -61,7 +60,6 @@ public:
   {
   }
   
-  string layout_config_filename;
   string config_filename;
   string world_from_trav;
   bool no_glut;
@@ -79,6 +77,7 @@ public:
   {
     declare<World>("world");
     declare<Zombie>("zombie");
+    declare<View>("view");
   }
   
   World * GetWorld()
@@ -117,6 +116,15 @@ void operator >> (const YAML::Node & node, qhpose_s & pp)
   node[0] >> pp.x;
   node[1] >> pp.y;
   node[2] >> pp.theta;
+}
+
+
+void operator >> (const YAML::Node & node, qhwin_s & ww)
+{
+  node[0] >> ww.x;
+  node[1] >> ww.y;
+  node[2] >> ww.w;
+  node[3] >> ww.h;
 }
 
 
@@ -187,7 +195,6 @@ int main(int argc, char ** argv)
   
   simulator.
     reset(new Simulator(world, 0.000001 * timestep_usec,
-			params.layout_config_filename,
 			params.fatal_warnings));
   if ( !simulator->Initialize()) {
     errx (EXIT_FAILURE, "failed to initialize simulator");
@@ -229,7 +236,6 @@ void init_glut(int argc, char ** argv)
     AppWindow * appwin(simulator->GetAppWindow(ii));
     int width, height;
     appwin->GetSize(width, height);
-    appwin->InitLayout();
     
     glutInitWindowPosition(10 * ii, 10 * ii);
     glutInitWindowSize(width, height);
@@ -313,8 +319,6 @@ void parse_options(int argc, char ** argv)
   typedef Argtool::BoolCallback BoolCB;
   
   Argtool atl;
-  atl.Add(new StringCB(params.layout_config_filename,
-			 'l', "layout", "Name of the layout config file."));
   atl.Add(new StringCB(params.config_filename,
 			 'c', "config", "Configuration file."));
   atl.Add(new StringCB(params.world_from_trav,

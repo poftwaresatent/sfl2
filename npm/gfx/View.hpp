@@ -25,6 +25,7 @@
 #ifndef NPM_VIEW_HPP
 #define NPM_VIEW_HPP
 
+#include <fpplib/configurable.hpp>
 #include <vector>
 #include <string>
 
@@ -34,6 +35,10 @@ namespace npm {
   class Camera;
   class BBox;
   class Drawing;
+  
+  struct qhwin_s {
+    double x, y, w, h;
+  };
   
   /**
      \brief Subwindow.
@@ -51,12 +56,13 @@ namespace npm {
      View::Configure()).
   */
   class View
+    : public fpplib::Configurable
   {
   public:
+    typedef fpplib::PointerRegistry<View*> registry_t;
+    static registry_t *registry;
+    
     typedef enum { N, NE, E, SE, S, SW, W, NW, CENTER } anchor_t;
-    
-    const std::string name;
-    
     
     explicit View(const std::string & name);
     
@@ -82,8 +88,9 @@ namespace npm {
     
     void Draw();
 
-    void Redefine(double x, double y, double width, double height);
-    void SetBorder(int border);
+    bool SetWindow(qhwin_s const &win);
+    bool SetBorder(int border);
+    bool SetAnchorCB(std::string const &anchor);
     void SetAnchor(anchor_t anchor);
     
     /// Set the bounding box of what's to be drawn inside the View.
@@ -96,20 +103,6 @@ namespace npm {
     /// Deprecated in favor of View::SetBounds() because the order of
     /// parameters is a bit bizarre
     void SetRange(double x0, double x1, double y0, double y1);
-    
-    /// Set the modelview transformation to be applied before any
-    /// registered drawings are activated. This maps the given (x, y) to
-    /// the view's origin, with the view's x-axis aligned along theta.
-    /// \note The default modelview is (0, 0, 0), which corresponds to
-    /// the identity matrix and thus doesn't attempt to modify the
-    /// coordinate frame underlying the drawing. Use UnsetModelview() to
-    /// revert to that default behavior.
-    /// \todo THIS WAS NEVER TESTED
-    void SetModelview(double x, double y, double theta);
-    
-    /// Reset the modelview transformation to identity.
-    /// \todo THIS WAS NEVER TESTED
-    void UnsetModelview();
     
     /// Inform the View of a reshape event of the main graphics window.
     void Reshape(int width,	///< new window width (in pixels)
@@ -146,9 +139,6 @@ namespace npm {
     
     int savecount;
     
-    bool mv_enable;
-    double mv_x, mv_y, mv_theta_deg;
-    
     double Winwidth() const;
     double Winheight() const;
     int    Viewx() const;
@@ -160,6 +150,12 @@ namespace npm {
     
     std::string anchor_string;
   };
+
+}
+
+namespace std {
+
+  ostream & operator << (ostream &os, npm::qhwin_s const &rhs);
 
 }
 

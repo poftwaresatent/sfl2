@@ -312,33 +312,35 @@
       - [ 16, 30, 0, 0.1, 3.2 ]
       - [ 9, 7.5, 0, 0.1, 3.2 ]
 
-# - view:
-#     name: ground-truth
-#     camera:  expo
-#     drawings:
+- view:
+    name: ground-truth
+    camera:  expo
+    drawings:
 #       - Robox_global_gldrawing
-#       - expo
+      - expo
 #       - Robox_true_drawing
-#       - zombie0_true_drawing
-#       - zombie1_true_drawing
-#       - zombie2_true_drawing
-#       - zombie3_true_drawing
-#       - zombie4_true_drawing
-#       - zombie5_true_drawing
-#       - zombie6_true_drawing
-#       - zombie7_true_drawing
-#       - zombie8_true_drawing
-#       - zombie9_true_drawing
-#       - zombie10_true_drawing
-#       - zombie11_true_drawing
-#       - zombie12_true_drawing
-#       - zombie13_true_drawing
-#       - zombie14_true_drawing
+      - Zombie0_true_drawing
+      - Zombie1_true_drawing
+      - Zombie2_true_drawing
+      - Zombie3_true_drawing
+      - Zombie4_true_drawing
+      - Zombie5_true_drawing
+      - Zombie6_true_drawing
+      - Zombie7_true_drawing
+      - Zombie8_true_drawing
+      - Zombie9_true_drawing
+      - Zombie10_true_drawing
+      - Zombie11_true_drawing
+      - Zombie12_true_drawing
+      - Zombie13_true_drawing
+      - Zombie14_true_drawing
 #       - Robox_drive
 #       - Robox_goaldrawing
 #       - Robox_trajectory
 #       - Robox_lidar_1
 #       - Robox_lidar_0
+    window: [ 0.0,  0.0,  1.0,  1.0 ]
+    border:  0
 #     window: [ 0.0,  0.0,  0.55,  0.55 ]
 #     border:  2
 

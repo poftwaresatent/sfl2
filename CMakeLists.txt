@@ -16,11 +16,14 @@ if (NOT BUILD_SHARED_LIBS)
   set (BUILD_SHARED_LIBS True)
 endif (NOT BUILD_SHARED_LIBS)
 if (NOT CMAKE_BUILD_TYPE)
-  SET (CMAKE_BUILD_TYPE Debug)
+  set (CMAKE_BUILD_TYPE Debug)
 endif (NOT CMAKE_BUILD_TYPE)
 
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  add_definitions (-DSFL2_DEBUG)
+endif (CMAKE_BUILD_TYPE STREQUAL Debug)
+
 ### XXXX to do: some leftovers from GNU Automake setup
-# for Debug we should -DSFL2_DEBUG
 # for PNG we should -DSFL2_HAVE_PNG
 # the doc/Doxyfile.in should be (manually?) handled
 
@@ -192,7 +195,6 @@ list (APPEND SFL2_SRCS
   npm/CheatSheet.cpp
   npm/DiffDrive.cpp
   npm/Drive.cpp
-  npm/ext/RobotFactory.cpp
   npm/ext/Zombie.cpp
   npm/gfx/BicycleDriveDrawing.cpp
   npm/gfx/Camera.cpp

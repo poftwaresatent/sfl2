@@ -26,17 +26,17 @@
 
 #include <sfl/util/pdebug.hpp>
 
-#ifdef NPM_VERBOSE_DEBUG
-# define NPM_DEBUG
+#ifdef SFL2_VERBOSE_DEBUG
+# define SFL2_DEBUG
 # define PVDEBUG PDEBUG_OUT
-#else // ! NPM_VERBOSE_DEBUG
+#else // ! SFL2_VERBOSE_DEBUG
 # define PVDEBUG PDEBUG_OFF
-#endif // NPM_VERBOSE_DEBUG
+#endif // SFL2_VERBOSE_DEBUG
 
-#ifdef NPM_DEBUG
+#ifdef SFL2_DEBUG
 # define PDEBUG PDEBUG_OUT
-#else // ! NPM_DEBUG
+#else // ! SFL2_DEBUG
 # define PDEBUG PDEBUG_OFF
-#endif // NPM_DEBUG
+#endif // SFL2_DEBUG
 
-#endif // NPM_PDEBUG_HPP
+#endif // SFL2_PDEBUG_HPP

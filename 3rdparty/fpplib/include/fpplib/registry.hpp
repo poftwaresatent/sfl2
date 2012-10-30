@@ -54,6 +54,11 @@ namespace fpplib {
   {
   public:
     typedef map<string, instance_type> map_t;
+    map_t map_;
+    
+    typedef vector<instance_type> vector_t;
+    vector_t vector_;
+    
     
     virtual ~InstanceRegistry() {}
     
@@ -83,21 +88,9 @@ namespace fpplib {
       return vector_[index];
     }
     
-  //   inline map_t map__() const
-  //   {
-  //     return map_;
-  //   }
-    
-  // protected:
-    typedef vector<instance_type> vector_t;
-    
-    map_t map_;
-    vector_t vector_;
-    
     virtual instance_type nullInstance() const
     {
-      instance_type it;
-      return it;
+       return instance_type();
     }
   };
   
@@ -114,7 +107,6 @@ namespace fpplib {
       }
     }
 
-  protected:
     virtual pointer_type nullInstance() const
     {
       return 0;
@@ -134,7 +126,19 @@ namespace fpplib {
     virtual Configurable * at(size_t index) const = 0;
   };
   
-  
+
+  /**
+     \todo XXXX to do: why didn't I simply write it like this (no need for the imp_ attribute):
+     \code
+     template<class SubType>
+     class Registry
+       : public PointerRegistry<SubType*>
+     {
+     public:
+       void add(...) { ... }
+     };
+     \endcode
+   */  
   template<class SubType>
   class Registry
     : public BaseRegistry
