@@ -130,7 +130,6 @@ namespace npm {
   bool World::
   AddLine(const Line & line)
   {
-    cout << "  DBG " << line << "\n";
     m_object[0]->AddLine(line);
     if( ! m_bbox)
       m_bbox.reset(new BBox(line));

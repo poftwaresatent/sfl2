@@ -104,7 +104,7 @@ int main(int argc, char ** argv)
   parse_options(argc, argv);
   
   npm::Factory ff;
-  if ( !ff.ParseFile (params.config_filename, &cerr, &cerr))
+  if ( !ff.ParseFile (params.config_filename, &cerr))
     errx (EXIT_FAILURE, "%s: parse error (see above messages)", params.config_filename.c_str());
   
   shared_ptr<World> world(ff.GetWorld());
@@ -134,6 +134,8 @@ int main(int argc, char ** argv)
     errx (EXIT_FAILURE, "failed to initialize simulator");
   }
   if (params.dump) {
+    cout << "CONFIGURATION:\n";
+    ff.dump("  ", cout);
     cout << "==================================================\n"
 	 << "CAMERAS:\n";
     for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map_.begin());
@@ -264,7 +266,7 @@ void parse_options(int argc, char ** argv)
   atl.Add(new BoolCB(params.fatal_warnings,
 		       'f', "fwarn", "Fatal warnings."));
   atl.Add(new BoolCB(params.dump,
-		       'd', "dump", "Dump available drawings and cameras."));
+		       'd', "dump", "Dump configuration after parsing."));
   atl.Add(new BoolCB(params.help,
 		       'h', "help", "Print a help message."));
   

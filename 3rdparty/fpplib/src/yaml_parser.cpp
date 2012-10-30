@@ -47,14 +47,14 @@ namespace fpplib {
     : dbg(0),
       factory_(factory)
   {
-    addConverter(new ValueConverter<int>());
-    addConverter(new ValueConverter<size_t>());
-    addConverter(new ValueConverter<double>());
-    addConverter(new ValueConverter<string>());
-    addConverter(new VectorConverter<int>());
-    addConverter(new VectorConverter<size_t>());
-    addConverter(new VectorConverter<double>());
-    addConverter(new VectorConverter<string>());
+    addConverter<int>();
+    addConverter<long>();
+    addConverter<bool>();
+    addConverter<size_t>();
+    addConverter<ssize_t>();
+    addConverter<float>();
+    addConverter<double>();
+    addConverter<string>();
   }
   
   
