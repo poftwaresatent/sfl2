@@ -99,10 +99,9 @@ namespace npm {
     const sfl::Frame * pose;
     if(m_odometry_noise){
       pose = m_owner->GetNoisyPose();
-      PVDEBUG("noisy odometry baby!\n");
       if( ! pose){
 	pose = & m_owner->GetTruePose();
-	PVDEBUG("BUT IT'S BROKEN!\n");
+	PVDEBUG("noisy odometry is BROKEN!\n");
       }
     }
     else

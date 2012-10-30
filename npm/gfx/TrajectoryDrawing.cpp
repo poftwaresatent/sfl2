@@ -47,7 +47,6 @@ namespace npm {
   {
     const RobotServer::trajectory_t * traj(m_owner->GetNoisyTrajectory());
     if(traj && ( ! traj->empty())){
-      PDEBUG_OUT("noisy trajectory baby!\n");
       glColor3d(0.6, 0.2, 0.2);
       if(traj->size() == 1){
 	glPointSize(3);
