@@ -34,7 +34,7 @@
 #include <iostream>
 // #include <fstream>
 // #include <map>
-// #include <signal.h>
+#include <signal.h>
 #include <err.h>
 // #include <unistd.h>
 
@@ -89,16 +89,13 @@ int main(int argc, char ** argv)
 {
   atexit(cleanup);
   if(signal(SIGINT, sighandle) == SIG_ERR){
-    perror("ERROR: signal(SIGINT) failed");
-    exit(EXIT_FAILURE);
+    errx(EXIT_FAILURE, "signal(SIGINT)");
   }
   if(signal(SIGHUP, sighandle) == SIG_ERR){
-    perror("ERROR: signal(SIGHUP) failed");
-    exit(EXIT_FAILURE);
+    errx(EXIT_FAILURE, "signal(SIGHUP)");
   }
   if(signal(SIGTERM, sighandle) == SIG_ERR){
-    perror("ERROR: signal(SIGTERM) failed");
-    exit(EXIT_FAILURE);
+    errx(EXIT_FAILURE, "signal(SIGTERM)");
   }
   
   parse_options(argc, argv);
@@ -180,7 +177,7 @@ void init_glut(int argc, char ** argv)
     if (0 == handle)
       errx(EXIT_FAILURE, "init_glut(): glutCreateWindow(%s) failed for appwin %zu",
 	   appwin->name.c_str(), ii);
-    printf("appwin %zu: %s\n", ii, appwin->name.c_str());
+    cout << "appwin " << ii << ": " << appwin->name << "\n";
     appwin_handle.insert(make_pair(handle, appwin));
     
     glutDisplayFunc(draw);
