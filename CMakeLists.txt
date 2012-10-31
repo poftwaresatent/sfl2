@@ -137,102 +137,23 @@ include_directories (
 
 ##################################################
 ### Build 3rdparty stuff
-
-subdirs (
-  3rdparty/fpplib
-  )
+#
+# Workaround for yaml-cpp shared lib issues: control everything from here...
+#
+#subdirs (
+#  3rdparty/fpplib
+#  )
 
 ##################################################
 ### The actual sources
 
-list (APPEND SFL2_SRCS
-  sfl/api/FrameFusion.cpp
-  sfl/api/Goal.cpp
-  sfl/api/MotionController.cpp
-  sfl/api/Multiscanner.cpp
-  sfl/api/Odometry.cpp
-  sfl/api/Pose.cpp
-  sfl/api/RobotModel.cpp
-  sfl/api/Scan.cpp
-  sfl/api/Scanner.cpp
-  sfl/api/Timestamp.cpp
-  sfl/bband/Bubble.cpp
-  sfl/bband/BubbleBand.cpp
-  sfl/bband/BubbleFactory.cpp
-  sfl/bband/BubbleList.cpp
-  sfl/bband/ReplanHandler.cpp
-  sfl/dwa/DistanceObjective.cpp
-  sfl/dwa/DistanceObjectiveToBI.cpp
-  sfl/dwa/DynamicWindow.cpp
-  sfl/dwa/HeadingObjective.cpp
-  sfl/dwa/Lookup.cpp
-  sfl/dwa/Objective.cpp
-  sfl/dwa/SpeedObjective.cpp
-  sfl/expo/expo_parameters.cpp
-  sfl/expo/expoMotionController.cpp
-  sfl/expo/MotionPlanner.cpp
-  sfl/expo/MotionPlannerState.cpp
-  sfl/expo/Robox.cpp
-  sfl/gplan/GridFrame.cpp
-  sfl/gplan/Mapper2d.cpp
-  sfl/gplan/NF1.cpp
-  sfl/gplan/NF1Wave.cpp
-  sfl/gplan/TraversabilityMap.cpp
-  sfl/util/Frame.cpp
-  sfl/util/GoalManager.cpp
-  sfl/util/Hull.cpp
-  sfl/util/Line.cpp
-  sfl/util/numeric.cpp
-  sfl/util/OptionDictionary.cpp
-  sfl/util/Point.cpp
-  sfl/util/Polygon.cpp
-  sfl/util/Pthread.cpp
-  sfl/util/Random.cpp
-  sfl/util/Ray.cpp
-  sfl/util/strutil.cpp
-  npm/BBox.cpp
-  npm/Factory.cpp
-  npm/BicycleDrive.cpp
-  npm/CheatSheet.cpp
-  npm/DiffDrive.cpp
-  npm/Drive.cpp
-  npm/ext/Zombie.cpp
-  npm/gfx/BicycleDriveDrawing.cpp
-  npm/gfx/Camera.cpp
-  npm/gfx/DiffDriveDrawing.cpp
-  npm/gfx/Drawing.cpp
-  npm/gfx/GoalInstanceDrawing.cpp
-  npm/gfx/HoloDriveDrawing.cpp
-  npm/gfx/MapperUpdateDrawing.cpp
-  npm/gfx/OdometryDrawing.cpp
-  npm/gfx/PNGImage.cpp
-  npm/gfx/RobotDrawing.cpp
-  npm/gfx/RobotZoomCamera.cpp
-  npm/gfx/ScannerDrawing.cpp
-  npm/gfx/SharpDrawing.cpp
-  npm/gfx/StillCamera.cpp
-  npm/gfx/TrajectoryDrawing.cpp
-  npm/gfx/TraversabilityDrawing.cpp
-  npm/gfx/View.cpp
-  npm/gfx/WorldCamera.cpp
-  npm/gfx/WorldDrawing.cpp
-  npm/gfx/wrap_glu.cpp
-  npm/HAL.cpp
-  npm/HoloDrive.cpp
-  npm/Lidar.cpp
-  npm/NoiseModel.cpp
-  npm/Object.cpp
-  npm/RobotClient.cpp
-  npm/RobotServer.cpp
-  npm/Sensor.cpp
-  npm/Sharp.cpp
-  npm/World.cpp
-  apps/Argtool.cpp
-  apps/Simulator.cpp
-  )
+file (GLOB         SFL2_YAMLCPP_SRCS "3rdparty/fpplib/yaml-cpp-0.2.7/src/*.cpp")
+file (GLOB         SFL2_FPPLIB_SRCS  "3rdparty/fpplib/src/*.cpp")
+file (GLOB_RECURSE SFL2_SFL_SRCS     "sfl/*.cpp")
+file (GLOB_RECURSE SFL2_NPM_SRCS     "npm/*.cpp")
 
-add_library (sfl2 SHARED ${SFL2_SRCS})
-target_link_libraries (sfl2 fpp yaml-cpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+add_library (sfl2 SHARED ${SFL2_YAMLCPP_SRCS} ${SFL2_FPPLIB_SRCS} ${SFL2_SFL_SRCS} ${SFL2_NPM_SRCS})
+target_link_libraries (sfl2 ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 add_executable (nepumuk apps/nepumuk.cpp)
 target_link_libraries (nepumuk sfl2)

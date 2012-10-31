@@ -22,8 +22,8 @@
  */
 
 
-#include "Simulator.hpp"
-#include "Argtool.hpp"
+#include <npm/Simulator.hpp>
+#include <npm/Argtool.hpp>
 #include <npm/Factory.hpp>
 #include <npm/World.hpp>
 #include <npm/gfx/wrap_glut.hpp>
