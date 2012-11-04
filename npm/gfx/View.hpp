@@ -37,7 +37,7 @@ namespace npm {
   class Drawing;
   
   struct qhwin_s {
-    double x, y, w, h;
+    double x0, y0, x1, y1;
   };
   
   /**

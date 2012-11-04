@@ -56,10 +56,10 @@ void operator >> (const YAML::Node & node, npm::qhpose_s & pp)
   
 void operator >> (const YAML::Node & node, npm::qhwin_s & ww)
 {
-  node[0] >> ww.x;
-  node[1] >> ww.y;
-  node[2] >> ww.w;
-  node[3] >> ww.h;
+  node[0] >> ww.x0;
+  node[1] >> ww.y0;
+  node[2] >> ww.x1;
+  node[3] >> ww.y1;
 }
 
 

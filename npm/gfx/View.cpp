@@ -178,10 +178,10 @@ namespace npm {
   bool View::
   SetWindow(qhwin_s const &win)
   {
-    basewidth  = maxval(0.0, minval(1.0, win.w));
-    baseheight = maxval(0.0, minval(1.0, win.h));
-    basex      = maxval(0.0, minval(1.0, win.x));
-    basey      = maxval(0.0, minval(1.0, win.y));
+    basewidth  = maxval(0.0, minval(1.0, win.x1 - win.x0));
+    baseheight = maxval(0.0, minval(1.0, win.y1 - win.y0));
+    basex      = maxval(0.0, minval(1.0, win.x0));
+    basey      = maxval(0.0, minval(1.0, win.y0));
 
     Reshape(totalwidth, totalheight);
     
@@ -524,7 +524,7 @@ namespace std {
 
   ostream & operator << (ostream &os, npm::qhwin_s const &rhs)
   {
-    return os << "(" << rhs.x << "," << rhs.y << "," << rhs.w << "," << rhs.h << ")";
+    return os << "(" << rhs.x0 << "," << rhs.y0 << "," << rhs.x1 << "," << rhs.y1 << ")";
   }
   
 }
