@@ -23,8 +23,7 @@
 
 
 #include "DODrawing.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/pdebug.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
@@ -50,8 +49,7 @@ DODrawing(const std::string & name,
 	  boost::shared_ptr<const sfl::DynamicWindow> dwa,
 	  boost::shared_ptr<const sfl::RobotModel> rm)
   : Drawing(name,
-	    "sfl::DistanceObjective (greyscale with special colors)",
-	    Instance<UniqueManager<Drawing> >()),
+	    "sfl::DistanceObjective (greyscale with special colors)"),
     m_distobj(distobj),
     m_headobj(headobj),
     m_dwa(dwa),

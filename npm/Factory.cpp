@@ -20,6 +20,7 @@
 #include "Factory.hpp"
 #include <npm/World.hpp>
 #include <npm/ext/Zombie.hpp>
+#include <npm/ext/expo02/Robox.hpp>
 #include <npm/gfx/View.hpp>
 #include <sfl/util/Line.hpp>
 #include <fpplib/yaml_parser.hpp>
@@ -69,6 +70,7 @@ namespace npm {
   Factory()
   {
     declare<World>("World");
+    declare<Robox>("Robox");
     declare<Zombie>("Zombie");
     declare<LidarZombie>("LidarZombie");
     declare<View>("View");

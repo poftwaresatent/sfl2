@@ -22,25 +22,29 @@
  */
 
 
-#ifndef GRIDLAYERCAMERA_H
-#define GRIDLAYERCAMERA_H
+#ifndef MP_DRAWING_HPP
+#define MP_DRAWING_HPP
 
 
-#include <npm/common/Camera.hpp>
+#include <npm/gfx/Drawing.hpp>
 
 
 namespace sfl {
-  class NF1;
+  class MotionPlanner;
 }
 
 
-class GridLayerCamera
-  : public npm::Camera
+class MPDrawing
+  : public npm::Drawing
 {
 public:
-  GridLayerCamera(const std::string & name, const sfl::NF1 & nf1);
-  virtual void ConfigureView(npm::View & view);
-  const sfl::NF1 & nf1;
+  MPDrawing(const std::string & name,
+	    const sfl::MotionPlanner & mp);
+  
+  virtual void Draw();
+  
+private:
+  const sfl::MotionPlanner & m_mp;
 };
 
-#endif // GRIDLAYERCAMERA_H
+#endif // MP_DRAWING_HPP

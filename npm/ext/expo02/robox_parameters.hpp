@@ -25,11 +25,13 @@
 #ifndef ROBOX_PARAMETERS_HPP
 #define ROBOX_PARAMETERS_HPP
 
-#include <sfl/expo/expo_parameters.h>
+#include <sfl/expo/expo_parameters.hpp>
 
 struct robox_parameters
-  : public expo_parameters
+  : public expo::expo_parameters
 {
+  robox_parameters();
+  
   explicit robox_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
   
   int front_channel, front_nscans;

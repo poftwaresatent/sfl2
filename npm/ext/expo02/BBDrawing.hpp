@@ -26,7 +26,7 @@
 #define BBDRAWING_H
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 #include <sfl/bband/BubbleBand.hpp>
 #include <vector>
 

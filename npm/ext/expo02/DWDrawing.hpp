@@ -22,29 +22,29 @@
  */
 
 
-#ifndef MP_DRAWING_HPP
-#define MP_DRAWING_HPP
+#ifndef DWDRAWING_HPP
+#define DWDRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 
 
 namespace sfl {
-  class MotionPlanner;
+  class DynamicWindow;
 }
 
 
-class MPDrawing
+class DWDrawing
   : public npm::Drawing
 {
 public:
-  MPDrawing(const std::string & name,
-	    const sfl::MotionPlanner & mp);
+  DWDrawing(const std::string & name,
+	    const sfl::DynamicWindow & dwa);
   
   virtual void Draw();
   
 private:
-  const sfl::MotionPlanner & m_mp;
+  const sfl::DynamicWindow & m_dwa;
 };
 
-#endif // MP_DRAWING_HPP
+#endif // DWDRAWING_HPP

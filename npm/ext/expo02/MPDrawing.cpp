@@ -22,28 +22,27 @@
  */
 
 
-#ifndef GRIDLAYERDRAWING_H
-#define GRIDLAYERDRAWING_H
+#include "MPDrawing.hpp"
+#include <npm/gfx/GoalInstanceDrawing.hpp>
+#include <sfl/api/MotionPlanner.hpp>
 
 
-#include <npm/common/Drawing.hpp>
+using sfl::Goal;
+using namespace npm;
 
 
-namespace sfl{
-  class NF1;
+MPDrawing::
+MPDrawing(const std::string & name,
+	  const sfl::MotionPlanner & mp):
+  Drawing(name,
+	  "draw the goal of an sfl::MotionPlanner instance"),
+  m_mp(mp)
+{
 }
 
 
-class GridLayerDrawing
-  : public npm::Drawing
+void MPDrawing::
+Draw()
 {
-public:
-  GridLayerDrawing(const std::string & name, const sfl::NF1 & nf1,
-		   bool global);
-  virtual void Draw();
-  
-  const sfl::NF1 & nf1;
-  bool global;
-};
-
-#endif // GRIDLAYERDRAWING_H
+  npm::GoalInstanceDrawing::Draw(m_mp.GetGoal());
+}

@@ -35,6 +35,7 @@ namespace expo {
 
   struct expo_parameters
   {
+    expo_parameters();
     explicit expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
       
     double model_security_distance, model_wheelbase, model_wheelradius;

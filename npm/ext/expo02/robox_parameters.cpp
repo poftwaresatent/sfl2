@@ -35,6 +35,13 @@ using namespace sfl;
 
 
 robox_parameters::
+robox_parameters()
+{
+  robox_default_parameters(this);
+}
+
+
+robox_parameters::
 robox_parameters(boost::shared_ptr<sfl::OptionDictionary> opt)
   : expo_parameters(opt)
 {

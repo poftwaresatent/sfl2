@@ -22,29 +22,49 @@
  */
 
 
-#ifndef DWDRAWING_HPP
-#define DWDRAWING_HPP
+#ifndef DODRAWING_HPP
+#define DODRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <boost/shared_ptr.hpp>
+#include <vector>
 
 
 namespace sfl {
+  class Frame;
+  class HullIterator;
+  class DistanceObjective;
+  class HeadingObjective;
   class DynamicWindow;
+  class RobotModel;
 }
 
 
-class DWDrawing
+class DODrawing
   : public npm::Drawing
 {
 public:
-  DWDrawing(const std::string & name,
-	    const sfl::DynamicWindow & dwa);
+  DODrawing(const std::string & name,
+	    boost::shared_ptr<const sfl::DistanceObjective> distobj,
+	    boost::shared_ptr<const sfl::HeadingObjective> headobj,
+	    boost::shared_ptr<const sfl::DynamicWindow> dwa,
+	    boost::shared_ptr<const sfl::RobotModel> rm);
   
   virtual void Draw();
   
 private:
-  const sfl::DynamicWindow & m_dwa;
+  boost::shared_ptr<const sfl::DistanceObjective> m_distobj;
+  boost::shared_ptr<const sfl::HeadingObjective> m_headobj;
+  boost::shared_ptr<const sfl::DynamicWindow> m_dwa;
+  boost::shared_ptr<const sfl::RobotModel> m_rm;
+  
+  void DrawObstaclePaths(size_t iqdl, size_t iqdr);
+  void DrawCollisionPrediction(size_t iqdl, size_t iqdr,
+			       size_t igx, size_t igy);
+  void DrawPose(const sfl::Frame & pose,
+		double red, double green, double blue);
+  void DrawPath();
 };
 
-#endif // DWDRAWING_HPP
+#endif // DODRAWING_HPP

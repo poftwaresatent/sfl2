@@ -39,11 +39,10 @@
 #include "BBDrawing.hpp"
 #include "GridLayerCamera.hpp"
 #include "GridLayerDrawing.hpp"
-#include "../common/OdometryDrawing.hpp"
-#include "../common/StillCamera.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/OdometryDrawing.hpp>
+#include <npm/gfx/StillCamera.hpp>
 #include <sfl/expo/MotionPlanner.hpp>
-#include <sfl/expo/expo_parameters.h>
+#include <sfl/expo/expo_parameters.hpp>
 #include <sfl/bband/ReplanHandler.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
@@ -58,7 +57,7 @@ namespace npm {
   
   VisualRobox::
   VisualRobox(std::string const & name,
-	      expo_parameters const & params,
+	      expo::expo_parameters const & params,
 	      boost::shared_ptr<sfl::Hull> hull,
 	      boost::shared_ptr<sfl::HAL> hal,
 	      boost::shared_ptr<sfl::Multiscanner> mscan)
@@ -102,8 +101,7 @@ namespace npm {
 			      0,
 			      0,
 			      dynamicWindow->Dimension(),
-			      dynamicWindow->Dimension(),
-			      Instance<UniqueManager<Camera> >()));
+			      dynamicWindow->Dimension()));
     AddCamera(new OCamera(name + "_ocamera", *dynamicWindow));
     if (rph) {
       AddCamera(new GridLayerCamera(name + "_local_glcamera",
@@ -111,8 +109,7 @@ namespace npm {
     }
     double a, b, c, d;
     distanceObjective->GetRange(a, b, c, d);
-    AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
-			      Instance<UniqueManager<Camera> >()));
+    AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d));
   }
   
   

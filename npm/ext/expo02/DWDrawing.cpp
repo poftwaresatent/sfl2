@@ -23,8 +23,7 @@
 
 
 #include "DWDrawing.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 
 
@@ -35,8 +34,7 @@ DWDrawing::
 DWDrawing(const std::string & name,
 	  const sfl::DynamicWindow & dwa)
   : Drawing(name,
-	    "an grid-overview of DWA: objectives, speed range, and optimum",
-	    Instance<UniqueManager<Drawing> >()),
+	    "an grid-overview of DWA: objectives, speed range, and optimum"),
     m_dwa(dwa)
 {
 }

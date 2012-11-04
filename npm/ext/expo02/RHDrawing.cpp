@@ -24,7 +24,6 @@
 
 #include "RHDrawing.hpp"
 #include "BLDrawing.hpp"
-#include "../common/Manager.hpp"
 #include <iostream>
 
 
@@ -39,8 +38,7 @@ RHDrawing(const string & name,
 	  const ReplanHandler * replan_handler,
 	  mode_t mode):
   Drawing(name,
-	  "wrapped bubble band drawing, depending on planning state",
-	  Instance<UniqueManager<Drawing> >()),
+	  "wrapped bubble band drawing, depending on planning state"),
   _replan_handler(replan_handler),
   _mode(mode)
 {

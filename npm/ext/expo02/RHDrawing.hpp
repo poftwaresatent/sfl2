@@ -2,8 +2,8 @@
  * Copyright (C) 2004
  * Swiss Federal Institute of Technology, Lausanne. All rights reserved.
  * 
- * Author: Roland Philippsen <roland dot philippsen at gmx dot net>
- *         Autonomous Systems Lab <http://asl.epfl.ch/>
+ * Developed at the Autonomous Systems Lab.
+ * Visit our homepage at http://asl.epfl.ch/
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,29 +22,32 @@
  */
 
 
-#include "MPDrawing.hpp"
-#include "../common/GoalInstanceDrawing.hpp"
-#include "../common/Manager.hpp"
-#include <sfl/api/MotionPlanner.hpp>
+#ifndef RHDRAWING_H
+#define RHDRAWING_H
 
 
-using sfl::Goal;
-using namespace npm;
+#include <npm/gfx/Drawing.hpp>
+#include <sfl/bband/ReplanHandler.hpp>
+#include <string>
 
 
-MPDrawing::
-MPDrawing(const std::string & name,
-	  const sfl::MotionPlanner & mp):
-  Drawing(name,
-	  "draw the goal of an sfl::MotionPlanner instance",
-	  Instance<UniqueManager<Drawing> >()),
-  m_mp(mp)
+class RHDrawing
+  : public npm::Drawing
 {
-}
+public:
+  typedef enum { BAND, INITIALBAND, AUTODETECT } mode_t;
 
+  RHDrawing(const std::string & name,
+	    const sfl::ReplanHandler * replan_handler,
+	    mode_t mode);
 
-void MPDrawing::
-Draw()
-{
-  npm::GoalInstanceDrawing::Draw(m_mp.GetGoal());
-}
+  void Draw();
+
+private:
+  const sfl::ReplanHandler * _replan_handler;
+  mode_t _mode;
+
+  void DrawBand();
+};
+
+#endif // RHDRAWING_H

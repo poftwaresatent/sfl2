@@ -2,8 +2,8 @@
  * Copyright (C) 2004
  * Swiss Federal Institute of Technology, Lausanne. All rights reserved.
  * 
- * Developed at the Autonomous Systems Lab.
- * Visit our homepage at http://asl.epfl.ch/
+ * Author: Roland Philippsen <roland dot philippsen at gmx dot net>
+ *         Autonomous Systems Lab <http://asl.epfl.ch/>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,32 +22,25 @@
  */
 
 
-#ifndef RHDRAWING_H
-#define RHDRAWING_H
+#ifndef GRIDLAYERCAMERA_H
+#define GRIDLAYERCAMERA_H
 
 
-#include <npm/common/Drawing.hpp>
-#include <sfl/bband/ReplanHandler.hpp>
-#include <string>
+#include <npm/gfx/Camera.hpp>
 
 
-class RHDrawing
-  : public npm::Drawing
+namespace sfl {
+  class NF1;
+}
+
+
+class GridLayerCamera
+  : public npm::Camera
 {
 public:
-  typedef enum { BAND, INITIALBAND, AUTODETECT } mode_t;
-
-  RHDrawing(const std::string & name,
-	    const sfl::ReplanHandler * replan_handler,
-	    mode_t mode);
-
-  void Draw();
-
-private:
-  const sfl::ReplanHandler * _replan_handler;
-  mode_t _mode;
-
-  void DrawBand();
+  GridLayerCamera(const std::string & name, const sfl::NF1 & nf1);
+  virtual void ConfigureView(npm::View & view);
+  const sfl::NF1 & nf1;
 };
 
-#endif // RHDRAWING_H
+#endif // GRIDLAYERCAMERA_H

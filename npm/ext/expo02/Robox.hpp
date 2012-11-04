@@ -25,7 +25,7 @@
 #ifndef ROBOX_HPP
 #define ROBOX_HPP
 
-#include <npm/common/RobotClient.hpp>
+#include <npm/RobotClient.hpp>
 #include <map>
 
 namespace sfl {
@@ -52,42 +52,25 @@ struct scanner_desc_s {
 class Robox
   : public npm::RobotClient
 {
-private:
-  Robox(const Robox &);
-  
-protected:
-  Robox(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	const npm::World & world,
-	boost::shared_ptr<sfl::Hull> hull,
-	std::map<int, scanner_desc_s> const & scanners);
-  
-  Robox(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	const npm::World & world,
-	boost::shared_ptr<sfl::Hull> hull);
-  
 public:
-  static Robox *
-  Create(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	 const npm::World & world);
+  /** \todo XXXX to-do: resurrect he customizability of the old
+      Robox::CreateCustom fectory using fpplib::Configurable (probably
+      needs callbacks). See commented-out code in Robox.cpp. */
+  Robox(std::string const &name);
   
-  static Robox *
-  CreateCustom(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	       const npm::World & world);
-  
+  virtual bool Initialize(npm::RobotServer &server);
   virtual bool PrepareAction(double timestep);
+  virtual void InitPose(sfl::Pose const &pose);
+  virtual void SetPose(sfl::Pose const &pose);
+  virtual bool GetPose(sfl::Pose &pose);
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
+  virtual bool GetGoal(sfl::Goal &goal);
   virtual bool GoalReached();
-  virtual void InitPose(double x, double y, double theta);
-  virtual void SetPose(double x, double y, double theta);
-  virtual void GetPose(double & x, double & y, double & theta);
-  virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
 protected:
   boost::shared_ptr<npm::VisualRobox> m_imp;
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<local::NGKeyListener> m_ngkl;
-  
-  bool StartThreads();
 };
 
 #endif // ROBOX_HPP

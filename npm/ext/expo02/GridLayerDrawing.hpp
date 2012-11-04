@@ -22,31 +22,28 @@
  */
 
 
-#include "OCamera.hpp"
-#include "../common/View.hpp"
-#include "../common/Manager.hpp"
-#include <sfl/dwa/DynamicWindow.hpp>
+#ifndef GRIDLAYERDRAWING_H
+#define GRIDLAYERDRAWING_H
 
 
-using namespace npm;
+#include <npm/gfx/Drawing.hpp>
 
 
-OCamera::
-OCamera(const std::string & name,
-	const sfl::DynamicWindow & dwa)
-  : Camera(name,
-	   "fixed on the range of a DWA objective grid",
-	   Instance<UniqueManager<Camera> >()),
-    m_dwa(dwa)
-{
+namespace sfl{
+  class NF1;
 }
 
 
-void OCamera::
-ConfigureView(View & view)
+class GridLayerDrawing
+  : public npm::Drawing
 {
-  view.SetRange(m_dwa.QdlMinIndex(),
-		m_dwa.QdlMaxIndex() + 1,
-		m_dwa.QdrMinIndex(),
-		m_dwa.QdrMaxIndex() + 1);
-}
+public:
+  GridLayerDrawing(const std::string & name, const sfl::NF1 & nf1,
+		   bool global);
+  virtual void Draw();
+  
+  const sfl::NF1 & nf1;
+  bool global;
+};
+
+#endif // GRIDLAYERDRAWING_H

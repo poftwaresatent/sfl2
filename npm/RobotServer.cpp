@@ -39,6 +39,7 @@
 #include "gfx/BicycleDriveDrawing.hpp"
 #include "pdebug.hpp"
 #include "NoiseModel.hpp"
+#include "World.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/Pthread.hpp>
@@ -362,6 +363,13 @@ namespace npm {
     if(m_sharp.end() == is)
       return shared_ptr<const Sharp>();
     return is->second;
+  }
+  
+  
+  void RobotServer::
+  AddKeyListener(boost::shared_ptr<KeyListener> listener) const
+  {
+    m_world.AddKeyListener(listener);
   }
   
 }

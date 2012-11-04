@@ -50,6 +50,7 @@ namespace npm {
   class HoloDrive;
   class BicycleDrive;
   class NoiseModel;
+  class KeyListener;
   
   
   class RobotServer
@@ -107,6 +108,8 @@ namespace npm {
 
     boost::shared_ptr<BicycleDrive>
     DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth);
+    
+    void AddKeyListener(boost::shared_ptr<KeyListener> listener) const;
     
   private:
     friend class Simulator;

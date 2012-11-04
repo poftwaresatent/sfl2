@@ -26,7 +26,7 @@
 #define BLDRAWING_H
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 #include <sfl/bband/BubbleList.hpp>
 #include <string>
 

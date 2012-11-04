@@ -23,8 +23,7 @@
 
 
 #include "ODrawing.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/Objective.hpp>
 #include <sfl/util/numeric.hpp>
@@ -38,8 +37,7 @@ ODrawing(const std::string & name,
 	 boost::shared_ptr<sfl::Objective const> obj,
 	 boost::shared_ptr<sfl::DynamicWindow const> dwa)
   : Drawing(name,
-	    "a DWA's sub-objective (greyscale + special colors)",
-	    Instance<UniqueManager<Drawing> >()),
+	    "a DWA's sub-objective (greyscale + special colors)"),
     m_obj(obj),
     m_dwa(dwa)
 {

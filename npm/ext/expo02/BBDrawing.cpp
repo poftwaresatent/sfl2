@@ -24,8 +24,7 @@
 
 #include "BBDrawing.hpp"
 #include "BLDrawing.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
 #include <iostream>
 
 
@@ -39,8 +38,7 @@ BBDrawing(const std::string & name,
 	  const BubbleBand & bubble_band,
 	  mode_t mode)
   : Drawing(name,
-	    "sfl::BubbleBand in global frame",
-	    Instance<UniqueManager<Drawing> >()),
+	    "sfl::BubbleBand in global frame"),
     _bubble_band(bubble_band),
     _mode(mode)
 {

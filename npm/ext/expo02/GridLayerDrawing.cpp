@@ -23,8 +23,7 @@
 
 
 #include "GridLayerDrawing.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
 #include <sfl/gplan/NF1.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
 #include <sfl/gplan/GridFrame.hpp>
@@ -40,8 +39,7 @@ using namespace npm;
 GridLayerDrawing::
 GridLayerDrawing(const string & name, const NF1 & _nf1, bool _global)
   : Drawing(name,
-	    "greyscale + special color grid plot, local or global frame",
-	    Instance<UniqueManager<Drawing> >()),
+	    "greyscale + special color grid plot, local or global frame"),
     nf1(_nf1), global(_global)
 {
 }

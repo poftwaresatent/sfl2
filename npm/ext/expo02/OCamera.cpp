@@ -22,31 +22,29 @@
  */
 
 
-#include "GridLayerCamera.hpp"
-#include "../common/View.hpp"
-#include "../common/Manager.hpp"
-#include <sfl/gplan/NF1.hpp>
+#include "OCamera.hpp"
+#include <npm/gfx/View.hpp>
+#include <sfl/dwa/DynamicWindow.hpp>
 
 
 using namespace npm;
-using namespace sfl;
-using namespace boost;
-using namespace std;
 
 
-GridLayerCamera::
-GridLayerCamera(const string & name, const NF1 & _nf1)
+OCamera::
+OCamera(const std::string & name,
+	const sfl::DynamicWindow & dwa)
   : Camera(name,
-	   "grid range for locally plotting NF1 and such",
-	   Instance<UniqueManager<Camera> >()),
-    nf1(_nf1)
+	   "fixed on the range of a DWA objective grid"),
+    m_dwa(dwa)
 {
 }
 
 
-void GridLayerCamera::
+void OCamera::
 ConfigureView(View & view)
 {
-  shared_ptr<const NF1::grid_t> grid(nf1.GetGridLayer());
-  view.SetRange(0, grid->xsize, 0, grid->ysize);
+  view.SetRange(m_dwa.QdlMinIndex(),
+		m_dwa.QdlMaxIndex() + 1,
+		m_dwa.QdrMinIndex(),
+		m_dwa.QdrMaxIndex() + 1);
 }

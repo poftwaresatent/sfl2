@@ -36,6 +36,13 @@ using namespace sfl;
 namespace expo {
 
 expo_parameters::
+expo_parameters()
+{
+  expo_default_parameters(this);
+}
+
+
+expo_parameters::
 expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt)
 {
   expo_default_parameters(this);

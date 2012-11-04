@@ -22,32 +22,29 @@
  */
 
 
-#ifndef ODRAWING_HPP
-#define ODRAWING_HPP
+#include "GridLayerCamera.hpp"
+#include <npm/gfx/View.hpp>
+#include <sfl/gplan/NF1.hpp>
 
 
-#include <npm/common/Drawing.hpp>
+using namespace npm;
+using namespace sfl;
+using namespace boost;
+using namespace std;
 
 
-namespace sfl {
-  class DynamicWindow;
-  class Objective;
+GridLayerCamera::
+GridLayerCamera(const string & name, const NF1 & _nf1)
+  : Camera(name,
+	   "grid range for locally plotting NF1 and such"),
+    nf1(_nf1)
+{
 }
 
 
-class ODrawing
-  : public npm::Drawing
+void GridLayerCamera::
+ConfigureView(View & view)
 {
-public:
-  ODrawing(const std::string & name,
-	   boost::shared_ptr<sfl::Objective const> obj,
-	   boost::shared_ptr<sfl::DynamicWindow const> dwa);
-  
-  virtual void Draw();
-  
-private:
-  boost::shared_ptr<sfl::Objective const> m_obj;
-  boost::shared_ptr<sfl::DynamicWindow const> m_dwa;
-};
-
-#endif // ODRAWING_HPP
+  shared_ptr<const NF1::grid_t> grid(nf1.GetGridLayer());
+  view.SetRange(0, grid->xsize, 0, grid->ysize);
+}
