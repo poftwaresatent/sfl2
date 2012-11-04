@@ -152,6 +152,9 @@ Robox(std::string const &name)
 bool Robox::
 Initialize(npm::RobotServer &server)
 {
+  if ( !npm::RobotClient::Initialize(server))
+    return false;
+  
   boost::shared_ptr<sfl::Hull> hull(expo::Robox::CreateDefaultHull());
   robox_parameters params;
   
