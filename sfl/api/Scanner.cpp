@@ -27,7 +27,6 @@
 #include "Scan.hpp"
 #include "Timestamp.hpp"
 #include <sfl/util/pdebug.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <sfl/util/Frame.hpp>
 #include <boost/scoped_array.hpp>
 #include <cmath>
@@ -40,28 +39,9 @@ using namespace std;
 namespace sfl {
   
   
-  ScannerThread::
-  ScannerThread(const string & name)
-    : SimpleThread(name)
-  {
-  }
-    
-  
-  void ScannerThread::
-  Step()
-  {
-    if( ! scanner){
-      update_status = -42;
-      return;
-    }
-    update_status = scanner->DoUpdate();
-  }
-  
-  
   Scanner::
   Scanner(shared_ptr<HAL> hal, int _hal_channel, const Frame & _mount,
-	  size_t _nscans, double _rhomax, double _phi0, double _phirange,
-	  shared_ptr<Mutex> mutex)
+	  size_t _nscans, double _rhomax, double _phi0, double _phirange)
     : mount(new Frame(_mount)),
       hal_channel(_hal_channel),
       nscans(_nscans),
@@ -73,8 +53,7 @@ namespace sfl {
       m_hal(hal),
       m_acquisition_ok(false),
       m_cosphi(nscans, 0.0),
-      m_sinphi(nscans, 0.0),
-      m_mutex(mutex)
+      m_sinphi(nscans, 0.0)
   {
     // XXXX to do: two raw pointers would do the job, instead of 4 shared ones
     m_buffer.push_back(shared_ptr<Scan>(new Scan(nscans, Timestamp::First(),
@@ -100,29 +79,9 @@ namespace sfl {
   int Scanner::
   Update()
   {
-    if(m_thread)
-      return m_thread->update_status;
-    return DoUpdate();
-  }
-
-
-  bool Scanner::
-  SetThread(shared_ptr<ScannerThread> thread)
-  {
-    Mutex::sentry sentry(m_mutex);
-    if(m_thread)
-      return false;
-    m_thread = thread;
-    thread->scanner = this;
-    return true;
-  }
-  
-  
-  int Scanner::
-  DoUpdate()
-  {
     // We work with the dirty buffer, and at the end do a quick swap
-    // protected by mutex.
+    // that would need to be protected by mutex if we were to support
+    // multithreading.
     
     scoped_array<double> rho(new double[nscans]);
     timespec_t t0, t1;
@@ -132,18 +91,14 @@ namespace sfl {
     if(0 != status){
       PDEBUG("m_hal->scan_get() failed with status %d on channel %d\n",
 	     status, hal_channel);
-      m_mutex->Lock();
       m_acquisition_ok = false;
-      m_mutex->Unlock();
       return status;
     }
     if(actual_nscans != nscans){
       if(strict_nscans_check){
 	PDEBUG("nscans mismatch: wanted %zd but got %zd on channel %d\n",
 	       nscans, actual_nscans, hal_channel);
-	m_mutex->Lock();
 	m_acquisition_ok = false;
-	m_mutex->Unlock();
 	return -42;
       }
       else{
@@ -160,9 +115,7 @@ namespace sfl {
 				 &sxy, &sxt, &syt);
     if(0 != status){
       PDEBUG("m_hal->odometry_get() failed with status %d\n", status);
-      m_mutex->Lock();
       m_acquisition_ok = false;
-      m_mutex->Unlock();
       return status;
     }
     
@@ -182,10 +135,8 @@ namespace sfl {
       m_dirty->data[ii].globy = m_dirty->data[ii].locy;
       m_dirty->robot_pose.To(m_dirty->data[ii].globx, m_dirty->data[ii].globy);
     }
-    m_mutex->Lock();
     m_acquisition_ok = true;
     swap(m_dirty, m_clean);
-    m_mutex->Unlock();
     
     return 0;
   }
@@ -197,7 +148,6 @@ namespace sfl {
     if(index >= nscans)
       return INDEX_ERROR;
     
-    Mutex::sentry sentry(m_mutex);
     data = m_clean->data[index];
     if(data.in_range)
       return SUCCESS;
@@ -210,7 +160,6 @@ namespace sfl {
   {
     if(index >= nscans)
       return INDEX_ERROR;
-    Mutex::sentry sentry(m_mutex);
     rho = m_clean->data[index].rho;
     if(m_clean->data[index].in_range)
       return SUCCESS;
@@ -223,7 +172,9 @@ namespace sfl {
   {
     if(index >= nscans)
       return INDEX_ERROR;
-    // no need for mutex because phi isn't touched by Update()
+    // even in case we added multithreading elsewhere, here there
+    // would be no need for a mutex because phi isn't touched by
+    // Update()
     phi = m_clean->data[index].phi;
     return SUCCESS;
   }
@@ -252,7 +203,6 @@ namespace sfl {
   shared_ptr<Scan> Scanner::
   GetScanCopy() const
   {
-    Mutex::sentry sentry(m_mutex);
     return shared_ptr<Scan>(new Scan(*m_clean));
   }
   
@@ -260,7 +210,6 @@ namespace sfl {
   const Timestamp & Scanner::
   Tupper() const
   {
-    Mutex::sentry sentry(m_mutex);
     return m_clean->tupper;
   }
   
@@ -268,7 +217,6 @@ namespace sfl {
   const Timestamp & Scanner::
   Tlower() const
   {
-    Mutex::sentry sentry(m_mutex);
     return m_clean->tlower;
   }
   

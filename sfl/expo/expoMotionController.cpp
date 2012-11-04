@@ -23,7 +23,6 @@
 
 
 #include "MotionController.hpp"
-#include <sfl/util/Pthread.hpp>
 #include <sfl/api/RobotModel.hpp>
 
 
@@ -36,9 +35,8 @@ namespace expo {
 
   MotionController::
   MotionController(shared_ptr<const sfl::RobotModel> robotModel,
-		   shared_ptr<sfl::HAL> hal,
-		   shared_ptr<sfl::RWlock> rwlock)
-    : sfl::MotionController(robotModel, hal, rwlock)
+		   shared_ptr<sfl::HAL> hal)
+    : sfl::MotionController(robotModel, hal)
   {
   }
   
@@ -46,7 +44,6 @@ namespace expo {
   bool MotionController::
   Stoppable(double timestep) const
   {
-    sfl::RWlock::rdsentry sentry(m_rwlock);
     const double qdStoppable(timestep * qddMax);
     return maxval(absval(m_currentQdl), absval(m_currentQdr)) < qdStoppable;
   }
@@ -55,7 +52,6 @@ namespace expo {
   bool MotionController::
   AlmostStraight() const
   {
-    sfl::RWlock::rdsentry sentry(m_rwlock);
     return absval(m_currentQdl - m_currentQdr) <= epsilon;
   }
   
@@ -63,7 +59,6 @@ namespace expo {
   bool MotionController::
   Moving() const
   {
-    sfl::RWlock::rdsentry sentry(m_rwlock);
     return minval(absval(m_currentQdl), absval(m_currentQdr)) > epsilon;
   }
   

@@ -27,7 +27,6 @@
 
 
 #include <sfl/util/Frame.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/bband/BubbleList.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -42,26 +41,6 @@ namespace sfl {
   class BubbleFactory;
   class ReplanHandlerAPI;
   class Multiscanner;
-  
-  /**
-     Optional update thread for BubbleBand.
-  */
-  class BubbleBandThread
-    : public SimpleThread
-  {
-  private:
-    BubbleBandThread(const BubbleBandThread &);
-    
-  public:
-    /** You still have to call BubbleBand::SetThread() and
-	BubbleBandThread::Start(). */
-    BubbleBandThread(const std::string & name);
-    virtual void Step();
-    
-  protected:
-    friend class BubbleBand;
-    BubbleBand * bubbleBand;
-  };
   
   
   /**
@@ -82,24 +61,18 @@ namespace sfl {
     BubbleBand(const RobotModel & robot_model,
 	       const Odometry & odometry,
 	       const Multiscanner & multiscanner,
-	       BubbleList::Parameters parameters,
-	       boost::shared_ptr<RWlock> rwlock);
+	       BubbleList::Parameters parameters);
 
     /** Flexible constructor: you can specify a custom replan handler. */
     BubbleBand(const RobotModel & robot_model,
 	       const Odometry & odometry,
 	       const Multiscanner & multiscanner,
 	       boost::shared_ptr<ReplanHandlerAPI> replan_handler,
-	       BubbleList::Parameters parameters,
-	       boost::shared_ptr<RWlock> rwlock);
+	       BubbleList::Parameters parameters);
     
     ~BubbleBand();
     
     void Update();
-    
-    /** Attempt to attach an update thread. Fails if this BubbleBand
-	already has an update thread. */
-    bool SetThread(boost::shared_ptr<BubbleBandThread> thread);
     
     void SetGoal(const Goal & global_goal);
     
@@ -144,21 +117,11 @@ namespace sfl {
     const double addition_diameter;
     
   private:
-    friend class BubbleBandThread;
-    
     typedef enum {
       IDLE,
       CREATE_PLAN,
       CREATE_BAND
     } planstep_t;
-    
-    
-    /** \note The Scan object should be filtered, ie contain only
-	valid readings. This can be obtained from
-	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
-	can still contain readings that are out of range (represented
-	as readings at the maximum rho value). */
-    void DoUpdate(boost::shared_ptr<const Scan> scan);
     
     const Odometry & m_odometry;
     const Multiscanner & m_multiscanner;
@@ -178,8 +141,6 @@ namespace sfl {
     
     bool m_replan_request;
     state_t m_state;
-    boost::shared_ptr<RWlock> m_rwlock;
-    boost::shared_ptr<BubbleBandThread> m_thread;
     planstep_t m_planstep;
   };
 

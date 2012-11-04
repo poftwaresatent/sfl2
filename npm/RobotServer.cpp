@@ -42,7 +42,6 @@
 #include "World.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <iostream>
 #include <sstream>
@@ -95,14 +94,9 @@ namespace npm {
   {
     ostringstream os;
     os << m_client->name << "-lidar-" << hal_channel;
-    shared_ptr<Mutex> mutex(Mutex::Create(os.str()));
-    if( ! mutex){
-      cerr << "sfl::Mutex::Create() failed in RobotServer::DefineLidar()\n";
-      exit(EXIT_FAILURE);
-    }
     shared_ptr<Scanner>
       scanner(new Scanner(GetHAL(), hal_channel, mount, nscans,
-			  rhomax, phi0, phirange, mutex));
+			  rhomax, phi0, phirange));
     return DefineLidar(scanner);
   }
   

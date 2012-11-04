@@ -26,7 +26,6 @@
 #include "NF1Wave.hpp"
 #include "GridFrame.hpp"
 #include <sfl/util/numeric.hpp>
-#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Scan.hpp>
 #include <cmath>
 
@@ -38,9 +37,8 @@ namespace sfl {
   
   
   NF1::
-  NF1(shared_ptr<Mutex> mutex)
-    : m_mutex(mutex),
-      m_frame(new GridFrame(1)),
+  NF1()
+    : m_frame(new GridFrame(1)),
       m_grid(new grid_t()),
       m_wave(new NF1Wave())
   {
@@ -51,7 +49,6 @@ namespace sfl {
   Initialize(shared_ptr<const Scan> scan,
 	     double robot_radius, double goal_radius)
   {
-    m_mutex->Lock();
     m_grid.reset(new grid_t(m_grid_dimension, NF1Wave::FREE));
     const size_t nscans(scan->data.size());
     for(size_t is(0); is < nscans; ++is)
@@ -63,25 +60,21 @@ namespace sfl {
     SetGlobalDisk(*m_frame, *m_grid, m_goal, goal_radius, NF1Wave::FREE);
     (*m_grid)[m_goal_index] = NF1Wave::GOAL;
     SetGlobalDisk(*m_frame, *m_grid, m_home, robot_radius, NF1Wave::FREE);
-    m_mutex->Unlock();
   }
   
   
   void NF1::
   Calculate()
   {
-    m_mutex->Lock();
     m_wave->Reset();
     m_wave->AddSeed(m_frame->GlobalIndex(m_goal));
     m_wave->Propagate(*m_grid);
-    m_mutex->Unlock();
   }
   
   
   bool NF1::
   ResetTrace()
   {
-    Mutex::sentry sentry(m_mutex);
     m_trace = m_home_index;
     if(NF1Wave::FREE == (*m_grid)[m_trace])
       return false;
@@ -92,7 +85,6 @@ namespace sfl {
   bool NF1::
   GlobalTrace(position_t & point)
   {
-    Mutex::sentry sentry(m_mutex);
     point = m_frame->GlobalPoint(m_trace);
     if(NF1Wave::GOAL == (*m_grid)[m_trace])
       return false;
@@ -106,7 +98,6 @@ namespace sfl {
 	    double goal_x, double goal_y,
 	    double grid_width, size_t grid_width_dimension)
   {
-    m_mutex->Lock();
     m_goal.v0 = goal_x;
     m_goal.v1 = goal_y;
     m_home.v0 = robot_x;
@@ -129,14 +120,12 @@ namespace sfl {
     m_grid_dimension.v0 =
       static_cast<size_t>(ceil((sqrt(sqr(dx)+sqr(dy)) + grid_width) / delta));
     m_grid_dimension.v1 = grid_width_dimension;
-    m_mutex->Unlock();
   }
   
   
   shared_ptr<const NF1::grid_t> NF1::
   GetGridLayer() const
   {
-    // no need for mutex, boost::shared_ptr is thread-safe
     return m_grid;
   }
     

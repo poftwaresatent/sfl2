@@ -27,7 +27,6 @@
 #include "MotionController.hpp"
 #include "expo_parameters.hpp"
 
-#include "../util/Pthread.hpp"
 #include "../api/Odometry.hpp"
 #include "../api/Multiscanner.hpp"
 #include "../api/RobotModel.hpp"
@@ -67,15 +66,14 @@ namespace expo {
 		 params.model_thetadd_max);
     robotModel.reset(new sfl::RobotModel(modelParms, hull));
     motionController.
-      reset(new MotionController(robotModel, hal, sfl::RWlock::Create("expo::Robox::motor")));
-    odometry.reset(new sfl::Odometry(hal, sfl::RWlock::Create("expo::Robox::odometry")));
+      reset(new MotionController(robotModel, hal));
+    odometry.reset(new sfl::Odometry(hal));
     if (params.bband_enabled) {
       bubbleBand.
 	reset(new sfl::BubbleBand(*robotModel, *odometry, *mscan,
 				  sfl::BubbleList::Parameters(params.bband_shortpath,
 							      params.bband_longpath,
-							      params.bband_maxignoredistance),
-				  sfl::RWlock::Create("expo::Robox::bband")));
+							      params.bband_maxignoredistance)));
     }
     
     if ( ! params.dwa_use_tobi_distobj) {

@@ -26,7 +26,6 @@
 #include "BubbleList.hpp"
 #include "BubbleBand.hpp"
 #include "BubbleFactory.hpp"
-#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Pose.hpp>
 #include <sfl/gplan/NF1.hpp>
 #include <sfl/gplan/NF1Wave.hpp>
@@ -47,7 +46,7 @@ namespace sfl {
 		BubbleFactory & bubble_factory)
     : m_bubble_band(bubble_band),
       m_bubble_factory(bubble_factory),
-      m_nf1(new NF1(Mutex::Create("nf1"))), // todo: mutex from above
+      m_nf1(new NF1()),
       m_buffer_blist(new BubbleList(bubble_band,
 				    bubble_factory,
 				    bubble_band.parameters)),

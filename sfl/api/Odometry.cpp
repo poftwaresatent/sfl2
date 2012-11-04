@@ -35,27 +35,9 @@ using namespace std;
 namespace sfl {
   
   
-  OdometryThread::
-  OdometryThread(const string & name, ostream * _dbgos)
-    : SimpleThread(name), dbgos(_dbgos)
-  {
-  }
-  
-  
-  void OdometryThread::
-  Step()
-  {
-    if( ! odometry){
-      update_status = -42;
-      return;
-    }
-    update_status = odometry->DoUpdate(dbgos);
-  }
-  
-  
   Odometry::
-  Odometry(shared_ptr<HAL> hal, shared_ptr<RWlock> rwlock)
-    : m_hal(hal), m_rwlock(rwlock)
+  Odometry(shared_ptr<HAL> hal)
+    : m_hal(hal)
   {
   }
   
@@ -81,27 +63,14 @@ namespace sfl {
 		 << "  time_get() returned " << res << "\n";
       return res;
     }
-    m_rwlock->Wrlock();
     m_history.clear();
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
-    m_rwlock->Unlock();
     return 0;
   }
   
   
   int Odometry::
   Update(ostream * dbgos)
-  {
-    if(m_thread){
-      m_thread->dbgos = dbgos;
-      return m_thread->update_status;
-    }
-    return DoUpdate(dbgos);
-  }
-  
-  
-  int Odometry::
-  DoUpdate(ostream * dbgos)
   {
     timespec_t timestamp;
     double x, y, t, sxx, syy, stt, sxy, sxt, syt;
@@ -116,9 +85,7 @@ namespace sfl {
       return res;
     }
     shared_ptr<Pose> pose(new Pose(x, y, t, sxx, syy, stt, sxy, sxt, syt));
-    m_rwlock->Wrlock();
     m_history.insert(make_pair(timestamp, pose));    
-    m_rwlock->Unlock();
     return 0;
   }
   
@@ -127,7 +94,6 @@ namespace sfl {
   Get() const
   {
     shared_ptr<Pose> pose;
-    RWlock::rdsentry sentry(m_rwlock);
     if(m_history.empty())
       pose.reset(new Pose());
     else
@@ -172,22 +138,8 @@ namespace sfl {
     res = m_hal->time_get(&timestamp);
     if(res != 0)
       return res;
-    m_rwlock->Wrlock();
     m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
-    m_rwlock->Unlock();
     return 0;
-  }
-  
-  
-  bool Odometry::
-  SetThread(shared_ptr<OdometryThread> thread)
-  {
-    RWlock::wrsentry sentry(m_rwlock);
-    if(m_thread)
-      return false;
-    m_thread = thread;
-    thread->odometry = this;
-    return true;
   }
   
 }

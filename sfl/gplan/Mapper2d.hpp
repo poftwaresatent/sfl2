@@ -97,8 +97,7 @@ namespace sfl {
 						 /** use linear_travmap_cost_decay for legacy behavior */
 						 boost::shared_ptr<travmap_cost_decay const> decay,
 						 boost::shared_ptr<TraversabilityMap> travmap,
-						 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
-						 boost::shared_ptr<RWlock> trav_rwlock);
+						 boost::shared_ptr<travmap_grow_strategy> grow_strategy);
 		
   public:
 		typedef GridFrame::index_t index_t;
@@ -119,7 +118,6 @@ namespace sfl {
 						 /** use linear_travmap_cost_decay for legacy behavior */
 						 boost::shared_ptr<travmap_cost_decay const> decay,
 						 const std::string & name,
-						 boost::shared_ptr<RWlock> trav_rwlock,
 						 /** Optional. Defaults to never_grow. */
 						 boost::shared_ptr<travmap_grow_strategy> grow_strategy);
 
@@ -281,8 +279,8 @@ namespace sfl {
 		index_buffer_t const & GetSwipeHoleBuffer() const { return m_swipe_hole_buffer; }
 		index_buffer_t const & GetSwipeRepairBuffer() const { return m_swipe_repair_buffer; }
 		
-		/** Use at your own risk: gives non-rwlock-protected access to the
-				underlying travmap. */
+		/** Use at your own risk: gives access to the underlying
+				travmap. */
 		boost::shared_ptr<TraversabilityMap const> GetTravmap() const;
 		
 	protected:
@@ -293,7 +291,6 @@ namespace sfl {
 		void InitRemovemask();
 		
 		boost::shared_ptr<TraversabilityMap> m_travmap;
-		boost::shared_ptr<RWlock> m_trav_rwlock;
 		addmask_t m_addmask;
 		ssize_t m_addmask_x0, m_addmask_y0, m_addmask_x1, m_addmask_y1;	// bbox
 		

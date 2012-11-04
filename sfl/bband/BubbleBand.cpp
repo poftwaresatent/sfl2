@@ -40,27 +40,11 @@ using namespace std;
 namespace sfl {
   
   
-  BubbleBandThread::
-  BubbleBandThread(const string & name)
-    : SimpleThread(name)
-  {
-  }
-  
-  
-  void BubbleBandThread::
-  Step()
-  {
-    if(bubbleBand)
-      bubbleBand->DoUpdate(bubbleBand->m_multiscanner.CollectScans());
-  }
-  
-  
   BubbleBand::
   BubbleBand(const RobotModel & robot_model,
 	     const Odometry & odometry,
 	     const Multiscanner & multiscanner,
-	     BubbleList::Parameters _parameters,
-	     shared_ptr<RWlock> rwlock)
+	     BubbleList::Parameters _parameters)
     : parameters(_parameters),
       robot_radius(robot_model.GetHull()->CalculateRadius()),
       robot_diameter(2 * robot_radius),
@@ -76,7 +60,6 @@ namespace sfl {
       m_reaction_radius(2.0 * robot_radius),
       m_replan_request(false),
       m_state(NOBAND),
-      m_rwlock(rwlock),
       m_planstep(IDLE)
   {
   }
@@ -87,8 +70,7 @@ namespace sfl {
 	     const Odometry & odometry,
 	     const Multiscanner & multiscanner,
 	     boost::shared_ptr<ReplanHandlerAPI> replan_handler,
-	     BubbleList::Parameters _parameters,
-	     shared_ptr<RWlock> rwlock)
+	     BubbleList::Parameters _parameters)
     : parameters(_parameters),
       robot_radius(robot_model.GetHull()->CalculateRadius()),
       robot_diameter(2 * robot_radius),
@@ -104,7 +86,6 @@ namespace sfl {
       m_reaction_radius(2.0 * robot_radius),
       m_replan_request(false),
       m_state(NOBAND),
-      m_rwlock(rwlock),
       m_planstep(IDLE)
   {
   }
@@ -120,20 +101,16 @@ namespace sfl {
   void BubbleBand::
   SetGoal(const Goal & global_goal)
   {
-    m_rwlock->Wrlock();
     m_min_ignore_distance = 0;
     m_nf1_goal_radius = global_goal.Dr();
     m_replan_request = true;
     m_global_goal = global_goal;
-    m_rwlock->Unlock();
   }
   
   
   bool BubbleBand::
   AppendGoal(const Goal & global_goal, shared_ptr<const Scan> scan)
   {
-    RWlock::wrsentry sentry(m_rwlock);
-    
     m_min_ignore_distance = 0;
     m_nf1_goal_radius = global_goal.Dr();
     m_global_goal = global_goal;
@@ -179,8 +156,6 @@ namespace sfl {
   bool BubbleBand::
   AppendTarget(const Goal & global_goal)
   {
-    RWlock::wrsentry sentry(m_rwlock);
-    
     m_min_ignore_distance = global_goal.Dr() + robot_radius;
     m_nf1_goal_radius = m_min_ignore_distance;
     m_global_goal = global_goal;
@@ -208,19 +183,16 @@ namespace sfl {
   void BubbleBand::
   Update()
   {
-    if( ! m_thread)
-      DoUpdate(m_multiscanner.CollectScans());
-  }
-  
-  
-  void BubbleBand::
-  DoUpdate(shared_ptr<const Scan> scan)
-  {
+    /* The Scan object should be filtered, ie contain only
+       valid readings. This can be obtained from
+       Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
+       can still contain readings that are out of range (represented
+       as readings at the maximum rho value). */
+    shared_ptr<const Scan> scan(m_multiscanner.CollectScans());
+    
     if(m_replan_request){
-      m_rwlock->Wrlock();
       m_active_blist->RemoveAll();
       m_state = NOBAND;
-      m_rwlock->Unlock();
       m_replan_request = false;
       m_planstep = CREATE_PLAN;
       return;
@@ -228,10 +200,8 @@ namespace sfl {
     
     m_frame = m_odometry.Get();
     if(m_active_blist->m_head != 0){
-      m_rwlock->Wrlock();
       m_active_blist->m_head->_position.first = m_frame->X();
       m_active_blist->m_head->_position.second = m_frame->Y();
-      m_rwlock->Unlock();
     }
     
     if((CREATE_PLAN == m_planstep)
@@ -242,9 +212,7 @@ namespace sfl {
       if( ! m_replan_handler->GenerateBand(m_frame, scan))
 	m_planstep = CREATE_PLAN;
       else{
-	m_rwlock->Wrlock();
 	m_active_blist = m_replan_handler->SwapBubbleList(m_active_blist);
-	m_rwlock->Unlock();
 	m_state = VALIDBAND;
 	m_planstep = IDLE;
 	return;
@@ -254,14 +222,12 @@ namespace sfl {
     if(m_active_blist->Empty())
       m_state = NOBAND;
     else{
-      m_rwlock->Wrlock();
       if(m_active_blist->Update(scan))
 	m_state = VALIDBAND;
       else{
 	m_state = UNSUREBAND;
 	m_planstep = CREATE_PLAN;
       }
-      m_rwlock->Unlock();
     }
   }
   
@@ -269,8 +235,6 @@ namespace sfl {
   void BubbleBand::
   GetSubGoal(double carrot_distance, double & goalx, double & goaly) const
   {
-    RWlock::rdsentry sentry(m_rwlock);
-    
     if((m_active_blist->m_head == 0)
        || (m_active_blist->m_head == m_active_blist->m_tail)){
       goalx = m_global_goal.X();
@@ -293,16 +257,4 @@ namespace sfl {
     goaly = m_global_goal.Y();
   }
   
-  
-  bool BubbleBand::
-  SetThread(shared_ptr<BubbleBandThread> thread)
-  {
-    RWlock::wrsentry sentry(m_rwlock);
-    if(m_thread)
-      return false;
-    m_thread = thread;
-    thread->bubbleBand = this;
-    return true;
-  }
-
 }

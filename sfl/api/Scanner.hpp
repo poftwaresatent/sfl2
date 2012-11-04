@@ -26,7 +26,6 @@
 #define SUNFLOWER_SCANNER_HPP
 
 
-#include <sfl/util/Pthread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
@@ -41,31 +40,6 @@ namespace sfl {
   class Timestamp;
   class Frame;
   class Scanner;
-  
-  
-  /**
-     Optional update thread for Scanner. If you use one of these,
-     Scanner::Update() will only return the status of the previous
-     loop of ScannerThread (which will call
-     Scanner::DoUpdate()).
-  */
-  class ScannerThread
-    : public SimpleThread
-  {
-  private:
-    ScannerThread(const ScannerThread &);
-    
-  public:
-    /** You still have to call Scanner::SetThread() and
-	ScannerThread::Start(). */
-    explicit ScannerThread(const std::string & name);
-    virtual void Step();
-    
-  protected:
-    friend class Scanner;
-    Scanner * scanner;
-    int update_status;
-  };
   
   
   /**
@@ -162,9 +136,7 @@ namespace sfl {
 	    /** angle of first ray wrt sensor frame [rad] */
 	    double phi0,
 	    /** angular range swept by measurement [rad] */
-	    double phirange,
-	    /** required read/write lock */
-	    boost::shared_ptr<Mutex> mutex);
+	    double phirange);
     
     /**
        \return copy of the most recently acquired scan
@@ -179,9 +151,7 @@ namespace sfl {
     boost::shared_ptr<Scan> GetScanCopy() const;
     
     /**
-       Refresh the scan data. This can be done from within a dedicated
-       ScannerThread, which is convenient for concurrent access
-       from several client threads.
+       Refresh the scan data.
        
        This method calls HAL::scan_get() to get the actual data. If
        that doesn't return 0, then the last valid data is returned by
@@ -192,19 +162,10 @@ namespace sfl {
        (depending on your application) that the acquisition status
        change between your call to AcquisitionOk() and an accessor.
        
-       \note Actually, this is just a switch that either calls
-       DoUpdate(), or waits until the ScannerThread has done
-       that and then returns the most recent status.
-       
-       \return 0 on success, -42 if there's an issue with running
-       ScannerThread (that would be a bug!), or the result of
-       the call to HAL::scan_get().
+       \return 0 on success, or the result of the call to
+       HAL::scan_get().
     */
     int Update();
-    
-    /** Attempt to attach an update thread. Fails if this Scanner
-	already has an update thread. */
-    bool SetThread(boost::shared_ptr<ScannerThread> thread);
     
     /**
        Get a data point
@@ -274,20 +235,14 @@ namespace sfl {
     bool strict_nscans_check;
     
   protected:
-    friend class ScannerThread;
-    
     typedef std::vector<double> vector_t;
-    
-    int DoUpdate();
     
     boost::shared_ptr<HAL> m_hal;
     std::vector<boost::shared_ptr<Scan> > m_buffer;
-    boost::shared_ptr<Scan> m_dirty, m_clean; // mutexed
-    bool m_acquisition_ok;	// mutexed
+    boost::shared_ptr<Scan> m_dirty, m_clean; // would need to be mutexed for multithreading
+    bool m_acquisition_ok;		      // would need to be mutexed for multithreading
     vector_t m_cosphi;
     vector_t m_sinphi;
-    boost::shared_ptr<Mutex> m_mutex;
-    boost::shared_ptr<ScannerThread> m_thread;
   };
   
 }

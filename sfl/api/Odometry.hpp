@@ -26,7 +26,6 @@
 #define SUNFLOWER_ODOMETRY_HPP
 
 
-#include <sfl/util/Pthread.hpp>
 #include <sfl/api/Timestamp.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
@@ -38,32 +37,6 @@ namespace sfl {
   class HAL;
   class Pose;
   class Odometry;
-  
-  
-  /**
-     Optional update thread for Odometry. If you use one of these,
-     Odometry::Update() will only return the status of the previous
-     loop of OdometryThread (which will call
-     Odometry::DoUpdate()).
-  */
-  class OdometryThread
-    : public SimpleThread
-  {
-  private:
-    OdometryThread(const OdometryThread &);
-    
-  public:
-    /** You still have to call Odometry::SetThread() and
-	OdometryThread::Start(). */
-    OdometryThread(const std::string & name, std::ostream * dbgos = 0);
-    virtual void Step();
-    
-  protected:
-    friend class Odometry;
-    Odometry * odometry;
-    int update_status;
-    std::ostream * dbgos;
-  };
   
   
   /**
@@ -91,7 +64,7 @@ namespace sfl {
   public:
     typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
     
-    Odometry(boost::shared_ptr<HAL> hal, boost::shared_ptr<RWlock> rwlock);
+    explicit Odometry(boost::shared_ptr<HAL> hal);
     
     /**
        Initialize history with a pose in world frame. This clears any
@@ -114,10 +87,6 @@ namespace sfl {
     */
     int Update(/** if non-zero, debug messages are written to dbgos */
 	       std::ostream * dbgos = 0);
-    
-    /** Attempt to attach an update thread. Fails if this Odometry
-	already has an update thread. */
-    bool SetThread(boost::shared_ptr<OdometryThread> thread);
     
     /**
        \return Copy of the current (most recent) pose in world
@@ -154,14 +123,8 @@ namespace sfl {
     boost::shared_ptr<HAL> GetHAL() { return m_hal; }
     
   private:
-    friend class OdometryThread;
-    
-    int DoUpdate(std::ostream * dbgos);
-    
     boost::shared_ptr<HAL> m_hal;
     history_t m_history;
-    boost::shared_ptr<RWlock> m_rwlock;
-    boost::shared_ptr<OdometryThread> m_thread;
   };
   
 }

@@ -90,7 +90,6 @@ namespace sfl {
 					 int _obstacle,
 					 shared_ptr<travmap_cost_decay const> decay,
 					 const std::string & name,
-					 shared_ptr<RWlock> trav_rwlock,
 					 shared_ptr<travmap_grow_strategy> grow_strategy)
 		: gridframe(_gridframe),
 			buffer_zone(_buffer_zone),
@@ -102,7 +101,6 @@ namespace sfl {
 																			grid_xbegin, grid_xend,
 																			grid_ybegin, grid_yend,
 																			_freespace, _obstacle, name)),
-			m_trav_rwlock(trav_rwlock),
 			m_cost_decay(decay)
 	{
 		InitAddmask();
@@ -120,8 +118,7 @@ namespace sfl {
 					 double padding_factor,
 					 shared_ptr<travmap_cost_decay const> decay,
 					 shared_ptr<TraversabilityMap> travmap,
-					 shared_ptr<travmap_grow_strategy> grow_strategy,
-					 shared_ptr<RWlock> trav_rwlock)
+					 shared_ptr<travmap_grow_strategy> grow_strategy)
 		: gridframe(travmap->gframe),
 			buffer_zone(_buffer_zone),
 			grown_safe_distance(robot_radius + _buffer_zone
@@ -129,7 +126,6 @@ namespace sfl {
 			grown_robot_radius(robot_radius
 												 + padding_factor * gridframe.Delta() * sqrt_of_half),
 			m_travmap(travmap),
-			m_trav_rwlock(trav_rwlock),
 			m_cost_decay(decay)
 	{
 		InitAddmask();
@@ -150,13 +146,6 @@ namespace sfl {
 				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
 	{
-		shared_ptr<RWlock> rwl(RWlock::Create("sfl::Mapper2d::m_trav_rwlock"));
-		if( ! rwl){
-      if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
-												 << "  sfl::RWlock::Create() failed\n";
-      return shared_ptr<Mapper2d>();
-    }
-		
 		ifstream trav(traversability_file.c_str());
     if( ! trav){
       if(err_os) *err_os << "ERROR in Mapper2d::Create():\n"
@@ -175,7 +164,7 @@ namespace sfl {
 		
 		shared_ptr<Mapper2d>
 			result(new Mapper2d(robot_radius, buffer_zone, padding_factor, decay,
-													traversability, grow_strategy, rwl));
+													traversability, grow_strategy));
 		return result;
 	}
 	
@@ -184,7 +173,6 @@ namespace sfl {
 	Update(const Frame & pose, size_t length, double * locx, double * locy,
 				 draw_callback * cb)
 	{
-		RWlock::wrsentry sentry(m_trav_rwlock);
 		size_t count(0);
 		for(size_t ii(0); ii < length; ++ii){
 			double xw(locx[ii]);
@@ -200,7 +188,6 @@ namespace sfl {
 	Update(const Frame & pose, const Scan & scan,
 				 draw_callback * cb)
 	{
-		RWlock::wrsentry sentry(m_trav_rwlock);
 		const Scan::array_t & scan_data(scan.data);
 		size_t count(0);		
 		for(size_t ii(0); ii < scan_data.size(); ++ii)
@@ -368,8 +355,6 @@ namespace sfl {
 							 double max_remove_distance,
 							 draw_callback * cb)
 	{
-		RWlock::wrsentry sentry(m_trav_rwlock);
-		
 		m_freespace_buffer.clear();
 		m_obstacle_buffer.clear();
 		m_swipe_check_buffer.clear();
@@ -429,7 +414,7 @@ namespace sfl {
 	shared_ptr<RDTravmap> Mapper2d::
 	CreateRDTravmap() const
 	{
-		shared_ptr<RDTravmap> rdt(new RDTravmap(m_travmap, m_trav_rwlock));
+		shared_ptr<RDTravmap> rdt(new RDTravmap(m_travmap));
 		return rdt;
 	}
 	
@@ -437,7 +422,7 @@ namespace sfl {
 	shared_ptr<WRTravmap> Mapper2d::
 	CreateWRTravmap()
 	{
-		shared_ptr<WRTravmap> wrt(new WRTravmap(m_travmap, m_trav_rwlock));
+		shared_ptr<WRTravmap> wrt(new WRTravmap(m_travmap));
 		return wrt;
 	}
 	
@@ -463,7 +448,6 @@ namespace sfl {
 	AddObstacleCircle(double globx, double globy, double radius,
 										bool force, draw_callback * cb)
 	{
-		RWlock::wrsentry sentry(m_trav_rwlock);
 		buffered_obstacle_adder boa(this, force, cb);
 		gridframe.DrawGlobalCircle(globx, globy, radius, boa);
 		return boa.count;

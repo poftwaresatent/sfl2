@@ -27,7 +27,6 @@
 
 
 #include <boost/shared_ptr.hpp>
-#include <sfl/util/Pthread.hpp>
 
 
 namespace sfl {
@@ -36,33 +35,6 @@ namespace sfl {
   class RobotModel;
   class HAL;
   class MotionController;
-  
-  
-  /**
-     Optional update thread for MotionController. If you use one of
-     these, MotionController::Update() will only return the status of
-     the previous loop of MotionControllerThread (which will
-     call MotionController::DoUpdate()).
-  */
-  class MotionControllerThread
-    : public SimpleThread
-  {
-  private:
-    MotionControllerThread(const MotionControllerThread &);
-    
-  public:
-    /** You still have to call MotionController::SetThread() and
-	MotionControllerThread::Start(). */
-    MotionControllerThread(const std::string & name, std::ostream * dbgos = 0);
-    virtual void Step();
-    
-  protected:
-    friend class MotionController;    
-    MotionController * motionController;
-    int update_status;
-    std::ostream * dbgos;
-    double timestep;
-  };
   
   
   /**
@@ -75,8 +47,7 @@ namespace sfl {
   {
   public:
     MotionController(boost::shared_ptr<const RobotModel> robotModel,
-		     boost::shared_ptr<HAL> hal,
-		     boost::shared_ptr<RWlock> rwlock);
+		     boost::shared_ptr<HAL> hal);
     
     /**
        Template method for determining the next motion command. The
@@ -91,10 +62,6 @@ namespace sfl {
 	       double timestep,
 	       /** if non-zero, debug messages are written to dbgos */
 	       std::ostream * dbgos = 0);
-    
-    /** Attempt to attach an update thread. Fails if this MotionController
-	already has an update thread. */
-    bool SetThread(boost::shared_ptr<MotionControllerThread> thread);
     
     /** Set the (global) speed to be applied during the next Update(). */
     void ProposeSpeed(double sd, double thetad);
@@ -129,14 +96,8 @@ namespace sfl {
     const double thetadMax;
     
   protected:
-    friend class MotionControllerThread;
-
-    int DoUpdate(double timestep, std::ostream * dbgos);
-
     boost::shared_ptr<const RobotModel> m_robotModel;
     boost::shared_ptr<HAL> m_hal;
-    boost::shared_ptr<RWlock> m_rwlock;
-    boost::shared_ptr<MotionControllerThread> m_thread;
     double m_proposedQdl, m_proposedQdr;
     double m_currentQdl, m_currentQdr;
     double m_wantedQdl, m_wantedQdr;

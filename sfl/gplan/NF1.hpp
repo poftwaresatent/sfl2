@@ -37,7 +37,6 @@ namespace sfl {
   class Scan;
   class NF1Wave;
   class GridFrame;
-  class Mutex;
   
   
   class NF1
@@ -48,7 +47,7 @@ namespace sfl {
 
     typedef array2d<double> grid_t;
     
-    NF1(boost::shared_ptr<Mutex> mutex);
+    NF1();
     
     void Configure(double robot_x, double robot_y,
 		   double goal_x, double goal_y,
@@ -74,7 +73,6 @@ namespace sfl {
     
     
   private:
-    boost::shared_ptr<Mutex> m_mutex;
     boost::shared_ptr<GridFrame> m_frame;
     index_t m_grid_dimension;
     position_t m_goal;
