@@ -146,6 +146,46 @@ Robox(std::string const &name)
   : RobotClient(name),
     m_ngkl(new local::NGKeyListener())
 {
+  reflectParameter("model_security_distance", &m_params.model_security_distance);
+  reflectParameter("model_wheelbase", &m_params.model_wheelbase);
+  reflectParameter("model_wheelradius", &m_params.model_wheelradius);
+  reflectParameter("model_qd_max", &m_params.model_qd_max);
+  reflectParameter("model_qdd_max", &m_params.model_qdd_max);
+  reflectParameter("model_sd_max", &m_params.model_sd_max);
+  reflectParameter("model_thetad_max", &m_params.model_thetad_max);
+  reflectParameter("model_sdd_max", &m_params.model_sdd_max);
+  reflectParameter("model_thetadd_max", &m_params.model_thetadd_max);  
+  reflectParameter("dwa_dimension", &m_params.dwa_dimension);
+  reflectParameter("dwa_grid_width", &m_params.dwa_grid_width);
+  reflectParameter("dwa_grid_height", &m_params.dwa_grid_height);
+  reflectParameter("dwa_grid_resolution", &m_params.dwa_grid_resolution);
+  reflectParameter("dwa_alpha_distance", &m_params.dwa_alpha_distance);
+  reflectParameter("dwa_alpha_heading", &m_params.dwa_alpha_heading);
+  reflectParameter("dwa_alpha_speed", &m_params.dwa_alpha_speed);
+  reflectParameter("dwa_use_tobi_distobj", &m_params.dwa_use_tobi_distobj);
+  reflectParameter("dwa_tobi_distobj_blur", &m_params.dwa_tobi_distobj_blur);
+  reflectParameter("bband_enabled", &m_params.bband_enabled);
+  reflectParameter("bband_shortpath", &m_params.bband_shortpath);
+  reflectParameter("bband_longpath", &m_params.bband_longpath);
+  reflectParameter("bband_maxignoredistance", &m_params.bband_maxignoredistance);
+  reflectParameter("mp_dtheta_starthoming", &m_params.mp_dtheta_starthoming);
+  reflectParameter("mp_dtheta_startaiming", &m_params.mp_dtheta_startaiming);
+  reflectParameter("front_channel", &m_params.front_channel);
+  reflectParameter("front_nscans", &m_params.front_nscans);
+  reflectParameter("front_mount_x", &m_params.front_mount_x);
+  reflectParameter("front_mount_y", &m_params.front_mount_y);
+  reflectParameter("front_mount_theta", &m_params.front_mount_theta);
+  reflectParameter("front_rhomax", &m_params.front_rhomax);
+  reflectParameter("front_phi0", &m_params.front_phi0);
+  reflectParameter("front_phirange", &m_params.front_phirange);
+  reflectParameter("rear_channel", &m_params.rear_channel);
+  reflectParameter("rear_nscans", &m_params.rear_nscans);
+  reflectParameter("rear_mount_x", &m_params.rear_mount_x);
+  reflectParameter("rear_mount_y", &m_params.rear_mount_y);
+  reflectParameter("rear_mount_theta", &m_params.rear_mount_theta);
+  reflectParameter("rear_rhomax", &m_params.rear_rhomax);
+  reflectParameter("rear_phi0", &m_params.rear_phi0);
+  reflectParameter("rear_phirange", &m_params.rear_phirange);
 }
 
 
@@ -156,33 +196,32 @@ Initialize(npm::RobotServer &server)
     return false;
   
   boost::shared_ptr<sfl::Hull> hull(expo::Robox::CreateDefaultHull());
-  robox_parameters params;
   
   boost::shared_ptr<sfl::Scanner>
-    front = server.DefineLidar(Frame(params.front_mount_x,
-			      params.front_mount_y,
-			      params.front_mount_theta),
-			params.front_nscans,
-			params.front_rhomax,
-			params.front_phi0,
-			params.front_phirange,
-			params.front_channel)->GetScanner();
+    front = server.DefineLidar(Frame(m_params.front_mount_x,
+				     m_params.front_mount_y,
+				     m_params.front_mount_theta),
+			       m_params.front_nscans,
+			       m_params.front_rhomax,
+			       m_params.front_phi0,
+			       m_params.front_phirange,
+			       m_params.front_channel)->GetScanner();
   boost::shared_ptr<sfl::Scanner>
-    rear = server.DefineLidar(Frame(params.rear_mount_x,
-			     params.rear_mount_y,
-			     params.rear_mount_theta),
-		       params.rear_nscans,
-		       params.rear_rhomax,
-		       params.rear_phi0,
-		       params.rear_phirange,
-		       params.rear_channel)->GetScanner();
+    rear = server.DefineLidar(Frame(m_params.rear_mount_x,
+				    m_params.rear_mount_y,
+				    m_params.rear_mount_theta),
+			      m_params.rear_nscans,
+			      m_params.rear_rhomax,
+			      m_params.rear_phi0,
+			      m_params.rear_phirange,
+			      m_params.rear_channel)->GetScanner();
   boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(m_hal));
   mscan->Add(front);
   mscan->Add(rear);
   
-  m_drive = server.DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
+  m_drive = server.DefineDiffDrive(m_params.model_wheelbase, m_params.model_wheelradius);
   
-  m_imp.reset(new npm::VisualRobox(name, params, hull, m_hal, mscan));
+  m_imp.reset(new npm::VisualRobox(name, m_params, hull, m_hal, mscan));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     server.AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));

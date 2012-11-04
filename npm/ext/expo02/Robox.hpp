@@ -26,6 +26,7 @@
 #define ROBOX_HPP
 
 #include <npm/RobotClient.hpp>
+#include <npm/ext/expo02/robox_parameters.hpp>
 #include <map>
 
 namespace sfl {
@@ -53,9 +54,10 @@ class Robox
   : public npm::RobotClient
 {
 public:
-  /** \todo XXXX to-do: resurrect he customizability of the old
-      Robox::CreateCustom fectory using fpplib::Configurable (probably
-      needs callbacks). See commented-out code in Robox.cpp. */
+  /** \todo XXXX to-do: resurrect customizability (the old
+      Robox::CreateCustom factory method) using
+      fpplib::Configurable. See commented-out sections of
+      Robox.cpp. */
   Robox(std::string const &name);
   
   virtual bool Initialize(npm::RobotServer &server);
@@ -68,6 +70,8 @@ public:
   virtual bool GoalReached();
   
 protected:
+  robox_parameters m_params;
+  
   boost::shared_ptr<npm::VisualRobox> m_imp;
   boost::shared_ptr<npm::DiffDrive> m_drive;
   boost::shared_ptr<local::NGKeyListener> m_ngkl;
