@@ -157,7 +157,6 @@ add_library (fpplib  SHARED ${SFL2_FPPLIB_SRCS})
 add_library (sfl     SHARED ${SFL2_SFL_SRCS})
 add_library (npm     SHARED ${SFL2_NPM_SRCS})
 target_link_libraries (fpplib yamlcpp)
-target_link_libraries (sfl    pthread)
 target_link_libraries (npm    fpplib sfl ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 add_executable (nepumuk apps/nepumuk.cpp)
