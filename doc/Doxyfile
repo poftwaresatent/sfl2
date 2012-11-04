@@ -72,6 +72,7 @@ INPUT                  = ../3rdparty/fpplib/include/fpplib \
                          ../npm \
                          ../npm/gfx \
                          ../npm/ext \
+                         ../npm/ext/expo02 \
                          ../apps
 FILE_PATTERNS          = *.h *.hpp *.c *.cpp *.dox
 RECURSIVE              = NO
