@@ -79,6 +79,10 @@ namespace sfl {
   void DynamicWindow::
   Initialize(ostream * os)
   {
+    for(int il = 0; il < dimension; ++il)
+      for(int ir = 0; ir < dimension; ++ir)
+	m_state[il][ir] = REACHABLE; // make sure we initialize with something other than FORBIDDEN
+    
     for(int i = 0; i < dimension; ++i)
       m_qd[i] = FindQd(i);
     InitForbidden();
