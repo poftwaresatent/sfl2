@@ -51,6 +51,7 @@ namespace npm {
   class BicycleDrive;
   class NoiseModel;
   class KeyListener;
+  class CheatSheet;
   
   
   class RobotServer
@@ -110,6 +111,7 @@ namespace npm {
     DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth);
     
     void AddKeyListener(boost::shared_ptr<KeyListener> listener) const;
+    boost::shared_ptr<npm::CheatSheet> CreateCheatSheet() const;
     
   private:
     friend class Simulator;

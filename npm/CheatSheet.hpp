@@ -38,13 +38,12 @@ namespace npm {
     typedef struct { double x, y, r; } dynobj_t;
   
     const World * world;
-    const boost::shared_ptr<const RobotServer> robot;
+    const RobotServer * robot;
   
     std::vector<line_t> line;
     std::vector<dynobj_t> dynobj;
   
-    CheatSheet(const World * world,
-	       boost::shared_ptr<const RobotServer> robot);
+    CheatSheet(const World * world, const RobotServer * robot);
   
     void UpdateLines();
     void UpdateDynobjs();

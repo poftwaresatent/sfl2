@@ -20,9 +20,8 @@
 
 #include "CarrotDrawing.hpp"
 #include "PNF.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/wrap_glu.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
+#include <npm/gfx/wrap_glu.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/FacadeReadInterface.hpp>
@@ -45,8 +44,7 @@ CarrotDrawing(const std::string & name,
 	      shared_ptr<CarrotProxy> proxy,
 	      size_t _gradplot_frequency)
   : Drawing(name,
-	    "trace of gradient descent of E* (global frame)",
-	    Instance<UniqueManager<Drawing> >()),
+	    "trace of gradient descent of E* (global frame)"),
     gradplot_frequency(_gradplot_frequency),
     m_proxy(proxy)
 {

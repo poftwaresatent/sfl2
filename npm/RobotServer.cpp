@@ -40,6 +40,7 @@
 #include "pdebug.hpp"
 #include "NoiseModel.hpp"
 #include "World.hpp"
+#include "CheatSheet.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Scanner.hpp>
@@ -364,6 +365,14 @@ namespace npm {
   AddKeyListener(boost::shared_ptr<KeyListener> listener) const
   {
     m_world.AddKeyListener(listener);
+  }
+  
+  
+  boost::shared_ptr<npm::CheatSheet> RobotServer::
+  CreateCheatSheet() const
+  {
+    boost::shared_ptr<npm::CheatSheet> cs(new CheatSheet(&m_world, this));
+    return cs;
   }
   
 }

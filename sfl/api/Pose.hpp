@@ -60,6 +60,8 @@ namespace sfl {
 	 double sxx, double syy, double stt,
 	 double sxy, double sxt, double syt);
     
+    Pose const & operator = (Frame const &rhs);
+    
     /** Doesn't touch the position, only the covariance. */
     void SetVar(double sxx, double syy, double stt,
 		double sxy, double sxt, double syt);

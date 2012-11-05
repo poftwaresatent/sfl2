@@ -23,8 +23,8 @@
 #define ESTAR_DRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
-#include <npm/common/Camera.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <npm/gfx/Camera.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -40,6 +40,7 @@ namespace sfl {
   class GridFrame;
 }
 
+namespace npm {
 
 class PlanProxy {
 public:
@@ -87,5 +88,7 @@ public:
 protected:
 	boost::shared_ptr<PlanProxy> m_proxy;
 };
+
+}
 
 #endif // ESTAR_DRAWING_HPP

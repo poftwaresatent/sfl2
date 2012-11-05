@@ -33,7 +33,7 @@ namespace npm {
 
 
   CheatSheet::
-  CheatSheet(const World * _world, shared_ptr<const RobotServer> _robot)
+  CheatSheet(const World * _world, const RobotServer * _robot)
     : world(_world),
       robot(_robot)
   {
@@ -61,7 +61,7 @@ namespace npm {
   {
     dynobj.clear();
     for(size_t ir(0); ir < world->m_robot.size(); ++ir){
-      if(world->m_robot[ir] == robot.get())
+      if(world->m_robot[ir] == robot)
 	continue;
       dynobj_t dd;
       dd.x = world->m_robot[ir]->GetTruePose().X() ;

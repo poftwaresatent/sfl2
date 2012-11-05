@@ -22,8 +22,10 @@
 #define PNF_DRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
 
+
+namespace npm {
 
 class Esbot;
 
@@ -49,5 +51,7 @@ public:
 private:
   Esbot * m_bot;
 };
+
+}
 
 #endif // PNF_DRAWING_HPP

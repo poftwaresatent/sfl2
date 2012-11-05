@@ -22,7 +22,7 @@
 #define ESBOT_HPP
 
 
-#include <npm/common/RobotClient.hpp>
+#include <npm/RobotClient.hpp>
 #include <sfl/api/Goal.hpp>
 #include <vector>
 
@@ -45,7 +45,6 @@ namespace estar {
 namespace npm {
   class CheatSheet;
   class Lidar;
-}
 
 
 class PNF;
@@ -59,17 +58,16 @@ class Esbot
   : public npm::RobotClient
 {
 public:
-  Esbot(boost::shared_ptr<npm::RobotDescriptor> descriptor,
-	const npm::World & world);
+  Esbot(std::string const &name);
   
+  virtual bool Initialize(RobotServer &server);
   virtual bool PrepareAction(double timestep);
+  virtual void InitPose(sfl::Pose const &pose);
+  virtual void SetPose(sfl::Pose const &pose);
+  virtual bool GetPose(sfl::Pose &pose);
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
+  virtual bool GetGoal(sfl::Goal &goal);
   virtual bool GoalReached();
-
-  virtual void InitPose(double x, double y, double theta);
-  virtual void SetPose(double x, double y, double theta);
-  virtual void GetPose(double & x, double & y, double & theta);
-  virtual boost::shared_ptr<const sfl::Goal> GetGoal();
   
   boost::shared_ptr<PNF> GetPNF() { return m_pnf; }
   boost::shared_ptr<const PNF> GetPNF() const { return m_pnf; }
@@ -100,7 +98,9 @@ protected:
   
   bool m_replan_request, m_enable_thread;
   
-  void CreateGfxStuff(const std::string & name);
+  void CreateGfxStuff(RobotServer &server, const std::string &name);
 };
+
+}
 
 #endif // ESBOT_HPP

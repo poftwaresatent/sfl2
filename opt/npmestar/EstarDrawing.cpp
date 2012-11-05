@@ -20,10 +20,9 @@
 
 
 #include "EstarDrawing.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
-#include "../common/View.hpp"
-#include "../common/BBox.hpp"
+#include <npm/gfx/wrap_gl.hpp>
+#include <npm/gfx/View.hpp>
+#include <npm/BBox.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
@@ -38,9 +37,10 @@
 
 
 using namespace sfl;
-using namespace npm;
 using namespace boost;
 using namespace std;
+
+namespace npm {
 
 
 EstarDrawing::
@@ -48,8 +48,7 @@ EstarDrawing(const std::string & name,
 						 shared_ptr<PlanProxy> proxy,
 						 what_t _what)
   : Drawing(name,
-						"default color E* (VALUE/RHS/META/QUEUE/UPWIND/OBST/STATUS)",
-						Instance<UniqueManager<Drawing> >()),
+						"default color E* (VALUE/RHS/META/QUEUE/UPWIND/OBST/STATUS)"),
     what(_what),
     m_proxy(proxy)
 {
@@ -62,8 +61,7 @@ EstarDrawing(const std::string & name,
 						 what_t _what,
 						 shared_ptr<gfx::ColorScheme> custom_cs)
   : Drawing(name,
-						"custom color E* grid (VALUE/RHS/META/QUEUE/UPWIND/OBST/STATUS)",
-						Instance<UniqueManager<Drawing> >()),
+						"custom color E* grid (VALUE/RHS/META/QUEUE/UPWIND/OBST/STATUS)"),
     what(_what),
     m_proxy(proxy),
     m_custom_cs(custom_cs)
@@ -143,8 +141,7 @@ EstarCamera::
 EstarCamera(const std::string & name,
 						boost::shared_ptr<PlanProxy> proxy)
 	: Camera(name,
-					 "bbox of E* C-space",
-					 Instance<UniqueManager<Camera> >()),
+					 "bbox of E* C-space"),
 		m_proxy(proxy)
 {
 }
@@ -179,4 +176,6 @@ ConfigureView(View & view)
 	bb.Update(x2, y2);
 	bb.Update(x3, y3);
 	view.SetBounds(bb);
+}
+
 }

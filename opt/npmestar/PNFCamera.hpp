@@ -18,36 +18,31 @@
  */
 
 
-#include "PNFCamera.hpp"
-#include "Esbot.hpp"
-#include "PNF.hpp"
-#include "../common/View.hpp"
-#include "../common/Manager.hpp"
-#include <pnf/Flow.hpp>
+#ifndef PNF_CAMERA_HPP
+#define PNF_CAMERA_HPP
 
 
-using namespace npm;
+#include <npm/gfx/Camera.hpp>
 
 
-PNFCamera::
-PNFCamera(const std::string & name,
-	  Esbot * bot)
-  : Camera(name,
-	   "fixed on grid size of a PNF instance",
-	   Instance<UniqueManager<Camera> >()),
-    m_bot(bot)
+namespace npm {
+
+class Esbot;
+
+
+class PNFCamera
+  : public npm::Camera
 {
+public:
+  PNFCamera(const std::string & name,
+	    Esbot * bot);
+  
+  virtual void ConfigureView(npm::View & view);
+  
+private:
+  Esbot * m_bot;
+};
+
 }
 
-
-void PNFCamera::
-ConfigureView(View & view)
-{
-  boost::shared_ptr<PNF> pnf(m_bot->GetPNF());
-  if( ! pnf){
-    view.SetRange(0, 1, 0, 1);
-    return;
-  }
-  boost::shared_ptr<pnf::Flow> flow(pnf->GetFlow());
-  view.SetRange(0, flow->xsize, 0, flow->ysize); // bizarre param order...
-}
+#endif // PNF_CAMERA_HPP

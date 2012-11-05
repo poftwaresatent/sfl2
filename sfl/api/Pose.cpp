@@ -131,4 +131,18 @@ namespace sfl {
     m_syt = syt;
   }
   
+  
+  Pose const & Pose::
+  operator = (Frame const &rhs)
+  {
+    Set(rhs);
+    m_sxx = 1.;
+    m_syy = 1.;
+    m_stt = 1.;
+    m_sxy = 0.;
+    m_sxt = 0.;
+    m_syt = 0.;
+    return *this;
+  }
+
 }

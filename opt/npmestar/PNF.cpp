@@ -38,7 +38,7 @@
 // this must be included last (or at least pretty late), otherwise it
 // breaks... did not analyse why though, must be some preprocessor
 // issues
-#include <npm/common/pdebug.hpp>
+#include <npm/pdebug.hpp>
 
 
 using sfl::GridFrame;
@@ -47,6 +47,7 @@ using sfl::absval;
 using pnf::BufferZone;
 using pnf::Flow;
 using std::cerr;
+using namespace npm;
 
 
 namespace local {
@@ -113,6 +114,7 @@ namespace local {
   
 }
 
+namespace npm {
 
 PNF::
 PNF(double _robot_x, double _robot_y,
@@ -279,6 +281,8 @@ Wait()
   }
 }
 
+}
+
 
 namespace local {
   
@@ -295,13 +299,13 @@ namespace local {
     
     if(WAIT == state){
       if(prevstate != state)
-	PDEBUG("0x%08X waiting\n", thread_id);
+	PDEBUG("0x%08zX waiting\n", (size_t) thread_id);
       prevstate = state;
       // do nothing
     }
     
     else if(QUIT == state){
-      PDEBUG("0x%08X quit\n", thread_id);
+      PDEBUG("0x%08zX quit\n", (size_t) thread_id);
       if(EINVAL == pthread_mutex_unlock(&mutex)){
 	cerr << __func__ << "(): pthread_mutex_unlock() error\n";
 	exit(EXIT_FAILURE);
@@ -376,7 +380,7 @@ namespace local {
 	state = RUNNING;
       
       if(prevstate != state)
-	PDEBUG("0x%08X %s\n", thread_id, 
+	PDEBUG("0x%08zX %s\n", (size_t) thread_id, 
 	       (IDLE == state) ? "idle" : "running");
       prevstate = state;
     }
@@ -398,9 +402,6 @@ namespace local {
       keep_running  = posterp->do_step();
     return 0;
   }
-  
-  
-}
 
 
 struct flow_draw_callback
@@ -414,6 +415,10 @@ struct flow_draw_callback
   Flow * m_flow;
 };
 
+}
+
+
+namespace npm {
 
 bool PNF::
 AddStaticLine(double x0, double y0,
@@ -422,8 +427,10 @@ AddStaticLine(double x0, double y0,
   PVDEBUG("global: %g   %g   %g   %g\n", x0, y0, x1, y1);
   Wait();
   
-  flow_draw_callback cb(m_flow.get());
+  local::flow_draw_callback cb(m_flow.get());
   return 0 != m_frame->DrawGlobalLine(x0, y0, x1, y1,
 				      0, m_flow->xsize, 0, m_flow->ysize,
 				      cb);
+}
+
 }

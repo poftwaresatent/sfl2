@@ -26,6 +26,10 @@
 #include <fpplib/yaml_parser.hpp>
 #include <err.h>
 
+#ifdef SFL2_HAVE_ESTAR
+# include <opt/npmestar/Esbot.hpp>
+#endif // SFL2_HAVE_ESTAR
+
   
 void operator >> (const YAML::Node & node, sfl::Line & ll)
 {
@@ -74,6 +78,9 @@ namespace npm {
     declare<Zombie>("Zombie");
     declare<LidarZombie>("LidarZombie");
     declare<View>("View");
+#ifdef SFL2_HAVE_ESTAR
+    declare<Esbot>("Esbot");
+#endif // SFL2_HAVE_ESTAR
   }
   
   

@@ -24,21 +24,20 @@
 #include "EstarDrawing.hpp"
 #include "PNFCamera.hpp"
 #include "CarrotDrawing.hpp"
-#include "../robox/OCamera.hpp"
-#include "../robox/ODrawing.hpp"
-#include "../robox/DODrawing.hpp"
-#include "../robox/DWDrawing.hpp"
-#include "../robox/robox_parameters.hpp"
-#include "../common/pdebug.hpp"
-#include "../common/Lidar.hpp"
-#include "../common/GoalInstanceDrawing.hpp"
-#include "../common/OdometryDrawing.hpp"
-#include "../common/StillCamera.hpp"
-#include "../common/HAL.hpp"
-#include "../common/CheatSheet.hpp"
-#include "../common/DiffDrive.hpp"
-#include "../common/Manager.hpp"
-#include "../common/RobotDescriptor.hpp"
+#include <npm/ext/expo02/OCamera.hpp>
+#include <npm/ext/expo02/ODrawing.hpp>
+#include <npm/ext/expo02/DODrawing.hpp>
+#include <npm/ext/expo02/DWDrawing.hpp>
+#include <npm/ext/expo02/robox_parameters.hpp>
+#include <npm/RobotServer.hpp>
+#include <npm/pdebug.hpp>
+#include <npm/Lidar.hpp>
+#include <npm/gfx/GoalInstanceDrawing.hpp>
+#include <npm/gfx/OdometryDrawing.hpp>
+#include <npm/gfx/StillCamera.hpp>
+#include <npm/HAL.hpp>
+#include <npm/CheatSheet.hpp>
+#include <npm/DiffDrive.hpp>
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/numeric.hpp>
@@ -77,7 +76,6 @@ using sfl::GridFrame;
 using sfl::Scan;
 using sfl::sqr;
 using sfl::absval;
-using sfl::RWlock;
 using sfl::string_to;
 
 using namespace estar;
@@ -85,9 +83,13 @@ using namespace boost;
 using namespace std;
 
 
-static RobotModel::Parameters CreateRobotParameters(expo_parameters & params);
+namespace npm {
+static RobotModel::Parameters CreateRobotParameters(expo::expo_parameters & params);
 static shared_ptr<Hull> CreateHull();  
+}
 
+
+namespace {
 
 class EnvdistProxy: public PlanProxy {
 public:
@@ -131,35 +133,44 @@ public:
   bool full_trace;
 };
 
+}
+
+namespace npm {
+
 
 Esbot::
-Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
-      const World & world)
-  : RobotClient(descriptor, world, 2, true),
+Esbot(std::string const &name)
+  : RobotClient(name),
     m_radius(0.0),
     m_speed(0.0),
     m_grid_width(8),		// override with option pnf_grid_width
     m_grid_wdim(60),		// override with option pnf_grid_wdim
     m_goal(new Goal()),
-    m_cheat(new CheatSheet(&world, GetServer())),
     m_carrot_trace(new carrot_trace()),
     m_pose(new Frame()),
     m_replan_request(false)
 {
+  reflectParameter("pnf_grid_width", &m_grid_width);
+  reflectParameter("pnf_grid_wdim", &m_grid_wdim);
+}
+
+
+  bool Esbot::
+  Initialize(npm::RobotServer &server)
+  {
+    if ( !npm::RobotClient::Initialize(server))
+      return false;
+
+    m_cheat = server.CreateCheatSheet();
+
   shared_ptr<Hull> hull(CreateHull());
   for(HullIterator ih(*hull); ih.IsValid(); ih.Increment())
-    AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
+    server.AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));
   const_cast<double &>(m_radius) = hull->CalculateRadius();
   
-  string_to(descriptor->GetOption("pnf_grid_width"), m_grid_width);
-  string_to(descriptor->GetOption("pnf_grid_wdim"), m_grid_wdim);
+  robox_parameters params;	// make configurable... should we just subclass npm::Robox?
   
-  if( ! string_to(descriptor->GetOption("pnf_enable_thread"), m_enable_thread))
-    m_enable_thread = false;
-  
-  robox_parameters params(descriptor);
-  
-  m_front = DefineLidar(Frame(params.front_mount_x,
+  m_front = server.DefineLidar(Frame(params.front_mount_x,
 			      params.front_mount_y,
 			      params.front_mount_theta),
 			params.front_nscans,
@@ -167,7 +178,7 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
 			params.front_phi0,
 			params.front_phirange,
 			params.front_channel)->GetScanner();
-  m_rear = DefineLidar(Frame(params.rear_mount_x,
+  m_rear = server.DefineLidar(Frame(params.rear_mount_x,
 			     params.rear_mount_y,
 			     params.rear_mount_theta),
 		       params.rear_nscans,
@@ -176,13 +187,12 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
 		       params.rear_phirange,
 		       params.rear_channel)->GetScanner();
 
-  m_drive = DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
+  m_drive = server.DefineDiffDrive(params.model_wheelbase, params.model_wheelradius);
   const RobotModel::Parameters modelParms(CreateRobotParameters(params));
   m_robotModel.reset(new RobotModel(modelParms, hull));
-  m_motionController.reset(new MotionController(m_robotModel, GetHAL(),
-						RWlock::Create("motor")));
-  m_odometry.reset(new Odometry(GetHAL(), RWlock::Create("odometry")));
-  m_multiscanner.reset(new Multiscanner(GetHAL()));
+  m_motionController.reset(new MotionController(m_robotModel, m_hal));
+  m_odometry.reset(new Odometry(m_hal));
+  m_multiscanner.reset(new Multiscanner(m_hal));
   m_dynamicWindow.reset(new LegacyDynamicWindow(params.dwa_dimension,
 						params.dwa_grid_width,
 						params.dwa_grid_height,
@@ -196,103 +206,97 @@ Esbot(boost::shared_ptr<RobotDescriptor> descriptor,
   m_multiscanner->Add(m_front);
   m_multiscanner->Add(m_rear);
   
-  CreateGfxStuff(descriptor->name);
+  CreateGfxStuff(server, name);
+
+  return true;
 }
 
 
 void Esbot::
-CreateGfxStuff(const std::string & name)
+CreateGfxStuff(npm::RobotServer &server, const std::string & name)
 {
-  AddDrawing(new GoalInstanceDrawing(name + "_goaldrawing", *m_goal));
-  AddDrawing(new DWDrawing(name + "_dwdrawing", *m_dynamicWindow));
-  AddDrawing(new ODrawing(name + "_dodrawing",
+  server.AddDrawing(new GoalInstanceDrawing(name + "_goaldrawing", *m_goal));
+  server.AddDrawing(new DWDrawing(name + "_dwdrawing", *m_dynamicWindow));
+  server.AddDrawing(new ODrawing(name + "_dodrawing",
 			  m_dynamicWindow->GetDistanceObjective(),
 			  m_dynamicWindow));
-  AddDrawing(new ODrawing(name + "_hodrawing",
+  server.AddDrawing(new ODrawing(name + "_hodrawing",
 			  m_dynamicWindow->GetHeadingObjective(),
 			  m_dynamicWindow));
-  AddDrawing(new ODrawing(name + "_sodrawing",
+  server.AddDrawing(new ODrawing(name + "_sodrawing",
 			  m_dynamicWindow->GetSpeedObjective(),
 			  m_dynamicWindow));
-  AddDrawing(new OdometryDrawing(name + "_odomdrawing",
+  server.AddDrawing(new OdometryDrawing(name + "_odomdrawing",
 				 *m_odometry,
 				 m_robotModel->WheelBase() / 2));
-  AddDrawing(new DODrawing(name + "_collisiondrawing",
+  server.AddDrawing(new DODrawing(name + "_collisiondrawing",
 			   m_dynamicWindow->GetDistanceObjective(),
 			   m_dynamicWindow->GetHeadingObjective(),
 			   m_dynamicWindow,
 			   m_robotModel));
-  AddDrawing(new PNFDrawing(name + "_global_risk",
+  server.AddDrawing(new PNFDrawing(name + "_global_risk",
 			    this, PNFDrawing::GLOBAL, PNFDrawing::RISK));
-  AddDrawing(new PNFDrawing(name + "_gframe_risk",
+  server.AddDrawing(new PNFDrawing(name + "_gframe_risk",
 			    this, PNFDrawing::GFRAME, PNFDrawing::RISK));
-  AddDrawing(new PNFDrawing(name + "_global_meta",
+  server.AddDrawing(new PNFDrawing(name + "_global_meta",
 			    this, PNFDrawing::GLOBAL, PNFDrawing::META));
-  AddDrawing(new PNFDrawing(name + "_gframe_meta",
+  server.AddDrawing(new PNFDrawing(name + "_gframe_meta",
 			    this, PNFDrawing::GFRAME, PNFDrawing::META));
-  AddDrawing(new PNFDrawing(name + "_global_value",
+  server.AddDrawing(new PNFDrawing(name + "_global_value",
 			    this, PNFDrawing::GLOBAL, PNFDrawing::VALUE));
-  AddDrawing(new PNFDrawing(name + "_gframe_value",
+  server.AddDrawing(new PNFDrawing(name + "_gframe_value",
 			    this, PNFDrawing::GFRAME, PNFDrawing::VALUE));
   
-  AddDrawing(new EstarDrawing(name + "_envdist", shared_ptr<PlanProxy>(new EnvdistProxy(this)), EstarDrawing::VALUE));
+  server.AddDrawing(new EstarDrawing(name + "_envdist", shared_ptr<PlanProxy>(new EnvdistProxy(this)), EstarDrawing::VALUE));
 			      
   // XXX to do: magic numbers!!!
-  AddDrawing(new CarrotDrawing(name + "_carrot",
+  server.AddDrawing(new CarrotDrawing(name + "_carrot",
 	     shared_ptr<EsbotCarrotProxy>(new EsbotCarrotProxy(this, false)),
 	     0));
-  AddDrawing(new CarrotDrawing(name + "_fullcarrot",
+  server.AddDrawing(new CarrotDrawing(name + "_fullcarrot",
 	     shared_ptr<EsbotCarrotProxy>(new EsbotCarrotProxy(this, true)),
 	     5));
   
-  AddCamera(new StillCamera(name + "_dwcamera",
+  server.AddCamera(new StillCamera(name + "_dwcamera",
 			    0,
 			    0,
 			    m_dynamicWindow->Dimension(),
-			    m_dynamicWindow->Dimension(),
-			    Instance<UniqueManager<Camera> >()));
-  AddCamera(new OCamera(name + "_ocamera", *m_dynamicWindow));
+			    m_dynamicWindow->Dimension()));
+  server.AddCamera(new OCamera(name + "_ocamera", *m_dynamicWindow));
   double a, b, c, d;
   m_dynamicWindow->GetDistanceObjective()->GetRange(a, b, c, d);
-  AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d,
-			    Instance<UniqueManager<Camera> >()));
-  AddCamera(new PNFCamera(name + "_pnfcamera", this));
+  server.AddCamera(new StillCamera(name + "_collisioncamera", a, b, c, d));
+  server.AddCamera(new PNFCamera(name + "_pnfcamera", this));
 }
 
 
 void Esbot::
-InitPose(double x,
-	 double y,
-	 double theta)
+InitPose(sfl::Pose const &pose)
 {
-  m_odometry->Init(Pose(x, y, theta));
+  m_odometry->Init(pose);
 }
 
 
 void Esbot::
-SetPose(double x,
-	double y,
-	double theta)
+SetPose(sfl::Pose const &pose)
 {
-  m_odometry->Set(Pose(x, y, theta));
+  m_odometry->Set(pose);
 }
 
 
-void Esbot::
-GetPose(double & x,
-	double & y,
-	double & theta)
+bool Esbot::
+GetPose(sfl::Pose &pose)
 {
-  x = m_pose->X();
-  y = m_pose->Y();
-  theta = m_pose->Theta();
+  pose = *m_pose;
+  return true;
 }
 
 
-shared_ptr<const Goal> Esbot::
-GetGoal()
+bool Esbot::
+GetGoal(sfl::Goal &goal)
 {
-  return m_goal;
+  goal = *m_goal;
+  return true;
 }
 
 
@@ -448,7 +452,7 @@ PrepareAction(double timestep)
 
 
 RobotModel::Parameters
-CreateRobotParameters(expo_parameters & params)
+CreateRobotParameters(expo::expo_parameters & params)
 {
   return RobotModel::
     Parameters(params.model_security_distance,
@@ -514,4 +518,6 @@ ComputeFullCarrot() const
     return trace;
   
   return shared_ptr<carrot_trace>();
+}
+
 }

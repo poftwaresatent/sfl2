@@ -85,7 +85,7 @@ endif (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
 include (CheckIncludeFileCXX)
 
-# find Boost (required, just the smart pointers though)
+# find Boost (smart pointers and bind)
 
 if (BOOST_DIR)
   list (APPEND CMAKE_REQUIRED_INCLUDES
@@ -127,6 +127,29 @@ else (GLUT_FOUND)
   message (FATAL_ERROR "Please install GLUT.")
 endif (GLUT_FOUND)
 
+if (ESTAR_DIR)
+  list (APPEND CMAKE_REQUIRED_INCLUDES
+    ${ESTAR_DIR}/include
+    ${ESTAR_DIR}
+    )
+  include_directories (
+    ${ESTAR_DIR}/include
+    ${ESTAR_DIR}
+    )
+  link_directories (
+    ${ESTAR_DIR}/lib
+    ${ESTAR_DIR}
+    )
+endif (ESTAR_DIR)
+check_include_file_cxx (estar/Facade.hpp HAVE_ESTAR)
+if (HAVE_ESTAR)
+  message ("*** found Estar (optional)")
+  add_definitions (-DSFL2_HAVE_ESTAR)
+endif (HAVE_ESTAR)
+
+##################################################
+### The actual project
+
 include_directories (
   .
   3rdparty/fpplib/include
@@ -135,29 +158,24 @@ include_directories (
   ${GLUT_INCLUDE_DIR}
   )
 
-##################################################
-### Build 3rdparty stuff
-#
-# Workaround for yaml-cpp shared lib issues: control everything from here...
-#
-#subdirs (
-#  3rdparty/fpplib
-#  )
-
-##################################################
-### The actual sources
-
-file (GLOB         SFL2_YAMLCPP_SRCS "3rdparty/fpplib/yaml-cpp-0.2.7/src/*.cpp")
-file (GLOB         SFL2_FPPLIB_SRCS  "3rdparty/fpplib/src/*.cpp")
-file (GLOB_RECURSE SFL2_SFL_SRCS     "sfl/*.cpp")
-file (GLOB_RECURSE SFL2_NPM_SRCS     "npm/*.cpp")
+file (GLOB         SFL2_YAMLCPP_SRCS  "3rdparty/fpplib/yaml-cpp-0.2.7/src/*.cpp")
+file (GLOB         SFL2_FPPLIB_SRCS   "3rdparty/fpplib/src/*.cpp")
+file (GLOB_RECURSE SFL2_SFL_SRCS      "sfl/*.cpp")
+file (GLOB_RECURSE SFL2_NPM_SRCS      "npm/*.cpp")
+file (GLOB_RECURSE SFL2_NPMESTAR_SRCS "opt/npmestar/*.cpp")
 
 add_library (yamlcpp SHARED ${SFL2_YAMLCPP_SRCS})
 add_library (fpplib  SHARED ${SFL2_FPPLIB_SRCS})
-add_library (sfl     SHARED ${SFL2_SFL_SRCS})
-add_library (npm     SHARED ${SFL2_NPM_SRCS})
 target_link_libraries (fpplib yamlcpp)
-target_link_libraries (npm    fpplib sfl ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+add_library (sfl     SHARED ${SFL2_SFL_SRCS})
+
+if (HAVE_ESTAR)
+  add_library (npm SHARED ${SFL2_NPM_SRCS} ${SFL2_NPMESTAR_SRCS})
+  target_link_libraries (npm fpplib sfl estar ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+else (HAVE_ESTAR)
+  add_library (npm SHARED ${SFL2_NPM_SRCS})
+  target_link_libraries (npm fpplib sfl ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+endif (HAVE_ESTAR)
 
 add_executable (nepumuk apps/nepumuk.cpp)
 target_link_libraries (nepumuk npm)

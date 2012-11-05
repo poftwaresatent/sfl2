@@ -40,6 +40,8 @@ namespace local {
 }
 
 
+namespace npm {
+
 class PNF
 {
 public:
@@ -87,5 +89,7 @@ private:
   
   void Wait();
 };
+
+}
 
 #endif // PNF_HPP

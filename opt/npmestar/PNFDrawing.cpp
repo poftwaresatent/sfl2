@@ -21,8 +21,8 @@
 #include "PNFDrawing.hpp"
 #include "PNF.hpp"
 #include "Esbot.hpp"
-#include "../common/wrap_gl.hpp"
-#include "../common/Manager.hpp"
+#include <npm/gfx/wrap_gl.hpp>
+#include <sfl/api/Pose.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <estar/graphics.hpp>
@@ -86,8 +86,7 @@ PNFDrawing(const std::string & name,
 	   mode_t _mode,
 	   what_t _what)
   : Drawing(name,
-	    "the PNF of an Esbot instance (risk, value, meta, or auto)",
-	    Instance<UniqueManager<Drawing> >()),
+	    "the PNF of an Esbot instance (risk, value, meta, or auto)"),
     mode(_mode),
     what(_what),
     draw_trace(false),
@@ -134,8 +133,10 @@ Draw()
     if(PNF::DONE == step){
       facade = &flow->GetPNF();
       shared_ptr<const GridFrame> gframe(pnf->GetGridFrame());
-      double x, y, theta;
-      m_bot->GetPose(x, y, theta);
+      sfl::Pose pp;
+      m_bot->GetPose(pp);
+      double x = pp.X();
+      double y = pp.Y();
       gframe->From(x, y);
       const size_t ix(static_cast<size_t>(rint(x / facade->scale)));
       const size_t iy(static_cast<size_t>(rint(y / facade->scale)));

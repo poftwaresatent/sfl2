@@ -22,7 +22,8 @@
 #define CARROT_DRAWING_HPP
 
 
-#include <npm/common/Drawing.hpp>
+#include <npm/gfx/Drawing.hpp>
+#include <boost/shared_ptr.hpp>
 #include <vector>
 
 namespace sfl {
