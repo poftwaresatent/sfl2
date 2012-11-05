@@ -22,18 +22,18 @@ browsing.
 
 ```
 ----------------------------------------------------------------------------
-Copyright (C) 2004, Ecole Polytechnique Federale de Lausanne. All rights reserved.
+Copyright (C) 2004, 2005, 2007, Ecole Polytechnique Federale de Lausanne. All rights reserved.
 Copyright (C) 2005, LAAS-CNRS. All rights reserved.
-Copyright (C) 2007, ETH Zurich. All rights reserved.
+Copyright (C) 2006, 2007, ETH Zurich. All rights reserved.
+Copyright (C) 2005-2009, 2012, Roland Philippsen. All rights reserved.
 
-Author: Roland Philippsen
+Maintainer:   Roland Philippsen
 Contributors: Viet Nguyen, Frederic Pont, Sascha Kolski, Agostino
-              Martinelli, Kristijan Macek, and others
+              Martinelli, Kristijan Macek, Marc Hanheide, Johannes
+              Wienke, and others
 
-Most of this software is released under the GNU General Public License
-(GPL), version 2. The files not covered by GPL are released under the
-new BSD license. See the LICENSE.GPLv2 and LICENSE.BSD files for more
-information.
+This software is released under the GNU General Public License (GPL),
+version 2. See the LICENSE.GPLv2 file for more information.
 ----------------------------------------------------------------------------
 ```
 
