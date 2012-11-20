@@ -127,6 +127,16 @@ else (GLUT_FOUND)
   message (FATAL_ERROR "Please install GLUT.")
 endif (GLUT_FOUND)
 
+## Python support should be optional...
+
+include (FindPythonLibs)
+if (PYTHONLIBS_FOUND)
+  message ("found Python libs")
+else (PYTHONLIBS_FOUND)
+  message (FATAL_ERROR "Python libs not found")
+endif (PYTHONLIBS_FOUND)
+include_directories (${PYTHON_INCLUDE_DIRS})
+
 if (ESTAR_DIR)
   list (APPEND CMAKE_REQUIRED_INCLUDES
     ${ESTAR_DIR}/include
@@ -171,10 +181,10 @@ add_library (sfl     SHARED ${SFL2_SFL_SRCS})
 
 if (HAVE_ESTAR)
   add_library (npm SHARED ${SFL2_NPM_SRCS} ${SFL2_NPMESTAR_SRCS})
-  target_link_libraries (npm fpplib sfl estar ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+  target_link_libraries (npm fpplib sfl estar ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${PYTHON_LIBRARIES})
 else (HAVE_ESTAR)
   add_library (npm SHARED ${SFL2_NPM_SRCS})
-  target_link_libraries (npm fpplib sfl ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+  target_link_libraries (npm fpplib sfl ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${PYTHON_LIBRARIES})
 endif (HAVE_ESTAR)
 
 add_executable (nepumuk apps/nepumuk.cpp)
