@@ -11,7 +11,7 @@ int main (int argc, char ** argv)
     return 42;
   }
   for (int ii (1); ii < argc; ++ii) {
-    npm::Plugin plugin;
+    npm::Plugin plugin(argv[ii]);
     if (plugin.load (argv[ii], true, cout)) {
       cout << "loaded " << argv[ii] << "\n";
     }

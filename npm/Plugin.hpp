@@ -20,6 +20,7 @@
 #ifndef NPM_PLUGIN_HPP
 #define NPM_PLUGIN_HPP
 
+#include <fpplib/configurable.hpp>
 #include <string>
 #include <iosfwd>
 
@@ -47,11 +48,13 @@ extern "C" {
 namespace npm {
   
   class Plugin
+    : public fpplib::Configurable
   {
   public:
-    Plugin();
+    explicit Plugin(std::string const & name);
     ~Plugin();
     
+    bool load (std::string const & filename);
     bool load (std::string const & filename, bool immediate, std::ostream & erros);
     
   private:

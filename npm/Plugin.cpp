@@ -18,7 +18,8 @@
  */
 
 #include "Plugin.hpp"
-#include <ostream>
+#include <iostream>
+#include <boost/bind.hpp>
 #include <dlfcn.h>
 
 
@@ -26,11 +27,13 @@ namespace npm {
   
   
   Plugin::
-  Plugin()
-    : dl_(0),
+  Plugin (std::string const & name)
+    : fpplib::Configurable (name),
+      dl_(0),
       init_(0),
       fini_(0)
   {
+    reflectCallback<std::string> ("file", false, boost::bind (&Plugin::load, this, _1));
   }
   
   
@@ -84,6 +87,13 @@ namespace npm {
     fini_ = (npm_plugin_fini_t) dlsym (dl_, "npm_plugin_fini"); // can be NULL, no need to check
     
     return true;
+  }
+  
+  
+  bool Plugin::
+  load (std::string const & filename)
+  {
+    return load (filename, true, std::cerr);
   }
   
 }

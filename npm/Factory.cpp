@@ -19,6 +19,7 @@
 
 #include "Factory.hpp"
 #include <npm/World.hpp>
+#include <npm/Plugin.hpp>
 #include <npm/ext/Zombie.hpp>
 #include <npm/ext/expo02/Robox.hpp>
 #include <npm/gfx/View.hpp>
@@ -80,6 +81,7 @@ namespace npm {
     declare<Zombie>("Zombie");
     declare<LidarZombie>("LidarZombie");
     declare<View>("View");
+    declare<Plugin>("Plugin");
 #ifdef SFL2_HAVE_ESTAR
     declare<Esbot>("Esbot");
 #endif // SFL2_HAVE_ESTAR

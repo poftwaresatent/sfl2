@@ -179,3 +179,8 @@ endif (HAVE_ESTAR)
 
 add_executable (nepumuk apps/nepumuk.cpp)
 target_link_libraries (nepumuk npm)
+
+add_executable (test-plugin apps/test-plugin.cpp)
+target_link_libraries (test-plugin npm)
+
+add_library (plugin-test MODULE apps/plugin-test.cpp)
