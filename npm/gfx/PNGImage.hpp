@@ -68,7 +68,7 @@ namespace npm {
     png_bytep *row_pointers;
     png_byte *pixel;
 
-    png_uint_32 npixels;
+    ////unused?//// png_uint_32 npixels;
   };
 
 }

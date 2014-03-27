@@ -65,7 +65,7 @@ namespace sfl {
   shared_ptr<Scanner> Multiscanner::
   GetScanner(size_t i) const
   {
-    if((i < 0) || (i >= m_scanner.size()))
+    if(i >= m_scanner.size())
       return shared_ptr<Scanner>();
     return m_scanner[i];
   }

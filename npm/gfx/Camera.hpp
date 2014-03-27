@@ -61,6 +61,8 @@ namespace npm {
     Camera(const std::string & name,
 	   const std::string & comment);
     
+    virtual ~Camera() {}
+    
     /**
        Configure a View to the Camera's bounding box.
        

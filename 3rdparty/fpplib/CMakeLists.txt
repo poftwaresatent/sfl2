@@ -97,17 +97,17 @@ list (APPEND FPPLIB_SRCS
 add_library (fpp SHARED ${FPPLIB_SRCS})
 target_link_libraries (fpp yaml-cpp)
 
-add_executable (test src/test.cpp)
+add_executable (test test/test.cpp)
 target_link_libraries (test fpp)
 
-add_executable (test-npm src/test-npm.cpp)
+add_executable (test-npm test/test-npm.cpp)
 target_link_libraries (test-npm fpp)
 
-add_executable (idea src/idea.cpp)
+add_executable (idea test/idea.cpp)
 target_link_libraries (idea fpp)
 
-add_executable (test-callback src/test-callback.cpp)
+add_executable (test-callback test/test-callback.cpp)
 target_link_libraries (test-callback fpp)
 
-add_executable (tut01-basic-parameters src/tut01-basic-parameters.cpp)
+add_executable (tut01-basic-parameters test/tut01-basic-parameters.cpp)
 target_link_libraries (tut01-basic-parameters fpp)

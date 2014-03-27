@@ -27,7 +27,7 @@
 #include "MotionPlannerState.hpp"
 
 // manual
-#define SFL_DEBUG
+#define SFL_DEBUG 1
 #include "../util/pdebug.hpp"
 
 #include "../api/Multiscanner.hpp"
@@ -72,8 +72,8 @@ namespace expo {
       go_forward(true),
       dtheta_starthoming(10 * M_PI / 180),
       dtheta_startaiming(45 * M_PI / 180),
-      m_state_machine(new MotionPlannerStateMachine(this)),
-      m_replan_request(false)
+      m_state_machine(new MotionPlannerStateMachine(this))
+      ////unused?//// m_replan_request(false)
   {
   }
   

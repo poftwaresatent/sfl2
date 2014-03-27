@@ -41,6 +41,8 @@ public:
 	    const sfl::BubbleList * bubble_list,
 	    mode_t mode = FULL,
 	    double intensity = 1);
+  
+  virtual ~BLDrawing() {}
 
   void Draw();
   void SetIntensity(double i);

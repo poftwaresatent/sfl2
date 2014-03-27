@@ -36,7 +36,7 @@ namespace sfl {
   
   class HAL;
   class Scan;
-  class scan_data;
+  struct scan_data;
   class Timestamp;
   class Frame;
   class Scanner;

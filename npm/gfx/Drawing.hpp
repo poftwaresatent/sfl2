@@ -59,6 +59,8 @@ namespace npm {
     Drawing(const std::string & name,
 	    const std::string & comment);
     
+    virtual ~Drawing() {}
+    
     /**
        The whole idea of this class is to have subclasses define this
        method. When invoked, it should draw whatever is to be drawn.

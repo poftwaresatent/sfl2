@@ -42,7 +42,7 @@ inline void PDEBUG_OFF(char const * fmt, ...) {}
 # define SFL2_VERBOSE_DEBUG
 #endif
 #ifdef SFL_DEBUG
-# define SFL2_DEBUG
+# define SFL2_DEBUG 1
 #endif
 
 #ifdef SFL2_VERBOSE_DEBUG

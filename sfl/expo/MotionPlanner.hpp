@@ -136,7 +136,7 @@ namespace expo {
     
   private:
     MotionPlannerStateMachine * m_state_machine;
-    bool m_replan_request;
+    ////unused?////    bool m_replan_request;
   };
 
 }
