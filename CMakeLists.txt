@@ -184,3 +184,4 @@ add_executable (test-plugin apps/test-plugin.cpp)
 target_link_libraries (test-plugin npm)
 
 add_library (plugin-test MODULE apps/plugin-test.cpp)
+target_link_libraries (plugin-test npm) # not sure if this is required on Linux

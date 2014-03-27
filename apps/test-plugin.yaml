@@ -61,7 +61,7 @@
     name: test
     file: /rolo/soft/cargo-ants/devel/lib/libplugin-test.so
 
-- LidarZombie:
+- testZombie:
     name: Zombie0
     pose: [ 7,  5.5,  0]
     goals:

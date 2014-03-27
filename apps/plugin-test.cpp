@@ -1,10 +1,12 @@
 #include <npm/Plugin.hpp>
+#include <npm/Factory.hpp>
+#include <npm/ext/Zombie.hpp>
 #include <iostream>
 
 
-int npm_plugin_init (void)
+int npm_plugin_init ()
 {
-  std::cout << "Hello from the test plugin!\n";
+  npm::Factory::Instance().declare<npm::LidarZombie>("testZombie");
   return 0;
 }
 

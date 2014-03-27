@@ -100,7 +100,7 @@ int main(int argc, char ** argv)
   
   parse_options(argc, argv);
   
-  npm::Factory ff;
+  npm::Factory & ff (npm::Factory::Instance());
   if ( !ff.ParseFile (params.config_filename, &cerr))
     errx (EXIT_FAILURE, "%s: parse error (see above messages)", params.config_filename.c_str());
   

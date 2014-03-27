@@ -21,6 +21,7 @@
 #define SFL2_NPM_FACTORY_HPP
 
 #include <fpplib/factory.hpp>
+#include <fpplib/yaml_parser.hpp>
 
 
 namespace npm {
@@ -31,11 +32,19 @@ namespace npm {
   class Factory
     : public fpplib::Factory
   {
-  public:
+  private:
     Factory();
-  
+    
+  public:
+    static Factory & Instance();
+    
     World * GetWorld();
+    fpplib::YamlParser & GetParser();
+    
     bool ParseFile(std::string const &yaml_filename, std::ostream *erros, std::ostream *dbgos = 0);
+
+  private:
+    fpplib::YamlParser parser_;
   };
 
 }

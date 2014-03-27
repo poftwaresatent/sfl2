@@ -75,6 +75,7 @@ namespace npm {
   
   Factory::
   Factory()
+    : parser_(*this)
   {
     declare<World>("World");
     declare<Robox>("Robox");
@@ -82,9 +83,27 @@ namespace npm {
     declare<LidarZombie>("LidarZombie");
     declare<View>("View");
     declare<Plugin>("Plugin");
+    
+    // should turn this into a plugin now...
 #ifdef SFL2_HAVE_ESTAR
     declare<Esbot>("Esbot");
 #endif // SFL2_HAVE_ESTAR
+    
+    parser_.addConverter<sfl::Line>();
+    parser_.addConverter<qhgoal_s>();
+    parser_.addConverter<qhpose_s>();
+    parser_.addConverter<qhwin_s>();
+  }
+  
+  
+  Factory & Factory::
+  Instance()
+  {
+    static Factory * instance (0);
+    if ( ! instance) {
+      instance = new Factory();
+    }
+    return *instance;
   }
   
   
@@ -104,18 +123,20 @@ namespace npm {
   }
   
   
+  fpplib::YamlParser & Factory::
+  GetParser()
+  {
+    return parser_;
+  }
+  
+  
   bool Factory::
   ParseFile(std::string const &yaml_filename, std::ostream *erros, std::ostream *dbgos)
   {
-    fpplib::YamlParser pp(*this);
-    pp.dbg = dbgos;
-    pp.addConverter<sfl::Line>();
-    pp.addConverter<qhgoal_s>();
-    pp.addConverter<qhpose_s>();
-    pp.addConverter<qhwin_s>();
-    if ( !pp.parseFile(yaml_filename)) {
+    parser_.dbg = dbgos;
+    if ( ! parser_.parseFile(yaml_filename)) {
       if (erros) {
-	*erros << "YAML error: " << pp.error << "\n";
+	*erros << "YAML error: " << parser_.error << "\n";
       }
       return false;
     }
