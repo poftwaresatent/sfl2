@@ -30,44 +30,46 @@
 # include <opt/npmestar/Esbot.hpp>
 #endif // SFL2_HAVE_ESTAR
 
-  
-void operator >> (const YAML::Node & node, sfl::Line & ll)
-{
-  node[0] >> ll.p0._x;
-  node[1] >> ll.p0._y;
-  node[2] >> ll.p1._x;
-  node[3] >> ll.p1._y;
-}
-  
-  
-void operator >> (const YAML::Node & node, npm::qhgoal_s & gg)
-{
-  node[0] >> gg.x;
-  node[1] >> gg.y;
-  node[2] >> gg.theta;
-  node[3] >> gg.dr;
-  node[4] >> gg.dtheta;
-}
-  
-  
-void operator >> (const YAML::Node & node, npm::qhpose_s & pp)
-{
-  node[0] >> pp.x;
-  node[1] >> pp.y;
-  node[2] >> pp.theta;
-}
-  
-  
-void operator >> (const YAML::Node & node, npm::qhwin_s & ww)
-{
-  node[0] >> ww.x0;
-  node[1] >> ww.y0;
-  node[2] >> ww.x1;
-  node[3] >> ww.y1;
-}
 
+namespace sfl {
+  
+  void operator >> (const YAML::Node & node, Line & ll)
+  {
+    node[0] >> ll.p0._x;
+    node[1] >> ll.p0._y;
+    node[2] >> ll.p1._x;
+    node[3] >> ll.p1._y;
+  }
+
+}
 
 namespace npm {
+  
+  void operator >> (const YAML::Node & node, qhgoal_s & gg)
+  {
+    node[0] >> gg.x;
+    node[1] >> gg.y;
+    node[2] >> gg.theta;
+    node[3] >> gg.dr;
+    node[4] >> gg.dtheta;
+  }
+  
+  
+  void operator >> (const YAML::Node & node, qhpose_s & pp)
+  {
+    node[0] >> pp.x;
+    node[1] >> pp.y;
+    node[2] >> pp.theta;
+  }
+  
+  
+  void operator >> (const YAML::Node & node, qhwin_s & ww)
+  {
+    node[0] >> ww.x0;
+    node[1] >> ww.y0;
+    node[2] >> ww.x1;
+    node[3] >> ww.y1;
+  }
   
   
   Factory::
