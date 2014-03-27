@@ -4,6 +4,11 @@
 
 You need CMake, Boost, OpenGL, GLU, and GLUT.
 
+For now, *make sure to use GCC* and not LLVM: otherwise, there are
+some glitches with compiling the way npm/Factory uses fpplib. The
+easiest way to ensure that is to set the CXX environment variable to
+your g++ executable (maybe CC also has to be set).
+
     mkdir build
     cd build
     cmake ..
