@@ -64,7 +64,7 @@ namespace npm {
     virtual bool Initialize(RobotServer &server);
     virtual bool PrepareAction(double timestep);
     
-  private:
+  protected:
     boost::shared_ptr<sfl::Scanner> m_scanner;
   };
 

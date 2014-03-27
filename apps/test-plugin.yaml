@@ -58,10 +58,10 @@
       - [ 11.8416, 17.5903, 10.7097, 16.1416 ]
 
 - Plugin:
-    name: test
-    file: /rolo/soft/cargo-ants/devel/lib/libplugin-test.so
+    name: sfl2ros
+    file: /rolo/soft/cargo-ants/devel/lib/libsfl2rosplugin.so
 
-- testZombie:
+- ROSZombie:
     name: Zombie0
     pose: [ 7,  5.5,  0]
     goals:

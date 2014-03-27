@@ -1,10 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sfl2)
+project(sfl2ros)
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  message_generation
+)
+
+add_message_files(
+  DIRECTORY msg
+  FILES
+  Scan.msg
+)
+
+generate_messages(
+#  DEPENDENCIES
+#  std_msgs
 )
 
 ###################################
@@ -18,14 +30,19 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   ###  INCLUDE_DIRS ..
-  LIBRARIES sfl
+  LIBRARIES npm
   CATKIN_DEPENDS roscpp
   #  DEPENDS system_lib
 )
 
 subdirs (..)
 
-include_directories(.. ${catkin_INCLUDE_DIRS})
+include_directories(
+  ..
+  ../3rdparty/fpplib/include
+  ../3rdparty/fpplib/yaml-cpp-0.2.7/include
+  ${catkin_INCLUDE_DIRS}
+)
 
-add_executable(foo foo.cpp)
-target_link_libraries(foo sfl ${catkin_LIBRARIES})
+add_library (sfl2rosplugin MODULE src/sfl2rosplugin.cpp)
+target_link_libraries (sfl2rosplugin npm ${catkin_LIBRARIES})
