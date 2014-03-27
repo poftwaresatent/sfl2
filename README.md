@@ -4,11 +4,6 @@
 
 You need CMake, Boost, OpenGL, GLU, and GLUT.
 
-For now, *make sure to use GCC* and not LLVM: otherwise, there are
-some glitches with compiling the way npm/Factory uses fpplib. The
-easiest way to ensure that is to set the CXX environment variable to
-your g++ executable (maybe CC also has to be set).
-
     mkdir build
     cd build
     cmake ..
@@ -24,6 +19,15 @@ To create the API docs, you need Doxygen.
 
 This creates the `html/` folder, with an `index.html` file to start
 browsing.
+
+** ROS support **
+
+Is being developed under Hydro, have a look at the `ros/`
+subdirectory. The idea is that you can plop the sfl2 checkout into a
+catkin workspace, then `catkin_make` for that worksapce should just
+pick it up. The basic approach is to use nepumuk plugins that talk
+ROS, while keeping the core sfl and npm stuff blissfully ignorant of
+ROS.
 
 ```
 ----------------------------------------------------------------------------
