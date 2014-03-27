@@ -20,7 +20,7 @@ To create the API docs, you need Doxygen.
 This creates the `html/` folder, with an `index.html` file to start
 browsing.
 
-** ROS support **
+**ROS support**
 
 Is being developed under Hydro, have a look at the `ros/`
 subdirectory. The idea is that you can plop the sfl2 checkout into a
