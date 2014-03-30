@@ -85,6 +85,7 @@ namespace npm {
     boost::shared_ptr<const Sharp> GetSharp(int channel) const;
     boost::shared_ptr<HAL> GetHAL();
     
+    void AddLine(double x0, double y0, double x1, double y1);
     void AddLine(const sfl::Line & line);
     void AddDrawing(boost::shared_ptr<Drawing> drawing);
     void AddDrawing(Drawing * drawing);

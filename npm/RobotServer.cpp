@@ -167,6 +167,13 @@ namespace npm {
   
   
   void RobotServer::
+  AddLine(double x0, double y0, double x1, double y1)
+  {
+    AddLine(Line(x0, y0, x1, y1));
+  }
+  
+  
+  void RobotServer::
   AddLine(const Line & line)
   {
     m_true_body->AddLine(line);
