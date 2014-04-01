@@ -44,5 +44,5 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library (sfl2rosplugin MODULE src/sfl2rosplugin.cpp)
-target_link_libraries (sfl2rosplugin npm ${catkin_LIBRARIES})
+add_library (cargo-ants-plugin MODULE src/cargo-ants-plugin.cpp)
+target_link_libraries (cargo-ants-plugin npm ${catkin_LIBRARIES})

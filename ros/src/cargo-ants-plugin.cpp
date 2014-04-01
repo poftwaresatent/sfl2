@@ -19,10 +19,9 @@
 
 #include <npm/Plugin.hpp>
 #include <npm/Factory.hpp>
+#include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>
 #include <npm/HAL.hpp>
-#include <npm/ext/Zombie.hpp>
-#include <sfl/api/Scanner.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 #include <cmath>
@@ -44,16 +43,24 @@ public:
     : npm::RobotClient (name),
       width_ (2.0),
       length_ (4.0),
-      dtheta_ (5 * M_PI / 180),
+      align_distance_ (1.5),
+      align_heading_ (0.3),
       vrot_ (45 * M_PI / 180),
       vtrans_ (2.0),
+      trajectory_topic_ ("trajectory"),
+      vehicle_state_topic_ ("vehicle_state"),
+      msg_queue_size_ (10),
       server_ (0)
   {
     reflectParameter ("width", &width_);
     reflectParameter ("length", &length_);
-    reflectParameter ("dtheta", &dtheta_);
+    reflectParameter ("align_distance", &align_distance_);
+    reflectParameter ("align_heading", &align_heading_);
     reflectParameter ("vrot", &vrot_);
     reflectParameter ("vtrans", &vtrans_);
+    reflectParameter ("trajectory_topic", &trajectory_topic_);
+    reflectParameter ("vehicle_state_topic", &vehicle_state_topic_);
+    reflectParameter ("msg_queue_size", &msg_queue_size_);
   }
   
   
@@ -71,13 +78,10 @@ public:
     server.AddLine ( length_/2,  width_/2,  length_/2, -width_/2);
     server.AddLine ( length_/2, -width_/2, -length_/2, -width_/2);
     
-    // How can we use different ROS namespaces from within a single
-    // ROS node? For now do manual name mangling based on npm robot
-    // name.
-    
     ros::NodeHandle node;
-    trajectory_sub_ = node.subscribe ("trajectory", 10, &CargoANTsMockup::trajectoryCB, this);
-    vehicle_state_pub_ = node.advertise <VehicleState> (name + "_vehicle_state", 1);
+    trajectory_sub_ = node.subscribe (trajectory_topic_, msg_queue_size_,
+				      &CargoANTsMockup::trajectoryCB, this);
+    vehicle_state_pub_ = node.advertise <VehicleState> (vehicle_state_topic_, 1);
     
     return true;
   }
@@ -134,7 +138,7 @@ public:
       return false;
     }
     TrajectoryPoint const & tp (trajectory_.back());
-    goal.Set (tp.x, tp.y, tp.th, 0.5, dtheta_);
+    goal.Set (tp.x, tp.y, tp.th, 0.1, 0.1);
     return true;
   }
   
@@ -153,22 +157,37 @@ public:
   
   bool move (TrajectoryPoint const & target, double timestep)
   {
+    sfl::Frame target_pose (target.x, target.y, target.th);
     sfl::Frame const & pose (server_->GetTruePose());
-    double dx (target.x - pose.X());
-    double dy (target.y - pose.Y());
-    pose.RotateFrom (dx, dy);
-    double const dth (atan2 (dy, dx));
+    pose.From (target_pose);
+    double const dhead (atan2 (target_pose.Y(), target_pose.X()));
+    double const dist (sqrt (pow (target_pose.X(), 2) + pow (target_pose.Y(), 2)));
     
     double qd[3];
     size_t len (3);
-    if (fabs (dth) > dtheta_) {
-      qd[0] = 0.0;
+    if (dist > align_distance_) {
+      if (fabs (dhead) > align_heading_) {
+	qd[0] = 0.0;
+	qd[1] = 0.0;
+	qd[2] = sfl::boundval (-vrot_, dhead / timestep, vrot_);
+	
+	std::cerr << name << target_pose << "  " << dhead << " --> align " << qd[2] << "\n";
+      }
+      else {
+	qd[0] = sfl::boundval (-vtrans_, dist  / timestep, vtrans_);
+	qd[1] = 0.0;
+	qd[2] = sfl::boundval (-vrot_,   dhead / timestep, vrot_);
+	
+	std::cerr << name << target_pose << "  " << dhead << " --> advance " << qd[0] << "  " << qd[1] << "  " << qd[2] << "\n";
+      }
     }
     else {
-      qd[0] = sfl::boundval (-vtrans_, sqrt (dx*dx + dy*dy) / timestep, vtrans_);
+      qd[0] = sfl::boundval (-vtrans_, target_pose.X()     / timestep, vtrans_);
+      qd[1] = sfl::boundval (-vtrans_, target_pose.Y()     / timestep, vtrans_);
+      qd[2] = sfl::boundval (-vrot_,   target_pose.Theta() / timestep, vrot_);
+      
+      std::cerr << name << target_pose << "  " << dhead << " --> adjust " << qd[0] << "  " << qd[1] << "  " << qd[2] << "\n";
     }
-    qd[1] = 0.0;
-    qd[2] = sfl::boundval (-vrot_, dth / timestep, vrot_);
     
     return (0 == m_hal->speed_set (qd, &len)) && (3 == len);
   }
@@ -197,13 +216,18 @@ public:
   
   
 private:
-  npm::RobotServer * server_;
-  boost::shared_ptr <npm::HoloDrive> drive_;
   double width_;
   double length_;
-  double dtheta_;
+  double align_distance_;
+  double align_heading_;
   double vrot_;
   double vtrans_;
+  std::string trajectory_topic_;
+  std::string vehicle_state_topic_;
+  size_t msg_queue_size_;
+  
+  npm::RobotServer * server_;
+  boost::shared_ptr <npm::HoloDrive> drive_;
   ros::Subscriber trajectory_sub_;
   ros::Publisher vehicle_state_pub_;
   ros::Publisher trajectory_status_pub_;

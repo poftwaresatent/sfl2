@@ -65,7 +65,7 @@ namespace npm {
     : fatal_warnings(_fatal_warnings),
       m_world(world),
       m_step(false),
-      m_continuous(false),
+      m_continuous(true),
       m_printscreen(false),
       m_timestep(timestep)
   {
