@@ -30,7 +30,7 @@
 #include "ros/ros.h"
 #include "cargo_ants_msgs/VehicleState.h"
 #include "cargo_ants_msgs/Trajectory.h"
-#include "cargo_ants_msgs/TrajectoryStatus.h"
+
 
 using namespace cargo_ants_msgs;
 
@@ -78,7 +78,6 @@ public:
     ros::NodeHandle node;
     trajectory_sub_ = node.subscribe ("trajectory", 10, &CargoANTsMockup::trajectoryCB, this);
     vehicle_state_pub_ = node.advertise <VehicleState> (name + "_vehicle_state", 1);
-    trajectory_status_pub_ = node.advertise <TrajectoryStatus> (name + "_trajectory_status", 1);
     
     return true;
   }
@@ -148,7 +147,6 @@ public:
   
   void trajectoryCB (Trajectory::ConstPtr const & msg)
   {
-    trajectory_id_ = msg->trajectory_id;
     trajectory_ = msg->points;
   }
   
@@ -195,11 +193,6 @@ public:
     vehicle_state.rot_rate.z = 0.0; // to do
     // ignoring acc_bias, gyro_bias, and gravity
     vehicle_state_pub_.publish (vehicle_state);
-    
-    TrajectoryStatus trajectory_status;
-    trajectory_status.trajectory_id = trajectory_id_;
-    trajectory_status.status = 0;
-    trajectory_status_pub_.publish (trajectory_status);
   }
   
   
@@ -214,7 +207,6 @@ private:
   ros::Subscriber trajectory_sub_;
   ros::Publisher vehicle_state_pub_;
   ros::Publisher trajectory_status_pub_;
-  uint64_t trajectory_id_;
   std::vector <TrajectoryPoint> trajectory_;
 };
 
