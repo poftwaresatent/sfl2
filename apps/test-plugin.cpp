@@ -12,7 +12,7 @@ int main (int argc, char ** argv)
   }
   for (int ii (1); ii < argc; ++ii) {
     npm::Plugin plugin(argv[ii]);
-    if (plugin.load (argv[ii], true, cout)) {
+    if (plugin.load (argv[ii], cout)) {
       cout << "loaded " << argv[ii] << "\n";
     }
   }

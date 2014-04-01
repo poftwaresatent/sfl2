@@ -18,7 +18,7 @@
 
 - Plugin:
     name: cargo-ants
-    file: /rolo/soft/cargo-ants/devel/lib/libcargo-ants-plugin.so
+    spec: cargo-ants-plugin
 
 - CargoANTsMockup:
     name: alice

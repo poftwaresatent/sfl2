@@ -18,7 +18,10 @@
  */
 
 #include "Plugin.hpp"
+#include <sfl/util/strutil.hpp>
 #include <iostream>
+#include <sstream>
+#include <list>
 #include <boost/bind.hpp>
 #include <dlfcn.h>
 
@@ -33,7 +36,7 @@ namespace npm {
       init_(0),
       fini_(0)
   {
-    reflectCallback<std::string> ("file", false, boost::bind (&Plugin::load, this, _1));
+    reflectCallback<std::string> ("spec", false, boost::bind (&Plugin::search, this, _1));
   }
   
   
@@ -50,17 +53,27 @@ namespace npm {
   
   
   bool Plugin::
-  load (std::string const & filename, bool immediate, std::ostream & erros)
+  load (std::string const & filename, std::ostream & erros, bool terse)
   {
     if (dl_) {
-      erros << "npm::Plugin::load cannot load more than one file\n";
+      if (terse) {
+	erros << "plugin " << name << " already loaded\n";
+      }
+      else {
+	erros << "npm::Plugin::load cannot load more than one file\n";
+      }
       return false;
     }
     
-    dl_ = dlopen (filename.c_str(), immediate ? RTLD_NOW : RTLD_LAZY);
+    dl_ = dlopen (filename.c_str(), RTLD_NOW);
     if ( ! dl_) {
-      erros << "npm::Plugin::load cannot dlopen " << filename
-	    << ": " << dlerror() << "\n";
+      if (terse) {
+	erros << filename << ": " << dlerror() << "\n";
+      }
+      else {
+	erros << "npm::Plugin::load cannot dlopen " << filename
+	      << ": " << dlerror() << "\n";
+      }
       return false;
     }
     
@@ -68,8 +81,13 @@ namespace npm {
     init_ = (npm_plugin_init_t) dlsym (dl_, "npm_plugin_init");
     char const * dlsym_error (dlerror());
     if (dlsym_error) {
-      erros << "npm::Plugin::load invalid npm_plugin_init symbol in " << filename
-	    << ": " << dlsym_error << "\n";
+      if (terse) {
+	erros << filename << ": npm_plugin_init: " << dlerror() << "\n";
+      }
+      else {
+	erros << "npm::Plugin::load invalid npm_plugin_init symbol in " << filename
+	      << ": " << dlsym_error << "\n";
+      }
       dlclose (dl_);
       dl_ = 0;
       return false;
@@ -77,8 +95,13 @@ namespace npm {
     
     int const init_error (init_());
     if (0 != init_error) {
-      erros << "npm::Plugin::load npm_plugin_init of " << filename
-	    << " returned error code " << init_error << "\n";
+      if (terse) {
+	erros << filename << ": npm_plugin_init error code " << init_error << "\n";
+      }
+      else {
+	erros << "npm::Plugin::load npm_plugin_init of " << filename
+	      << " returned error code " << init_error << "\n";
+      }
       dlclose (dl_);
       dl_ = 0;
       return false;
@@ -91,9 +114,60 @@ namespace npm {
   
   
   bool Plugin::
-  load (std::string const & filename)
+  search (std::string const & spec)
   {
-    return load (filename, true, std::cerr);
+    if (spec.empty()) {
+      std::cerr << "npm::Plugin::search(): empty spec\n";
+      return false;
+    }
+    
+    if (spec[0] == '/') {
+      return load (spec, std::cerr);
+    }
+    
+    std::string searchpath;
+    
+#ifdef NPM_PLUGIN_PATH_STR
+    if (getenv("NPM_PLUGIN_PATH")) {
+      searchpath = std::string (NPM_PLUGIN_PATH_STR) + ":" + getenv("NPM_PLUGIN_PATH");
+    }
+    else {
+      searchpath = std::string (NPM_PLUGIN_PATH_STR);
+    }
+#else // NPM_PLUGIN_PATH_STR
+    if (getenv("NPM_PLUGIN_PATH")) {
+      searchpath = std::string (NPM_PLUGIN_PATH_STR) + ":" + getenv("NPM_PLUGIN_PATH");
+    }
+#endif // NPM_PLUGIN_PATH_STR
+    
+    std::list <std::string> directories;
+    sfl::tokenize (searchpath, ':', directories);
+    std::string filename;
+    std::ostringstream err;
+    
+    err << "npm::Plugin::search (`" <<  spec << "`) failed:\n";
+    for (auto ip (directories.begin()); ip != directories.end(); ++ip) {
+      if ( ! ip->empty()) {
+	filename = *ip + "/lib" + spec + ".so";
+	err << "  ";
+	if (load (filename, err, true)) {
+	  return true;
+	}
+	filename = *ip + "/" + spec + ".so";
+	err << "  ";
+	if (load (filename, err, true)) {
+	  return true;
+	}
+	filename = *ip + "/" + spec;
+	err << "  ";
+	if (load (filename, err, true)) {
+	  return true;
+	}
+      }
+    }
+    
+    std::cerr << err.str() << "\n";
+    return false;
   }
   
 }

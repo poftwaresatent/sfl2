@@ -35,6 +35,7 @@ catkin_package(
   #  DEPENDS system_lib
 )
 
+set (NPM_PLUGIN_PATH ${sfl2ros_BINARY_DIR}/plugins)
 subdirs (..)
 
 include_directories(
@@ -46,3 +47,4 @@ include_directories(
 
 add_library (cargo-ants-plugin MODULE src/cargo-ants-plugin.cpp)
 target_link_libraries (cargo-ants-plugin npm ${catkin_LIBRARIES})
+set_target_properties (cargo-ants-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})

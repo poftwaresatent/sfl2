@@ -54,8 +54,8 @@ namespace npm {
     explicit Plugin(std::string const & name);
     ~Plugin();
     
-    bool load (std::string const & filename);
-    bool load (std::string const & filename, bool immediate, std::ostream & erros);
+    bool search (std::string const & spec);
+    bool load (std::string const & filename, std::ostream & erros, bool terse = false);
     
   private:
     void * dl_;

@@ -150,6 +150,14 @@ endif (HAVE_ESTAR)
 ##################################################
 ### The actual project
 
+if (NOT NPM_PLUGIN_PATH)
+  message ("setting NPM_PLUGIN_PATH to ${Stanford_NPM_Umbrella_BINARY_DIR}/plugins")
+  set (NPM_PLUGIN_PATH ${SFL2_BINARY_DIR}/plugins)
+else (NOT NPM_PLUGIN_PATH)
+  message ("NPM_PLUGIN_PATH already set to ${NPM_PLUGIN_PATH}")
+endif (NOT NPM_PLUGIN_PATH)
+add_definitions (-DNPM_PLUGIN_PATH_STR="${NPM_PLUGIN_PATH}")
+
 include_directories (
   .
   3rdparty/fpplib/include
@@ -185,3 +193,5 @@ target_link_libraries (test-plugin npm)
 
 add_library (plugin-test MODULE apps/plugin-test.cpp)
 target_link_libraries (plugin-test npm) # not sure if this is required on Linux
+set_target_properties (plugin-test PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+
