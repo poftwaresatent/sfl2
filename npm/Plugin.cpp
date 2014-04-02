@@ -140,13 +140,14 @@ namespace npm {
     }
 #endif // NPM_PLUGIN_PATH_STR
     
-    std::list <std::string> directories;
+    typedef std::list <std::string> directories_t;
+    directories_t directories;
     sfl::tokenize (searchpath, ':', directories);
     std::string filename;
     std::ostringstream err;
     
     err << "npm::Plugin::search (`" <<  spec << "`) failed:\n";
-    for (auto ip (directories.begin()); ip != directories.end(); ++ip) {
+    for (directories_t::const_iterator ip (directories.begin()); ip != directories.end(); ++ip) {
       if ( ! ip->empty()) {
 	filename = *ip + "/lib" + spec + ".so";
 	err << "  ";
