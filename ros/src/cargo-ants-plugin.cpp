@@ -22,6 +22,7 @@
 #include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>
 #include <npm/HAL.hpp>
+#include <npm/CheatSheet.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 #include <cmath>
@@ -29,6 +30,7 @@
 #include "ros/ros.h"
 #include "cargo_ants_msgs/VehicleState.h"
 #include "cargo_ants_msgs/Trajectory.h"
+#include "cargo_ants_msgs/MockupMap.h"
 
 
 using namespace cargo_ants_msgs;
@@ -49,6 +51,7 @@ public:
       vtrans_ (2.0),
       trajectory_topic_ ("trajectory"),
       vehicle_state_topic_ ("vehicle_state"),
+      site_map_topic_ ("site_map"),
       msg_queue_size_ (10),
       server_ (0)
   {
@@ -60,6 +63,7 @@ public:
     reflectParameter ("vtrans", &vtrans_);
     reflectParameter ("trajectory_topic", &trajectory_topic_);
     reflectParameter ("vehicle_state_topic", &vehicle_state_topic_);
+    reflectParameter ("site_map_topic", &site_map_topic_);
     reflectParameter ("msg_queue_size", &msg_queue_size_);
   }
   
@@ -82,6 +86,7 @@ public:
     trajectory_sub_ = node.subscribe (trajectory_topic_, msg_queue_size_,
 				      &CargoANTsMockup::trajectoryCB, this);
     vehicle_state_pub_ = node.advertise <VehicleState> (vehicle_state_topic_, 1);
+    site_map_pub_ = node.advertise <MockupMap> (site_map_topic_, 1);
     
     return true;
   }
@@ -212,8 +217,18 @@ public:
     vehicle_state.rot_rate.z = 0.0; // to do
     // ignoring acc_bias, gyro_bias, and gravity
     vehicle_state_pub_.publish (vehicle_state);
+    
+    MockupMap site_map;
+    boost::shared_ptr<npm::CheatSheet> cheat (server_->CreateCheatSheet());
+    cheat->UpdateLines();
+    for (size_t il(0); il < cheat->line.size(); ++il) {
+      site_map.x0.push_back (cheat->line[il].x0);
+      site_map.y0.push_back (cheat->line[il].y0);
+      site_map.x1.push_back (cheat->line[il].x1);
+      site_map.y1.push_back (cheat->line[il].y1);
+    }
+    site_map_pub_.publish (site_map);
   }
-  
   
 private:
   double width_;
@@ -224,11 +239,13 @@ private:
   double vtrans_;
   std::string trajectory_topic_;
   std::string vehicle_state_topic_;
+  std::string site_map_topic_;
   size_t msg_queue_size_;
   
   npm::RobotServer * server_;
   boost::shared_ptr <npm::HoloDrive> drive_;
   ros::Subscriber trajectory_sub_;
+  ros::Publisher site_map_pub_;
   ros::Publisher vehicle_state_pub_;
   ros::Publisher trajectory_status_pub_;
   std::vector <TrajectoryPoint> trajectory_;
