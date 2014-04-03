@@ -39,7 +39,7 @@ catkin_package(
   #  DEPENDS system_lib
 )
 
-set (NPM_PLUGIN_PATH ${sfl2ros_BINARY_DIR}/plugins)
+set (NPM_PLUGIN_PATH ${sfl2_BINARY_DIR}/plugins)
 subdirs (..)
 
 include_directories(
