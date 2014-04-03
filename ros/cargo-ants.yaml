@@ -20,7 +20,12 @@
     name: cargo-ants
     spec: cargo-ants-plugin
 
-- CargoANTsMockup:
+- CargoANTsMockupSiteMap:
+    name: mockup_site_map
+    site_map_topic: site_map
+    msg_queue_size: 1
+
+- CargoANTsMockupRobot:
     name: alice
     pose: [ -5.0, -5.0,  0.1 ]
     width: 3.5
@@ -33,7 +38,7 @@
     vehicle_state_topic: alice/vehicle_state
     msg_queue_size: 10
 
-- CargoANTsMockup:
+- CargoANTsMockupRobot:
     name: bob
     pose: [  5.0, -5.0, -0.1 ]
     width: 2.5

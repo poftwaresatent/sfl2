@@ -60,6 +60,7 @@ namespace npm {
   {
   public:
     typedef std::vector<boost::shared_ptr<Object> > object_t;
+    typedef std::vector<RobotServer *> robot_t;
     
     explicit World(const std::string & name);
     
@@ -100,6 +101,8 @@ namespace npm {
     
     /** \note the world's "own" lines are stored in the first element */
     const object_t & GetObjects() const { return m_object; }
+
+    const robot_t & GetRobots() const { return m_robot; }
     
     /** \note Can return 0. */
     boost::shared_ptr<const BBox> GetBounds() const { return m_bbox; }
@@ -113,8 +116,6 @@ namespace npm {
     
   private:
     friend class CheatSheet;
-    
-    typedef std::vector<RobotServer *> robot_t;
     
     robot_t m_robot;
     boost::shared_ptr<WorldDrawing> m_drawing;
