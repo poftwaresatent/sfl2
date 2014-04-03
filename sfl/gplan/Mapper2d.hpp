@@ -123,6 +123,9 @@ namespace sfl {
 
 		virtual ~Mapper2d() {}
 		
+		/**
+			 Create a Mapper2d from a traversability map file.
+		*/
 		static boost::shared_ptr<Mapper2d>
 		Create(double robot_radius,
 					 double buffer_zone,
@@ -133,6 +136,20 @@ namespace sfl {
 					 /** Optional. Defaults to never_grow. */
 					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
 					 std::ostream * err_os);
+		
+		
+		/**
+			 Convenience method for creating an automatically growing map
+			 with exponential cost decay. Uses a padding_factor of 2,
+			 because that's the value I saw being used in legacy code, which
+			 marked it as coming from legacy code. Double legacy, wonderful.
+		*/
+		static boost::shared_ptr <Mapper2d>
+		Create (GridFrame const & gframe,
+						double robot_radius,
+						double buffer_zone,
+						double decay_power);
+		
 		
 		/**
 			 Update of traversability map based on a Scan instance, where
@@ -159,7 +176,7 @@ namespace sfl {
 									draw_callback * cb = 0);
 
 		/**
-			 Draw a (non-fileld) circle of obstacle points using
+			 Draw a (non-filled) circle of obstacle points using
 			 GridFrame::DrawGlobalCircle(). Each grid cell on the circle is
 			 considered a workspace-obstacle, and will be grown by the robot
 			 radius and buffer zone.
@@ -171,6 +188,21 @@ namespace sfl {
 														 bool force,
 														 /** gets passed to AddOneObstacle() */
 														 draw_callback * cb = 0);
+		
+		/**
+			 Draw a line of obstacle points from (gx0, gy0) to (gx1, gy1)
+			 using GridFrame::DrawGlobalLine(). Each grid cell on the line
+			 is considered a workspace-obstacle, and will be grown by the
+			 robot radius and buffer zone.
+			 
+			 \return The number of cells that got changed.
+		*/
+		size_t AddObstacleLine(double gx0, double gy0,
+													 double gx1, double gy1,
+													 /** gets passed to AddOneObstacle() */
+													 bool force,
+													 /** gets passed to AddOneObstacle() */
+													 draw_callback * cb = 0);
 		
 		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
 		boost::shared_ptr<WRTravmap> CreateWRTravmap();
@@ -230,7 +262,7 @@ namespace sfl {
 																draw_callback * cb);
 		
 		/** \return The number of cells that were changed. See also
-				AddOneObstacle(double, double, bool, draw_callback *). */
+				AddOneGlobalObstacle(double, double, bool, draw_callback *). */
 		size_t AddOneObstacle(index_t source_index, bool force, draw_callback * cb);
 		
 		/**
@@ -281,6 +313,7 @@ namespace sfl {
 		
 		/** Use at your own risk: gives access to the underlying
 				travmap. */
+		boost::shared_ptr<TraversabilityMap> GetTravmap();
 		boost::shared_ptr<TraversabilityMap const> GetTravmap() const;
 		
 	protected:

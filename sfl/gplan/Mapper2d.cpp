@@ -169,6 +169,20 @@ namespace sfl {
 	}
 	
 	
+	shared_ptr <Mapper2d> Mapper2d::
+	Create (GridFrame const & gframe,
+					double robot_radius, double buffer_zone, double decay_power)
+	{
+		shared_ptr <travmap_cost_decay> cost_decay (new exponential_travmap_cost_decay (decay_power));
+		shared_ptr <travmap_grow_strategy> grow_strategy (new always_grow());
+    shared_ptr <TraversabilityMap> travmap (new TraversabilityMap (gframe, 0, 0, 0, 0));
+		static double const padding_factor (2.0);
+		shared_ptr <Mapper2d> m2d (new Mapper2d (robot_radius, buffer_zone, padding_factor,
+																						 cost_decay, travmap, grow_strategy));
+		return m2d;
+	}
+	
+	
 	size_t Mapper2d::
 	Update(const Frame & pose, size_t length, double * locx, double * locy,
 				 draw_callback * cb)
@@ -454,6 +468,23 @@ namespace sfl {
 	}
 	
 	
+	size_t Mapper2d::
+	AddObstacleLine(double gx0, double gy0,
+									double gx1, double gy1,
+									bool force,
+									draw_callback * cb)
+	{
+		buffered_obstacle_adder boa(this, force, cb);
+		gridframe.DrawGlobalLine(gx0, gy0, gx1, gy1,
+														 std::numeric_limits<ssize_t>::min(),
+														 std::numeric_limits<ssize_t>::max(), 
+														 std::numeric_limits<ssize_t>::min(),
+														 std::numeric_limits<ssize_t>::max(),
+														 boa);
+		return boa.count;
+	}
+	
+	
 	bool Mapper2d::always_grow::
 	operator () (TraversabilityMap & travmap,
 							 ssize_t ix, ssize_t iy)
@@ -568,6 +599,13 @@ namespace sfl {
 	
 	boost::shared_ptr<TraversabilityMap const> Mapper2d::
 	GetTravmap() const
+	{
+		return m_travmap;
+	}
+	
+	
+	boost::shared_ptr<TraversabilityMap> Mapper2d::
+	GetTravmap()
 	{
 		return m_travmap;
 	}
