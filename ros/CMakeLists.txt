@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sfl2ros)
+project(sfl2)
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(catkin REQUIRED COMPONENTS
+  cargo_ants_msgs
   roscpp
   message_generation
 )
@@ -15,8 +16,8 @@ add_message_files(
 )
 
 generate_messages(
-#  DEPENDENCIES
-#  std_msgs
+  DEPENDENCIES
+  cargo_ants_msgs
 )
 
 ###################################
@@ -29,7 +30,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  ###  INCLUDE_DIRS ..
+  INCLUDE_DIRS
+  ..
+  ../3rdparty/fpplib/include
+  ../3rdparty/fpplib/yaml-cpp-0.2.7/include
   LIBRARIES npm
   CATKIN_DEPENDS roscpp
   #  DEPENDS system_lib

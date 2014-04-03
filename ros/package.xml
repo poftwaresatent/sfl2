@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <package>
-  <name>sfl2ros</name>
+  <name>sfl2</name>
   <version>0.0.0</version>
   <description>
-    ROS wrapper for the sfl2 mobile robot library and planar simulator.
+    ROS wrapper for the sfl2 mobile robot library and planar
+    simulator. The wrapper is being developed in the Cargo-ANTs
+    project, which is why this ROS package depends on parts thereof
+    (which are not publicly released yet at the time of writing).
   </description>
   <url type="website">https://github.com/poftwaresatent/sfl2</url>
   <author email="poftwaresatent@gmail.com">Roland Philippsen</author>
@@ -12,10 +15,12 @@
   
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
+  <build_depend>cargo_ants_msgs</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>roscpp</build_depend>
 
-  <run_depend>roscpp</run_depend>
+  <run_depend>cargo_ants_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
-
+  <run_depend>roscpp</run_depend>
+  
 </package>
