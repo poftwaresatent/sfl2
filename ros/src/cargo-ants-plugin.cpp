@@ -24,6 +24,7 @@
 #include <npm/HAL.hpp>
 #include <npm/World.hpp>
 #include <npm/Object.hpp>
+#include <npm/gfx/TraversabilityDrawing.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -34,8 +35,65 @@
 #include "cargo_ants_msgs/Trajectory.h"
 #include "cargo_ants_msgs/MockupMap.h"
 
+// Not so happy about the way we end up needing to include generated
+// message headers... too easily confused with
+// i.e. <sfl/gplan/TraversabilityMap.hpp> maybe create a separate
+// sfl_msgs package, then at least th einclude directive clearly marks
+// things as messages.
+//
+#include "sfl2/TraversabilityMap.h"
 
 using namespace cargo_ants_msgs;
+
+
+class TravmapMsgProxy
+  : public npm::TravProxyAPI
+{
+public:
+  TravmapMsgProxy ()
+    : gframe_ (0, 0, 0, 1)
+  {
+    enable = false;
+  }
+  
+  void update (sfl2::TraversabilityMap::ConstPtr const msg)
+  {
+    enable = true;
+    
+    gframe_.Configure (msg->gx, msg->gy, msg->gth, msg->delta);
+    freespace_ = msg->freespace;
+    obstacle_ = msg->obstacle;
+    
+    // Instead of copying the data, the msg pointer should be kept and its data indexed.
+    //
+    grid_.resize (msg->xbegin, msg->xend, msg->ybegin, msg->yend);
+    grid_t::iterator ig (grid_.begin());
+    for (size_t im (0); im < msg->grid.size(); ++im) {
+      (*ig++) = msg->grid[im];
+    }
+  }
+  
+  virtual bool Enabled() const    { return enable; }
+  virtual double GetX() const     { return gframe_.X(); }
+  virtual double GetY() const     { return gframe_.Y(); }
+  virtual double GetTheta() const { return gframe_.Theta(); }
+  virtual double GetDelta() const { return gframe_.Delta(); }
+  virtual sfl::GridFrame const * GetGridFrame() { return &gframe_; }
+  virtual int GetObstacle() const   { return obstacle_; }
+  virtual int GetFreespace() const  { return freespace_; }
+  virtual ssize_t GetXBegin() const { return grid_.xbegin(); }
+  virtual ssize_t GetXEnd() const   { return grid_.xend(); }
+  virtual ssize_t GetYBegin() const { return grid_.ybegin(); }
+  virtual ssize_t GetYEnd() const   { return grid_.yend(); }
+  virtual int GetValue(ssize_t ix, ssize_t iy) const { return grid_.at(ix, iy); }
+  
+private:
+  sfl::GridFrame gframe_;
+  int freespace_;
+  int obstacle_;
+  typedef sfl::flexgrid <int> grid_t;
+  grid_t grid_;
+};
 
 
 class MockupBase
@@ -125,7 +183,17 @@ public:
     
     npm::World::robot_t const & robots (server_->GetWorld().GetRobots());
     for (size_t ir(0); ir < robots.size(); ++ir) {
+      if (robots[ir]->GetClient() == this) {
+	// Quick hack because MockupSiteMap is a RobotClient. Nepumuk
+	// needs a little refactoring to make implementing this
+	// easier.
+	continue;
+      }
       entry.name = robots[ir]->GetName();
+      entry.x0.clear();
+      entry.y0.clear();
+      entry.x1.clear();
+      entry.y1.clear();
       npm::Object const & body (robots[ir]->GetBody());
       for (size_t il(0); il < body.GetNlines(); ++il) {
 	sfl::Line const & ln (*body.GetGlobalLine(il));
@@ -160,7 +228,9 @@ public:
       vrot_ (45 * M_PI / 180),
       vtrans_ (2.0),
       trajectory_topic_ ("trajectory"),
-      vehicle_state_topic_ ("vehicle_state")
+      vehicle_state_topic_ ("vehicle_state"),
+      travmap_topic_ ("travmap"),
+      travmap_proxy_ (new TravmapMsgProxy())
   {
     reflectParameter ("width", &width_);
     reflectParameter ("length", &length_);
@@ -170,6 +240,7 @@ public:
     reflectParameter ("vtrans", &vtrans_);
     reflectParameter ("trajectory_topic", &trajectory_topic_);
     reflectParameter ("vehicle_state_topic", &vehicle_state_topic_);
+    reflectParameter ("travmap_topic", &travmap_topic_);
   }
   
   
@@ -186,6 +257,13 @@ public:
     trajectory_sub_ = node.subscribe (trajectory_topic_, msg_queue_size_,
 				      &MockupRobot::trajectoryCB, this);
     vehicle_state_pub_ = node.advertise <VehicleState> (vehicle_state_topic_, 1);
+    travmap_sub_ = node.subscribe (travmap_topic_, msg_queue_size_,
+				   &MockupRobot::travmapCB, this);
+    
+    if ( ! travmap_drawing_) {
+      travmap_drawing_.reset (new npm::TraversabilityDrawing (name + "_travmap", travmap_proxy_));
+      travmap_camera_.reset (new npm::TraversabilityCamera (name + "_travmap", travmap_proxy_));
+    }
     
     return true;
   }
@@ -206,6 +284,12 @@ public:
   void trajectoryCB (Trajectory::ConstPtr const & msg)
   {
     trajectory_ = msg->points;
+  }
+  
+  
+  void travmapCB (sfl2::TraversabilityMap::ConstPtr const & msg)
+  {
+    travmap_proxy_->update (msg);
   }
   
   
@@ -271,12 +355,17 @@ private:
   double vtrans_;
   std::string trajectory_topic_;
   std::string vehicle_state_topic_;
-
+  std::string travmap_topic_;
+  
   boost::shared_ptr <npm::HoloDrive> drive_;
   ros::Subscriber trajectory_sub_;
+  ros::Subscriber travmap_sub_;
   ros::Publisher vehicle_state_pub_;
   ros::Publisher trajectory_status_pub_;
   std::vector <TrajectoryPoint> trajectory_;
+  boost::shared_ptr <TravmapMsgProxy> travmap_proxy_;
+  boost::shared_ptr <npm::TraversabilityDrawing> travmap_drawing_;
+  boost::shared_ptr <npm::TraversabilityCamera> travmap_camera_;
 };
 
 

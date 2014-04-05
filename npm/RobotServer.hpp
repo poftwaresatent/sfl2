@@ -114,6 +114,8 @@ namespace npm {
     void AddKeyListener(boost::shared_ptr<KeyListener> listener) const;
     boost::shared_ptr<npm::CheatSheet> CreateCheatSheet() const;
     
+    RobotClient const * GetClient() const { return m_client; }
+    
   private:
     friend class Simulator;
     

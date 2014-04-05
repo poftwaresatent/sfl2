@@ -13,6 +13,7 @@ add_message_files(
   DIRECTORY msg
   FILES
   Scan.msg
+  TraversabilityMap.msg
 )
 
 generate_messages(

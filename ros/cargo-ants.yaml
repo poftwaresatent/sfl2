@@ -36,6 +36,7 @@
     vtrans: 2.5
     trajectory_topic: alice/trajectory
     vehicle_state_topic: alice/vehicle_state
+    travmap_topic: alice/travmap
     msg_queue_size: 10
 
 - CargoANTsMockupRobot:
@@ -49,6 +50,7 @@
     vtrans: 2.0
     trajectory_topic: bob/trajectory
     vehicle_state_topic: bob/vehicle_state
+    travmap_topic: bob/travmap
     msg_queue_size: 10
 
 - View:
@@ -58,5 +60,27 @@
       - world
       - alice_true_drawing
       - bob_true_drawing
-    window: [ 0.0,  0.0,  1.0,  1.0 ]
+    window: [ 0.0,  0.0,  0.7,  1.0 ]
     border:  0
+
+- View:
+    name: alice
+    camera:  alice_travmap
+    drawings:
+      - alice_travmap
+      - world
+      - alice_true_drawing
+      - bob_true_drawing
+    window: [ 0.7,  0.0,  1.0,  0.5 ]
+    border:  2
+
+- View:
+    name: bob
+    camera:  bob_travmap
+    drawings:
+      - bob_travmap
+      - world
+      - alice_true_drawing
+      - bob_true_drawing
+    window: [ 0.7,  0.5,  1.0,  1.0 ]
+    border:  2
