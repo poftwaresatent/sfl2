@@ -102,14 +102,48 @@ namespace sfl {
     void Configure(double position_x, double position_y, double position_theta,
 		   double delta);
     
+		/**
+			 Compute the index of a point given in global coordinates (px, py).
+		*/
     index_t GlobalIndex(double px, double py) const;
+		
+		/**
+			 Compute the index of a position given in global coordinates.
+		*/
     index_t GlobalIndex(position_t point) const;
+		
+		/**
+			 Compute the index of a point given in local coordinates (px,
+			 py).  "Local" means that the coordinates are relative to the
+			 origin of this grid frame.
+		*/
     index_t LocalIndex(double px, double py) const;
+		
+		/**
+			 Compute the index of a position given in local coordinates.
+			 "Local" means that the coordinates are relative to the origin
+			 of this grid frame.
+		*/
     index_t LocalIndex(position_t point) const;
     
+		/**
+			 Compute the global coordinates of the center of the cell at index (ix, iy).
+		*/
     position_t GlobalPoint(ssize_t ix, ssize_t iy) const;
+		
+		/**
+			 Compute the global coordinates of the center of the cell at the given index.
+		*/
     position_t GlobalPoint(index_t index) const;
+		
+		/**
+			 Compute the local coordinates of the center of the cell at index (ix, iy).
+		*/
     position_t LocalPoint(ssize_t ix, ssize_t iy) const;
+		
+		/**
+			 Compute the local coordinates of the center of the cell at the given index.
+		*/
     position_t LocalPoint(index_t index) const;
     
 		/**
