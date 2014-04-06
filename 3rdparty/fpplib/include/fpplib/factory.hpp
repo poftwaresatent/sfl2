@@ -47,7 +47,7 @@ namespace fpplib {
   
   /**
      Interface for the Creator objects that are used by Factory to
-     create Refleactable subclass instances based on their type
+     create Configurable subclass instances based on their type
      name. Normally, it should not be necessary to derive your own
      custom classes from BaseCreator, or even the provided Creator<>
      template, because Factory::declare does all of the work for you..
@@ -62,9 +62,9 @@ namespace fpplib {
   
   
   /**
-     Registry sub type Specific Creator. It is used by the Factory to
-     manage its dictionary of Configurable sub types. Normally, your
-     code should not need to be aware of this template, just call
+     Sub-type-specific Creator. It is used by the Factory to manage
+     its dictionary of Configurable sub types. Normally, your code
+     should not need to be aware of this template, just call
      Factory::declare instead.
   */
   template<class SubType>
@@ -111,6 +111,10 @@ namespace fpplib {
        \note If the given type_name is already in use, the old
        declaration will be discarded and henceworth instances of the
        latest registered SubType will be returned by Factory::create.
+
+       \todo Is it wise to silently replace previously existing type
+       declarations?  Exceptions might come in handy here, but that
+       may open up a can of worms...
     */
     template<class SubType>
     void declare(string const & type_name)
@@ -121,11 +125,11 @@ namespace fpplib {
 	type_code_to_name_.insert(make_pair(string(typeid(SubType).name()), type_name));
       }
       else {
-	delete ic->second;	// XXXX to do: should we warn or even fail here?
+	delete ic->second;
 	ic->second = new Creator<SubType>();
       }
     }
-      
+    
     /**
        Create a new instance of a Configurable subclass, as previously
        registered using Factory::declare.
@@ -138,7 +142,7 @@ namespace fpplib {
 
     /**
        Find an existing Configurable instance, given its type and
-       instance names.
+       instance names. See also the templatized find<> method.
        
        \return The existing instance, or zero if either the type or
        instance name did not match.
@@ -151,6 +155,23 @@ namespace fpplib {
     */    
     Configurable * find(string const & type_name,
 			string const & instance_name) const;
+    
+    /**
+       Convenience method for finding instances by sub-type without
+       needing to remember what type_name was used. Beware, however,
+       that C++ name mangling is not aware of polymorphism. This means
+       that if you declared something using a class, and then try to
+       find it using one of its base classes, it will fail.
+    */
+    template<class SubType>
+    SubType * find(string const & instance_name) const
+    {
+      dict_t::const_iterator id(type_code_to_name_.find(typeid(SubType).name()));
+      if (type_code_to_name_.end() == id) {
+	return 0;
+      }
+      return dynamic_cast<SubType*> (find (id->second, instance_name));
+    }
     
     /**
        Alternative find method, which uses only the instance name. If
