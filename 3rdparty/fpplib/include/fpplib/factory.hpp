@@ -165,20 +165,28 @@ namespace fpplib {
 			string const & instance_name) const;
     
     /**
-       Convenience method for finding instances by sub-type without
-       needing to remember what type_name was used. Beware, however,
-       that C++ name mangling is not aware of polymorphism. This means
-       that if you declared something using a class, and then try to
-       find it using one of its base classes, it will fail.
+       Find an instance by sub-type, without necessarily knowing the
+       exact type that it was created for. Particularly useful for
+       retrieving base class pointers for things that were registered
+       using a more specific sub-class. This method first tries the
+       exactly matching type entry, then iterates over all registered
+       cerators until it finds an instance that matches both the name
+       and can be cast to the given SubType.
     */
     template<class SubType>
     SubType * find(string const & instance_name) const
     {
       dict_t::const_iterator id(type_code_to_name_.find(typeid(SubType).name()));
-      if (type_code_to_name_.end() == id) {
-	return 0;
+      if (type_code_to_name_.end() != id) {
+	return dynamic_cast<SubType*> (find (id->second, instance_name));
       }
-      return dynamic_cast<SubType*> (find (id->second, instance_name));
+      for (creator_t::const_iterator ic (creator_.begin()); ic != creator_.end(); ++ic) {
+	SubType * instance (dynamic_cast <SubType*> (ic->second->find(instance_name)));
+	if (instance) {
+	  return instance;
+	}
+      }
+      return 0;
     }
     
     /**
@@ -206,7 +214,7 @@ namespace fpplib {
       if (0 == creator) {
 	return 0;
       }
-      return dynamic_cast<Registry<SubType> const *>(&creator->registry);
+      return dynamic_cast<Registry<SubType> const *>(&creator->registry_);
     }
     
     /**
