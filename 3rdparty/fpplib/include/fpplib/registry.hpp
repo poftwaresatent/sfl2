@@ -74,8 +74,10 @@ namespace fpplib {
     void add(string const & instance_name,
 	     pointer_type pointer)
     {
-      map_[instance_name] = pointer;
-      vector_.push_back(pointer);
+      if ( ! instance_name.empty()) {
+	map_[instance_name] = pointer;
+	vector_.push_back(pointer);
+      }
     }
     
     pointer_type find(string const & instance_name) const
