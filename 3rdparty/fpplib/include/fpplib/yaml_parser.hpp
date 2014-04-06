@@ -179,7 +179,7 @@ namespace fpplib {
     string error;
     
   protected:
-    PointerRegistry<BaseValueConverter * > converters_;
+    Registry<BaseValueConverter> converters_;
     Factory & factory_;
     
     bool configure(Configurable * instance, YAML::Node const & dict);

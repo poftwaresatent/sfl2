@@ -69,7 +69,7 @@ namespace fpplib {
     if (creator_.end() == ic) {
       return 0;
     }
-    return ic->second->registry().find(instance_name);
+    return ic->second->find(instance_name);
   }
   
   
@@ -78,24 +78,12 @@ namespace fpplib {
     const
   {
     for (creator_t::const_iterator ic(creator_.begin()); ic != creator_.end(); ++ic) {
-      Configurable * cc(ic->second->registry().find(instance_name));
+      Configurable * cc(ic->second->find(instance_name));
       if (cc) {
 	return cc;
       }
     }
     return 0;
-  }
-  
-
-  BaseRegistry const * Factory::
-  findRegistry(string const & type_name)
-    const
-  {
-    creator_t::const_iterator ic(creator_.find(type_name));
-    if (creator_.end() == ic) {
-      return 0;
-    }
-    return &(ic->second->registry());
   }
   
   
@@ -105,10 +93,7 @@ namespace fpplib {
   {
     for (creator_t::const_iterator ic(creator_.begin()); ic != creator_.end(); ++ic) {
       os << prefix << ic->first << "\n";
-      BaseRegistry & reg(ic->second->registry());
-      for (size_t ii(0); ii < reg.size(); ++ii) {
-	reg.at(ii)->dump(prefix + "  ", os);
-      }
+      ic->second->dump (prefix + "  ", os);
     }
   }
   

@@ -57,7 +57,8 @@ namespace fpplib {
   public:
     virtual ~BaseCreator() {}
     virtual Configurable * create(string const & instance_name) = 0;
-    virtual BaseRegistry & registry() = 0;
+    virtual Configurable * find(string const & instance_name) = 0;
+    virtual void dump(string const & prefix, ostream & os) const = 0;
   };
   
   
@@ -79,13 +80,20 @@ namespace fpplib {
       return instance;
     }
     
-    virtual Registry<SubType> & registry()
+    virtual SubType * find(string const & instance_name)
     {
-      return registry_;
+      return registry_.find(instance_name);
     }
     
-  protected:
-    Registry<SubType> registry_;
+    virtual void dump(string const & prefix, ostream & os) const
+    {
+      for (size_t ii(0); ii < registry_.size(); ++ii) {
+	registry_.at(ii)->dump(prefix, os);
+      }
+    }
+    
+    typedef Registry<SubType> registry_t;
+    registry_t registry_;
   };
   
   
@@ -183,8 +191,6 @@ namespace fpplib {
     */
     Configurable * find(string const & instance_name) const;
     
-    BaseRegistry const * findRegistry(string const & type_name) const;
-    
     template<class SubType>
     Registry<SubType> const * findRegistry() const
     {
@@ -192,7 +198,15 @@ namespace fpplib {
       if (type_code_to_name_.end() == id) {
 	return 0;
       }
-      return dynamic_cast<Registry<SubType> const *>(findRegistry(id->second));
+      creator_t::const_iterator ic(creator_.find(id->second));
+      if (creator_.end() == ic) {
+	return 0;
+      }
+      Creator<SubType> const * creator (dynamic_cast<Creator<SubType> const *>(ic->second));
+      if (0 == creator) {
+	return 0;
+      }
+      return dynamic_cast<Registry<SubType> const *>(&creator->registry);
     }
     
     /**

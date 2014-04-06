@@ -49,33 +49,42 @@ namespace fpplib {
   class Configurable;
   
   
-  template<typename instance_type>
-  class InstanceRegistry
+  template<typename value_type>
+  class Registry
   {
   public:
-    typedef map<string, instance_type> map_t;
+    typedef value_type * pointer_type;
+    
+    typedef map<string, pointer_type> map_t;
     map_t map_;
     
-    typedef vector<instance_type> vector_t;
+    typedef vector<pointer_type> vector_t;
     vector_t vector_;
     
     
-    virtual ~InstanceRegistry() {}
-    
-    void add(string const & instance_name,
-	     instance_type instance)
+    virtual ~Registry()
     {
-      map_[instance_name] = instance;
-      vector_.push_back(instance);
+      //// if (owns_instance) {
+      for (size_t ii (0); ii < vector_.size(); ++ii) {
+	delete vector_[ii];
+      }
+      //// }
     }
     
-    instance_type find(string const & instance_name) const
+    void add(string const & instance_name,
+	     pointer_type pointer)
+    {
+      map_[instance_name] = pointer;
+      vector_.push_back(pointer);
+    }
+    
+    pointer_type find(string const & instance_name) const
     {
       typename map_t::const_iterator ii(map_.find(instance_name));
       if (map_.end() != ii) {
 	return ii->second;
       }
-      return nullInstance();
+      return 0;
     }
     
     inline size_t size() const
@@ -83,90 +92,10 @@ namespace fpplib {
       return vector_.size();
     }
     
-    inline instance_type at(size_t index) const
+    inline pointer_type at(size_t index) const
     {
       return vector_[index];
     }
-    
-    virtual instance_type nullInstance() const
-    {
-       return instance_type();
-    }
-  };
-  
-  
-  template<typename pointer_type>
-  class PointerRegistry
-    : public InstanceRegistry<pointer_type>
-  {
-  public:
-    virtual ~PointerRegistry()
-    {
-      for (size_t ii(0); ii < InstanceRegistry<pointer_type>::vector_.size(); ++ii) {
-	delete InstanceRegistry<pointer_type>::vector_[ii];
-      }
-    }
-
-    virtual pointer_type nullInstance() const
-    {
-      return 0;
-    }
-  };
-  
-  
-  class BaseRegistry
-  {
-  public:
-    virtual ~BaseRegistry() {}
-    
-    virtual Configurable * find(string const & instance_name) const = 0;
-    
-    virtual size_t size() const = 0;
-    
-    virtual Configurable * at(size_t index) const = 0;
-  };
-  
-
-  /**
-     \todo XXXX to do: why didn't I simply write it like this (no need for the imp_ attribute):
-     \code
-     template<class SubType>
-     class Registry
-       : public PointerRegistry<SubType*>
-     {
-     public:
-       void add(...) { ... }
-     };
-     \endcode
-   */  
-  template<class SubType>
-  class Registry
-    : public BaseRegistry
-  {
-  public:
-    void add(string const & instance_name,
-	     SubType * instance)
-    {
-      imp_.add(instance_name, instance);
-    }
-    
-    virtual SubType * find(string const & instance_name) const
-    {
-      return imp_.find(instance_name);
-    }
-    
-    virtual size_t size() const
-    {
-      return imp_.size();
-    }
-    
-    virtual SubType * at(size_t index) const
-    {
-      return imp_.at(index);
-    }
-    
-  protected:
-    PointerRegistry<SubType * > imp_;
   };
   
 }

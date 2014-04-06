@@ -138,7 +138,7 @@ namespace fpplib {
        Change it back in case that causes more headaches than worth
        it.
     */
-    PointerRegistry<Reflectable*> reflected_;
+    Registry<Reflectable> reflected_;
     
   protected:
     /**
