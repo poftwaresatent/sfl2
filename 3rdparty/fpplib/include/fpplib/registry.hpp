@@ -46,7 +46,7 @@ namespace fpplib {
   using std::vector;
 
 
-  template<typename value_type>
+  template<typename value_type, bool owns_registered_instances = true>
   class Registry
   {
   public:
@@ -61,8 +61,10 @@ namespace fpplib {
     
     virtual ~Registry()
     {
-      for (size_t ii (0); ii < vector_.size(); ++ii) {
-	delete vector_[ii];
+      if (owns_registered_instances) {
+	for (size_t ii (0); ii < vector_.size(); ++ii) {
+	  delete vector_[ii];
+	}
       }
     }
     
