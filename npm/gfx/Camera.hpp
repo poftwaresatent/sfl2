@@ -41,8 +41,8 @@ namespace npm {
   class Camera
   {
   public:
-    typedef fpplib::PointerRegistry<Camera*> registry_t;
-    static registry_t *registry;
+    typedef fpplib::Registry <Camera, false> registry_t;
+    static registry_t registry;
     
     const std::string name;
     const std::string comment;

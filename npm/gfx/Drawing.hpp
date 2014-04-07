@@ -44,8 +44,8 @@ namespace npm {
   class Drawing
   {
   public:
-    typedef fpplib::PointerRegistry<Drawing*> registry_t;
-    static registry_t *registry;
+    typedef fpplib::Registry <Drawing, false> registry_t;
+    static registry_t registry;
     
     const std::string name;
     const std::string comment;

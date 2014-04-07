@@ -31,7 +31,7 @@ using namespace boost;
 
 namespace npm {
 
-  RobotClient::registry_t *RobotClient::registry(new registry_t());
+  RobotClient::registry_t RobotClient::registry;
   
   
   RobotClient::
@@ -50,7 +50,7 @@ namespace npm {
       m_scanner_noise_max_offset( 0.1),
       m_camera_zoom(2)
   {
-    registry->add(name, this);
+    registry.add(name, this);
     reflectParameter("enable_trajectory", &m_enable_trajectory);
     reflectParameter("noisy_odometry", &m_noisy_odometry);
     reflectParameter("odometry_noise_min_factor", &m_odometry_noise_min_factor);

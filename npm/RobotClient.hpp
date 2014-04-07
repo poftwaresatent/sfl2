@@ -71,8 +71,8 @@ namespace npm {
     : public fpplib::Configurable
   {
   public:
-    typedef fpplib::PointerRegistry<RobotClient*> registry_t;
-    static registry_t *registry;
+    typedef fpplib::Registry <RobotClient, false> registry_t;
+    static registry_t registry;
     
     RobotClient(std::string const &name);
     

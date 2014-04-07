@@ -45,7 +45,7 @@ using namespace std;
 namespace npm {
   
   
-  View::registry_t *View::registry(new registry_t());
+  View::registry_t View::registry;
   
   
   View::
@@ -54,7 +54,7 @@ namespace npm {
       camera(0),
       savecount(0)
   {
-    registry->add(name, this);
+    registry.add(name, this);
     Configure(0, 0, 1, 1);
     reflectParameter("camera", &pcamera);
     reflectVectorParameter("drawings", &pdrawing);
@@ -89,7 +89,7 @@ namespace npm {
   bool View::
   SetCamera(const string &name)
   {
-    Camera *cc(Camera::registry->find(name));
+    Camera *cc(Camera::registry.find(name));
     if( !cc) {
       return false;
     }
@@ -102,12 +102,12 @@ namespace npm {
   AddDrawing(const string &name)
   {
     PVDEBUG ("DBG View::AddDrawing(`%s')\n", name.c_str());
-    Drawing * dd(Drawing::registry->find(name));
+    Drawing * dd(Drawing::registry.find(name));
     if(0 == dd) {
       cerr << "ERROR in npm::View::AddDrawing: drawing " << name << " not found\n"
 	   << "  available Drawings:\n";
-      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map_.begin());
-	   id != Drawing::registry->map_.end(); ++id) {
+      for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry.map_.begin());
+	   id != Drawing::registry.map_.end(); ++id) {
 	cerr << "    " << id->first << ": " << id->second->comment << "\n";
       }
       return false;
@@ -302,21 +302,6 @@ namespace npm {
       above = true;
       below = true;
     }
-
-    CalculateViewport();
-  }
-
-
-  void View::
-  SetRange(double x0,
-	   double x1,
-	   double y0,
-	   double y1)
-  {
-    xmin = x0;
-    xmax = x1;
-    ymin = y0;
-    ymax = y1;
 
     CalculateViewport();
   }

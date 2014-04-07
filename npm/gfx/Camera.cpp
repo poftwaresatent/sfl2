@@ -30,7 +30,7 @@ using namespace std;
 namespace npm {
   
   
-  Camera::registry_t *Camera::registry(new registry_t());
+  Camera::registry_t Camera::registry;
   
   
   Camera::
@@ -39,7 +39,7 @@ namespace npm {
       comment(comment_)
   {
     if ("" != name_)
-      registry->add(name_, this);
+      registry.add(name_, this);
   }
 
 }

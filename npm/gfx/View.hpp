@@ -59,8 +59,8 @@ namespace npm {
     : public fpplib::Configurable
   {
   public:
-    typedef fpplib::PointerRegistry<View*> registry_t;
-    static registry_t *registry;
+    typedef fpplib::Registry<View> registry_t;
+    static registry_t registry;
     
     typedef enum { N, NE, E, SE, S, SW, W, NW, CENTER } anchor_t;
     
@@ -99,10 +99,6 @@ namespace npm {
     /// Set the bounding box of what's to be drawn inside the View.
     void SetBounds(double x0, double y0, double x1, double y1,
 		   double margin = 0);
-    
-    /// Deprecated in favor of View::SetBounds() because the order of
-    /// parameters is a bit bizarre
-    void SetRange(double x0, double x1, double y0, double y1);
     
     /// Inform the View of a reshape event of the main graphics window.
     void Reshape(int width,	///< new window width (in pixels)

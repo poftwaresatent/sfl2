@@ -50,8 +50,10 @@ namespace npm {
   ConfigureView(class View &view)
   {
     const Frame & pose(m_robot->GetTruePose());
-    view.SetRange(pose.X() - m_radius, pose.X() + m_radius,
-		  pose.Y() - m_radius, pose.Y() + m_radius);
+    view.SetBounds (pose.X() - m_radius,
+		    pose.Y() - m_radius,
+		    pose.X() + m_radius,
+		    pose.Y() + m_radius);
   }
 
 }

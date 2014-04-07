@@ -30,7 +30,7 @@ using namespace std;
 namespace npm {
   
   
-  Drawing::registry_t *Drawing::registry(new registry_t());
+  Drawing::registry_t Drawing::registry;
   
   
   Drawing::
@@ -39,7 +39,7 @@ namespace npm {
       comment(comment_)
   {
     if ("" != name_)
-      registry->add(name_, this);
+      registry.add(name_, this);
   }
   
 }

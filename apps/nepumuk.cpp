@@ -135,13 +135,13 @@ int main(int argc, char ** argv)
     ff.dump("  ", cout);
     cout << "==================================================\n"
 	 << "CAMERAS:\n";
-    for (Camera::registry_t::map_t::const_iterator ic(Camera::registry->map_.begin());
-	 ic != Camera::registry->map_.end(); ++ic)
+    for (Camera::registry_t::map_t::const_iterator ic(Camera::registry.map_.begin());
+	 ic != Camera::registry.map_.end(); ++ic)
       cout << "  " << ic->first << ": " << ic->second->comment << "\n";
     cerr << "\n==================================================\n"
 	 << "DRAWINGS:\n";
-    for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry->map_.begin());
-	 id != Drawing::registry->map_.end(); ++id)
+    for (Drawing::registry_t::map_t::const_iterator id(Drawing::registry.map_.begin());
+	 id != Drawing::registry.map_.end(); ++id)
       cout << "  " << id->first << ": " << id->second->comment << "\n";
     exit(EXIT_SUCCESS);
   }

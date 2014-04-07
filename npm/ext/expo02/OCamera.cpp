@@ -43,8 +43,8 @@ OCamera(const std::string & name,
 void OCamera::
 ConfigureView(View & view)
 {
-  view.SetRange(m_dwa.QdlMinIndex(),
-		m_dwa.QdlMaxIndex() + 1,
-		m_dwa.QdrMinIndex(),
-		m_dwa.QdrMaxIndex() + 1);
+  view.SetBounds (m_dwa.QdlMinIndex(),
+		  m_dwa.QdrMinIndex(),
+		  m_dwa.QdlMaxIndex() + 1,
+		  m_dwa.QdrMaxIndex() + 1);
 }

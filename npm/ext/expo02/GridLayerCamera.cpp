@@ -46,5 +46,5 @@ void GridLayerCamera::
 ConfigureView(View & view)
 {
   shared_ptr<const NF1::grid_t> grid(nf1.GetGridLayer());
-  view.SetRange(0, grid->xsize, 0, grid->ysize);
+  view.SetBounds (0, 0, grid->xsize, grid->ysize);
 }

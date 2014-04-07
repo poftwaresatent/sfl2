@@ -82,8 +82,8 @@ namespace npm {
   bool Simulator::
   Initialize()
   {
-    for (size_t ic(0); ic < RobotClient::registry->size(); ++ic) {
-      RobotClient *client(RobotClient::registry->at(ic));
+    for (size_t ic(0); ic < RobotClient::registry.size(); ++ic) {
+      RobotClient *client(RobotClient::registry.at(ic));
       RobotServer *server(new RobotServer(client, *m_world));
       if ( !client->Initialize(*server)) {
 	delete server;
@@ -122,8 +122,8 @@ namespace npm {
     m_width = width;
     m_height = height;
     
-    for (View::registry_t::vector_t::const_iterator iv(View::registry->vector_.begin());
-	 iv != View::registry->vector_.end(); ++iv) {
+    for (View::registry_t::vector_t::const_iterator iv(View::registry.vector_.begin());
+	 iv != View::registry.vector_.end(); ++iv) {
       (*iv)->Reshape(width, height);
     }
   }
@@ -132,8 +132,8 @@ namespace npm {
   bool AppWindow::
   rfctDraw()
   {
-    for (View::registry_t::vector_t::const_iterator iv(View::registry->vector_.begin());
-	 iv != View::registry->vector_.end(); ++iv) {
+    for (View::registry_t::vector_t::const_iterator iv(View::registry.vector_.begin());
+	 iv != View::registry.vector_.end(); ++iv) {
       if ( !(*iv)->rfctDraw()) {
 	return false;
       }
