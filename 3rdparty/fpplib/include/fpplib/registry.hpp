@@ -46,9 +46,6 @@ namespace fpplib {
   using std::vector;
 
 
-  class Configurable;
-  
-  
   template<typename value_type>
   class Registry
   {
@@ -64,11 +61,9 @@ namespace fpplib {
     
     virtual ~Registry()
     {
-      //// if (owns_instance) {
       for (size_t ii (0); ii < vector_.size(); ++ii) {
 	delete vector_[ii];
       }
-      //// }
     }
     
     void add(string const & instance_name,

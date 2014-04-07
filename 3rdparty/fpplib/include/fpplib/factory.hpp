@@ -44,6 +44,8 @@ namespace fpplib {
   using std::string;
   using std::ostream;
   
+  class Configurable;
+  
   
   /**
      Interface for the Creator objects that are used by Factory to

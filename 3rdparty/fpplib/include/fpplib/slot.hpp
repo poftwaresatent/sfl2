@@ -39,6 +39,8 @@
 
 namespace fpplib {
   
+  class Configurable;
+  
   
   class BaseSlot
     : public Reflectable
