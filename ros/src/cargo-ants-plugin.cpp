@@ -25,6 +25,7 @@
 #include <npm/World.hpp>
 #include <npm/Object.hpp>
 #include <npm/gfx/TraversabilityDrawing.hpp>
+#include <npm/gfx/wrap_glu.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -34,6 +35,7 @@
 #include "cargo_ants_msgs/VehicleState.h"
 #include "cargo_ants_msgs/Trajectory.h"
 #include "cargo_ants_msgs/MockupMap.h"
+#include "cargo_ants_msgs/Route.h"
 
 // Not so happy about the way we end up needing to include generated
 // message headers... too easily confused with
@@ -42,6 +44,7 @@
 // things as messages.
 //
 #include "sfl2/TraversabilityMap.h"
+#include "sfl2/Estar.h"
 
 using namespace cargo_ants_msgs;
 
@@ -59,11 +62,6 @@ public:
   {
     msg_ = msg;    
     gframe_.Configure (msg->gx, msg->gy, msg->gth, msg->delta);
-    // grid_.resize (msg->xbegin, msg->xend, msg->ybegin, msg->yend);
-    // grid_t::iterator ig (grid_.begin());
-    // for (size_t im (0); im < msg->grid.size(); ++im) {
-    //   (*ig++) = msg->grid[im];
-    // }
   }
   
   virtual bool Enabled() const    { return msg_; }
@@ -95,6 +93,122 @@ private:
   int obstacle_;
   typedef sfl::flexgrid <int> grid_t;
   grid_t grid_;
+};
+
+
+class RouteDrawing
+  : public npm::Drawing
+{
+public:
+  explicit RouteDrawing (std::string const & name)
+    : npm::Drawing (name, "draws route messages in the color of their vehicle")
+  {
+  }
+  
+  virtual void Draw()
+  {
+    for (route_t::const_iterator ir (route_.begin()); ir != route_.end(); ++ir) {
+      npm::RobotClient const * robot (npm::RobotClient::registry.find (ir->first));
+      if (robot) {
+	npm::color_s const & cc (robot->GetColor());
+	glColor3d (0.8 * cc.red, 0.8 * cc.green, 0.8 * cc.blue);
+      }
+      else {
+	glColor3d (0.3, 0.3, 0.3);
+      }
+      
+      std::vector<cargo_ants_msgs::Goal> const & goals (ir->second->goals);
+      
+      glPointSize (3);
+      glBegin (GL_POINTS);
+      for (size_t ig (0); ig < goals.size(); ++ig) {
+	glVertex2d (goals[ig].gx, goals[ig].gy);
+      }
+      glEnd ();
+      
+      glPolygonMode (GL_FRONT, GL_FILL);
+      for (size_t ig (0); ig < goals.size(); ++ig) {
+	glMatrixMode (GL_MODELVIEW);
+	glPushMatrix ();
+	glTranslated (goals[ig].gx, goals[ig].gy, 0);
+	gluDisk (wrap_glu_quadric_instance(), 0.0, goals[ig].dr, 36, 1);
+	glPopMatrix ();
+      }
+    }
+  }
+  
+  void update (Route::ConstPtr msg)
+  {
+    route_[msg->vehicle] = msg;
+  }
+  
+private:
+    typedef std::map <std::string, Route::ConstPtr> route_t;
+    route_t route_;
+};
+
+
+class EstarDrawing
+  : public npm::Drawing
+{
+public:
+  EstarDrawing (std::string const & name)
+    : npm::Drawing (name, "E*")
+  {
+  }
+
+  virtual void Draw()
+  {
+    if ( ! msg_) {
+      return;
+    }
+    
+    glMatrixMode (GL_MODELVIEW);
+    glPushMatrix ();
+    glTranslated (msg_->gx, msg_->gy, 0.0);
+    glRotated (180.0 * msg_->gth / M_PI, 0.0, 0.0, 1.0);
+    glScaled(msg_->delta, msg_->delta, 1.0);
+    
+    double delta (1.0);
+    for (size_t ii (0); ii < msg_->value.size(); ++ii) {
+      if (msg_->value[ii] <= 50 && msg_->value[ii] > delta) { // XXXX magic number
+	delta = msg_->value[ii];
+      }
+    }
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    for (size_t ix (0); ix < msg_->xdim; ++ix) {
+      for (size_t iy (0); iy < msg_->ydim; ++iy) {
+	size_t const ii (ix + msg_->xdim * iy);
+	double const vv (fmin (msg_->value[ii], delta) / delta);
+	if (vv < 0) {
+	  glColor3d (0, 0, 1);
+	}
+	else if (vv < 1e-3) {	// XXXX magic number
+	  glColor3d(0, 1, 0);
+	}
+	else if (vv == INFINITY) {
+	  glColor3d(1, 0, 0);
+	}
+	else {
+	  glColor3d (vv, vv, vv);
+	}
+	glRectd(ix - 0.5, iy - 0.5, ix + 0.5, iy + 0.5);
+      }
+    }
+    
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+  }
+  
+  void update (sfl2::Estar::ConstPtr msg)
+  {
+    ROS_INFO ("EstarDrawing gframe: %g  %g  %g  %g  dim: %lldx%lld", msg->gx, msg->gy, msg->gth, msg->delta, msg->xdim, msg->ydim);
+    msg_ = msg;
+  }
+  
+private:
+  sfl2::Estar::ConstPtr msg_;
 };
 
 
@@ -147,22 +261,32 @@ protected:
 };
 
 
-class MockupSiteMap
+class MockupGlue
   : public MockupBase
 {
 public:
-  MockupSiteMap (std::string const & name)
+  MockupGlue (std::string const & name)
     : MockupBase (name),
-      site_map_topic_ ("site_map")
+      site_map_topic_ ("site_map"),
+      route_topic_ ("route")
   {
     reflectParameter ("site_map_topic", &site_map_topic_);
+    reflectParameter ("route_topic", &route_topic_);
   }
   
   virtual bool init ()
   {
     ros::NodeHandle node;
     site_map_pub_ = node.advertise <MockupMap> (site_map_topic_, 1);
+    route_sub_ = node.subscribe (route_topic_, msg_queue_size_, &MockupGlue::routeCB, this);
+    route_drawing_.reset (new RouteDrawing(name + "_route_drawing"));
+    server_->AddDrawing (route_drawing_);
     return true;
+  }
+  
+  void routeCB (Route::ConstPtr msg)
+  {
+    route_drawing_->update (msg);
   }
   
   virtual bool update (double timestep)
@@ -186,7 +310,7 @@ public:
     npm::World::robot_t const & robots (server_->GetWorld().GetRobots());
     for (size_t ir(0); ir < robots.size(); ++ir) {
       if (robots[ir]->GetClient() == this) {
-	// Quick hack because MockupSiteMap is a RobotClient. Nepumuk
+	// Quick hack because MockupGlue is a RobotClient. Nepumuk
 	// needs a little refactoring to make implementing this
 	// easier.
 	continue;
@@ -213,7 +337,10 @@ public:
   
 private:
   std::string site_map_topic_;
+  std::string route_topic_;
   ros::Publisher site_map_pub_;
+  ros::Subscriber route_sub_;
+  boost::shared_ptr<RouteDrawing> route_drawing_;
 };
 
 
@@ -232,7 +359,8 @@ public:
       trajectory_topic_ ("trajectory"),
       vehicle_state_topic_ ("vehicle_state"),
       travmap_topic_ ("travmap"),
-      travmap_proxy_ (new TravmapMsgProxy())
+      travmap_proxy_ (new TravmapMsgProxy()),
+      estar_topic_("estar")
   {
     reflectParameter ("width", &width_);
     reflectParameter ("length", &length_);
@@ -243,6 +371,7 @@ public:
     reflectParameter ("trajectory_topic", &trajectory_topic_);
     reflectParameter ("vehicle_state_topic", &vehicle_state_topic_);
     reflectParameter ("travmap_topic", &travmap_topic_);
+    reflectParameter ("estar_topic", &estar_topic_);
   }
   
   
@@ -261,11 +390,12 @@ public:
     vehicle_state_pub_ = node.advertise <VehicleState> (vehicle_state_topic_, 1);
     travmap_sub_ = node.subscribe (travmap_topic_, msg_queue_size_,
 				   &MockupRobot::travmapCB, this);
+    estar_sub_ = node.subscribe (estar_topic_, msg_queue_size_,
+				 &MockupRobot::estarCB, this);
     
-    if ( ! travmap_drawing_) {
-      travmap_drawing_.reset (new npm::TraversabilityDrawing (name + "_travmap", travmap_proxy_));
-      travmap_camera_.reset (new npm::TraversabilityCamera (name + "_travmap", travmap_proxy_));
-    }
+    travmap_drawing_.reset (new npm::TraversabilityDrawing (name + "_travmap", travmap_proxy_));
+    travmap_camera_.reset (new npm::TraversabilityCamera (name + "_travmap", travmap_proxy_));
+    estar_drawing_.reset (new EstarDrawing (name + "_estar"));
     
     return true;
   }
@@ -292,6 +422,12 @@ public:
   void travmapCB (sfl2::TraversabilityMap::ConstPtr const & msg)
   {
     travmap_proxy_->update (msg);
+  }
+  
+  
+  void estarCB (sfl2::Estar::ConstPtr const & msg)
+  {
+    estar_drawing_->update (msg);
   }
   
   
@@ -358,16 +494,19 @@ private:
   std::string trajectory_topic_;
   std::string vehicle_state_topic_;
   std::string travmap_topic_;
+  std::string estar_topic_;
   
   boost::shared_ptr <npm::HoloDrive> drive_;
   ros::Subscriber trajectory_sub_;
   ros::Subscriber travmap_sub_;
+  ros::Subscriber estar_sub_;
   ros::Publisher vehicle_state_pub_;
   ros::Publisher trajectory_status_pub_;
   std::vector <TrajectoryPoint> trajectory_;
   boost::shared_ptr <TravmapMsgProxy> travmap_proxy_;
   boost::shared_ptr <npm::TraversabilityDrawing> travmap_drawing_;
   boost::shared_ptr <npm::TraversabilityCamera> travmap_camera_;
+  boost::shared_ptr <EstarDrawing> estar_drawing_;
 };
 
 
@@ -381,7 +520,7 @@ int npm_plugin_init ()
 	      ros::init_options::AnonymousName);
   }
   
-  npm::Factory::Instance().declare<MockupSiteMap>("CargoANTsMockupSiteMap");
+  npm::Factory::Instance().declare<MockupGlue>("CargoANTsMockupGlue");
   npm::Factory::Instance().declare<MockupRobot>("CargoANTsMockupRobot");
   
   return 0;

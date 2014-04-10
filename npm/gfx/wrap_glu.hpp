@@ -30,7 +30,7 @@
 #elif defined(OSX)
 # include <OpenGL/glu.h>
 #else
-# warning "no OS selected, cannot include GLU header"
+# error "no OS selected, cannot include GLU header"
 #endif
 
 GLUquadricObj * wrap_glu_quadric_instance();

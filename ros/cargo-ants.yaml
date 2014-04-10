@@ -20,10 +20,11 @@
     name: cargo-ants
     spec: cargo-ants-plugin
 
-- CargoANTsMockupSiteMap:
-    name: mockup_site_map
+- CargoANTsMockupGlue:
+    name: mockup_glue
     site_map_topic: site_map
-    msg_queue_size: 1
+    route_topic: route
+    msg_queue_size: 10
 
 - CargoANTsMockupRobot:
     name: alice
@@ -38,6 +39,7 @@
     trajectory_topic: alice/trajectory
     vehicle_state_topic: alice/vehicle_state
     travmap_topic: alice/travmap
+    estar_topic: alice/estar
     msg_queue_size: 10
 
 - CargoANTsMockupRobot:
@@ -53,6 +55,7 @@
     trajectory_topic: bob/trajectory
     vehicle_state_topic: bob/vehicle_state
     travmap_topic: bob/travmap
+    estar_topic: bob/estar
     msg_queue_size: 10
 
 - View:
@@ -62,27 +65,50 @@
       - world
       - alice_true_drawing
       - bob_true_drawing
-    window: [ 0.0,  0.0,  0.7,  1.0 ]
+      - mockup_glue_route_drawing
+    window: [ 0.0,  0.0,  0.5,  1.0 ]
     border:  0
 
 - View:
-    name: alice
+    name: alice_travmap
     camera:  alice_travmap
     drawings:
       - alice_travmap
       - world
       - alice_true_drawing
       - bob_true_drawing
-    window: [ 0.7,  0.0,  1.0,  0.5 ]
+    window: [ 0.5,  0.5,  0.75,  1.0 ]
     border:  2
 
 - View:
-    name: bob
+    name: alice_estar
+    camera:  world
+    drawings:
+      - alice_estar
+      - world
+      - alice_true_drawing
+      - bob_true_drawing
+    window: [ 0.75,  0.5,  1.0,  1.0 ]
+    border:  2
+
+- View:
+    name: bob_travmap
     camera:  bob_travmap
     drawings:
       - bob_travmap
       - world
       - alice_true_drawing
       - bob_true_drawing
-    window: [ 0.7,  0.5,  1.0,  1.0 ]
+    window: [ 0.5,  0.0,  0.75,  0.5 ]
+    border:  2
+
+- View:
+    name: bob_estar
+    camera:  world
+    drawings:
+      - bob_estar
+      - world
+      - alice_true_drawing
+      - bob_true_drawing
+    window: [ 0.75,  0.0,  1.0,  0.5 ]
     border:  2

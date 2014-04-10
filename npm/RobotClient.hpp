@@ -137,7 +137,7 @@ namespace npm {
 	the subclass does not use explicit goals. */
     virtual bool GoalReached() = 0;
     
-    color_s const & GetColor() { return m_color; }
+    color_s const & GetColor() const { return m_color; }
     
   protected:
     boost::shared_ptr<HAL> m_hal; // set via Initialize

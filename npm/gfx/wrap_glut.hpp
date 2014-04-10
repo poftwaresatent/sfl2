@@ -30,7 +30,7 @@
 #elif defined(OSX)
 # include <GLUT/glut.h>
 #else
-# warning "no OS selected, cannot include GLUT header"
+# error "no OS selected, cannot include GLUT header"
 #endif
 
 #endif // NPM_GFX_WRAP_GLUT_HPP

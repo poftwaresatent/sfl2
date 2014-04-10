@@ -30,7 +30,7 @@
 #elif defined(OSX)
 # include <OpenGL/gl.h>
 #else
-# warning "no OS selected, cannot include GL header"
+# error "no OS selected, cannot include GL header"
 #endif
 
 #endif // NPM_GFX_WRAP_GL_HPP

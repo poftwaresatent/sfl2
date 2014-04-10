@@ -227,7 +227,7 @@ namespace sfl {
 		// We can skip this one if it is already a W-space obstacle (and
 		// we are allowed to).
 		if (( ! force) && (m_travmap->IsWObst(ix0, iy0))) {
-			PDEBUG("source %zd %zd is already W-obst\n", ix0, iy0);
+			PVDEBUG("source %zd %zd is already W-obst\n", ix0, iy0);
 			return 0;
 		}
 		
@@ -244,7 +244,7 @@ namespace sfl {
 		// Ready to insert W-space obstacle and perform C-space expansion
 		m_travmap->SetWObst(ix0, iy0, cb);
 		size_t count(1);
-		PDEBUG("added W-obst at source %zd %zd\n", ix0, iy0);
+		PVDEBUG("added W-obst at source %zd %zd\n", ix0, iy0);
 		
 		// Perform C-space extension with buffer zone.
 		for (addmask_t::const_iterator is(m_addmask.begin()); is != m_addmask.end(); ++is) {

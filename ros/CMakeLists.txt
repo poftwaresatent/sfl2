@@ -3,6 +3,26 @@ project(sfl2)
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
 
+##################################################
+# OS detection (needed for GL support)
+
+if (WIN32)
+  add_definitions (-DWIN32)
+else (WIN32)
+  if (APPLE)
+    add_definitions (-DOSX)
+  endif (APPLE)
+  if (CMAKE_SYSTEM_NAME MATCHES Linux)
+    add_definitions (-DLINUX)
+  endif (CMAKE_SYSTEM_NAME MATCHES Linux)
+  if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+    add_definitions (-DOPENBSD)
+  endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+endif(WIN32)
+
+##################################################
+# ROS stuff
+
 find_package(catkin REQUIRED COMPONENTS
   cargo_ants_msgs
   roscpp
@@ -14,6 +34,7 @@ add_message_files(
   FILES
   Scan.msg
   TraversabilityMap.msg
+  Estar.msg
 )
 
 generate_messages(
