@@ -64,6 +64,23 @@ namespace npm {
   };
   
   
+  struct color_s {
+    color_s ()
+      : red (1.0), green (1.0), blue (1.0)
+    {}
+    
+    color_s (double r, double g, double b)
+      : red (r), green (g), blue (b)
+    {}
+    
+    color_s (color_s const & rhs)
+      : red (rhs.red), green (rhs.green), blue (rhs.blue)
+    {}
+    
+    double red, green, blue;
+  };
+  
+  
   /**
      Base class for implementing robots.
   */
@@ -120,6 +137,8 @@ namespace npm {
 	the subclass does not use explicit goals. */
     virtual bool GoalReached() = 0;
     
+    color_s const & GetColor() { return m_color; }
+    
   protected:
     boost::shared_ptr<HAL> m_hal; // set via Initialize
     
@@ -147,6 +166,8 @@ namespace npm {
     bool AppendGoal(qhgoal_s const &goal);
     
     qhpose_s m_initial_pose;
+    
+    color_s m_color;
   };
   
 }
@@ -155,6 +176,7 @@ namespace std {
   
   ostream & operator << (ostream &os, npm::qhgoal_s const &rhs);
   ostream & operator << (ostream &os, npm::qhpose_s const &rhs);
+  ostream & operator << (ostream &os, npm::color_s const &rhs);
 
 }
 

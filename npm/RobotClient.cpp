@@ -48,7 +48,8 @@ namespace npm {
       m_scanner_noise_max_factor(-1),
       m_scanner_noise_min_offset(-0.1), // if min>max then offsets are ignored
       m_scanner_noise_max_offset( 0.1),
-      m_camera_zoom(2)
+      m_camera_zoom(2),
+      m_color(1.0, 1.0, 1.0)
   {
     registry.add(name, this);
     reflectParameter("enable_trajectory", &m_enable_trajectory);
@@ -65,6 +66,7 @@ namespace npm {
     reflectParameter("camera_zoom", &m_camera_zoom);
     reflectCallback<qhgoal_s>("goals", true, boost::bind(&RobotClient::AppendGoal, this, _1));
     reflectParameter("pose", &m_initial_pose);
+    reflectParameter("color", &m_color);
   }
   
   
@@ -113,6 +115,11 @@ namespace std {
   ostream & operator << (ostream &os, npm::qhpose_s const &rhs)
   {
     return os << "(" << rhs.x << ", " << rhs.y << ", " << rhs.theta << ")";
+  }
+  
+  ostream & operator << (ostream &os, npm::color_s const &rhs)
+  {
+    return os << "(" << rhs.red << ", " << rhs.green << ", " << rhs.blue << ")";
   }
 
 }

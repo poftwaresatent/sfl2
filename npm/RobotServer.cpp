@@ -83,7 +83,7 @@ namespace npm {
 						 client->m_scanner_noise_max_offset));
     }
     
-    AddDrawing(new RobotDrawing(this));
+    AddDrawing(new RobotDrawing(this, client->GetColor()));
     AddDrawing(new TrajectoryDrawing(this));
     AddCamera(new RobotZoomCamera(this, client->m_camera_zoom));
   }

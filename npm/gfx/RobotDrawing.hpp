@@ -27,21 +27,22 @@
 
 
 #include <npm/gfx/Drawing.hpp>
+#include <npm/RobotClient.hpp>
 
 
 namespace npm {
   
-  class RobotServer;
   
   class RobotDrawing
     : public Drawing
   {
   public:
-    RobotDrawing(const RobotServer * robot);
+    RobotDrawing(const RobotServer * robot, color_s const & color);
     virtual void Draw();
-
+    
   private:
     const RobotServer * m_robot;
+    const color_s m_color;
   };
 
 }

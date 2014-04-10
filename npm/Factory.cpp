@@ -73,6 +73,14 @@ namespace npm {
   }
   
   
+  void operator >> (const YAML::Node & node, color_s & cc)
+  {
+    node[0] >> cc.red;
+    node[1] >> cc.green;
+    node[2] >> cc.blue;
+  }
+  
+  
   Factory::
   Factory()
     : parser_(*this)
@@ -93,6 +101,7 @@ namespace npm {
     parser_.addConverter<qhgoal_s>();
     parser_.addConverter<qhpose_s>();
     parser_.addConverter<qhwin_s>();
+    parser_.addConverter<color_s>();
   }
   
   

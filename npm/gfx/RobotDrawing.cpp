@@ -37,10 +37,11 @@ namespace npm {
   
   
   RobotDrawing::
-  RobotDrawing(const RobotServer * robot)
+  RobotDrawing(const RobotServer * robot, color_s const & color)
     : Drawing(robot->GetName() + "_true_drawing",
 	      "true (and noisy if available) outline of \"" + robot->GetName() + "\""),
-      m_robot(robot)
+      m_robot(robot),
+      m_color(color)
   {
   }
   
@@ -50,7 +51,7 @@ namespace npm {
   {
     const Object * body(m_robot->GetNoisyBody());
     if(body){
-      glColor3d(0.6, 0.6, 0.6);
+      glColor3d(0.6 * m_color.red, 0.6 * m_color.green, 0.6 * m_color.blue);
       glBegin(GL_LINE_LOOP);
       for(size_t ii(0); ii < body->GetNlines(); ++ii){
 	shared_ptr<const Line> line(body->GetGlobalLine(ii));
@@ -61,7 +62,7 @@ namespace npm {
     }
     
     body = & m_robot->GetBody();
-    glColor3d(1, 1, 1);
+    glColor3d(m_color.red, m_color.green, m_color.blue);
     glBegin(GL_LINE_LOOP);
     for(size_t ii(0); ii < body->GetNlines(); ++ii){
       shared_ptr<const Line> line(body->GetGlobalLine(ii));

@@ -30,6 +30,7 @@
 
 namespace npm {
   
+  
   /**
      \brief Abstract drawing functionality and interface.
      
