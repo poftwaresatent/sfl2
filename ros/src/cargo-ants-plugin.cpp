@@ -187,7 +187,7 @@ public:
 	else if (vv < 1e-3) {	// XXXX magic number
 	  glColor3d(0, 1, 0);
 	}
-	else if (vv == INFINITY) {
+	else if (std::isinf (vv)) {
 	  glColor3d(1, 0, 0);
 	}
 	else {
