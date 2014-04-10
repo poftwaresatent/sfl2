@@ -87,25 +87,12 @@ namespace npm {
     
     void AddLine(double x0, double y0, double x1, double y1);
     void AddLine(const sfl::Line & line);
-    void AddDrawing(boost::shared_ptr<Drawing> drawing);
 
-    /**
-       Convenience method which creates a new shared pointer to
-       contain th given drawing. To avoid double-free errors, make
-       sure to use the version which accepts a shared pointer in case
-       you hold the drawing in a shared pointer already.
-    */
+  private:
     void AddDrawing(Drawing * drawing);
-    
-    void AddCamera(boost::shared_ptr<Camera> camera);
-
-    /**
-       Convenience method which creates a new shared pointer to
-       contain th given camera. To avoid double-free errors, make sure
-       to use the version which accepts a shared pointer in case you
-       hold the camera in a shared pointer already.
-    */
     void AddCamera(Camera * camera);
+    
+  public:
     
     boost::shared_ptr<Lidar>
     DefineLidar(const sfl::Frame & mount, size_t nscans, double rhomax,

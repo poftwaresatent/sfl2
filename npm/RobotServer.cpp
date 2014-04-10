@@ -183,23 +183,9 @@ namespace npm {
   
   
   void RobotServer::
-  AddDrawing(shared_ptr<Drawing> drawing)
-  {
-    m_drawing.push_back(drawing);
-  }
-  
-  
-  void RobotServer::
   AddDrawing(Drawing * drawing)
   {
     m_drawing.push_back(shared_ptr<Drawing>(drawing));
-  }
-  
-  
-  void RobotServer::
-  AddCamera(shared_ptr<Camera> camera)
-  {
-    m_camera.push_back(camera);
   }
   
   

@@ -280,7 +280,6 @@ public:
     site_map_pub_ = node.advertise <MockupMap> (site_map_topic_, 1);
     route_sub_ = node.subscribe (route_topic_, msg_queue_size_, &MockupGlue::routeCB, this);
     route_drawing_.reset (new RouteDrawing(name + "_route_drawing"));
-    server_->AddDrawing (route_drawing_);
     return true;
   }
   
