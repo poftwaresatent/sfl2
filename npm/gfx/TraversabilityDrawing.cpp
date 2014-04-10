@@ -109,6 +109,8 @@ namespace npm {
 						glColor3d(0, 0, 0.5);
 					else if (value == freespace)
 						glColor3d(0, 0.5, 0);
+					else if (value < freespace)
+						glColor3d(0, 0, 1);
 					else {
 						double const grey((value - freespace) * cscale);
 						glColor3d(grey, grey, grey);
@@ -366,9 +368,16 @@ namespace npm {
 	void TraversabilityCamera::
 	ConfigureView(View & view)
 	{
-		sfl::GridFrame const * gframe(m_proxy->GetGridFrame());
-		if ( ! gframe)
+		if ( ! m_proxy->Enabled()) {
 			view.SetBounds(0, 0, 1, 1);
+			return;
+		}
+
+		sfl::GridFrame const * gframe(m_proxy->GetGridFrame());
+		if ( ! gframe) {
+			view.SetBounds(0, 0, 1, 1);
+			return;
+		}
 		
 		sfl::GridFrame::position_t const
 			p0(gframe->GlobalPoint(m_proxy->GetXBegin() - 1,

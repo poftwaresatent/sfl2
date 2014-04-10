@@ -53,41 +53,43 @@ public:
   TravmapMsgProxy ()
     : gframe_ (0, 0, 0, 1)
   {
-    enable = false;
   }
   
-  void update (sfl2::TraversabilityMap::ConstPtr const msg)
+  void update (sfl2::TraversabilityMap::ConstPtr msg)
   {
-    enable = true;
-    
+    msg_ = msg;    
     gframe_.Configure (msg->gx, msg->gy, msg->gth, msg->delta);
-    freespace_ = msg->freespace;
-    obstacle_ = msg->obstacle;
-    
-    // Instead of copying the data, the msg pointer should be kept and its data indexed.
-    //
-    grid_.resize (msg->xbegin, msg->xend, msg->ybegin, msg->yend);
-    grid_t::iterator ig (grid_.begin());
-    for (size_t im (0); im < msg->grid.size(); ++im) {
-      (*ig++) = msg->grid[im];
-    }
+    // grid_.resize (msg->xbegin, msg->xend, msg->ybegin, msg->yend);
+    // grid_t::iterator ig (grid_.begin());
+    // for (size_t im (0); im < msg->grid.size(); ++im) {
+    //   (*ig++) = msg->grid[im];
+    // }
   }
   
-  virtual bool Enabled() const    { return enable; }
+  virtual bool Enabled() const    { return msg_; }
   virtual double GetX() const     { return gframe_.X(); }
   virtual double GetY() const     { return gframe_.Y(); }
   virtual double GetTheta() const { return gframe_.Theta(); }
   virtual double GetDelta() const { return gframe_.Delta(); }
   virtual sfl::GridFrame const * GetGridFrame() { return &gframe_; }
-  virtual int GetObstacle() const   { return obstacle_; }
-  virtual int GetFreespace() const  { return freespace_; }
-  virtual ssize_t GetXBegin() const { return grid_.xbegin(); }
-  virtual ssize_t GetXEnd() const   { return grid_.xend(); }
-  virtual ssize_t GetYBegin() const { return grid_.ybegin(); }
-  virtual ssize_t GetYEnd() const   { return grid_.yend(); }
-  virtual int GetValue(ssize_t ix, ssize_t iy) const { return grid_.at(ix, iy); }
+  virtual int GetObstacle() const   { return msg_->obstacle; }
+  virtual int GetFreespace() const  { return msg_->freespace; }
+  virtual ssize_t GetXBegin() const { return msg_->xbegin; }
+  virtual ssize_t GetXEnd() const   { return msg_->xend; }
+  virtual ssize_t GetYBegin() const { return msg_->ybegin; }
+  virtual ssize_t GetYEnd() const   { return msg_->yend; }
+  
+  virtual int GetValue(ssize_t ix, ssize_t iy) const {
+    ssize_t const ii (ix - msg_->xbegin + (iy - msg_->ybegin) * (msg_->xend - msg_->xbegin));
+    if (ii >= msg_->grid.size()) {
+      return msg_->freespace - 1;
+    }
+    return msg_->grid[ii];
+  }
   
 private:
+  sfl2::TraversabilityMap::ConstPtr msg_;
+  
   sfl::GridFrame gframe_;
   int freespace_;
   int obstacle_;
