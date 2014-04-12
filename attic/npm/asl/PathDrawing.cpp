@@ -67,6 +67,7 @@ static void draw_path(const asl::path_t * path, size_t gradplot_frequency,
     deltav = startval;
   
   if(0 == gradplot_frequency){
+    glLineWidth(1);
     glBegin(GL_LINE_STRIP);
     for(size_t ii(0); ii < path->size(); ++ii){
       const double blue((startval - (*path)[ii].value) / deltav);
@@ -99,6 +100,7 @@ static void draw_path(const asl::path_t * path, size_t gradplot_frequency,
     }
     glEnd();
     glPointSize(1);
+    glLineWidth(1);
     glBegin(GL_LINES);
     for(size_t ii(0); ii < path->size(); ii += gradplot_frequency){
       const double blue((startval - (*path)[ii].value) / deltav);
@@ -153,6 +155,7 @@ Draw()
   const asl::trajectory_t *current_traj=m_aslbot->GetTrajectory();
   if(current_traj && (current_traj->size()>1))
     {
+      glLineWidth(1);
       glBegin(GL_LINE_STRIP);
       glColor3d(1.0, 1.0, 0.5);
       for(size_t ii(0); ii< current_traj->size();ii++){

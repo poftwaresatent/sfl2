@@ -77,6 +77,7 @@ Draw()
     deltav = startval;
   
   if(0 == gradplot_frequency){
+    glLineWidth(1);
     glBegin(GL_LINE_STRIP);
     for(size_t ii(0); ii < trace->size(); ++ii){
       const double blue((startval - (*trace)[ii].value) / deltav);
@@ -101,6 +102,7 @@ Draw()
     }
     glEnd();
     glPointSize(1);
+    glLineWidth(1);
     glBegin(GL_LINES);
     for(size_t ii(0); ii < trace->size(); ii += gradplot_frequency){
       const double blue((startval - (*trace)[ii].value) / deltav);

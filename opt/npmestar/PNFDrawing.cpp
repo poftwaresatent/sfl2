@@ -188,6 +188,7 @@ Draw()
     double x0, y0, x1, y1;
     gfx::get_grid_bbox(*facade, x0, y0, x1, y1);
     glColor3d(1, 1, 0);
+    glLineWidth(1);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glRectd(x0, y0, x1, y1);
   }
