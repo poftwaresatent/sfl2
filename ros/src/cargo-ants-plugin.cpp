@@ -26,6 +26,7 @@
 #include <npm/Object.hpp>
 #include <npm/gfx/TraversabilityDrawing.hpp>
 #include <npm/gfx/wrap_glu.hpp>
+#include <sfl/api/Pose.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -36,6 +37,7 @@
 #include "cargo_ants_msgs/Trajectory.h"
 #include "cargo_ants_msgs/MockupMap.h"
 #include "cargo_ants_msgs/Route.h"
+#include "cargo_ants_msgs/Path.h"
 
 // Not so happy about the way we end up needing to include generated
 // message headers... too easily confused with
@@ -109,30 +111,50 @@ public:
   {
     for (route_t::const_iterator ir (route_.begin()); ir != route_.end(); ++ir) {
       npm::RobotClient const * robot (npm::RobotClient::registry.find (ir->first));
+      npm::color_s cc (0.5, 0.5, 0.5);
       if (robot) {
-	npm::color_s const & cc (robot->GetColor());
-	glColor3d (0.8 * cc.red, 0.8 * cc.green, 0.8 * cc.blue);
-      }
-      else {
-	glColor3d (0.3, 0.3, 0.3);
+	cc = robot->GetColor();
       }
       
       std::vector<cargo_ants_msgs::Goal> const & goals (ir->second->goals);
       
-      glPointSize (3);
-      glBegin (GL_POINTS);
       for (size_t ig (0); ig < goals.size(); ++ig) {
-	glVertex2d (goals[ig].gx, goals[ig].gy);
-      }
-      glEnd ();
-      
-      glPolygonMode (GL_FRONT, GL_FILL);
-      for (size_t ig (0); ig < goals.size(); ++ig) {
-	glMatrixMode (GL_MODELVIEW);
-	glPushMatrix ();
-	glTranslated (goals[ig].gx, goals[ig].gy, 0);
+      	glMatrixMode (GL_MODELVIEW);
+      	glPushMatrix ();
+      	glTranslated (goals[ig].gx, goals[ig].gy, 0);
+	glColor3d (0.8 * cc.red, 0.8 * cc.green, 0.8 * cc.blue);
 	gluDisk (wrap_glu_quadric_instance(), 0.0, goals[ig].dr, 36, 1);
-	glPopMatrix ();
+      	glMatrixMode(GL_MODELVIEW);
+      	glPopMatrix ();
+      }
+      
+      start_t::const_iterator is (start_.find (ir->first));
+      if (start_.end() != is) {
+      	if (goals.size() > 0) {
+	  glLineWidth (3);
+	  glColor3d (0.8 * cc.red, 0.8 * cc.green, 0.8 * cc.blue);
+      	  glBegin (GL_LINES);
+      	  glVertex2d (is->second.X(), is->second.Y());
+      	  for (size_t ig (0); ig < goals.size(); ++ig) {
+	    if (ig > 0) {
+	      glVertex2d (goals[ig-1].gx, goals[ig-1].gy);
+	    }
+      	    glVertex2d (goals[ig].gx, goals[ig].gy);
+      	  }
+      	  glEnd ();
+      	}
+      }
+      else if (goals.size() > 1) {
+      	glLineWidth (3);
+	glColor3d (0.8 * cc.red, 0.8 * cc.green, 0.8 * cc.blue);
+	glBegin (GL_LINES);
+      	for (size_t ig (0); ig < goals.size(); ++ig) {
+	  if (ig > 0) {
+	    glVertex2d (goals[ig-1].gx, goals[ig-1].gy);
+	  }
+      	  glVertex2d (goals[ig].gx, goals[ig].gy);
+      	}
+      	glEnd ();
       }
     }
   }
@@ -140,11 +162,73 @@ public:
   void update (Route::ConstPtr msg)
   {
     route_[msg->vehicle] = msg;
+    npm::RobotClient const * robot (npm::RobotClient::registry.find (msg->vehicle));
+    if (robot) {
+      sfl::Pose pose;
+      if (robot->GetPose (pose)) {
+	start_[msg->vehicle] = pose;
+      }
+      else {
+	start_.erase (msg->vehicle);
+      }
+    }
   }
   
 private:
-    typedef std::map <std::string, Route::ConstPtr> route_t;
-    route_t route_;
+  typedef std::map <std::string, Route::ConstPtr> route_t;
+  route_t route_;
+  typedef std::map <std::string, sfl::Pose> start_t;
+  start_t start_;
+};
+
+
+class PathDrawing
+  : public npm::Drawing
+{
+public:
+  PathDrawing (std::string const & name, npm::RobotClient const * robot)
+    : npm::Drawing (name, "draws path messages"),
+      robot_ (robot)
+  {
+  }
+  
+  virtual void Draw()
+  {
+    if ( ! path_) {
+      return;
+    }
+    
+    npm::color_s const & cc (robot_->GetColor());
+    glColor3d (0.4 * cc.red, 0.4 * cc.green, 0.4 * cc.blue);
+    
+    std::vector<cargo_ants_msgs::Goal> const & goals (path_->goals);
+    
+    glPolygonMode (GL_FRONT, GL_FILL);
+    for (size_t ig (0); ig < goals.size(); ++ig) {
+      glMatrixMode (GL_MODELVIEW);
+      glPushMatrix ();
+      glTranslated (goals[ig].gx, goals[ig].gy, 0);
+      gluDisk (wrap_glu_quadric_instance(), 0.0, goals[ig].dr, 36, 1);
+      glMatrixMode(GL_MODELVIEW); // ???
+      glPopMatrix ();
+    }
+    
+    glPointSize (3);
+    glBegin (GL_POINTS);
+    for (size_t ig (0); ig < goals.size(); ++ig) {
+      glVertex2d (goals[ig].gx, goals[ig].gy);
+    }
+    glEnd ();
+  }
+  
+  void update (Path::ConstPtr msg)
+  {
+    path_ = msg;
+  }
+  
+private:
+  npm::RobotClient const * robot_;
+  Path::ConstPtr path_;
 };
 
 
@@ -247,10 +331,19 @@ public:
   
   virtual void InitPose (sfl::Pose const & pose) {}
   virtual void SetPose (sfl::Pose const & pose) {}
-  virtual bool GetPose (sfl::Pose & pose) { return false; }
+  
+  virtual bool GetPose (sfl::Pose & pose) const
+  {
+    if ( ! server_) {
+      return false;
+    }
+    pose = server_->GetTruePose();
+    return true;
+  }
+  
   virtual void SetGoal (double timestep, const sfl::Goal & goal) {}
-  virtual bool GetGoal (sfl::Goal & goal) { return false; }
-  virtual bool GoalReached () { return false; }
+  virtual bool GetGoal (sfl::Goal & goal) const { return false; }
+  virtual bool GoalReached () const { return false; }
   
   virtual bool init () = 0;
   virtual bool update (double timestep) = 0;
@@ -359,7 +452,8 @@ public:
       vehicle_state_topic_ ("vehicle_state"),
       travmap_topic_ ("travmap"),
       travmap_proxy_ (new TravmapMsgProxy()),
-      estar_topic_("estar")
+      estar_topic_("estar"),
+      path_topic_ ("path")
   {
     reflectParameter ("width", &width_);
     reflectParameter ("length", &length_);
@@ -371,6 +465,7 @@ public:
     reflectParameter ("vehicle_state_topic", &vehicle_state_topic_);
     reflectParameter ("travmap_topic", &travmap_topic_);
     reflectParameter ("estar_topic", &estar_topic_);
+    reflectParameter ("path_topic", &path_topic_);
   }
   
   
@@ -391,10 +486,13 @@ public:
 				   &MockupRobot::travmapCB, this);
     estar_sub_ = node.subscribe (estar_topic_, msg_queue_size_,
 				 &MockupRobot::estarCB, this);
+    path_sub_ = node.subscribe (path_topic_, msg_queue_size_,
+				&MockupRobot::pathCB, this);
     
     travmap_drawing_.reset (new npm::TraversabilityDrawing (name + "_travmap", travmap_proxy_));
     travmap_camera_.reset (new npm::TraversabilityCamera (name + "_travmap", travmap_proxy_));
     estar_drawing_.reset (new EstarDrawing (name + "_estar"));
+    path_drawing_.reset (new PathDrawing (name + "_path", this));
     
     return true;
   }
@@ -427,6 +525,12 @@ public:
   void estarCB (sfl2::Estar::ConstPtr const & msg)
   {
     estar_drawing_->update (msg);
+  }
+  
+  
+  void pathCB (cargo_ants_msgs::Path::ConstPtr const & msg)
+  {
+    path_drawing_->update (msg);
   }
   
   
@@ -494,11 +598,13 @@ private:
   std::string vehicle_state_topic_;
   std::string travmap_topic_;
   std::string estar_topic_;
+  std::string path_topic_;
   
   boost::shared_ptr <npm::HoloDrive> drive_;
   ros::Subscriber trajectory_sub_;
   ros::Subscriber travmap_sub_;
   ros::Subscriber estar_sub_;
+  ros::Subscriber path_sub_;
   ros::Publisher vehicle_state_pub_;
   ros::Publisher trajectory_status_pub_;
   std::vector <TrajectoryPoint> trajectory_;
@@ -506,6 +612,7 @@ private:
   boost::shared_ptr <npm::TraversabilityDrawing> travmap_drawing_;
   boost::shared_ptr <npm::TraversabilityCamera> travmap_camera_;
   boost::shared_ptr <EstarDrawing> estar_drawing_;
+  boost::shared_ptr <PathDrawing> path_drawing_;
 };
 
 

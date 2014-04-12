@@ -40,6 +40,7 @@
     vehicle_state_topic: alice/vehicle_state
     travmap_topic: alice/travmap
     estar_topic: alice/estar
+    path_topic: alice/path
     msg_queue_size: 10
 
 - CargoANTsMockupRobot:
@@ -56,6 +57,7 @@
     vehicle_state_topic: bob/vehicle_state
     travmap_topic: bob/travmap
     estar_topic: bob/estar
+    path_topic: bob/path
     msg_queue_size: 10
 
 - View:
@@ -63,9 +65,11 @@
     camera:  world
     drawings:
       - world
+      - alice_path
+      - bob_path
+      - mockup_glue_route_drawing
       - alice_true_drawing
       - bob_true_drawing
-      - mockup_glue_route_drawing
     window: [ 0.0,  0.0,  0.5,  1.0 ]
     border:  0
 
