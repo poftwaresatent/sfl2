@@ -47,6 +47,7 @@ namespace npm {
   Draw(const sfl::Goal & goal)
   {
     glColor3d(1, 1, 1);
+    glLineWidth(1);
     glPolygonMode(GL_FRONT, GL_LINE);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();

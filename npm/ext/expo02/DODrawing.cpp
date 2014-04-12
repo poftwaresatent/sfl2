@@ -193,6 +193,7 @@ DrawCollisionPrediction(size_t iqdl, size_t iqdr, size_t igx, size_t igy)
       else
 	glColor3d(1, 1, 0);
     
+    glLineWidth(1);
     glBegin(GL_LINE_STRIP);
     for(double a(0); a <= 1; a += 0.01){
       double b((phi0 - a * phi) * M_PI / 180);
@@ -208,6 +209,7 @@ DrawCollisionPrediction(size_t iqdl, size_t iqdr, size_t igx, size_t igy)
       dist = 100;
     if(sd >= 0)
       dist = - dist;
+    glLineWidth(1);
     glBegin(GL_LINES);
     glVertex2d(m_distobj->FindXlength(igx), m_distobj->FindYlength(igy));
     glVertex2d(m_distobj->FindXlength(igx)+dist, m_distobj->FindYlength(igy));
@@ -226,6 +228,7 @@ void DrawHull(sfl::HullIterator ihull,
   else
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   
+  glLineWidth(1);
   glBegin(GL_POLYGON);
   for(/**/; ihull.IsValid(); ihull.Increment()){
     glVertex2d(ihull.GetP0()->X(), ihull.GetP0()->Y());
@@ -244,6 +247,7 @@ DrawPose(const sfl::Frame & pose,
   const double size(m_rm->WheelBase() / 2);
   glColor3d(red, green, blue);
 
+  glLineWidth(1);
   glBegin(GL_LINES);
 
   double x0(0);
@@ -271,6 +275,7 @@ DrawPose(const sfl::Frame & pose,
 void DODrawing::
 DrawPath()
 {
+  glLineWidth(1);
   glBegin(GL_LINES);
   glColor3d(1, 1, 1);
   glVertex2d(0, 0);

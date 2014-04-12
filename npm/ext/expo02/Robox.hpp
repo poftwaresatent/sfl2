@@ -64,10 +64,10 @@ public:
   virtual bool PrepareAction(double timestep);
   virtual void InitPose(sfl::Pose const &pose);
   virtual void SetPose(sfl::Pose const &pose);
-  virtual bool GetPose(sfl::Pose &pose);
+  virtual bool GetPose(sfl::Pose &pose) const;
   virtual void SetGoal(double timestep, const sfl::Goal & goal);
-  virtual bool GetGoal(sfl::Goal &goal);
-  virtual bool GoalReached();
+  virtual bool GetGoal(sfl::Goal &goal) const;
+  virtual bool GoalReached() const;
   
 protected:
   robox_parameters m_params;

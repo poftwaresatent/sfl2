@@ -53,6 +53,7 @@ namespace npm {
     if( ! ray)
       return;
     glColor3d(1, 0.5, 0.5);
+    glLineWidth(1);
     glBegin(GL_LINES);
     glVertex2d(ray->X(), ray->Y());
     glVertex2d(ray->X() + ray->Dx(), ray->Y() + ray->Dy());

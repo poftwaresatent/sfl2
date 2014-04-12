@@ -121,7 +121,7 @@ namespace npm {
     /** Hook for knowing where the robot thinks it is. Subclasses can
 	implement this simpluy by returning false, which signifies
 	that the robot has no estimate of its position. */
-    virtual bool GetPose(sfl::Pose &pose) = 0;
+    virtual bool GetPose(sfl::Pose &pose) const = 0;
     
     /** Hook to set the robot's goal. Subclasses can use an empty
 	implementation if they do not handle explicit goals. */
@@ -130,12 +130,12 @@ namespace npm {
     /** Hook to query the robot's current goal. Subclasses can just
 	return false here, which signifies that the robot has no
 	(explicitly maintained) goal. */
-    virtual bool GetGoal(sfl::Goal &goal) = 0;
+    virtual bool GetGoal(sfl::Goal &goal) const = 0;
     
     /** Hook for knowing when the robot thinks it has reached its
 	goal. It is okay to simply always return false here, in case
 	the subclass does not use explicit goals. */
-    virtual bool GoalReached() = 0;
+    virtual bool GoalReached() const = 0;
     
     color_s const & GetColor() const { return m_color; }
     

@@ -58,6 +58,7 @@ namespace npm {
     //   glVertex2d(m_odometry.Get().X(), m_odometry.Get().Y());
     //   glEnd();
 
+    glLineWidth(1);
     glBegin(GL_LINES);
 
     double x(m_size);

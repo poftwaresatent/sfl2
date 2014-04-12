@@ -87,6 +87,7 @@ Draw()
       
       if(m_dwa->Reachable(l, r)){
 	glColor3d(1, 0, 0);
+	glLineWidth(1);
 	glBegin(GL_LINES);
 	glVertex2d(l,   r);
 	glVertex2d(l+1, r+1);
@@ -99,6 +100,7 @@ Draw()
   if(m_dwa->QdlOptIndex() >= 0){
     const int qdlOpt(m_dwa->QdlOptIndex());
     const int qdrOpt(m_dwa->QdrOptIndex());
+    glLineWidth(1);
     glPolygonMode(GL_FRONT, GL_LINE);
     glColor3d(0, 1, 1);
     glRectd(qdlOpt, qdrOpt, qdlOpt + 1, qdrOpt + 1);

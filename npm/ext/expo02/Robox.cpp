@@ -404,6 +404,7 @@ SetPose(sfl::Pose const &pp)
 
 bool Robox::
 GetPose(sfl::Pose &pp)
+  const
 {
   boost::shared_ptr<const Pose> pose(m_imp->odometry->Get());
   if (!pose)
@@ -415,6 +416,7 @@ GetPose(sfl::Pose &pp)
 
 bool Robox::
 GetGoal(sfl::Goal &goal)
+  const
 {
   goal = m_imp->GetGoal();
   return true;
@@ -423,6 +425,7 @@ GetGoal(sfl::Goal &goal)
 
 bool Robox::
 GoalReached()
+  const
 {
   if(m_ngkl->next_goal){
     m_ngkl->next_goal = false;

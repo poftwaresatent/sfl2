@@ -70,6 +70,7 @@ void BBDrawing::DrawAutodetect()
   case BubbleBand::NOBAND:
     // draw a line from robot to goal
     glColor3d(0.5, 0.5, 0.5);
+    glLineWidth(1);
     glBegin(GL_LINES);
     glVertex2d(_bubble_band.RobotPose().X(), _bubble_band.RobotPose().Y());
     glVertex2d(_bubble_band.GlobalGoal().X(), _bubble_band.GlobalGoal().Y());

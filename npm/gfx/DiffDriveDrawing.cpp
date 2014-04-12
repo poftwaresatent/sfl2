@@ -50,6 +50,7 @@ namespace npm {
   Draw()
   {
     glColor3d(1, 1, 1);
+    glLineWidth(1);
     glBegin(GL_LINES);
 
     shared_ptr<const sfl::Frame> trans(m_drive->PoseCache());

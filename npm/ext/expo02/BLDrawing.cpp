@@ -118,6 +118,7 @@ void BLDrawing::
 DrawReduced()
 {
   glColor3d(_intensity, _intensity, _intensity);
+  glLineWidth(1);
   glBegin(GL_LINE_STRIP);
   const Bubble *current(_bubble_list->Head());
   while(current != 0){
@@ -133,6 +134,7 @@ void BLDrawing::
 DrawSnapped()
 {
   glMatrixMode(GL_MODELVIEW);
+  glLineWidth(1);
   glPolygonMode(GL_FRONT, GL_LINE);
   glColor3d(0.5, 0.5, 0.5);
     

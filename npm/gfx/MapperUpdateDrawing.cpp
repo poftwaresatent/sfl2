@@ -94,6 +94,7 @@ namespace npm {
     glTranslated(gframe.X(), gframe.Y(), 0);
     glRotated(180 * gframe.Theta() / M_PI, 0, 0, 1);
     glScaled(gframe.Delta(), gframe.Delta(), 1);
+		glLineWidth(1);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
     for(Mapper2d::index_buffer_t::const_iterator ibuf(buf->begin()); ibuf != buf->end(); ++ibuf){

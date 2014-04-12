@@ -110,6 +110,7 @@ Draw()
 
   if(qdlOpt >= 0){
     // highlight max
+    glLineWidth(1);
     glPolygonMode(GL_FRONT, GL_LINE);
     glColor3d(0, 1, 1);
     glRectd(qdlOpt, qdrOpt, qdlOpt + 1, qdrOpt + 1);

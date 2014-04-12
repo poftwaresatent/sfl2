@@ -109,6 +109,7 @@ namespace npm {
   
   bool Zombie::
   GetGoal(Goal &goal)
+    const
   {
     goal = m_goal;
     return true;
@@ -117,6 +118,7 @@ namespace npm {
   
   bool Zombie::
   GoalReached()
+    const
   {
     return m_goal.DistanceReached(m_server->GetTruePose());
   }

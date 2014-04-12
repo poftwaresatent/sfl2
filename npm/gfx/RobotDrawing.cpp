@@ -52,6 +52,7 @@ namespace npm {
     const Object * body(m_robot->GetNoisyBody());
     if(body){
       glColor3d(0.6 * m_color.red, 0.6 * m_color.green, 0.6 * m_color.blue);
+      glLineWidth(1);
       glBegin(GL_LINE_LOOP);
       for(size_t ii(0); ii < body->GetNlines(); ++ii){
 	shared_ptr<const Line> line(body->GetGlobalLine(ii));
@@ -63,6 +64,7 @@ namespace npm {
     
     body = & m_robot->GetBody();
     glColor3d(m_color.red, m_color.green, m_color.blue);
+    glLineWidth(1);
     glBegin(GL_LINE_LOOP);
     for(size_t ii(0); ii < body->GetNlines(); ++ii){
       shared_ptr<const Line> line(body->GetGlobalLine(ii));

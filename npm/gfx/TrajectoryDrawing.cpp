@@ -55,6 +55,7 @@ namespace npm {
 	glEnd();
 	return;
       }
+      glLineWidth(1);
       glBegin(GL_LINE_STRIP);
       for(unsigned int i(0); i < traj->size(); ++i)
 	glVertex2d((*traj)[i]->X(), (*traj)[i]->Y());
@@ -72,6 +73,7 @@ namespace npm {
       glEnd();
       return;
     }
+    glLineWidth(1);
     glBegin(GL_LINE_STRIP);
     for(unsigned int i(0); i < traj->size(); ++i)
       glVertex2d((*traj)[i]->X(), (*traj)[i]->Y());
