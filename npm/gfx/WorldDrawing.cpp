@@ -52,6 +52,7 @@ namespace npm {
     const World::object_t & object(m_world.GetObjects());
     if(object.empty())
       return;
+    glLineWidth(1);
     glBegin(GL_LINES);
     glColor3d(1, 1, 1);
     for(size_t io(0); io < object.size(); ++io)
@@ -60,6 +61,7 @@ namespace npm {
 	glVertex2d(line->X0(), line->Y0());
 	glVertex2d(line->X1(), line->Y1());
       }
+    glEnd();
   }
 
 }
