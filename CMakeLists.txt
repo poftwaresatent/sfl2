@@ -151,10 +151,10 @@ endif (HAVE_ESTAR)
 ### The actual project
 
 if (NOT NPM_PLUGIN_PATH)
-  message ("setting NPM_PLUGIN_PATH to ${Stanford_NPM_Umbrella_BINARY_DIR}/plugins")
+  message ("setting NPM_PLUGIN_PATH to ${SFL2_BINARY_DIR}/plugins")
   set (NPM_PLUGIN_PATH ${SFL2_BINARY_DIR}/plugins)
 else (NOT NPM_PLUGIN_PATH)
-  message ("NPM_PLUGIN_PATH already set to ${NPM_PLUGIN_PATH}")
+  message ("NPM_PLUGIN_PATH is ${NPM_PLUGIN_PATH}")
 endif (NOT NPM_PLUGIN_PATH)
 add_definitions (-DNPM_PLUGIN_PATH_STR="${NPM_PLUGIN_PATH}")
 
