@@ -36,7 +36,7 @@
 #include "cargo_ants_msgs/VehicleState.h"
 #include "cargo_ants_msgs/Trajectory.h"
 #include "cargo_ants_msgs/MockupMap.h"
-#include "cargo_ants_msgs/Route.h"
+#include "cargo_ants_msgs/Task.h"
 #include "cargo_ants_msgs/Path.h"
 
 // Not so happy about the way we end up needing to include generated
@@ -98,18 +98,18 @@ private:
 };
 
 
-class RouteDrawing
+class TaskDrawing
   : public npm::Drawing
 {
 public:
-  explicit RouteDrawing (std::string const & name)
-    : npm::Drawing (name, "draws route messages in the color of their vehicle")
+  explicit TaskDrawing (std::string const & name)
+    : npm::Drawing (name, "draws task messages in the color of their vehicle")
   {
   }
   
   virtual void Draw()
   {
-    for (route_t::const_iterator ir (route_.begin()); ir != route_.end(); ++ir) {
+    for (task_t::const_iterator ir (task_.begin()); ir != task_.end(); ++ir) {
       npm::RobotClient const * robot (npm::RobotClient::registry.find (ir->first));
       npm::color_s cc (0.5, 0.5, 0.5);
       if (robot) {
@@ -159,9 +159,9 @@ public:
     }
   }
   
-  void update (Route::ConstPtr msg)
+  void update (Task::ConstPtr msg)
   {
-    route_[msg->vehicle] = msg;
+    task_[msg->vehicle] = msg;
     npm::RobotClient const * robot (npm::RobotClient::registry.find (msg->vehicle));
     if (robot) {
       sfl::Pose pose;
@@ -175,8 +175,8 @@ public:
   }
   
 private:
-  typedef std::map <std::string, Route::ConstPtr> route_t;
-  route_t route_;
+  typedef std::map <std::string, Task::ConstPtr> task_t;
+  task_t task_;
   typedef std::map <std::string, sfl::Pose> start_t;
   start_t start_;
 };
@@ -361,24 +361,24 @@ public:
   MockupGlue (std::string const & name)
     : MockupBase (name),
       site_map_topic_ ("site_map"),
-      route_topic_ ("route")
+      task_topic_ ("task")
   {
     reflectParameter ("site_map_topic", &site_map_topic_);
-    reflectParameter ("route_topic", &route_topic_);
+    reflectParameter ("task_topic", &task_topic_);
   }
   
   virtual bool init ()
   {
     ros::NodeHandle node;
     site_map_pub_ = node.advertise <MockupMap> (site_map_topic_, 1);
-    route_sub_ = node.subscribe (route_topic_, msg_queue_size_, &MockupGlue::routeCB, this);
-    route_drawing_.reset (new RouteDrawing(name + "_route_drawing"));
+    task_sub_ = node.subscribe (task_topic_, msg_queue_size_, &MockupGlue::taskCB, this);
+    task_drawing_.reset (new TaskDrawing(name + "_task_drawing"));
     return true;
   }
   
-  void routeCB (Route::ConstPtr msg)
+  void taskCB (Task::ConstPtr msg)
   {
-    route_drawing_->update (msg);
+    task_drawing_->update (msg);
   }
   
   virtual bool update (double timestep)
@@ -429,10 +429,10 @@ public:
   
 private:
   std::string site_map_topic_;
-  std::string route_topic_;
+  std::string task_topic_;
   ros::Publisher site_map_pub_;
-  ros::Subscriber route_sub_;
-  boost::shared_ptr<RouteDrawing> route_drawing_;
+  ros::Subscriber task_sub_;
+  boost::shared_ptr<TaskDrawing> task_drawing_;
 };
 
 

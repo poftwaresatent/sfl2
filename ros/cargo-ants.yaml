@@ -23,7 +23,7 @@
 - CargoANTsMockupGlue:
     name: mockup_glue
     site_map_topic: site_map
-    route_topic: route
+    task_topic: task
     msg_queue_size: 10
 
 - CargoANTsMockupRobot:
@@ -67,7 +67,7 @@
       - world
       - alice_path
       - bob_path
-      - mockup_glue_route_drawing
+      - mockup_glue_task_drawing
       - alice_true_drawing
       - bob_true_drawing
     window: [ 0.0,  0.0,  0.5,  1.0 ]
