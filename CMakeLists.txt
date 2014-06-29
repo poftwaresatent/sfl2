@@ -195,3 +195,5 @@ add_library (plugin-test MODULE apps/plugin-test.cpp)
 target_link_libraries (plugin-test npm) # not sure if this is required on Linux
 set_target_properties (plugin-test PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
+add_executable (draftnpm2 npm2/draft.cpp)
+target_link_libraries (draftnpm2 sfl)
