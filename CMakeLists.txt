@@ -195,13 +195,22 @@ add_library (plugin-test MODULE apps/plugin-test.cpp)
 target_link_libraries (plugin-test npm) # not sure if this is required on Linux
 set_target_properties (plugin-test PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
-add_library (npm2 SHARED
-  npm2/Body.cpp
-  npm2/Object.cpp
-  npm2/DifferentialDrive.cpp
-  npm2/RayDistanceSensor.cpp
-  )
-target_link_libraries (npm2 sfl)
 
-add_executable (draftnpm2 npm2/draft.cpp)
-target_link_libraries (draftnpm2 npm2)
+include (FindGTK2)
+find_package (GTK2 2.24.23 COMPONENTS gtk)
+
+if (GTK2_FOUND)
+  include_directories (${GTK2_INCLUDE_DIRS})
+  
+  add_library (npm2 SHARED
+    npm2/Body.cpp
+    npm2/Object.cpp
+    npm2/DifferentialDrive.cpp
+    npm2/RayDistanceSensor.cpp
+    npm2/gfx.cpp
+    )
+  target_link_libraries (npm2 sfl ${GTK2_LIBRARIES})
+  
+  add_executable (draftnpm2 npm2/draft.cpp)
+  target_link_libraries (draftnpm2 npm2)
+endif ()
