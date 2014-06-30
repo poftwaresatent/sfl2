@@ -24,6 +24,7 @@
 #include <npm2/Body.hpp>
 #include <sfl/util/Frame.hpp>
 #include <set>
+#include <string>
 
 
 namespace npm2 {
@@ -37,7 +38,10 @@ namespace npm2 {
   class Object
   {
   public:
-    Object ();
+    typedef set <Object*> children_t;
+    typedef children_t::const_iterator child_iterator_t;
+    
+    explicit Object (string const & name);
     virtual ~Object();
     
     void setParent (Object * obj);
@@ -50,16 +54,23 @@ namespace npm2 {
     
     Frame const & getGlobal () const { return global_; }
     
+    /** \note The bounds include the bodies of all children. */
+    BBox const & getBBox () const { return bbox_; }
+    
+    child_iterator_t const childBegin () const { return children_.begin(); }
+    child_iterator_t const childEnd () const { return children_.end(); }
+
+    string const name;
+    
     Frame mount_;
     Frame motion_;
     Body body_;
     
   protected:    
-    typedef set <Object*> children_t;
-    
     Frame global_;
     Object * parent_;
     children_t children_;
+    BBox bbox_;
   };
   
 }

@@ -204,6 +204,7 @@ if (GTK2_FOUND)
   
   add_library (npm2 SHARED
     npm2/Body.cpp
+    npm2/BBox.cpp
     npm2/Object.cpp
     npm2/DifferentialDrive.cpp
     npm2/RayDistanceSensor.cpp

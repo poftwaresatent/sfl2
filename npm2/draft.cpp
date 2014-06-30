@@ -10,35 +10,36 @@
 using namespace npm2;
 
 
-static Object world;
-static Object base;
+static Object world ("world");
+static Object base ("base");
 static DifferentialDrive drive;
-static RayDistanceSensor sensor;
+static RayDistanceSensor sensor ("sensor");
 static double const timestep (0.1);
 
 static double mx0, my0, mx1, my1;
 
 
+static void recurse_draw (Object const * obj)
+{
+  gfx::set_pen (1.0, 0.0, 0.0, 0.0, 1.0);
+  Body::lines_t const & lines (obj->body_.getLines());
+  for (size_t il(0); il < lines.size(); ++il) {
+    gfx::draw_line (lines[il].X0(), lines[il].Y0(), lines[il].X1(), lines[il].Y1());
+  }
+  for (Object::child_iterator_t ic(obj->childBegin()); ic != obj->childEnd(); ++ic) {
+    recurse_draw (*ic);
+  }
+}
+
+
 static void cb_draw ()
 {
-  gfx::set_pen (1.0, 0.0, 0.0, 0.0, 1.0); // width, red, green, blue, alpha
-  gfx::draw_arc (1.0, 0.0, 1.0, 0.0, 2 * M_PI);
-  
-  gfx::set_pen (1.0, 0.5, 0.5, 0.5, 1.0);
-  gfx::fill_arc (-1.0, 0.0, 1.0, 0.0, 2 * M_PI);
-  
-  gfx::set_pen (1.0, 1.0, 0.0, 0.0, 1.0);
-  gfx::draw_line (0.0, 0.0, 1.0, 0.0);
-  
-  gfx::set_pen (1.0, 0.0, 1.0, 0.0, 1.0);
-  gfx::draw_line (0.0, 0.0, 0.0, 1.0);
-  
-  gfx::set_pen (1.0, 0.0, 0.0, 1.0, 1.0);
-  gfx::draw_line (0.0, 0.0, 1.0, 1.0);
-  gfx::draw_line (1.0, 0.0, 0.0, 1.0);
-  
-  gfx::set_pen (3.0, 0.5, 0.0, 0.0, 1.0);
-  gfx::draw_line (mx0, my0, mx1, my1);
+  BBox const & bbox (world.getBBox());
+  if (bbox.isValid()) {
+    static double const margin (0.1);
+    gfx::set_view (bbox.x0() - margin, bbox.y0() - margin, bbox.x1() + margin, bbox.y1() + margin);
+    recurse_draw (&world);
+  }
 }
 
 

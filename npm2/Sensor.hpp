@@ -31,6 +31,8 @@ namespace npm2 {
     : public Object
   {
   public:
+    explicit Sensor (string const & name) : Object (name) {}
+    
     virtual void sensorReset () = 0;
     virtual void sensorUpdate (Body const & body) = 0;
   };

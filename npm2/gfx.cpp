@@ -386,6 +386,11 @@ namespace npm2 {
     
     void draw_line (double x0, double y0, double x1, double y1)
     {
+      if (dbgos) {
+	*dbgos << __func__ << "  " << x0 << "  " << y0 << "  " << x1 << "  " << y1
+	       << (cairo ? "\n" : "  NO CAIRO\n");
+      }
+      
       if (!cairo) {
 	return;
       }

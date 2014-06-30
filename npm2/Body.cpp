@@ -36,10 +36,13 @@ namespace npm2 {
     if (global_lines_.size() != local_lines_.size()) {
       global_lines_.resize (local_lines_.size());
     }
+    
+    bbox_.reset();
     for (size_t il(0); il < local_lines_.size(); ++il) {
       global_lines_[il] = local_lines_[il];
       global_lines_[il].TransformTo (global);
+      bbox_.update (global_lines_[il]);
     }
   }
-
+  
 }
