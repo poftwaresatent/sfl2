@@ -1,4 +1,5 @@
 #include <npm2/DifferentialDrive.hpp>
+#include <npm2/RevoluteServo.hpp>
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/gfx.hpp>
 #include <iostream>
@@ -13,6 +14,7 @@ using namespace npm2;
 static Object world ("world");
 static Object base ("base");
 static DifferentialDrive drive;
+static RevoluteServo servo;
 static RayDistanceSensor sensor ("sensor");
 static double const timestep (0.1);
 
@@ -22,16 +24,26 @@ static enum {
   PAUSE,
   STEP,
   RUN
-} state;
+} state (RUN);
 
 
 static void recurse_draw (Object const * obj)
 {
-  gfx::set_pen (1.0, 0.0, 0.0, 0.0, 1.0);
+  gfx::set_pen (2.0, 0.0, 0.0, 0.0, 1.0);
   Body::lines_t const & lines (obj->body_.getLines());
   for (size_t il(0); il < lines.size(); ++il) {
     gfx::draw_line (lines[il].X0(), lines[il].Y0(), lines[il].X1(), lines[il].Y1());
   }
+  
+  RayDistanceSensor const * rds (dynamic_cast <RayDistanceSensor const *> (obj));
+  if (rds) {
+    gfx::set_pen (1.0, 1.0, 0.0, 0.0, 1.0);
+    gfx::draw_line (rds->getGlobal().X(),
+		    rds->getGlobal().Y(),
+		    rds->getGlobal().X() + rds->distance_ * rds->getGlobal().Costheta(),
+		    rds->getGlobal().Y() + rds->distance_ * rds->getGlobal().Sintheta());
+  }
+  
   for (Object::child_iterator_t ic(obj->childBegin()); ic != obj->childEnd(); ++ic) {
     recurse_draw (*ic);
   }
@@ -67,6 +79,7 @@ static void tick ()
   static size_t count (0);
   
   drive.integrate (timestep);
+  servo.integrate (timestep);
   
   world.updateTransform ();
   sensor.sensorReset ();
@@ -77,7 +90,11 @@ static void tick ()
 	  base.getGlobal().X(), base.getGlobal().Y(), base.getGlobal().Theta(),
 	  sensor.distance_);
   
-  drive.setSpeed (0.1, 0.2);
+  drive.setSpeed (0.02, 0.04);
+  
+  static double amp (5.0 * M_PI / 180.0);
+  static double omg (2.0 * M_PI / 5.0);
+  servo.setAngle (amp * cos (omg * count * timestep));
 }
 
 
@@ -131,6 +148,8 @@ int main (int argc, char ** argv)
   base.mount_.Set (0.0, -2.5, 0.0);
   
   drive.object_ = &base;
+  
+  servo.object_ = &sensor;
   
   sensor.max_distance_ = 10000000.0;
   sensor.setParent (&base);
