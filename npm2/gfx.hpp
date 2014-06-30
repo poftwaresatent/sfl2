@@ -191,9 +191,9 @@ namespace npm2 {
     
     /**
        Set up the GUI and enter its event processing loop.  You have
-       to specify valid function pointers for the draw_callback and
-       the mouse_callback.  Any extra buttons need to be set up before
-       by calling gfx::add_button.
+       to specify valid function pointers for the idle_callback, the
+       draw_callback, and the mouse_callback.  Any extra buttons need
+       to be set up before by calling gfx::add_button.
        
        The given draw_callback function called each time the scene
        should be drawn. Inside the draw_callback, use the various
@@ -214,6 +214,7 @@ namespace npm2 {
        quit the application.
     */
     void main (string const & window_title,
+	       void (*idle_callback)(),
 	       void (*draw_callback)(),
 	       void (*mouse_callback)(double px, double py, int flags));
     

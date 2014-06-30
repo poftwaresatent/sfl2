@@ -111,8 +111,9 @@ namespace npm2 {
     static double view_x0, view_y0, view_x1, view_y1;
     static cairo_t * cairo;
     
-    static void (*draw_cb)();
-    static void (*mouse_cb)(double, double, int);
+    static void (*user_idle_cb)();
+    static void (*user_draw_cb)();
+    static void (*user_mouse_cb)(double, double, int);
     
     
     /* convert view X coordinate to canvas */
@@ -148,13 +149,14 @@ namespace npm2 {
     }
     
     
-    // static gint cb_idle (gpointer data)
-    // {
-    //   gtk_widget_queue_draw (canvas);
-    //   return TRUE;
-    // }
-
-
+    static gint cb_idle (gpointer data)
+    {
+      user_idle_cb ();
+      gtk_widget_queue_draw (canvas);
+      return TRUE;
+    }
+    
+    
     static gint cb_expose (GtkWidget * ww,
 			   GdkEventExpose * ee,
 			   gpointer data)
@@ -177,7 +179,7 @@ namespace npm2 {
       */
       cairo_set_line_cap (cairo, CAIRO_LINE_CAP_ROUND);
       
-      draw_cb ();
+      user_draw_cb ();
   
       cairo_destroy (cairo);
       cairo = 0;
@@ -306,7 +308,7 @@ namespace npm2 {
 	       << " -> " << (mouse_flags_t) flags << "\n";
       }
       
-      mouse_cb (c2vx (bb->x), c2vy (bb->y), flags);
+      user_mouse_cb (c2vx (bb->x), c2vy (bb->y), flags);
       gtk_widget_queue_draw (canvas);
       
       return TRUE;
@@ -328,7 +330,7 @@ namespace npm2 {
 	       << " -> " << (mouse_flags_t) flags << "\n";
       }
       
-      mouse_cb (c2vx (mx), c2vy (my), flags);
+      user_mouse_cb (c2vx (mx), c2vy (my), flags);
       gtk_widget_queue_draw (canvas);
       
       return TRUE;
@@ -457,6 +459,7 @@ namespace npm2 {
     
     
     void main (string const & window_title,
+	       void (*idle_callback)(),
 	       void (*draw_callback)(),
 	       void (*mouse_callback)(double px, double py, int flags))
     {
@@ -467,8 +470,9 @@ namespace npm2 {
       view_y0 = -1.0;
       view_x1 =  1.0;
       view_y1 =  1.0;
-      draw_cb = draw_callback;
-      mouse_cb = mouse_callback;
+      user_idle_cb = idle_callback;
+      user_draw_cb = draw_callback;
+      user_mouse_cb = mouse_callback;
       cairo = 0;
   
       window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -509,9 +513,9 @@ namespace npm2 {
 	gtk_box_pack_start (GTK_BOX (hbox), btn, TRUE, TRUE, 0);
 	gtk_widget_show (btn);
       }
-  
-      //  gtk_idle_add (cb_idle, 0);
-  
+      
+      gtk_idle_add (cb_idle, 0);
+      
       gtk_widget_show (window);
   
       gtk_main ();
