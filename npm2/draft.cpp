@@ -6,65 +6,11 @@
 
 #include <stdio.h>
 
-#include <npm2/Body.hpp>
+#include <npm2/Object.hpp>
+#include <npm2/Sensor.hpp>
 
 
 namespace npm2 {
-  
-  using namespace sfl;
-  using namespace std;
-  
-
-  class Sensor;
-  
-  class Object
-  {
-  public:
-    Object ()
-      : parent_ (0)
-    {
-    }
-
-    virtual ~Object() {}
-    
-    void setParent (Object * obj)
-    {
-      if (parent_) {
-	parent_->children_.erase (this);
-      }
-      parent_ = obj;
-      if (parent_) {
-	parent_->children_.insert (this);
-      }
-    }
-    
-    /* assumes parent has been updated, and recurses into all
-       children */
-    void updateTransform ()
-    {
-      global_ = motion_;
-      mount_.To (global_);
-      if (parent_) {
-	parent_->global_.To (global_);
-      }
-      body_.transformTo (global_);
-      
-      for (children_t::iterator ic (children_.begin()); ic != children_.end(); ++ic) {
-	(*ic)->updateTransform();
-      }
-    }
-
-    void updateSensor (Sensor * sensor);
-    
-    typedef set <Object*> children_t;
-    
-    Body body_;
-    Frame mount_;
-    Frame motion_;
-    Frame global_;
-    Object * parent_;
-    children_t children_;
-  };
   
   
   class Actuator
@@ -121,25 +67,6 @@ namespace npm2 {
     double speed_right_;
     Object * object_;
   };
-  
-  
-  class Sensor
-    : public Object
-  {
-  public:
-    virtual void sensorReset () = 0;
-    virtual void sensorUpdate (Body const & body) = 0;
-  };
-  
-  
-  void Object::
-  updateSensor (Sensor * sensor)
-  {
-    sensor->sensorUpdate (body_);
-    for (children_t::iterator ic (children_.begin()); ic != children_.end(); ++ic) {
-      (*ic)->updateSensor (sensor);
-    }
-  }
   
   
   class RayDistanceSensor
@@ -216,7 +143,9 @@ int main (int argc, char ** argv)
     world.updateSensor (&sensor);
 
     printf ("% 3zu    %+6.3f  %+6.3f  %+6.3f    %+6.3f\n",
-	    ii, base.global_.X(), base.global_.Y(), base.global_.Theta(), sensor.distance_);
+	    ii,
+	    base.getGlobal().X(), base.getGlobal().Y(), base.getGlobal().Theta(),
+	    sensor.distance_);
     
     drive.setSpeed (0.1, 0.2);
     drive.integrate (dt);

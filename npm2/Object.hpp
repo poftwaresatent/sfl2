@@ -18,12 +18,12 @@
  * USA
  */
 
-#ifndef NPM2_BODY_HPP
-#define NPM2_BODY_HPP
+#ifndef NPM2_OBJECT_HPP
+#define NPM2_OBJECT_HPP
 
+#include <npm2/Body.hpp>
 #include <sfl/util/Frame.hpp>
-#include <sfl/util/Line.hpp>
-#include <vector>
+#include <set>
 
 
 namespace npm2 {
@@ -32,25 +32,36 @@ namespace npm2 {
   using namespace std;
   
   
-  class Body
+  class Sensor;
+  
+  class Object
   {
   public:
-    typedef vector <Line> lines_t;
+    Object ();
+    virtual ~Object();
     
-    /** Adds lines wrt the local reference frame. */
-    void addLine (double x0, double y0, double x1, double y1);
+    void setParent (Object * obj);
     
-    /** Transforms the lines to the given global reference frame. */
-    void transformTo (Frame const & global);
+    /* \note Assumes parent has been updated, and recurses into all
+       children. */
+    void updateTransform ();
     
-    /** Returns lines wrt the global reference frame. */
-    lines_t const & getLines () const { return global_lines_; }
+    void updateSensor (Sensor * sensor);
     
-  protected:
-    lines_t local_lines_;
-    lines_t global_lines_;
+    Frame const & getGlobal () const { return global_; }
+    
+    Frame mount_;
+    Frame motion_;
+    Body body_;
+    
+  protected:    
+    typedef set <Object*> children_t;
+    
+    Frame global_;
+    Object * parent_;
+    children_t children_;
   };
   
 }
 
-#endif // NPM2_BODY_HPP
+#endif // NPM2_OBJECT_HPP
