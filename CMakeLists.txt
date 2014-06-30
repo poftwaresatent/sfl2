@@ -207,6 +207,7 @@ if (GTK2_FOUND)
     npm2/BBox.cpp
     npm2/Object.cpp
     npm2/DifferentialDrive.cpp
+    npm2/DifferentialTrailerDrive.cpp
     npm2/RevoluteServo.cpp
     npm2/RayDistanceSensor.cpp
     npm2/gfx.cpp
