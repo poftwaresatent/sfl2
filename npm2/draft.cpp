@@ -18,6 +18,12 @@ static double const timestep (0.1);
 
 static double mx0, my0, mx1, my1;
 
+static enum {
+  PAUSE,
+  STEP,
+  RUN
+} state;
+
 
 static void recurse_draw (Object const * obj)
 {
@@ -56,7 +62,7 @@ static void cb_mouse (double mx, double my, int flags)
 }
 
 
-static void cb_next ()
+static void tick ()
 {
   static size_t count (0);
   
@@ -72,6 +78,39 @@ static void cb_next ()
 	  sensor.distance_);
   
   drive.setSpeed (0.1, 0.2);
+}
+
+
+static void cb_idle ()
+{
+  switch (state) {
+  case PAUSE:
+    break;
+  case STEP:
+    tick();
+    state = PAUSE;
+    break;
+  case RUN:
+  default:
+    tick();
+  }
+}
+
+
+static void cb_pause ()
+{
+  if (state == RUN) {
+    state = PAUSE;
+  }
+  else {
+    state = RUN;
+  }
+}
+
+
+static void cb_next ()
+{
+  state = STEP;
 }
 
 
@@ -97,6 +136,10 @@ int main (int argc, char ** argv)
   sensor.setParent (&base);
   sensor.mount_.Set (0.2, 0.0, 0.0);
   
+  // Make sure we can draw something before we start running.
+  //
+  world.updateTransform ();
+  
   //////////////////////////////////////////////////
   
   mx0 =  0.0;
@@ -109,10 +152,13 @@ int main (int argc, char ** argv)
   gfx::debug (&cout);
   
   // Adding a custom button needs to happen before gfx::main is called.
+  gfx::add_button ("run/pause", cb_pause);
+  
+  // Adding a custom button needs to happen before gfx::main is called.
   gfx::add_button ("next", cb_next);
   
   // The gfx::main function enters the GUI processing loop.  It
   // returns when the user has clicked the "quit" button (which gets
   // added automatically) or otherwise exited the GUI application.
-  gfx::main (argv[0], cb_draw, cb_mouse);
+  gfx::main (argv[0], cb_idle, cb_draw, cb_mouse);
 }
