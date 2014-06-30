@@ -197,6 +197,7 @@ set_target_properties (plugin-test PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLU
 
 add_library (npm2 SHARED
   npm2/Body.cpp
+  npm2/Object.cpp
   )
 target_link_libraries (npm2 sfl)
 
