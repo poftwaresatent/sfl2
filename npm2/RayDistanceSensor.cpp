@@ -26,8 +26,9 @@ namespace npm2 {
   
   
   RayDistanceSensor::
-  RayDistanceSensor ()
-    : distance_ (1.0),
+  RayDistanceSensor (string const & name)
+    : Sensor (name),
+      distance_ (1.0),
       max_distance_ (1.0)
   {
   }

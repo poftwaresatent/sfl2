@@ -26,8 +26,9 @@ namespace npm2 {
 
   
   Object::
-  Object ()
-    : parent_ (0)
+  Object (string const & name_)
+    : name (name_),
+      parent_ (0)
   {
   }
   
@@ -61,9 +62,12 @@ namespace npm2 {
     }
     body_.transformTo (global_);
     
+    bbox_.reset();
     for (children_t::iterator ic (children_.begin()); ic != children_.end(); ++ic) {
       (*ic)->updateTransform();
+      bbox_.update ((*ic)->bbox_);
     }
+    bbox_.update (body_.getBBox());
   }
   
   

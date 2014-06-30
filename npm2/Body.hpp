@@ -21,6 +21,7 @@
 #ifndef NPM2_BODY_HPP
 #define NPM2_BODY_HPP
 
+#include <npm2/BBox.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/Line.hpp>
 #include <vector>
@@ -46,9 +47,13 @@ namespace npm2 {
     /** Returns lines wrt the global reference frame. */
     lines_t const & getLines () const { return global_lines_; }
     
+    /** Returns the bounding box of the lines wrt the global reference frame. */
+    BBox const & getBBox () const { return bbox_; }
+    
   protected:
     lines_t local_lines_;
     lines_t global_lines_;
+    BBox bbox_;			// global
   };
   
 }

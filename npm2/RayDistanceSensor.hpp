@@ -31,7 +31,7 @@ namespace npm2 {
     : public Sensor
   {
   public:
-    RayDistanceSensor ();
+    explicit RayDistanceSensor (string const & name);
     
     virtual void sensorReset ();
     
