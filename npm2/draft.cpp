@@ -6,31 +6,13 @@
 
 #include <stdio.h>
 
+#include <npm2/Body.hpp>
+
 
 namespace npm2 {
   
   using namespace sfl;
   using namespace std;
-  
-  
-  class Body
-  {
-  public:
-    void transformTo (Frame const & global)
-    {
-      if (global_lines_.size() != local_lines_.size()) {
-	global_lines_.resize (local_lines_.size());
-      }
-      for (size_t il(0); il < local_lines_.size(); ++il) {
-	global_lines_[il] = local_lines_[il];
-	global_lines_[il].TransformTo (global);
-      }
-    }
-    
-    typedef vector <Line> lines_t;
-    lines_t local_lines_;
-    lines_t global_lines_;
-  };
   
 
   class Sensor;
@@ -183,8 +165,8 @@ namespace npm2 {
 	return;
       }
       
-      for (size_t il(0); il < body.global_lines_.size(); ++il) {
-	Line const & ll (body.global_lines_[il]);
+      for (size_t il(0); il < body.getLines().size(); ++il) {
+	Line const & ll (body.getLines()[il]);
 	double const dd (LineRayIntersect (ll.X0(), ll.Y0(), ll.X1(), ll.Y1(),
 					   global_.X(), global_.Y(),
 					   global_.Costheta(), global_.Sintheta()));
@@ -206,16 +188,16 @@ using namespace npm2;
 int main (int argc, char ** argv)
 {
   Object world;
-  world.body_.local_lines_.push_back (Line (-5.0, -5.0,  5.0, -5.0));
-  world.body_.local_lines_.push_back (Line ( 5.0, -5.0,  5.0,  5.0));
-  world.body_.local_lines_.push_back (Line ( 5.0,  5.0, -5.0,  5.0));
-  world.body_.local_lines_.push_back (Line (-5.0,  5.0, -5.0, -5.0));
+  world.body_.addLine (-5.0, -5.0,  5.0, -5.0);
+  world.body_.addLine ( 5.0, -5.0,  5.0,  5.0);
+  world.body_.addLine ( 5.0,  5.0, -5.0,  5.0);
+  world.body_.addLine (-5.0,  5.0, -5.0, -5.0);
   
   Object base;
-  base.body_.local_lines_.push_back (Line (-0.2, -0.4,  0.4, -0.2));
-  base.body_.local_lines_.push_back (Line (-0.2,  0.4,  0.4,  0.2));
-  base.body_.local_lines_.push_back (Line ( 0.4, -0.2,  0.4,  0.2));
-  base.body_.local_lines_.push_back (Line (-0.2,  0.4, -0.2, -0.4));
+  base.body_.addLine (-0.2, -0.4,  0.4, -0.2);
+  base.body_.addLine (-0.2,  0.4,  0.4,  0.2);
+  base.body_.addLine ( 0.4, -0.2,  0.4,  0.2);
+  base.body_.addLine (-0.2,  0.4, -0.2, -0.4);
   base.setParent (&world);
   base.mount_.Set (0.0, -2.5, 0.0);
   
