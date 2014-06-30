@@ -1,7 +1,9 @@
 #include <npm2/DifferentialDrive.hpp>
+#include <npm2/DifferentialTrailerDrive.hpp>
 #include <npm2/RevoluteServo.hpp>
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/gfx.hpp>
+#include <sfl/util/numeric.hpp>
 #include <iostream>
 
 #include <cmath>
@@ -12,10 +14,16 @@ using namespace npm2;
 
 
 static Object world ("world");
-static Object base ("base");
-static DifferentialDrive drive;
-static RevoluteServo servo;
-static RayDistanceSensor sensor ("sensor");
+
+static Object alice ("alice");
+static DifferentialDrive alice_drive;
+static RevoluteServo alice_servo;
+static RayDistanceSensor alice_sensor ("alice_sensor");
+
+static Object bob_tractor ("bob_tractor");
+static Object bob_trailer ("bob_trailer");
+static DifferentialTrailerDrive bob_drive;
+
 static double const timestep (0.1);
 
 static double mx0, my0, mx1, my1;
@@ -24,7 +32,7 @@ static enum {
   PAUSE,
   STEP,
   RUN
-} state (RUN);
+} state (STEP);
 
 
 static void recurse_draw (Object const * obj)
@@ -78,23 +86,58 @@ static void tick ()
 {
   static size_t count (0);
   
-  drive.integrate (timestep);
-  servo.integrate (timestep);
+  alice_drive.integrate (timestep);
+  alice_servo.integrate (timestep);
+  bob_drive.integrate (timestep);
   
   world.updateTransform ();
-  sensor.sensorReset ();
-  world.updateSensor (&sensor);
+  alice_sensor.sensorReset ();
+  world.updateSensor (&alice_sensor);
   
-  printf ("% 3zu    %+6.3f  %+6.3f  %+6.3f    %+6.3f\n",
-	  count++,
-	  base.getGlobal().X(), base.getGlobal().Y(), base.getGlobal().Theta(),
-	  sensor.distance_);
+  // printf ("% 3zu    %+6.3f  %+6.3f  %+6.3f    %+6.3f\n",
+  // 	  count++,
+  // 	  alice.getGlobal().X(), alice.getGlobal().Y(), alice.getGlobal().Theta(),
+  // 	  alice_sensor.distance_);
   
-  drive.setSpeed (0.02, 0.04);
+  alice_drive.setSpeed (0.02, 0.04);
+  
+  double thref;
+  if (bob_tractor.getGlobal().X() > bob_tractor.getGlobal().Y()) {
+    if (bob_tractor.getGlobal().X() > - bob_tractor.getGlobal().Y()) {
+      thref = 105.0 * M_PI / 180.0;
+      //      printf ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+    }
+    else {
+      thref = 15.0 * M_PI / 180.0;
+      //      printf ("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n");
+    }
+  }
+  else {
+    if (bob_tractor.getGlobal().X() > - bob_tractor.getGlobal().Y()) {
+      thref = 195.0 * M_PI / 180.0;
+      //      printf ("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n");
+    }
+    else {
+      thref = -75.0 * M_PI / 180.0;
+      //      printf ("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n");
+    }
+  }
+  double const dhead (mod2pi (thref - bob_tractor.getGlobal().Theta()));
+  //printf ("%g\n", dhead);
+  static double const dth (5.0 * M_PI / 180.0);
+  if (fabs (dhead) <= dth) {
+    bob_drive.setSpeed (0.02, 0.02);
+  }
+  else if (dhead > 0.0) {
+    bob_drive.setSpeed (0.0, 0.02);
+  }
+  else {
+    bob_drive.setSpeed (0.02, 0.0);
+  }
   
   static double amp (5.0 * M_PI / 180.0);
   static double omg (2.0 * M_PI / 5.0);
-  servo.setAngle (amp * cos (omg * count * timestep));
+  alice_servo.setAngle (amp * cos (omg * count * timestep));
 }
 
 
@@ -140,20 +183,46 @@ int main (int argc, char ** argv)
   world.body_.addLine ( 5.0,  5.0, -5.0,  5.0);
   world.body_.addLine (-5.0,  5.0, -5.0, -5.0);
   
-  base.body_.addLine (-0.2, -0.4,  0.4, -0.2);
-  base.body_.addLine (-0.2,  0.4,  0.4,  0.2);
-  base.body_.addLine ( 0.4, -0.2,  0.4,  0.2);
-  base.body_.addLine (-0.2,  0.4, -0.2, -0.4);
-  base.setParent (&world);
-  base.mount_.Set (0.0, -2.5, 0.0);
+  //////////////////////////////////////////////////
   
-  drive.object_ = &base;
+  alice.body_.addLine (-0.2, -0.4,  0.4, -0.2);
+  alice.body_.addLine (-0.2,  0.4,  0.4,  0.2);
+  alice.body_.addLine ( 0.4, -0.2,  0.4,  0.2);
+  alice.body_.addLine (-0.2,  0.4, -0.2, -0.4);
+  alice.setParent (&world);
+  alice.mount_.Set (0.0, -2.5, 0.0);
   
-  servo.object_ = &sensor;
+  alice_drive.object_ = &alice;
   
-  sensor.max_distance_ = 10000000.0;
-  sensor.setParent (&base);
-  sensor.mount_.Set (0.2, 0.0, 0.0);
+  alice_servo.object_ = &alice_sensor;
+  
+  alice_sensor.max_distance_ = 10000000.0;
+  alice_sensor.setParent (&alice);
+  alice_sensor.mount_.Set (0.2, 0.0, 0.0);
+  
+  //////////////////////////////////////////////////
+  
+  bob_drive.tractor_ = &bob_tractor;
+  bob_drive.trailer_ = &bob_trailer;
+  
+  static double const hitch_offset (0.2);
+  static double const trailer_arm (1.0);
+  bob_drive.hitch_offset_ = hitch_offset;
+  bob_drive.trailer_arm_ = trailer_arm;
+  
+  bob_tractor.body_.addLine (-hitch_offset, -0.3,           0.4, -0.3);
+  bob_tractor.body_.addLine (-hitch_offset,  0.3,           0.4,  0.3);
+  bob_tractor.body_.addLine (-hitch_offset, -0.3, -hitch_offset,  0.3);
+  bob_tractor.body_.addLine (          0.4, -0.3,           0.4,  0.3);
+  bob_tractor.setParent (&world);
+  
+  bob_tractor.mount_.Set (0.0, 2.5, M_PI);
+  
+  bob_trailer.body_.addLine (-trailer_arm, -0.2,          0.0, -0.2);
+  bob_trailer.body_.addLine (-trailer_arm,  0.2,          0.0,  0.2);
+  bob_trailer.body_.addLine (-trailer_arm, -0.2, -trailer_arm,  0.2);
+  bob_trailer.body_.addLine (         0.0, -0.2,          0.0,  0.2);
+  bob_trailer.setParent (&bob_tractor);
   
   // Make sure we can draw something before we start running.
   //
@@ -166,9 +235,9 @@ int main (int argc, char ** argv)
   mx1 =  0.5;
   my1 = -0.5;
   
-  // This just enables (rather verbose) debug messages from the gfx
-  // wrapper.  It is optional but can be rather useful.
-  gfx::debug (&cout);
+  // // This just enables (rather verbose) debug messages from the gfx
+  // // wrapper.  It is optional but can be rather useful.
+  // gfx::debug (&cout);
   
   // Adding a custom button needs to happen before gfx::main is called.
   gfx::add_button ("run/pause", cb_pause);
