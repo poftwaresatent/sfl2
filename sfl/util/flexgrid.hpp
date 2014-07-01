@@ -31,6 +31,7 @@
 #include <deque>
 #include <stdexcept>
 #include <iterator>
+#include <unistd.h>
 
 #ifdef WIN32
 # include <sfl/util/win32.hpp>
