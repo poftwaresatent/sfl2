@@ -172,8 +172,12 @@ namespace fpplib {
        retrieving base class pointers for things that were registered
        using a more specific sub-class. This method first tries the
        exactly matching type entry, then iterates over all registered
-       cerators until it finds an instance that matches both the name
+       creators until it finds an instance that matches both the name
        and can be cast to the given SubType.
+       
+       \note The factory has no notion of type inheritance.  In case
+       of ambiguity, you get whichever castable sub-subtype happens to
+       be encountered first.
     */
     template<class SubType>
     SubType * find(string const & instance_name) const

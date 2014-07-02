@@ -84,6 +84,11 @@ namespace fpplib {
     {
     }
     
+    /**
+       \todo There should be a way to say more than just
+       success/failure here.  Particularly when using parameter guards
+       to fend off i.e. negative values.
+    */
     virtual bool parse(YAML::Node const & node, BaseParameter * parameter) const
     {
       Parameter<value_type> * pp(dynamic_cast<Parameter<value_type> * >(parameter));
@@ -94,7 +99,6 @@ namespace fpplib {
       node >> value;
       return pp->set(value);
     }
-    
   };
   
   
