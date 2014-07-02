@@ -1,5 +1,4 @@
-/* Nepumuk Mobile Robot Simulator v2
- *
+/* 
  * Copyright (C) 2014 Roland Philippsen. All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -18,38 +17,33 @@
  * USA
  */
 
-#include "Body.hpp"
+#ifndef NPM2_FACTORY_HPP
+#define NPM2_FACTORY_HPP
+
+#include <fpplib/factory.hpp>
+#include <fpplib/yaml_parser.hpp>
+
 
 namespace npm2 {
-  
-  
-  void Body::
-  addLine (Line const & line)
-  {
-    local_lines_.push_back (line);
-  }
-  
-  
-  void Body::
-  addLine (double x0, double y0, double x1, double y1)
-  {
-    local_lines_.push_back (Line (x0, y0, x1, y1));
-  }
 
+  using namespace std;
   
-  void Body::
-  transformTo (Frame const & global)
+  
+  class Factory
+    : public fpplib::Factory
   {
-    if (global_lines_.size() != local_lines_.size()) {
-      global_lines_.resize (local_lines_.size());
-    }
+  private:
+    Factory();
     
-    bbox_.reset();
-    for (size_t il(0); il < local_lines_.size(); ++il) {
-      global_lines_[il] = local_lines_[il];
-      global_lines_[il].TransformTo (global);
-      bbox_.update (global_lines_[il]);
-    }
-  }
+  public:
+    static Factory & instance ();
+    
+    bool parseFile (string const & yaml_filename, ostream *erros, ostream *dbgos = 0);
+    
+  private:
+    fpplib::YamlParser parser_;
+  };
   
 }
+
+#endif // NPM2_FACTORY_HPP

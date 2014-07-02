@@ -210,9 +210,11 @@ if (GTK2_FOUND)
     npm2/DifferentialTrailerDrive.cpp
     npm2/RevoluteServo.cpp
     npm2/RayDistanceSensor.cpp
+    npm2/Simulator.cpp
+    npm2/Factory.cpp
     npm2/gfx.cpp
     )
-  target_link_libraries (npm2 sfl ${GTK2_LIBRARIES})
+  target_link_libraries (npm2 sfl fpplib ${GTK2_LIBRARIES})
   
   add_executable (draftnpm2 npm2/draft.cpp)
   target_link_libraries (draftnpm2 npm2)

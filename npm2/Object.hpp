@@ -23,6 +23,7 @@
 
 #include <npm2/Body.hpp>
 #include <sfl/util/Frame.hpp>
+#include <fpplib/configurable.hpp>
 #include <set>
 #include <string>
 
@@ -36,15 +37,31 @@ namespace npm2 {
   class Sensor;
   
   class Object
+    : public fpplib::Configurable
   {
   public:
+    typedef fpplib::Registry<Object, false> registry_t;
+    static registry_t registry;
+    
     typedef set <Object*> children_t;
     typedef children_t::const_iterator child_iterator_t;
     
     explicit Object (string const & name);
     virtual ~Object();
     
+    /** \note Does not perform sanity checks (i.e.: if you pass obj to
+	its own setParent() you create a problem...) */
     void setParent (Object * obj);
+    
+    /** Configurability method. The parent object is looked up in the
+	registry, and this method fails (returns false) if you attempt
+	to set itself as parent or the name is not found in the
+	registry. */
+    bool findSetParent (string const & name);
+    
+    /** Configurability method.  Adds a line to the body_ of this
+	object. */
+    bool addLine (Line const & line);
     
     /* \note Assumes parent has been updated, and recurses into all
        children. */
@@ -60,8 +77,6 @@ namespace npm2 {
     child_iterator_t const childBegin () const { return children_.begin(); }
     child_iterator_t const childEnd () const { return children_.end(); }
 
-    string const name;
-    
     Frame mount_;
     Frame motion_;
     Body body_;
