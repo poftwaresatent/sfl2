@@ -28,8 +28,7 @@ namespace npm2 {
   
   DifferentialTrailerDrive::
   DifferentialTrailerDrive ()
-    : radius_left_ (1.0),
-      radius_right_ (1.0),
+    : wheel_radius_ (1.0),
       wheel_base_ (1.0),
       hitch_offset_ (1.0),
       trailer_arm_ (1.0),
@@ -57,20 +56,21 @@ namespace npm2 {
       return;
     }
     
-    double const dl (radius_left_ * speed_left_);
-    double const dr (radius_right_ * speed_right_);
+    double const dl (wheel_radius_ * speed_left_);
+    double const dr (wheel_radius_ * speed_right_);
     double const vtrans ((dl + dr) / 2.0);
     double const vrot ((dr - dl) / wheel_base_);
-    double const dphi (-dt
-		       * (vtrans * sin (trailer_angle_)
-			  + vrot * (hitch_offset_ * cos (trailer_angle_) + 1.0))
-		       / trailer_arm_);
+    double const dphi ();
     
-    tractor_->motion_.Add (vtrans * tractor_->motion_.Costheta(),
-			   vtrans * tractor_->motion_.Sintheta(),
+    tractor_->motion_.Add (dt * vtrans * tractor_->motion_.Costheta(),
+			   dt * vtrans * tractor_->motion_.Sintheta(),
 			   dt * vrot);
     
-    trailer_angle_ += dphi;
+    trailer_angle_ -=
+      dt * (vtrans * sin (trailer_angle_)
+	    + vrot * (hitch_offset_ * cos (trailer_angle_) + 1.0))
+      / trailer_arm_;
+    
     trailer_->mount_.Set (-hitch_offset_, 0.0, 0.0);
     trailer_->motion_.Set (-trailer_arm_ * cos (trailer_angle_),
 			   -trailer_arm_ * sin (trailer_angle_),

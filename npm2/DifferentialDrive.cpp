@@ -27,8 +27,7 @@ namespace npm2 {
   
   DifferentialDrive::
   DifferentialDrive ()
-    : radius_left_ (1.0),
-      radius_right_ (1.0),
+    : wheel_radius_ (1.0),
       wheel_base_ (1.0),
       object_ (0),
       speed_left_ (0.0),
@@ -52,15 +51,15 @@ namespace npm2 {
       return;
     }
     
-    double const dl (radius_left_ * speed_left_);
-    double const dr (radius_right_ * speed_right_);
+    double const dl (wheel_radius_ * speed_left_);
+    double const dr (wheel_radius_ * speed_right_);
     double const vtrans ((dl + dr) / 2.0);
     double const vrot ((dr - dl) / wheel_base_);
-    double dx (vtrans * dt);
-    double dy (0.0);
-    double dth (vrot * dt);
     
-    object_->motion_.RotateTo (dx, dy);
+    double const dx (vtrans * dt * object_->motion_.Costheta());
+    double const dy (vtrans * dt * object_->motion_.Sintheta());
+    double const dth (vrot * dt);
+    
     object_->motion_.Add (dx, dy, dth);
   }
 

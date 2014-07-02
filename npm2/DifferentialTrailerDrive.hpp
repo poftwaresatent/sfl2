@@ -44,8 +44,9 @@ namespace npm2 {
     
     virtual void integrate (double dt);
     
-    double radius_left_;
-    double radius_right_;
+    double getTrailerAngle () const { return trailer_angle_; }
+    
+    double wheel_radius_;
     double wheel_base_;
     double hitch_offset_;	// l_r (usually positive, which means means "behind" axle)
     double trailer_arm_;	// l_t (usually positive)

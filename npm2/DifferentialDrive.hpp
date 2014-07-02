@@ -39,8 +39,7 @@ namespace npm2 {
     
     virtual void integrate (double dt);
     
-    double radius_left_;
-    double radius_right_;
+    double wheel_radius_;
     double wheel_base_;
     
     Object * object_;
