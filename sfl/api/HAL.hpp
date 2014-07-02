@@ -70,16 +70,10 @@ namespace sfl {
     virtual ~HAL() { }
     
     /** \return 0 on success. */
-    virtual int odometry_set(double x, double y, double theta,
-			     double sxx, double syy, double stt,
-			     double sxy, double sxt, double syt) = 0;
-    
-    /** \return 0 on success. */
     virtual int odometry_get(timespec_t * stamp,
 			     double * x, double * y, double * theta,
 			     double * sxx, double * syy, double * stt,
 			     double * sxy, double * sxt, double * syt) = 0;
-    
     
     /**
        Copy joint speeds from a user-supplied array 'qdot' which has

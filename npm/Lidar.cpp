@@ -59,11 +59,6 @@ namespace npm {
       m_true_rho(nscans, _rhomax),
       m_noisy_rho(nscans, _rhomax)
   {
-    if(0 != hal->time_get( & m_t0)){
-      cerr << "ERROR in npm::Lidar ctor(): m_hal->time_get() failed.\n";
-      exit(EXIT_FAILURE);
-    }
-    m_t1 = m_t0;
   }
   
   
@@ -75,10 +70,6 @@ namespace npm {
     for(size_t ir(0); ir < nscans; ++ir){
       m_true_rho[ir] = rhomax;
       m_noisy_rho[ir] = rhomax;
-    }
-    if(0 != m_hal->time_get(&m_t0)){
-      cerr << "ERROR in npm::Lidar::InitUpdate(): m_hal->time_get() failed.\n";
-      exit(EXIT_FAILURE);
     }
   }
   
@@ -115,11 +106,6 @@ namespace npm {
   void Lidar::
   FinalizeUpdate()
   {
-    if(0 != m_hal->time_get(&m_t1)){
-      cerr << "ERROR in npm::Lidar::FinalizeUpdate():"
-	   << " m_hal->time_get() failed.\n";
-      exit(EXIT_FAILURE);
-    }
   }
   
 }

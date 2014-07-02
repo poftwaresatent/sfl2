@@ -62,39 +62,14 @@ namespace npm {
   
   
   int HAL::
-  time_get(struct timespec * stamp)
-  {
-    struct timeval tv;
-    int res(gettimeofday(&tv, 0));
-    if(res != 0)
-      return -1;
-    TIMEVAL_TO_TIMESPEC(&tv, stamp);
-    return 0;
-  }
-
-
-  int HAL::
-  odometry_set(double x, double y, double theta,
-	       double sxx, double syy, double stt,
-	       double sxy, double sxt, double syt)
-  {
-    if(m_owner->GetTrueTrajectory().empty())
-      m_owner->InitializePose(Frame(x, y, theta));
-    else
-      m_owner->AddPose(shared_ptr<Frame>(new Frame(x, y, theta)));
-    return 0;
-  }
-  
-  
-  int HAL::
   odometry_get(struct timespec * stamp,
 	       double * x, double * y, double * theta,
 	       double * sxx, double * syy, double * stt,
 	       double * sxy, double * sxt, double * syt)
   {
-    int res(time_get(stamp));
-    if(res != 0)
-      return res;
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    TIMEVAL_TO_TIMESPEC(&tv, stamp);
     
     const sfl::Frame * pose;
     if(m_odometry_noise){
@@ -222,8 +197,11 @@ namespace npm {
       for(size_t is(0); is < *rho_len; ++is)
 	rho[is] = lidar->GetTrueRho(is);
     
-    *t0 = lidar->GetT0();
-    *t1 = lidar->GetT1();
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    TIMEVAL_TO_TIMESPEC(&tv, t0);
+    *t1 = *t0;
+    
     return 0;
   }
   

@@ -30,7 +30,6 @@
 #include "../util/numeric.hpp"
 #include "../util/pdebug.hpp"
 #include <cmath>
-#include <iostream>
 
 
 using namespace boost;
@@ -126,24 +125,6 @@ namespace sfl {
     }
     return result;
   }
-  
-  
-// #warning "remove this method, and kick out the iostream include directive"
-//   size_t Multiscanner::
-//   ComputeOffset(boost::shared_ptr<const Scanner> scanner) const
-//   {
-//     size_t off(0);
-//     for(vector_t::const_iterator is(m_scanner.begin());
-// 	is != m_scanner.end();
-// 	++is){
-//       if(scanner == *is)
-// 	return off;
-//       off += (*is)->nscans;
-//     }
-//     std::cerr << "WARNING in Multiscanner::ComputeOffset():\n"
-// 	      << "  scanner not registered, returning 0\n";
-//     return 0;
-//   }
 
 
   bool Multiscanner::

@@ -100,11 +100,6 @@ namespace sfl {
     */
     boost::shared_ptr<raw_scan_collection_t> CollectRawScans() const;
     
-//     /** Mainly for debugging, returns the offset of a scanner's data
-// 	in the collected scan object. This is usually not needed and
-// 	determined implicitly inside CollectScans(). */
-//     size_t ComputeOffset(boost::shared_ptr<const Scanner> scanner) const;
-    
     /** Calls Scanner::Update() on all registered instances and
 	returns true if all of these calls succeeded. Does NOT take
 	the shortcut of forfeiting updates after a failure. */

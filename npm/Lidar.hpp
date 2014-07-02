@@ -76,8 +76,6 @@ namespace npm {
     double GetTrueRho(size_t index) const { return m_true_rho[index]; }
     /** \pre index < nscans */
     double GetNoisyRho(size_t index) const { return m_noisy_rho[index]; }
-    struct timespec GetT0() const { return m_t0; }
-    struct timespec GetT1() const { return m_t1; }
     const sfl::Frame & GetGlobalPose() const { return * m_global_pose; }
     
     bool HaveNoiseModel() const { return m_noise_model.get() != 0; }
@@ -94,7 +92,6 @@ namespace npm {
     boost::shared_ptr<ScannerDrawing> m_drawing;
     std::vector<double> m_true_rho;
     std::vector<double> m_noisy_rho;
-    struct timespec m_t0, m_t1;
   };
   
 }
