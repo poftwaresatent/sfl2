@@ -322,7 +322,7 @@
       - Zombie12_true_drawing
       - Zombie13_true_drawing
       - Zombie14_true_drawing
-      - Zombie0_lidar_0
+      - Zombie0_lidar
       - Zombie0_trajectory
     window: [ 0.0,  0.0,  1.0,  1.0 ]
     border:  0

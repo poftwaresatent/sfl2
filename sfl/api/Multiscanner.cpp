@@ -25,7 +25,6 @@
 #include "Multiscanner.hpp"
 #include "Scanner.hpp"
 #include "Scan.hpp"
-#include "HAL.hpp"
 #include "LocalizationInterface.hpp"
 #include "Pose.hpp"
 #include "../util/numeric.hpp"
@@ -41,10 +40,8 @@ namespace sfl {
   
   
   Multiscanner::
-  Multiscanner(shared_ptr<LocalizationInterface> localization,
-	       shared_ptr<HAL> hal)
-    : m_localization(localization),
-      m_hal(hal)
+  Multiscanner(shared_ptr<LocalizationInterface> localization)
+    : m_localization(localization)
   {
   }
   

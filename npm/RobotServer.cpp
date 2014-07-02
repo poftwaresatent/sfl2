@@ -121,32 +121,18 @@ namespace npm {
   
   
   shared_ptr<Lidar> RobotServer::
-  DefineLidar(const Frame & mount, size_t nscans, double rhomax,
-	      double phi0, double phirange, int hal_channel)
+  DefineLidar(const sfl::Frame & mount, std::string const & name,
+	      size_t nscans, double rhomax, double phi0, double phirange)
   {
-    ostringstream os;
-    os << m_client->name << "-lidar-" << hal_channel;
-    shared_ptr<Scanner>
-      scanner(new Scanner(CreateFakeLocalization(),
-			  GetHAL(), hal_channel, mount, nscans,
-			  rhomax, phi0, phirange));
-    return DefineLidar(scanner);
-  }
-  
-  
-  shared_ptr<Lidar> RobotServer::
-  DefineLidar(shared_ptr<Scanner> scanner)
-  {
-    if(m_lidar.end() != m_lidar.find(scanner->hal_channel)){
-      cerr << "hal_channel " << scanner->hal_channel
+    if (m_lidar.end() != m_lidar.find(name)) {
+      cerr << "lidar name " << name
 	   << " already taken in RobotServer::DefineLidar()\n";
       exit(EXIT_FAILURE);
     }
     shared_ptr<Lidar>
-      lidar(new Lidar(this, GetHAL(), *scanner->mount,
-		      scanner->nscans, scanner->rhomax, scanner,
+      lidar(new Lidar(this, name, mount, nscans, rhomax, phi0, phirange,
 		      m_scanner_noise_model));
-    m_lidar.insert(make_pair(scanner->hal_channel, lidar));
+    m_lidar.insert(make_pair(name, lidar));
     m_sensor.push_back(lidar);
     return lidar;
   }
@@ -374,9 +360,9 @@ namespace npm {
   
   
   shared_ptr<const Lidar> RobotServer::
-  GetLidar(int channel) const
+  GetLidar(std::string const & name) const
   {
-    map<int, shared_ptr<Lidar> >::const_iterator il(m_lidar.find(channel));
+    map<string, shared_ptr<Lidar> >::const_iterator il(m_lidar.find(name));
     if(m_lidar.end() == il)
       return shared_ptr<const Lidar>();
     return il->second;

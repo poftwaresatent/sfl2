@@ -279,8 +279,8 @@
       - Robox_drive
       - Robox_goaldrawing
       - Robox_trajectory
-      - Robox_lidar_1
-      - Robox_lidar_0
+      - Robox_front_lidar
+      - Robox_rear_lidar
     window: [ 0.0,  0.0,  0.55,  0.55 ]
     border:  2
 
@@ -293,8 +293,8 @@
       - Robox_drive
       - Robox_goaldrawing
       - Robox_trajectory
-      - Robox_lidar_1
-      - Robox_lidar_0
+      - Robox_front_lidar
+      - Robox_rear_lidar
       - Robox_odomdrawing
     window: [ 0.55, 0.0, 1.0, 0.55 ]
     border:  2

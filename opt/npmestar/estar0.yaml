@@ -282,8 +282,8 @@
       - Zillian_drive
       - Zillian_goaldrawing
       - Zillian_trajectory
-      - Zillian_lidar_1
-      - Zillian_lidar_0
+      - Zillian_front_lidar
+      - Zillian_rear_lidar
     window: [ 0.0,  0.0,  0.55,  0.55 ]
     border:  2
 
@@ -312,8 +312,8 @@
       - Zombie12_true_drawing
       - Zombie13_true_drawing
       - Zombie14_true_drawing
-      - Zillian_lidar_1
-      - Zillian_lidar_0
+      - Zillian_front_lidar
+      - Zillian_rear_lidar
       - Zillian_odomdrawing
     window: [ 0.55, 0.0, 1.0, 0.55 ]
     border:  2

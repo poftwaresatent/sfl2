@@ -137,17 +137,17 @@ namespace npm {
     if ( !Zombie::Initialize(server)) {
       return false;
     }
-    m_scanner = server.DefineLidar(Frame(0.0, 0.0, 0.0),
-				   361, 8.0, -M_PI/2, M_PI,
-				   0)->GetScanner();
+    m_lidar = server.DefineLidar(Frame(0.0, 0.0, 0.0),
+				 "lidar",
+				 361, 8.0, -M_PI/2, M_PI);
     return true;
   }
   
   
+  /** \todo Can probably be removed... */
   bool LidarZombie::
   PrepareAction(double timestep)
   {
-    m_scanner->Update();
     return Zombie::PrepareAction(timestep);
   }
   

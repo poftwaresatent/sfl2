@@ -25,20 +25,16 @@
 #ifndef NPM_LIDAR_HPP
 #define NPM_LIDAR_HPP
 
-
 #include <npm/Sensor.hpp>
 #include <vector>
 
-
 namespace sfl {
-  class Scanner;
+  class LidarChannel;
 }
-
 
 namespace npm {
   
   class ScannerDrawing;
-  class HAL;
   class NoiseModel;
   
   /**
@@ -54,10 +50,13 @@ namespace npm {
 	lidars. This is accomplished through
 	RobotServer::DefineLidar().
     */
-    Lidar(const RobotServer * owner, boost::shared_ptr<HAL> hal,
+    Lidar(const RobotServer * owner,
+	  std::string const & name,
 	  const sfl::Frame & mount,
-	  size_t nscans, double rhomax,
-	  boost::shared_ptr<sfl::Scanner> scanner,
+	  size_t nscans,
+	  double rhomax,
+	  double phi0,
+	  double phirange,
 	  boost::shared_ptr<NoiseModel> noise_model);
     
     /** non-copyable */
@@ -67,9 +66,7 @@ namespace npm {
     virtual void InitUpdate();
     virtual void StepUpdate(const sfl::Line & line);
     
-    boost::shared_ptr<sfl::Scanner> GetScanner() { return m_scanner; }
-    boost::shared_ptr<const sfl::Scanner> GetScanner() const
-    { return m_scanner; }
+    boost::shared_ptr<sfl::LidarChannel> CreateChannel() const;
     
     /** \pre index < nscans */
     double GetTrueRho(size_t index) const { return m_true_rho[index]; }
@@ -79,13 +76,14 @@ namespace npm {
     
     bool HaveNoiseModel() const { return m_noise_model.get() != 0; }
     
+    const std::string name;
     const size_t nscans;
     const double rhomax;
+    const double phi0;
+    const double phirange;
     const boost::shared_ptr<const sfl::Frame> mount;
     
   private:
-    boost::shared_ptr<HAL> m_hal;
-    boost::shared_ptr<sfl::Scanner> m_scanner;
     boost::shared_ptr<NoiseModel> m_noise_model;
     boost::shared_ptr<sfl::Frame> m_global_pose;
     boost::shared_ptr<ScannerDrawing> m_drawing;

@@ -45,8 +45,6 @@ namespace npm {
     
     virtual int speed_set(const double * qdot, size_t * qdot_len);
     virtual int speed_get(double * qdot, size_t * qdot_len);
-    virtual int scan_get(int channel, double * rho, size_t * rho_len,
-			 struct ::timespec * t0, struct ::timespec * t1);
     
   protected:
     friend class RobotServer;

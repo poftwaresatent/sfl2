@@ -27,6 +27,7 @@
 
 
 #include <sfl/api/LocalizationInterface.hpp>
+#include <sfl/api/LidarChannel.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
@@ -35,12 +36,10 @@
 namespace sfl {
   
   
-  class HAL;
   class Scan;
   struct scan_data;
   class Timestamp;
   class Frame;
-  class Scanner;
   
   
   /**
@@ -126,9 +125,7 @@ namespace sfl {
     */
     Scanner(boost::shared_ptr<LocalizationInterface> localization,
 	    /** proxy object used to retrieve actual data */
-	    boost::shared_ptr<HAL> hal,
-	    /** HAL channel number */
-	    int hal_channel,
+	    boost::shared_ptr<LidarChannel> channel,
 	    /** sensor origin wrt robot frame, copied over */
 	    const Frame & mount,
 	    /** number of scans per measurement */
@@ -155,8 +152,8 @@ namespace sfl {
     /**
        Refresh the scan data.
        
-       This method calls HAL::scan_get() to get the actual data. If
-       that doesn't return 0, then the last valid data is returned by
+       This method calls LidarChannel::GetData(). If something goes
+       wrong, then the last valid data is returned by
        accessors. You can check the validity of the last Update() by
        checking AcquisitionOk(), which returns true if the previous
        attempt was successful. However, it is better to rely on Scan
@@ -164,8 +161,7 @@ namespace sfl {
        (depending on your application) that the acquisition status
        change between your call to AcquisitionOk() and an accessor.
        
-       \return 0 on success, or the result of the call to
-       HAL::scan_get().
+       \return 0 on success.
     */
     int Update();
     
@@ -221,27 +217,20 @@ namespace sfl {
     bool AcquisitionOk() const;
     
     const boost::shared_ptr<const Frame> mount;
-    const int hal_channel;
     const size_t nscans;
     const double rhomax;
     const double phi0;
     const double phirange;
     const double dphi;
     
-    /** true by default, leads to acquisition errors if
-	HAL::scan_get() results in fewer points than expected. If set
-	to false, then the "slack" will simply be filled with
-	rhomax. Beware, a mismatch between expected and actual number
-	of scans means that your system is probably not configured
-	correctly. */
-    bool strict_nscans_check;
-    
   protected:
     typedef std::vector<double> vector_t;
     
     boost::shared_ptr<LocalizationInterface> m_localization;
-    boost::shared_ptr<HAL> m_hal;
+    boost::shared_ptr<LidarChannel> m_channel;
     std::vector<boost::shared_ptr<Scan> > m_buffer;
+    
+    /** \todo The dirty/clean scheme makes little sense anymore... */
     boost::shared_ptr<Scan> m_dirty, m_clean; // would need to be mutexed for multithreading
     bool m_acquisition_ok;		      // would need to be mutexed for multithreading
     vector_t m_cosphi;

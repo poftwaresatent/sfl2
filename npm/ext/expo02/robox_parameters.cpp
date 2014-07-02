@@ -54,7 +54,6 @@ void robox_default_parameters(struct robox_parameters * params)
 {
   expo_default_parameters(params);
   
-  params->front_channel     = 0;
   params->front_nscans      = 181;
   params->front_mount_x     = 0.15;
   params->front_mount_y     = 0;
@@ -63,7 +62,6 @@ void robox_default_parameters(struct robox_parameters * params)
   params->front_phi0        = -M_PI/2;
   params->front_phirange    = M_PI;
   
-  params->rear_channel      = 1;
   params->rear_nscans       = 181;
   params->rear_mount_x      = -0.15;
   params->rear_mount_y      = 0;
@@ -79,7 +77,6 @@ void robox_parameters_load(robox_parameters & params,
 {
   expo_parameters_load(params, opt);
 
-  string_to(opt->GetOption("front_channel"), params.front_channel);
   string_to(opt->GetOption("front_nscans"), params.front_nscans);
   string_to(opt->GetOption("front_mount_x"), params.front_mount_x);
   string_to(opt->GetOption("front_mount_y"), params.front_mount_y);
@@ -88,7 +85,6 @@ void robox_parameters_load(robox_parameters & params,
   string_to(opt->GetOption("front_phi0"), params.front_phi0);
   string_to(opt->GetOption("front_phirange"), params.front_phirange);
   
-  string_to(opt->GetOption("rear_channel"), params.rear_channel);
   string_to(opt->GetOption("rear_nscans"), params.rear_nscans);
   string_to(opt->GetOption("rear_mount_x"), params.rear_mount_x);
   string_to(opt->GetOption("rear_mount_y"), params.rear_mount_y);

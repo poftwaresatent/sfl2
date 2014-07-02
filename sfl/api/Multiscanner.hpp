@@ -33,7 +33,6 @@
 namespace sfl {
   
   class LocalizationInterface;
-  class HAL;
   class Scanner;
   class Scan;
 
@@ -51,12 +50,7 @@ namespace sfl {
   public:
     typedef std::vector<boost::shared_ptr<Scan> > raw_scan_collection_t;
     
-    /**
-       \note If you expected an Odometry as argument here, simply use
-       Odometry::GetHAL() to bring your code up to date.
-    */
-    Multiscanner(boost::shared_ptr<LocalizationInterface> localization,
-		 boost::shared_ptr<HAL> hal);
+    explicit Multiscanner(boost::shared_ptr<LocalizationInterface> localization);
     
     
     /** Appends a Scanner instance to the list of registered devices. */
@@ -79,7 +73,9 @@ namespace sfl {
        maximum Timestamp of all registered Scanners. Even if a Scanner
        provides no data (e.g. all values are out of range), its
        Timestamp is still taken into account.  The robot pose will be
-       taken from HAL odometry, not from the information in the scanners.
+       taken from sfl::LocalizationInterface or sfl::Odometry (cannot
+       remember right now which one), not from the information in the
+       scanners.
        
        \note For polar coordinates, the robot origin is used. The
        ordering of the data is inherited from the order of calls to
@@ -111,7 +107,6 @@ namespace sfl {
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
     
     boost::shared_ptr<LocalizationInterface> m_localization;
-    boost::shared_ptr<HAL> m_hal;
     size_t m_total_nscans;
     vector_t m_scanner;
   };

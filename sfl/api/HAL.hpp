@@ -96,19 +96,6 @@ namespace sfl {
 			  /** IN: size of qdot[], OUT: number of joints */
 			  size_t * qdot_len) = 0;
     
-    /** \note rho_len is input AND output: If there are fewer scan
-	points than (in) rho_len available, this is reflected by the
-	(out) value of rho_len. rho[ii] at ii >= (in) rho_len ARE NOT
-	UPDATED, it is up to the caller to do something sensible such
-	as setting them to max range or ignoring them. If there are
-	MORE than (in) rho_len data points, the scan data is simply
-	truncated.
-	\return 0 on success. */
-    virtual int scan_get(int channel, double * rho,
-			 /** IN: size of rho[], OUT: scan length */
-			 size_t * rho_len,
-			 timespec_t * t0, timespec_t * t1) = 0;
-    
     
     int deprecated_speed_set(double qdl, double qdr) {
       double qd[2] = { qdl, qdr };

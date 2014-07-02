@@ -32,6 +32,7 @@
 #include <sfl/util/strutil.hpp>
 #include <sfl/api/Pose.hpp>
 #include <sfl/api/Odometry.hpp>
+#include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Goal.hpp>
@@ -171,7 +172,6 @@ Robox(std::string const &name)
   reflectParameter("bband_maxignoredistance", &m_params.bband_maxignoredistance);
   reflectParameter("mp_dtheta_starthoming", &m_params.mp_dtheta_starthoming);
   reflectParameter("mp_dtheta_startaiming", &m_params.mp_dtheta_startaiming);
-  reflectParameter("front_channel", &m_params.front_channel);
   reflectParameter("front_nscans", &m_params.front_nscans);
   reflectParameter("front_mount_x", &m_params.front_mount_x);
   reflectParameter("front_mount_y", &m_params.front_mount_y);
@@ -179,7 +179,6 @@ Robox(std::string const &name)
   reflectParameter("front_rhomax", &m_params.front_rhomax);
   reflectParameter("front_phi0", &m_params.front_phi0);
   reflectParameter("front_phirange", &m_params.front_phirange);
-  reflectParameter("rear_channel", &m_params.rear_channel);
   reflectParameter("rear_nscans", &m_params.rear_nscans);
   reflectParameter("rear_mount_x", &m_params.rear_mount_x);
   reflectParameter("rear_mount_y", &m_params.rear_mount_y);
@@ -197,26 +196,45 @@ Initialize(npm::RobotServer &server)
     return false;
   
   boost::shared_ptr<sfl::Hull> hull(expo::Robox::CreateDefaultHull());
+  boost::shared_ptr<sfl::LocalizationInterface> localization(server.CreateFakeLocalization());
   
-  boost::shared_ptr<sfl::Scanner>
-    front = server.DefineLidar(Frame(m_params.front_mount_x,
-				     m_params.front_mount_y,
-				     m_params.front_mount_theta),
-			       m_params.front_nscans,
-			       m_params.front_rhomax,
-			       m_params.front_phi0,
-			       m_params.front_phirange,
-			       m_params.front_channel)->GetScanner();
-  boost::shared_ptr<sfl::Scanner>
-    rear = server.DefineLidar(Frame(m_params.rear_mount_x,
-				    m_params.rear_mount_y,
-				    m_params.rear_mount_theta),
-			      m_params.rear_nscans,
-			      m_params.rear_rhomax,
-			      m_params.rear_phi0,
-			      m_params.rear_phirange,
-			      m_params.rear_channel)->GetScanner();
-  boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(server.CreateFakeLocalization(), m_hal));
+  Frame const front_mount(m_params.front_mount_x,
+			  m_params.front_mount_y,
+			  m_params.front_mount_theta);
+  boost::shared_ptr<sfl::LidarChannel>
+    front_channel = server.DefineLidar(front_mount,
+				       "front_lidar",
+				       m_params.front_nscans,
+				       m_params.front_rhomax,
+				       m_params.front_phi0,
+				       m_params.front_phirange)->CreateChannel();
+  boost::shared_ptr<sfl::Scanner> front(new sfl::Scanner(localization,
+							 front_channel,
+							 front_mount,
+							 m_params.front_nscans,
+							 m_params.front_rhomax,
+							 m_params.front_phi0,
+							 m_params.front_phirange));
+  
+  Frame const rear_mount(m_params.rear_mount_x,
+			 m_params.rear_mount_y,
+			 m_params.rear_mount_theta);
+  boost::shared_ptr<sfl::LidarChannel>
+    rear_channel = server.DefineLidar(rear_mount,
+				      "rear_lidar",
+				      m_params.rear_nscans,
+				      m_params.rear_rhomax,
+				      m_params.rear_phi0,
+				      m_params.rear_phirange)->CreateChannel();
+  boost::shared_ptr<sfl::Scanner> rear(new sfl::Scanner(localization,
+							rear_channel,
+							rear_mount,
+							m_params.rear_nscans,
+							m_params.rear_rhomax,
+							m_params.rear_phi0,
+							m_params.rear_phirange));
+  
+  boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(localization));
   mscan->Add(front);
   mscan->Add(rear);
   

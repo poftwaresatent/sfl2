@@ -27,7 +27,6 @@
 #include <npm/Lidar.hpp>
 #include "wrap_glu.hpp"
 #include <sfl/util/strutil.hpp>
-#include <sfl/api/Scanner.hpp>
 #include <sfl/api/Scan.hpp>
 
 
@@ -40,8 +39,7 @@ namespace npm {
   
   ScannerDrawing::
   ScannerDrawing(const Lidar * lidar)
-    : Drawing(lidar->owner->GetName() + "_lidar_"
-	      + to_string(lidar->GetScanner()->hal_channel),
+    : Drawing(lidar->owner->GetName() + "_" + lidar->name,
 	      "laser scanner data in global reference frame"),
       m_lidar(lidar)
   {
@@ -51,36 +49,30 @@ namespace npm {
   void ScannerDrawing::
   Draw()
   {
-    vector<double> goodx, goody, failedx, failedy;
-    const Scanner * scanner(m_lidar->GetScanner().get());
-    const Frame & sensor_pose(m_lidar->GetGlobalPose());
-    const Frame & robot_pose(m_lidar->owner->GetTruePose());
+    vector<double> rho, goodx, goody;
+    Frame const & sensor_pose (m_lidar->GetGlobalPose());
+    double const dphi(m_lidar->phirange / (m_lidar->nscans - 1));
+    
+    double phi(sensor_pose.Theta() + m_lidar->phi0);
+    Frame ray(sensor_pose.X(), sensor_pose.Y(), phi);
+
     glLineWidth(1);
     glColor3d(0.8, 0.4, 0);
     glBegin(GL_LINE_LOOP);
     glVertex2d(sensor_pose.X(), sensor_pose.Y());
-    for(size_t is(0); is < m_lidar->nscans; ++is){
-      scan_data data;
-      const Scanner::status_t status(scanner->GetData(is, data));
-      switch(status){
-      case Scanner::SUCCESS:
-	goodx.push_back(data.globx);
-	goody.push_back(data.globy);
-      case Scanner::OUT_OF_RANGE:
-	glVertex2d(data.globx, data.globy);
-	break;
-      default:			// bug?
-	{
-	  double xx, yy;
-	  scanner->CosPhi(is, xx);
-	  scanner->SinPhi(is, yy);
-	  m_lidar->mount->To(xx, yy);
-	  robot_pose.To(xx, yy);
-	  failedx.push_back(xx);
-	  failedy.push_back(yy);
-	  glVertex2d(xx, yy);
-	}
+    for(size_t ir(0); ir < m_lidar->nscans; ++ir){
+      double xx(m_lidar->GetNoisyRho(ir));
+      double yy(0.0);
+      ray.To(xx, yy);
+      glVertex2d(xx, yy);
+      
+      if (m_lidar->GetNoisyRho(ir) < m_lidar->rhomax) {
+	goodx.push_back(xx);
+	goody.push_back(yy);
       }
+      
+      phi += dphi;
+      ray.Set(ray.X(), ray.Y(), phi);
     }
     glEnd();
     
@@ -90,15 +82,6 @@ namespace npm {
       glBegin(GL_POINTS);
       for(size_t ii(0); ii < goodx.size(); ++ii)
 	glVertex2d(goodx[ii], goody[ii]);
-      glEnd();
-    }
-
-    if( ! failedx.empty()){
-      glColor3d(0, 0.5, 1);
-      glPointSize(3);
-      glBegin(GL_POINTS);
-      for(size_t ii(0); ii < failedx.size(); ++ii)
-	glVertex2d(failedx[ii], failedy[ii]);
       glEnd();
     }
   }

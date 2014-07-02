@@ -30,7 +30,6 @@
 namespace sfl {
   class Line;
   class Frame;
-  class Scanner;
   class LocalizationInterface;
 }
 
@@ -82,7 +81,7 @@ namespace npm {
     const trajectory_t & GetTrueTrajectory() const;
     const trajectory_t * GetNoisyTrajectory() const;
     const World & GetWorld() const;
-    boost::shared_ptr<const Lidar> GetLidar(int channel) const;
+    boost::shared_ptr<const Lidar> GetLidar(std::string const & name) const;
     boost::shared_ptr<const Sharp> GetSharp(int channel) const;
     boost::shared_ptr<HAL> GetHAL();
     boost::shared_ptr<sfl::LocalizationInterface> CreateFakeLocalization() const;
@@ -97,12 +96,9 @@ namespace npm {
   public:
     
     boost::shared_ptr<Lidar>
-    DefineLidar(const sfl::Frame & mount, size_t nscans, double rhomax,
-		double phi0, double phirange, int hal_channel);
-
-    boost::shared_ptr<Lidar>
-    DefineLidar(boost::shared_ptr<sfl::Scanner> scanner);
-
+    DefineLidar(const sfl::Frame & mount, std::string const & name,
+		size_t nscans, double rhomax, double phi0, double phirange);
+    
     boost::shared_ptr<Sharp>
     DefineSharp(const sfl::Frame & mount, double rmax, int channel);
     
@@ -130,7 +126,7 @@ namespace npm {
     std::vector<boost::shared_ptr<Camera> > m_camera;
     std::vector<boost::shared_ptr<Sensor> > m_sensor;
     boost::shared_ptr<Drive> m_drive;
-    std::map<int, boost::shared_ptr<Lidar> > m_lidar;
+    std::map<std::string, boost::shared_ptr<Lidar> > m_lidar;
     std::map<int, boost::shared_ptr<Sharp> > m_sharp;
     boost::shared_ptr<Object> m_true_body;
     boost::shared_ptr<Object> m_noisy_body;

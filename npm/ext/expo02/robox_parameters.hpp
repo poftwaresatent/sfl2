@@ -34,11 +34,11 @@ struct robox_parameters
   
   explicit robox_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
   
-  int front_channel, front_nscans;
+  int front_nscans;
   double front_mount_x, front_mount_y, front_mount_theta;
   double front_rhomax, front_phi0, front_phirange;
   
-  int rear_channel, rear_nscans;
+  int rear_nscans;
   double rear_mount_x, rear_mount_y, rear_mount_theta;
   double rear_rhomax, rear_phi0, rear_phirange;
 };

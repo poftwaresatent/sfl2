@@ -26,13 +26,16 @@
 #include "gfx/ScannerDrawing.hpp"
 #include "RobotServer.hpp"
 #include "World.hpp"
-#include "HAL.hpp"
 #include "NoiseModel.hpp"
 #include <sfl/util/Ray.hpp>
 #include <sfl/util/numeric.hpp>
-#include <sfl/api/Scanner.hpp>
+#include <sfl/api/LidarChannel.hpp>
+#include <sfl/api/Timestamp.hpp>
 #include <iostream>
 
+/// would be better to simulate a clock based on the timestep... ah well
+//
+#include <sys/time.h>
 
 using namespace sfl;
 using namespace boost;
@@ -43,22 +46,27 @@ namespace npm {
 
 
   Lidar::
-  Lidar(const RobotServer * owner, shared_ptr<HAL> hal,
-	const Frame & _mount, size_t _nscans, double _rhomax,
-	shared_ptr<Scanner> scanner,
+  Lidar(const RobotServer * owner,
+	std::string const & _name,
+	const Frame & _mount,
+	size_t _nscans,
+	double _rhomax,
+	double _phi0,
+	double _phirange,
 	shared_ptr<NoiseModel> noise_model)
     : Sensor(owner),
+      name(_name),
       nscans(_nscans),
       rhomax(_rhomax),
+      phi0(_phi0),
+      phirange(_phirange),
       mount(new Frame(_mount)),
-      m_hal(hal),
-      m_scanner(scanner),
       m_noise_model(noise_model),
       m_global_pose(new Frame(_mount)),
-      m_drawing(new ScannerDrawing(this)),
       m_true_rho(nscans, _rhomax),
       m_noisy_rho(nscans, _rhomax)
   {
+    m_drawing.reset(new ScannerDrawing(this));
   }
   
   
@@ -77,29 +85,63 @@ namespace npm {
   void Lidar::
   StepUpdate(const Line & line)
   {
-    Ray ray(*m_global_pose);
-    for(size_t ir(0); ir < nscans; ++ir){
-      double phi;
-      if(Scanner::SUCCESS != m_scanner->Phi(ir, phi)){
-	cerr << "BUG in npm::Lidar::StepUpdate():"
-	     << " m_scanner->Phi() failed (index " << ir << ")\n";
-	exit(EXIT_FAILURE);
-      }
-      ray.SetAngle(m_global_pose->Theta() + phi);
+    double phi(m_global_pose->Theta() + phi0);
+    double const dphi(phirange / (nscans - 1));
+    Ray ray(m_global_pose->X(), m_global_pose->Y(), phi);
 
+    for(size_t ir(0); ir < nscans; ++ir){
+      
       const double true_rr(ray.Intersect(line));
       if((true_rr > 0) && (true_rr < m_true_rho[ir])){
 	m_true_rho[ir] = true_rr;
 	if( ! m_noise_model)
 	  m_noisy_rho[ir] = true_rr;
       }
-
+      
       if(m_noise_model){
 	const double noisy_rr((*m_noise_model)(true_rr));
 	if((noisy_rr > 0) && (noisy_rr < m_noisy_rho[ir]))
 	  m_noisy_rho[ir] = noisy_rr;
       }
+      
+      phi += dphi;
+      ray.SetAngle(phi);
     }
+  }
+  
+  
+  class LidarChannel
+    : public sfl::LidarChannel
+  {
+  public:
+    LidarChannel (Lidar const * lidar): m_lidar(lidar) {}
+    
+    virtual void GetData (std::vector<double> & data,
+			  Timestamp & tupper,
+			  Timestamp & tlower)
+    {
+      data.resize(m_lidar->nscans);
+      for (size_t ii(0); ii < m_lidar->nscans; ++ii) {
+	data[ii] = m_lidar->GetNoisyRho(ii);
+      }
+      
+      struct timeval tv;
+      gettimeofday(&tv, 0);
+      timespec_t ts;
+      TIMEVAL_TO_TIMESPEC(&tv, &ts);
+      tupper = ts;
+      tlower = tupper;
+    }
+    
+    Lidar const * m_lidar;
+  };
+  
+  
+  boost::shared_ptr<sfl::LidarChannel> Lidar::
+  CreateChannel() const
+  {
+    boost::shared_ptr<sfl::LidarChannel> myfavoritelittlelidar(new LidarChannel(this));
+    return myfavoritelittlelidar;
   }
   
 }

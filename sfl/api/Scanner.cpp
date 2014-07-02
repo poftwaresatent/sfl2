@@ -23,7 +23,6 @@
 
 
 #include "Scanner.hpp"
-#include "HAL.hpp"
 #include "Scan.hpp"
 #include "Timestamp.hpp"
 #include "Pose.hpp"
@@ -42,18 +41,16 @@ namespace sfl {
   
   Scanner::
   Scanner(shared_ptr<LocalizationInterface> localization,
-	  shared_ptr<HAL> hal, int _hal_channel, const Frame & _mount,
+	  shared_ptr<LidarChannel> channel, const Frame & _mount,
 	  size_t _nscans, double _rhomax, double _phi0, double _phirange)
     : mount(new Frame(_mount)),
-      hal_channel(_hal_channel),
       nscans(_nscans),
       rhomax(_rhomax),
       phi0(_phi0),
       phirange(_phirange),
       dphi(_phirange / _nscans),
-      strict_nscans_check(true),
       m_localization(localization),
-      m_hal(hal),
+      m_channel(channel),
       m_acquisition_ok(false),
       m_cosphi(nscans, 0.0),
       m_sinphi(nscans, 0.0)
@@ -85,30 +82,14 @@ namespace sfl {
     // that would need to be protected by mutex if we were to support
     // multithreading.
     
-    scoped_array<double> rho(new double[nscans]);
-    timespec_t t0, t1;
-    size_t actual_nscans(nscans);
-    int status(m_hal->scan_get(hal_channel, rho.get(), &actual_nscans,
-			       &t0, &t1));
-    if(0 != status){
-      PDEBUG("m_hal->scan_get() failed with status %d on channel %d\n",
-	     status, hal_channel);
+    vector<double> rho;
+    Timestamp t0, t1;
+    m_channel->GetData(rho, t0, t1);
+    if (rho.size() != nscans) {
+      PDEBUG("nscans mismatch: wanted %zd but got %zd\n",
+	     nscans, rho.size());
       m_acquisition_ok = false;
-      return status;
-    }
-    if(actual_nscans != nscans){
-      if(strict_nscans_check){
-	PDEBUG("nscans mismatch: wanted %zd but got %zd on channel %d\n",
-	       nscans, actual_nscans, hal_channel);
-	m_acquisition_ok = false;
-	return -42;
-      }
-      else{
-	PVDEBUG("padding with rhomax from %zd to %zd on channel %d\n",
-		actual_nscans, nscans, hal_channel);
-	for(size_t ii(actual_nscans); ii < nscans; ++ii)
-	  rho[ii] = rhomax;
-      }
+      return -42;
     }
     
     Pose robot_pose;

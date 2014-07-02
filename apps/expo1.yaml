@@ -31,7 +31,6 @@
     bband_maxignoredistance:  4
     mp_dtheta_starthoming:    0.1745
     mp_dtheta_startaiming:    0.7854
-    front_channel:            0
     front_nscans:           181
     front_mount_x:            0.15
     front_mount_y:            0
@@ -39,7 +38,6 @@
     front_rhomax:             8
     front_phi0:              -1.5708
     front_phirange:           3.1416
-    rear_channel:             1
     rear_nscans:            181
     rear_mount_x:            -0.15
     rear_mount_y:             0
@@ -322,8 +320,8 @@
       - Robox_drive
       - Robox_goaldrawing
       - Robox_trajectory
-      - Robox_lidar_1
-      - Robox_lidar_0
+      - Robox_front_lidar
+      - Robox_rear_lidar
     window: [ 0.0,  0.0,  0.55,  0.55 ]
     border:  2
 
@@ -336,8 +334,8 @@
       - Robox_drive
       - Robox_goaldrawing
       - Robox_trajectory
-      - Robox_lidar_1
-      - Robox_lidar_0
+      - Robox_front_lidar
+      - Robox_rear_lidar
       - Robox_odomdrawing
     window: [ 0.55, 0.0, 1.0, 0.55 ]
     border:  2

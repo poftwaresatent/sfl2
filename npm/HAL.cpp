@@ -149,31 +149,6 @@ namespace npm {
   }
   
   
-  int HAL::
-  scan_get(int channel, double * rho, size_t * rho_len,
-	   struct ::timespec * t0, struct ::timespec * t1)
-  {
-    boost::shared_ptr<const Lidar> lidar(m_owner->GetLidar(channel));
-    if( ! lidar)
-      return -42;
-    *rho_len = minval(*rho_len, lidar->nscans);
-    
-    if(lidar->HaveNoiseModel())
-      for(size_t is(0); is < *rho_len; ++is)
-	rho[is] = lidar->GetNoisyRho(is);
-    else
-      for(size_t is(0); is < *rho_len; ++is)
-	rho[is] = lidar->GetTrueRho(is);
-    
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    TIMEVAL_TO_TIMESPEC(&tv, t0);
-    *t1 = *t0;
-    
-    return 0;
-  }
-  
-  
   void HAL::
   UpdateSpeeds()
   {

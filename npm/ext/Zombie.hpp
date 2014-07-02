@@ -65,7 +65,7 @@ namespace npm {
     virtual bool PrepareAction(double timestep);
     
   protected:
-    boost::shared_ptr<sfl::Scanner> m_scanner;
+    boost::shared_ptr<Lidar> m_lidar;
   };
 
 }
