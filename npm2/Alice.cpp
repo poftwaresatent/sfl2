@@ -23,6 +23,7 @@
 #include "RevoluteServo.hpp"
 #include "RayDistanceSensor.hpp"
 
+#include <cmath>
 
 
 namespace npm2 {
@@ -30,7 +31,7 @@ namespace npm2 {
   
   Alice::
   Alice (string const & name)
-    : fpplib::Configurable (name),
+    : RobotClient (name),
       drive_ (0),
       servo_ (0),
       sensor_ (0)
@@ -38,6 +39,24 @@ namespace npm2 {
     reflectSlot ("drive", &drive_);
     reflectSlot ("servo", &servo_);
     reflectSlot ("sensor", &sensor_);
-  };
+  }
+  
+  
+  bool Alice::
+  tick (double timestep)
+  {
+    if (( ! drive_) || ( ! servo_) || ( ! sensor_)) {
+      return false;
+    }
+    
+    drive_->setSpeed (0.02, 0.04);
+    
+    static double amp (5.0 * M_PI / 180.0);
+    static double omg (2.0 * M_PI / 5.0);
+    static size_t count (0);
+    servo_->setAngle (amp * cos (omg * (count++) * timestep));
+    
+    return true;
+  }
   
 }

@@ -43,8 +43,6 @@ static Object bob_tractor ("bob_tractor");
 static Object bob_trailer ("bob_trailer");
 static DifferentialTrailerDrive bob_drive ("bob_drive");
 
-static double const timestep (0.1);
-
 static double mx0, my0, mx1, my1;
 
 
@@ -167,15 +165,14 @@ static void tick ()
 {
   static size_t count (0);
   
-  alice->drive_->integrate (timestep);
-  alice->servo_->integrate (timestep);
-  bob_drive.integrate (timestep);
+  simulator->simulateActuators ();
+  simulator->simulateSensors ();
   
-  simulator->world_->updateTransform ();
-  alice->sensor_->sensorReset ();
-  simulator->world_->updateSensor (alice->sensor_);
+  //////////////////////////////////////////////////
   
-  alice->drive_->setSpeed (0.02, 0.04);
+  alice->tick (simulator->timestep_);
+  
+  //////////////////////////////////////////////////
   
   double thref;
   if (bob_tractor.getGlobal().X() > bob_tractor.getGlobal().Y()) {
@@ -205,10 +202,6 @@ static void tick ()
   else {
     bob_drive.setSpeed (0.02, 0.0);
   }
-  
-  static double amp (5.0 * M_PI / 180.0);
-  static double omg (2.0 * M_PI / 5.0);
-  alice->servo_->setAngle (amp * cos (omg * count * timestep));
 }
 
 

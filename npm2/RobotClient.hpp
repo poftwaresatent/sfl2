@@ -1,4 +1,5 @@
-/* 
+/* Nepumuk Mobile Robot Simulator v2
+ *
  * Copyright (C) 2014 Roland Philippsen. All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +18,8 @@
  * USA
  */
 
-#ifndef NPM2_SIMULATOR_HPP
-#define NPM2_SIMULATOR_HPP
+#ifndef NPM2_ROBOT_CLIENT_HPP
+#define NPM2_ROBOT_CLIENT_HPP
 
 #include <fpplib/configurable.hpp>
 
@@ -27,31 +28,18 @@ namespace npm2 {
   
   using namespace std;
   
-  class Object;
   
-  
-  class Simulator
+  class RobotClient
     : public fpplib::Configurable
   {
   public:
-    typedef enum {
-      PAUSE,
-      STEP,
-      RUN
-    } state_t;
+    explicit RobotClient (string const & name): fpplib::Configurable (name) {}
     
-    explicit Simulator (string const & name);
+    virtual bool init () { return true; }
     
-    bool setState (string const & value);
-    
-    void simulateActuators ();
-    void simulateSensors ();
-    
-    Object * world_;
-    double timestep_;
-    state_t state_;
+    virtual bool tick (double timestep) = 0;
   };
   
 }
 
-#endif // NPM2_SIMULATOR_HPP
+#endif // NPM2_ROBOT_CLIENT_HPP
