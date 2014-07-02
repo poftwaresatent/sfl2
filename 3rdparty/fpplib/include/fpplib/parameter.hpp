@@ -84,6 +84,24 @@ namespace fpplib {
   
   
   /**
+     Make sure given values are strictly positive.
+  */
+  template <typename value_type>
+  class StrictlyPositiveGuard
+    : public ParameterGuard
+  {
+  public:
+    virtual bool check(void const * instance, void const * value) const
+    {
+      if (0 >= * reinterpret_cast <value_type const *> (value)) {
+	return false;
+      }
+      return true;
+    }
+  };
+  
+  
+  /**
      Base class for all reflectable parameters. Normally, client code
      does not need to be aware of this class, nor indeed of its
      implementation via the Parameter<> template: use
