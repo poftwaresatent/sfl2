@@ -18,7 +18,8 @@
  */
 
 #include "Simulator.hpp"
-#include "Object.hpp"
+#include "Actuator.hpp"
+#include "Sensor.hpp"
 #include <boost/bind.hpp>
 
 
@@ -57,6 +58,46 @@ namespace npm2 {
       return false;
     }
     return true;
+  }
+  
+  
+  static void recurse_integrate (Object * obj, double dt)
+  {
+    Actuator * act (dynamic_cast <Actuator*> (obj));
+    if (act) {
+      act->integrate (dt);
+    }
+    for (Object::child_iterator_t ic(obj->childBegin()); ic != obj->childEnd(); ++ic) {
+      recurse_integrate (*ic, dt);
+    }
+  }
+  
+  
+  void Simulator::
+  simulateActuators ()
+  {
+    recurse_integrate (world_, timestep_);
+    world_->updateTransform ();
+  }
+  
+  
+  static void recurse_sense (Object const * world, Object * obj)
+  {
+    Sensor * sensor (dynamic_cast <Sensor*> (obj));
+    if (sensor) {
+      sensor->sensorReset ();
+      world->updateSensor (sensor);
+    }
+    for (Object::child_iterator_t ic(obj->childBegin()); ic != obj->childEnd(); ++ic) {
+      recurse_sense (world, *ic);
+    }
+  }
+  
+  
+  void Simulator::
+  simulateSensors ()
+  {
+    recurse_sense (world_, world_);
   }
   
 }

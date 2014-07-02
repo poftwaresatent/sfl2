@@ -67,7 +67,7 @@ namespace npm2 {
        children. */
     void updateTransform ();
     
-    void updateSensor (Sensor * sensor);
+    void updateSensor (Sensor * sensor) const;
     
     Frame const & getGlobal () const { return global_; }
     

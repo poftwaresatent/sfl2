@@ -104,7 +104,7 @@ namespace npm2 {
   
   
   void Object::
-  updateSensor (Sensor * sensor)
+  updateSensor (Sensor * sensor) const
   {
     sensor->sensorUpdate (body_);
     for (children_t::iterator ic (children_.begin()); ic != children_.end(); ++ic) {

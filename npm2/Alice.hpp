@@ -21,23 +21,23 @@
 #ifndef NPM2_ALICE_HPP
 #define NPM2_ALICE_HPP
 
-#include <fpplib/configurable.hpp>
+#include <npm2/RobotClient.hpp>
 
 
 namespace npm2 {
   
-  using namespace std;
-
   class DifferentialDrive;
   class RevoluteServo;
   class RayDistanceSensor;
   
   
   class Alice
-    : public fpplib::Configurable
+    : public RobotClient
   {
   public:
     explicit Alice (string const & name);
+    
+    virtual bool tick (double timestep);
     
     DifferentialDrive * drive_;
     RevoluteServo * servo_;
