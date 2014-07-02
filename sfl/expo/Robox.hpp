@@ -70,17 +70,6 @@ namespace expo {
 	exception if anything goes wrong. */
     void Update(double timestep) throw(std::runtime_error);
     
-    /** Initialize or set the odometry, depending on whether it
-	already has been initialized. */
-    int SetOdometry(sfl::Pose const & pose, std::ostream * err_os);
-    
-    /** Get the current pose. If odometry has not been initialized,
-	it'll return a default constructed pose (0, 0, 0, 1, 1, 1, 0,
-	0, 0). */
-    boost::shared_ptr<sfl::Pose const> GetOdometry() const;
-    
-    int UpdateOdometry(std::ostream * err_os);
-    
     bool UpdateMultiscanner(std::ostream * erros);
     
     bool UpdateMotionPlanner(double timestep);

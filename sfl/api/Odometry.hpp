@@ -34,59 +34,49 @@
 namespace sfl {
   
   
-  class HAL;
   class Pose;
-  class Odometry;
+  
+  
+  class LocalizationInterface
+  {
+  public:
+    virtual ~LocalizationInterface() {}
+    virtual void GetPose (Pose & pose) = 0;
+  };
   
   
   /**
-     Updating the position of the robot based on the wheel speeds is
-     called odometry (or <em>ded</em>-reckoning, the short form of
-     <em>deduced</em> reckoning... unfortunately often misspelled
-     "dead-reckoning"). In sunflower, this is done in the HAL, and
-     this class provides:
-     
-     <ul>
-       <li> Access to the HAL odometry through a C++ interface. </li>
-       <li> Pose history, i.e. for on-the-fly localization. </li>
-     </ul>
-     
-     \todo (Optionally) limit the size of the pose history, and use a
-     more efficient implementation (eg fixed-length array instead of
-     STL map).
+     \todo nohal: rename to PoseHistory
   */
   class Odometry
   {
-  private:
-    /** non-copyable */
-    Odometry(const Odometry & orig);
-    
   public:
     typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
     
-    explicit Odometry(boost::shared_ptr<HAL> hal);
+    /**
+       This clears any previous pose history.  If given a non-null
+       LocalizationInterface, subsequent calls to the non-argument
+       variant of Update() will use the timestamped pose provided by
+       that.
+       
+       \todo nohal: void retval
+    */
+    int Init(boost::shared_ptr<LocalizationInterface> localization);
+    
+    void Clear() { m_history.clear(); }
     
     /**
-       Initialize history with a pose in world frame. This clears any
-       previous pose history and sets the HAL odometry to the wanted
-       pose. (Also puts the pose as the only entry into the pose
-       history).
-       
-       \return 0 on success.
+       Uses LocalizationInterface provided to Init().  If that was
+       null, then here we fail with a non-zero error code.
     */
-    int Init(/** initial position, will be copied into the history */
-	     const Pose & pose,
-	     /** if non-zero, debug messages are written to dbgos */
-	     std::ostream * dbgos = 0);
+    int Update();
     
     /**
-       Update the pose history using the most recent pose. This reads
-       the odometry from HAL and appends a copy to the pose history.
+       Update the pose history.
        
-       \return 0 on success.
+       \todo nohal: rename to Add, void retval
     */
-    int Update(/** if non-zero, debug messages are written to dbgos */
-	       std::ostream * dbgos = 0);
+    int Update(Pose const & pose);
     
     /**
        \return Copy of the current (most recent) pose in world
@@ -95,14 +85,6 @@ namespace sfl {
        instance.
     */
     boost::shared_ptr<const Pose> Get() const;
-    
-    /**
-       Set the current pose in world frame. This sets the HAL odometry
-       and copies the provided pose to the history.
-       
-       \return 0 on success.
-    */
-    int Set(const Pose & pose);
     
     /** Access to the pose history in case you want to do fancy stuff. */
     const history_t & GetHistory() const { return m_history; }
@@ -115,16 +97,9 @@ namespace sfl {
     */
     history_t::value_type Get(const Timestamp & t) const;
     
-    /**
-       For easier porting of legacy code that expected an Odometry
-       instance in some places where a HAL actually suffices. The HAL
-       is usually shared among all libsunflower objects anyway...
-    */
-    boost::shared_ptr<HAL> GetHAL() { return m_hal; }
-    
   private:
-    boost::shared_ptr<HAL> m_hal;
     history_t m_history;
+    boost::shared_ptr<LocalizationInterface> m_localization;
   };
   
 }

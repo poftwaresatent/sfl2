@@ -23,7 +23,6 @@
 
 
 #include "Timestamp.hpp"
-#include "HAL.hpp"
 #include <sstream>
 #include <limits>
 #include <iomanip>

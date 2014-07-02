@@ -89,7 +89,6 @@ namespace sfl {
     // initialize to zero size (just add VALID data) and with INVERTED
     // timestamps to detect the min and max actual ones
     result.reset(new Scan(0, Timestamp::Last(), Timestamp::First(),
-			  Pose(x, y, theta, sxx, syy, stt, sxy, sxt, syt),
 			  Frame(x, y, theta)));
     
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){

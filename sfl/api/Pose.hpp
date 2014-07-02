@@ -27,64 +27,31 @@
 
 
 #include <sfl/util/Frame.hpp>
+#include <sfl/api/Timestamp.hpp>
 
 
 namespace sfl {
 
 
   /**
-     Like Frame, but with covariance information.
+     A timestamped Frame with covariance information.
   */
   class Pose
     : public Frame
   {
   public:
-    /** Default position = (0, 0, 0), covariance = identity */
+    /** Default position = (0, 0, 0), timestamp = first, covariance = identity */
     Pose();
-
-    /** Default covariance = identity */
-    explicit Pose(const Frame & frame);
-
-    /** Default covariance = identity */
+    
+    /** Default timestamp = first, covariance = identity */
     Pose(double x, double y, double theta);
 
-    /** Construct from existing Frame instance, adding the provided
-	covariances. */
-    Pose(const Frame & frame,
-	 double sxx, double syy, double stt,
-	 double sxy, double sxt, double syt);
-
-    /** Construct a Pose instance at (x, y, theta), with the provided
-	covariances. */
-    Pose(double x, double y, double theta,
-	 double sxx, double syy, double stt,
-	 double sxy, double sxt, double syt);
+    void Set(double x, double y, double theta,
+	     timespec_t tstamp,
+	     double sxx, double syy, double stt,
+	     double sxy, double sxt, double syt);
     
-    Pose const & operator = (Frame const &rhs);
-    
-    /** Doesn't touch the position, only the covariance. */
-    void SetVar(double sxx, double syy, double stt,
-		double sxy, double sxt, double syt);
-    
-    /** \return The variance along the x-axis. */
-    double Sxx() const;
-    
-    /** \return The variance along the y-axis. */
-    double Syy() const;
-    
-    /** \return The variance along the theta-axis. */
-    double Stt() const;
-
-    /** \return The covariance between the x- and the y-axes. */
-    double Sxy() const;
-
-    /** \return The covariance between the x- and the theta-axes. */
-    double Sxt() const;
-    
-    /** \return The covariance between the y- and the theta-axes. */
-    double Syt() const;
-    
-  protected:
+    Timestamp m_tstamp;
     double m_sxx, m_syy, m_stt, m_sxy, m_sxt, m_syt;
   };
   

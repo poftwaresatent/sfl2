@@ -23,7 +23,6 @@
 
 
 #include "Odometry.hpp"
-#include "HAL.hpp"
 #include "Pose.hpp"
 #include <iostream>
 
@@ -35,57 +34,33 @@ using namespace std;
 namespace sfl {
   
   
-  Odometry::
-  Odometry(shared_ptr<HAL> hal)
-    : m_hal(hal)
-  {
-  }
-  
-  
   int Odometry::
-  Init(const Pose & pose, ostream * dbgos)
+  Init(boost::shared_ptr<LocalizationInterface> localization)
   {
-    // don't set timestamp here, will be read from HAL afterwards
-    int res(m_hal->odometry_set(pose.X(), pose.Y(), pose.Theta(),
-				pose.Sxx(), pose.Syy(), pose.Stt(),
-				pose.Sxy(), pose.Sxt(), pose.Syt()));
-    if(res != 0){
-      if(dbgos != 0)
-	(*dbgos) << "ERROR in Odometry::Init():\n"
-		 << "  odometry_set() returned " << res << "\n";
-      return res;
-    }
-    timespec_t timestamp;
-    res = m_hal->time_get(&timestamp);
-    if(res != 0){
-      if(dbgos != 0)
-	(*dbgos) << "ERROR in Odometry::Init():\n"
-		 << "  time_get() returned " << res << "\n";
-      return res;
-    }
     m_history.clear();
-    m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
+    m_localization = localization;
     return 0;
   }
   
   
   int Odometry::
-  Update(ostream * dbgos)
+  Update()
   {
-    timespec_t timestamp;
-    double x, y, t, sxx, syy, stt, sxy, sxt, syt;
-    int res(m_hal->odometry_get(&timestamp,
-				&x, &y, &t,
-				&sxx, &syy, &stt,
-				&sxy, &sxt, &syt));
-    if(res != 0){
-      if(dbgos != 0)
-	(*dbgos) << "ERROR in Odometry::Update():\n"
-		 << "  odometry_get() returned " << res << "\n";
-      return res;
+    if ( ! m_localization) {
+      return 1;
     }
-    shared_ptr<Pose> pose(new Pose(x, y, t, sxx, syy, stt, sxy, sxt, syt));
-    m_history.insert(make_pair(timestamp, pose));    
+    Pose pose;
+    Timestamp stamp;
+    m_localization->GetPose(pose);
+    Update(pose);
+    return 0;
+  }
+  
+  
+  int Odometry::
+  Update(Pose const & pose)
+  {
+    m_history.insert(make_pair(pose.m_tstamp, shared_ptr<Pose>(new Pose(pose))));
     return 0;
   }
   
@@ -122,24 +97,6 @@ namespace sfl {
     if(t1 < t2)
       return *cand1;
     return *cand2;
-  }
-  
-  
-  int Odometry::
-  Set(const Pose & pose)
-  {
-    // don't set timestamp here, use HAL's time function afterwards
-    int res(m_hal->odometry_set(pose.X(), pose.Y(), pose.Theta(),
-				pose.Sxx(), pose.Syy(), pose.Stt(),
-				pose.Sxy(), pose.Sxt(), pose.Syt()));
-    if(res != 0)
-      return res;
-    timespec_t timestamp;
-    res = m_hal->time_get(&timestamp);
-    if(res != 0)
-      return res;
-    m_history.insert(make_pair(timestamp, shared_ptr<Pose>(new Pose(pose))));
-    return 0;
   }
   
 }

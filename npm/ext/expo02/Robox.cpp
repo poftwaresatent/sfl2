@@ -30,6 +30,7 @@
 #include <npm/Lidar.hpp>
 #include <npm/pdebug.hpp>
 #include <sfl/util/strutil.hpp>
+#include <sfl/api/Pose.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
@@ -391,14 +392,15 @@ Initialize(npm::RobotServer &server)
 void Robox::
 InitPose(sfl::Pose const &pp)
 {
-  m_imp->odometry->Init(pp);
+  m_imp->odometry->Clear();
+  m_imp->odometry->Update(pp);
 }
 
 
 void Robox::
 SetPose(sfl::Pose const &pp)
 {
-  m_imp->odometry->Set(pp);
+  m_imp->odometry->Update(pp);
 }
 
 

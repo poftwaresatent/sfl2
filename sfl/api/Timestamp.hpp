@@ -47,12 +47,7 @@ namespace sfl {
 
 
   /**
-     Encapsulates timestamps (i.e. from HAL). Much is inlined for
-     efficient use, especially in conjunction with the STL.
-     
-     \note By relying on HAL for timestamps, it is possible to
-     "freeze" sunflower execution in simulation, which is extremely
-     useful when debugging those fancy algorithms.
+     Encapsulates timestamps.
   */
   class Timestamp
   {
@@ -70,7 +65,7 @@ namespace sfl {
     Timestamp(long seconds, long nanoseconds);
     
     /**
-       Converts a HAL timestamp into a Timestamp instance. If you need
+       Converts a timestamp_t into a Timestamp instance. If you need
        a Timestamp of "unspecified" time, use last or first.
     */
     explicit Timestamp(const timespec_t & stamp);

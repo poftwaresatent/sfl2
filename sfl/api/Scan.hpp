@@ -27,7 +27,7 @@
 
 
 #include <sfl/api/Timestamp.hpp>
-#include <sfl/api/Pose.hpp>
+#include <sfl/util/Frame.hpp>
 #include <vector>
 
 
@@ -72,8 +72,6 @@ namespace sfl {
 	 const Timestamp & tlower,
 	 /** upper bound on the acquisition timestamp */
 	 const Timestamp & tupper,
-	 /** estimated robot position at "most probable" acquisition time */
-	 const Pose & robot_pose,
 	 const Frame & scanner_pose);
     
     Scan(const Scan & original);
@@ -83,9 +81,6 @@ namespace sfl {
     
     /** upper bound of the estimated acquisition time */
     Timestamp tupper;
-    
-    /** estimated robot position at "most probable" acquisition time */
-    Pose robot_pose;
     
     /** estimated scanner position at "most probable" acquisition time */
     Frame scanner_pose;

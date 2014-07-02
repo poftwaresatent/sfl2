@@ -31,15 +31,7 @@ namespace sfl {
   Pose::
   Pose()
     : Frame(),
-      m_sxx(1), m_syy(1), m_stt(1),
-      m_sxy(0), m_sxt(0), m_syt(0)
-  {
-  }
-
-
-  Pose::
-  Pose(const Frame & frame)
-    : Frame(frame),
+      m_tstamp(Timestamp::First()),
       m_sxx(1), m_syy(1), m_stt(1),
       m_sxy(0), m_sxt(0), m_syt(0)
   {
@@ -49,100 +41,27 @@ namespace sfl {
   Pose::
   Pose(double x, double y, double theta)
     : Frame(x, y, theta),
+      m_tstamp(Timestamp::First()),
       m_sxx(1), m_syy(1), m_stt(1),
       m_sxy(0), m_sxt(0), m_syt(0)
   {
   }
   
   
-  Pose::
-  Pose(const Frame & frame,
-       double sxx, double syy, double stt,
-       double sxy, double sxt, double syt)
-    : Frame(frame),
-      m_sxx(sxx), m_syy(syy), m_stt(stt),
-      m_sxy(sxy), m_sxt(sxt), m_syt(syt)
-  {
-  }
-  
-  
-  Pose::
-  Pose(double x, double y, double theta,
-       double sxx, double syy, double stt,
-       double sxy, double sxt, double syt)
-    : Frame(x, y, theta),
-      m_sxx(sxx), m_syy(syy), m_stt(stt),
-      m_sxy(sxy), m_sxt(sxt), m_syt(syt)
-  {
-  }
-  
-  
-  double Pose::
-  Sxx() const
-  {
-    return m_sxx;
-  }
-  
-  
-  double Pose::
-  Syy() const
-  {
-    return m_syy;
-  }
-  
-  
-  double Pose::
-  Stt() const
-  {
-    return m_stt;
-  }
-  
-  
-  double Pose::
-  Sxy() const
-  {
-    return m_sxy;
-  }
-  
-  
-  double Pose::
-  Sxt() const
-  {
-    return m_sxt;
-  }
-  
-  
-  double Pose::
-  Syt() const
-  {
-    return m_syt;
-  }
-  
-  
   void Pose::
-  SetVar(double sxx, double syy, double stt,
-	 double sxy, double sxt, double syt)
+  Set(double x, double y, double theta,
+      timespec_t tstamp,
+      double sxx, double syy, double stt,
+      double sxy, double sxt, double syt)
   {
+    Frame::Set(x, y, theta);
+    m_tstamp = tstamp;
     m_sxx = sxx;
     m_syy = syy;
     m_stt = stt;
     m_sxy = sxy;
     m_sxt = sxt;
     m_syt = syt;
-  }
-  
-  
-  Pose const & Pose::
-  operator = (Frame const &rhs)
-  {
-    Set(rhs);
-    m_sxx = 1.;
-    m_syy = 1.;
-    m_stt = 1.;
-    m_sxy = 0.;
-    m_sxt = 0.;
-    m_syt = 0.;
-    return *this;
   }
 
 }

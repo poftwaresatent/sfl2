@@ -40,8 +40,33 @@
 #include "MotionController.hpp"
 #include <sstream>
 
+// rfct
+#include <sfl/api/HAL.hpp>
+#include <sfl/api/Pose.hpp>
+
 using namespace boost;
 using namespace std;
+
+namespace {
+  
+  class rfct
+    : public sfl::LocalizationInterface
+  {
+  public:
+    explicit rfct(boost::shared_ptr<sfl::HAL> hal): m_hal(hal) {}
+    
+    virtual void GetPose (sfl::Pose & pose) {
+      sfl::timespec_t ts;
+      double xx, yy, th, a, b, c, d, e, f;
+      m_hal->odometry_get(&ts, &xx, &yy, &th, &a, &b, &c, &d, &e, &f);
+      pose.Set(xx, yy, th, ts, a, b, c, d, e, f);
+    }
+    
+    boost::shared_ptr<sfl::HAL> m_hal;
+  };
+  
+}
+
 
 namespace expo {
   
@@ -67,7 +92,8 @@ namespace expo {
     robotModel.reset(new sfl::RobotModel(modelParms, hull));
     motionController.
       reset(new MotionController(robotModel, hal));
-    odometry.reset(new sfl::Odometry(hal));
+    odometry.reset(new sfl::Odometry());
+    odometry->Init(boost::shared_ptr<rfct>(new rfct(hal)));
     if (params.bband_enabled) {
       bubbleBand.
 	reset(new sfl::BubbleBand(*robotModel, *odometry, *mscan,
@@ -181,34 +207,11 @@ namespace expo {
       os << "expo::Robox::Update(): UpdateMotionController failed with status " << status;
       throw runtime_error(os.str());
     }
-    status = UpdateOdometry(&os);
+    status = odometry->Update();
     if (0 != status) {
       os << "expo::Robox::Update(): UpdateOdometry failed with status " << status;
       throw runtime_error(os.str());
     }
-  }
-  
-  
-  int Robox::
-  SetOdometry(const sfl::Pose & pose, std::ostream * err_os)
-  {
-    if (odometry->GetHistory().empty())
-      return odometry->Init(pose, err_os);
-    return odometry->Set(pose);
-  }
-  
-  
-  boost::shared_ptr<sfl::Pose const> Robox::
-  GetOdometry() const
-  {
-    return odometry->Get();
-  }
-  
-  
-  int Robox::
-  UpdateOdometry(std::ostream * err_os)
-  {
-    return odometry->Update(err_os);
   }
   
   
