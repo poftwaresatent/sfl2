@@ -21,12 +21,10 @@
 #ifndef NPM2_DIFFERENTIAL_TRAILER_DRIVE_HPP
 #define NPM2_DIFFERENTIAL_TRAILER_DRIVE_HPP
 
-#include <npm2/Actuator.hpp>
+#include <npm2/DifferentialDrive.hpp>
 
 
 namespace npm2 {
-  
-  class Object;
   
   
   /**
@@ -35,27 +33,20 @@ namespace npm2 {
      Automation 15(4), August 1999.
   */
   class DifferentialTrailerDrive
-    : public Actuator
+    : public DifferentialDrive
   {
   public:
-    DifferentialTrailerDrive ();
-    
-    void setSpeed (double wl, double wr);
+    explicit DifferentialTrailerDrive (string const & name);
     
     virtual void integrate (double dt);
     
     double getTrailerAngle () const { return trailer_angle_; }
     
-    double wheel_radius_;
-    double wheel_base_;
     double hitch_offset_;	// l_r (usually positive, which means means "behind" axle)
     double trailer_arm_;	// l_t (usually positive)
-    Object * tractor_;
     Object * trailer_;
     
   protected:
-    double speed_left_;
-    double speed_right_;
     double trailer_angle_;
   };
   

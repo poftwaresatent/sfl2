@@ -7,7 +7,7 @@
       - [ -5,  5, -5, -5 ]
 
 - Object:
-    name: alice
+    name: alice_base
     parent: world
     mount: [ 0.0, -2.5, 0.0 ]
     lines:
@@ -16,7 +16,28 @@
       - [  0.4, -0.2,  0.4,  0.2 ]
       - [ -0.2,  0.4, -0.2, -0.4 ]
 
+- DifferentialDrive:
+    name: alice_drive
+    parent: alice_base
+    wheel_radius: 0.2
+    wheel_base: 0.3
 
+- RayDistanceSensor:
+    name: alice_sensor
+    parent: alice_base
+    mount: [ 0.2, 0.0, 0.0 ]
+    max_distance: 100.0
+
+- RevoluteServo:
+    name: alice_servo
+    parent: alice_sensor
+
+- Alice:
+    name: alice
+    drive: alice_drive
+    sensor: alice_sensor
+    servo: alice_servo
+    
 - Simulator:
     name: draft
     world: world

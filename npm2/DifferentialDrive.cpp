@@ -19,20 +19,21 @@
  */
 
 #include "DifferentialDrive.hpp"
-#include "Object.hpp"
 
 
 namespace npm2 {
   
   
   DifferentialDrive::
-  DifferentialDrive ()
-    : wheel_radius_ (1.0),
+  DifferentialDrive (string const & name)
+    : Actuator (name),
+      wheel_radius_ (1.0),
       wheel_base_ (1.0),
-      object_ (0),
       speed_left_ (0.0),
       speed_right_ (0.0)
   {
+    reflectParameter ("wheel_radius", &wheel_radius_);
+    reflectParameter ("wheel_base", &wheel_base_);
   }
   
   
@@ -47,7 +48,7 @@ namespace npm2 {
   void DifferentialDrive::
   integrate (double dt)
   {
-    if ( ! object_) {
+    if ( ! parent_) {
       return;
     }
     
@@ -56,11 +57,11 @@ namespace npm2 {
     double const vtrans ((dl + dr) / 2.0);
     double const vrot ((dr - dl) / wheel_base_);
     
-    double const dx (vtrans * dt * object_->motion_.Costheta());
-    double const dy (vtrans * dt * object_->motion_.Sintheta());
+    double const dx (vtrans * dt * parent_->motion_.Costheta());
+    double const dy (vtrans * dt * parent_->motion_.Sintheta());
     double const dth (vrot * dt);
     
-    object_->motion_.Add (dx, dy, dth);
+    parent_->motion_.Add (dx, dy, dth);
   }
 
 }

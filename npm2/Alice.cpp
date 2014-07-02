@@ -18,35 +18,26 @@
  * USA
  */
 
+#include "Alice.hpp"
+#include "DifferentialDrive.hpp"
 #include "RevoluteServo.hpp"
-#include "Object.hpp"
+#include "RayDistanceSensor.hpp"
+
 
 
 namespace npm2 {
   
   
-  RevoluteServo::
-  RevoluteServo (string const & name)
-    : Actuator (name),
-      angle_ (0.0)
+  Alice::
+  Alice (string const & name)
+    : fpplib::Configurable (name),
+      drive_ (0),
+      servo_ (0),
+      sensor_ (0)
   {
-    reflectParameter ("angle", &angle_);
-  }
-  
-  
-  void RevoluteServo::
-  setAngle (double aa)
-  {
-    angle_ = aa;
-  }
-  
-  
-  void RevoluteServo::
-  integrate (double dt)
-  {
-    if (parent_) {
-      parent_->motion_.Set (parent_->motion_.X(), parent_->motion_.Y(), angle_);
-    }
-  }
+    reflectSlot ("drive", &drive_);
+    reflectSlot ("servo", &servo_);
+    reflectSlot ("sensor", &sensor_);
+  };
   
 }

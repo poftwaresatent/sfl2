@@ -26,20 +26,16 @@
 
 namespace npm2 {
   
-  class Object;
-  
   
   class RevoluteServo
     : public Actuator
   {
   public:
-    RevoluteServo ();
+    explicit RevoluteServo (string const & name);
     
     void setAngle (double aa);
     
     virtual void integrate (double dt);
-    
-    Object * object_;
     
   protected:
     double angle_;

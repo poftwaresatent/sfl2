@@ -21,14 +21,17 @@
 #ifndef NPM2_ACTUATOR_HPP
 #define NPM2_ACTUATOR_HPP
 
+#include <npm2/Object.hpp>
+
 
 namespace npm2 {
   
   
   class Actuator
+    : public Object
   {
   public:
-    virtual ~Actuator () {}
+    explicit Actuator (string const & name);
     
     virtual void integrate (double dt) = 0;
   };

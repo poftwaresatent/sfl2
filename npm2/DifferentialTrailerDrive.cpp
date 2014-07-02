@@ -19,7 +19,6 @@
  */
 
 #include "DifferentialTrailerDrive.hpp"
-#include "Object.hpp"
 #include <cmath>
 
 
@@ -27,32 +26,24 @@ namespace npm2 {
   
   
   DifferentialTrailerDrive::
-  DifferentialTrailerDrive ()
-    : wheel_radius_ (1.0),
-      wheel_base_ (1.0),
+  DifferentialTrailerDrive (string const & name)
+    : DifferentialDrive (name),
       hitch_offset_ (1.0),
       trailer_arm_ (1.0),
-      tractor_ (0),
       trailer_ (0),
-      speed_left_ (0.0),
-      speed_right_ (0.0),
       trailer_angle_ (0.0)
   {
-  }
-  
-  
-  void DifferentialTrailerDrive::
-  setSpeed (double wl, double wr)
-  {
-    speed_left_ = wl;
-    speed_right_ = wr;
+    reflectParameter ("hitch_offset", &hitch_offset_);
+    reflectParameter ("trailer_arm", &trailer_arm_);
+    reflectParameter ("trailer_angle", &trailer_angle_);
+    reflectSlot ("trailer", &trailer_);
   }
   
   
   void DifferentialTrailerDrive::
   integrate (double dt)
   {
-    if (( ! tractor_) || ( ! trailer_)) {
+    if (( ! parent_) || ( ! trailer_)) {
       return;
     }
     
@@ -62,9 +53,9 @@ namespace npm2 {
     double const vrot ((dr - dl) / wheel_base_);
     double const dphi ();
     
-    tractor_->motion_.Add (dt * vtrans * tractor_->motion_.Costheta(),
-			   dt * vtrans * tractor_->motion_.Sintheta(),
-			   dt * vrot);
+    parent_->motion_.Add (dt * vtrans * parent_->motion_.Costheta(),
+			  dt * vtrans * parent_->motion_.Sintheta(),
+			  dt * vrot);
     
     trailer_angle_ -=
       dt * (vtrans * sin (trailer_angle_)

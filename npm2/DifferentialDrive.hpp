@@ -33,16 +33,14 @@ namespace npm2 {
     : public Actuator
   {
   public:
-    DifferentialDrive ();
+    explicit DifferentialDrive (string const & name);
     
     void setSpeed (double wl, double wr);
     
     virtual void integrate (double dt);
     
-    double wheel_radius_;
+    double wheel_radius_;	// could hide these and use fpplib to read them, e.g. for plotting
     double wheel_base_;
-    
-    Object * object_;
     
   protected:
     double speed_left_;

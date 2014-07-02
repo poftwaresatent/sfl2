@@ -18,35 +18,32 @@
  * USA
  */
 
-#include "RevoluteServo.hpp"
-#include "Object.hpp"
+#ifndef NPM2_ALICE_HPP
+#define NPM2_ALICE_HPP
+
+#include <fpplib/configurable.hpp>
 
 
 namespace npm2 {
   
+  using namespace std;
+
+  class DifferentialDrive;
+  class RevoluteServo;
+  class RayDistanceSensor;
   
-  RevoluteServo::
-  RevoluteServo (string const & name)
-    : Actuator (name),
-      angle_ (0.0)
+  
+  class Alice
+    : public fpplib::Configurable
   {
-    reflectParameter ("angle", &angle_);
-  }
-  
-  
-  void RevoluteServo::
-  setAngle (double aa)
-  {
-    angle_ = aa;
-  }
-  
-  
-  void RevoluteServo::
-  integrate (double dt)
-  {
-    if (parent_) {
-      parent_->motion_.Set (parent_->motion_.X(), parent_->motion_.Y(), angle_);
-    }
-  }
+  public:
+    explicit Alice (string const & name);
+    
+    DifferentialDrive * drive_;
+    RevoluteServo * servo_;
+    RayDistanceSensor * sensor_;
+  };
   
 }
+
+#endif // NPM2_ALICE_HPP

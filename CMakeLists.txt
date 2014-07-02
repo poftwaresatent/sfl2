@@ -206,6 +206,8 @@ if (GTK2_FOUND)
     npm2/Body.cpp
     npm2/BBox.cpp
     npm2/Object.cpp
+    npm2/Actuator.cpp
+    npm2/Sensor.cpp
     npm2/DifferentialDrive.cpp
     npm2/DifferentialTrailerDrive.cpp
     npm2/RevoluteServo.cpp
@@ -213,6 +215,7 @@ if (GTK2_FOUND)
     npm2/Simulator.cpp
     npm2/Factory.cpp
     npm2/gfx.cpp
+    npm2/Alice.cpp
     )
   target_link_libraries (npm2 sfl fpplib ${GTK2_LIBRARIES})
   

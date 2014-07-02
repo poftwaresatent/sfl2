@@ -18,35 +18,16 @@
  * USA
  */
 
-#include "RevoluteServo.hpp"
-#include "Object.hpp"
+#include "Sensor.hpp"
 
 
 namespace npm2 {
   
   
-  RevoluteServo::
-  RevoluteServo (string const & name)
-    : Actuator (name),
-      angle_ (0.0)
+  Sensor::
+  Sensor (string const & name)
+    : Object (name)
   {
-    reflectParameter ("angle", &angle_);
-  }
-  
-  
-  void RevoluteServo::
-  setAngle (double aa)
-  {
-    angle_ = aa;
-  }
-  
-  
-  void RevoluteServo::
-  integrate (double dt)
-  {
-    if (parent_) {
-      parent_->motion_.Set (parent_->motion_.X(), parent_->motion_.Y(), angle_);
-    }
   }
   
 }
