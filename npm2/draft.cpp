@@ -1,3 +1,23 @@
+/* Nepumuk Mobile Robot Simulator v2
+ *
+ * Copyright (C) 2014 Roland Philippsen. All rights reserved.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
+
 #include <npm2/DifferentialDrive.hpp>
 #include <npm2/DifferentialTrailerDrive.hpp>
 #include <npm2/RevoluteServo.hpp>
@@ -61,11 +81,79 @@ static void recurse_draw (Object const * obj)
 static void cb_draw ()
 {
   BBox const & bbox (world.getBBox());
-  if (bbox.isValid()) {
-    static double const margin (0.1);
-    gfx::set_view (bbox.x0() - margin, bbox.y0() - margin, bbox.x1() + margin, bbox.y1() + margin);
-    recurse_draw (&world);
+  if ( ! bbox.isValid()) {
+    return;
   }
+  
+  // world
+  
+  static double const margin (0.1);
+  gfx::set_view (bbox.x0() - margin, bbox.y0() - margin, bbox.x1() + margin, bbox.y1() + margin);
+  recurse_draw (&world);
+  
+  // bob drive
+  
+  gfx::set_pen (2.0, 0.0, 0.5, 0.5, 1.0);
+  double x0, y0, x1, y1;
+  x0 =  0.0;
+  y0 = -bob_drive.wheel_base_ / 2.0;
+  x1 =  0.0;
+  y1 = -y0;
+  bob_drive.tractor_->getGlobal().To (x0, y0);
+  bob_drive.tractor_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  x0 = -bob_drive.wheel_radius_;
+  y0 =  bob_drive.wheel_base_ / 2.0;
+  x1 = -x0;
+  y1 =  y0;
+  bob_drive.tractor_->getGlobal().To (x0, y0);
+  bob_drive.tractor_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  x0 = -bob_drive.wheel_radius_;
+  y0 = -bob_drive.wheel_base_ / 2.0;
+  x1 = -x0;
+  y1 =  y0;
+  bob_drive.tractor_->getGlobal().To (x0, y0);
+  bob_drive.tractor_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  x0 = -bob_drive.hitch_offset_;
+  y0 =  0.0;
+  x1 =  0.0;
+  y1 =  0.0;
+  bob_drive.tractor_->getGlobal().To (x0, y0);
+  bob_drive.tractor_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  x0 = -bob_drive.hitch_offset_;
+  y0 =  0.0;
+  x1 =  x0 - bob_drive.trailer_arm_ * cos (bob_drive.getTrailerAngle());
+  y1 =     - bob_drive.trailer_arm_ * sin (bob_drive.getTrailerAngle());
+  bob_drive.tractor_->getGlobal().To (x0, y0);
+  bob_drive.tractor_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+
+  gfx::set_pen (2.0, 0.0, 0.6, 0.4, 1.0);
+  x0 =  0.0;
+  y0 = -bob_drive.wheel_base_ / 2.0;
+  x1 =  0.0;
+  y1 = -y0;
+  bob_drive.trailer_->getGlobal().To (x0, y0);
+  bob_drive.trailer_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  x0 = -bob_drive.wheel_radius_;
+  y0 =  bob_drive.wheel_base_ / 2.0;
+  x1 = -x0;
+  y1 =  y0;
+  bob_drive.trailer_->getGlobal().To (x0, y0);
+  bob_drive.trailer_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  x0 = -bob_drive.wheel_radius_;
+  y0 = -bob_drive.wheel_base_ / 2.0;
+  x1 = -x0;
+  y1 =  y0;
+  bob_drive.trailer_->getGlobal().To (x0, y0);
+  bob_drive.trailer_->getGlobal().To (x1, y1);
+  gfx::draw_line (x0, y0, x1, y1);
+  
 }
 
 
@@ -205,8 +293,11 @@ int main (int argc, char ** argv)
   bob_drive.tractor_ = &bob_tractor;
   bob_drive.trailer_ = &bob_trailer;
   
-  static double const hitch_offset (0.2);
+  static double const hitch_offset (0.3);
   static double const trailer_arm (1.0);
+  
+  bob_drive.wheel_radius_ = 0.2;
+  bob_drive.wheel_base_ = 0.4;
   bob_drive.hitch_offset_ = hitch_offset;
   bob_drive.trailer_arm_ = trailer_arm;
   
@@ -218,10 +309,10 @@ int main (int argc, char ** argv)
   
   bob_tractor.mount_.Set (0.0, 2.5, M_PI);
   
-  bob_trailer.body_.addLine (-trailer_arm, -0.2,          0.0, -0.2);
-  bob_trailer.body_.addLine (-trailer_arm,  0.2,          0.0,  0.2);
-  bob_trailer.body_.addLine (-trailer_arm, -0.2, -trailer_arm,  0.2);
-  bob_trailer.body_.addLine (         0.0, -0.2,          0.0,  0.2);
+  bob_trailer.body_.addLine (       -0.3, -0.3, trailer_arm, -0.3);
+  bob_trailer.body_.addLine (       -0.3,  0.3, trailer_arm,  0.3);
+  bob_trailer.body_.addLine (       -0.3, -0.3,        -0.3,  0.3);
+  bob_trailer.body_.addLine (trailer_arm, -0.3, trailer_arm,  0.3);
   bob_trailer.setParent (&bob_tractor);
   
   // Make sure we can draw something before we start running.
