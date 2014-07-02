@@ -1,5 +1,4 @@
-/* Nepumuk Mobile Robot Simulator v2
- *
+/* 
  * Copyright (C) 2014 Roland Philippsen. All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -18,38 +17,46 @@
  * USA
  */
 
-#include "Body.hpp"
+#include "Simulator.hpp"
+#include "Object.hpp"
+#include <boost/bind.hpp>
+
 
 namespace npm2 {
   
   
-  void Body::
-  addLine (Line const & line)
+  Simulator::
+  Simulator (string const & name)
+    : fpplib::Configurable (name),
+      world_ (0),
+      timestep_ (0.1),
+      state_ (PAUSE)
   {
-    local_lines_.push_back (line);
+    reflectSlot ("world", &world_);
+    reflectParameter ("timestep", &timestep_,
+		      /** \todo parameter guards have unclear ownership */
+		      new fpplib::StrictlyPositiveGuard <double> ());
+    reflectCallback <string> ("state", true,
+			      boost::bind (&Simulator::setState, this, _1));
   }
   
   
-  void Body::
-  addLine (double x0, double y0, double x1, double y1)
+  bool Simulator::
+  setState (string const & value)
   {
-    local_lines_.push_back (Line (x0, y0, x1, y1));
-  }
-
-  
-  void Body::
-  transformTo (Frame const & global)
-  {
-    if (global_lines_.size() != local_lines_.size()) {
-      global_lines_.resize (local_lines_.size());
+    if ("pause" == value || "PAUSE" == value) {
+      state_ = PAUSE;
     }
-    
-    bbox_.reset();
-    for (size_t il(0); il < local_lines_.size(); ++il) {
-      global_lines_[il] = local_lines_[il];
-      global_lines_[il].TransformTo (global);
-      bbox_.update (global_lines_[il]);
+    else if ("step" == value || "STEP" == value) {
+      state_ = STEP;
     }
+    else if ("run" == value || "RUN" == value) {
+      state_ = RUN;
+    }
+    else {
+      return false;
+    }
+    return true;
   }
   
 }

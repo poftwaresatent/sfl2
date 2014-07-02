@@ -1,0 +1,24 @@
+- Object:
+    name: world
+    lines:
+      - [ -5, -5,  5, -5 ]
+      - [  5, -5,  5,  5 ]
+      - [  5,  5, -5,  5 ]
+      - [ -5,  5, -5, -5 ]
+
+- Object:
+    name: alice
+    parent: world
+    mount: [ 0.0, -2.5, 0.0 ]
+    lines:
+      - [ -0.2, -0.4,  0.4, -0.2 ]
+      - [ -0.2,  0.4,  0.4,  0.2 ]
+      - [  0.4, -0.2,  0.4,  0.2 ]
+      - [ -0.2,  0.4, -0.2, -0.4 ]
+
+
+- Simulator:
+    name: draft
+    world: world
+    timestep: 0.1
+    state: run

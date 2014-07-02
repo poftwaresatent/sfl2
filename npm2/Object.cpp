@@ -20,22 +20,31 @@
 
 #include "Object.hpp"
 #include "Sensor.hpp"
+#include <boost/bind.hpp>
 
 
 namespace npm2 {
-
+  
+  
+  Object::registry_t Object::registry;
+  
   
   Object::
-  Object (string const & name_)
-    : name (name_),
+  Object (string const & name)
+    : fpplib::Configurable (name),
       parent_ (0)
   {
+    registry.add (name, this);
+    reflectParameter ("mount", &mount_);
+    reflectCallback<string> ("parent", true, boost::bind (&Object::findSetParent, this, _1));
+    reflectCallback<Line> ("lines", true, boost::bind (&Object::addLine, this, _1));
   }
   
   
   Object::
   ~Object()
   {
+    registry.remove (name, this);
   }
   
   
@@ -49,6 +58,29 @@ namespace npm2 {
     if (parent_) {
       parent_->children_.insert (this);
     }
+  }
+  
+  
+  bool Object::
+  findSetParent (string const & name)
+  {
+    Object * obj (registry.find(name));
+    if( ! obj) {
+      return false;
+    }
+    if (obj == this) {
+      return false;
+    }
+    setParent (obj);
+    return true;
+  }
+  
+  
+  bool Object::
+  addLine (Line const & line)
+  {
+    body_.addLine (line);
+    return true;
   }
   
   

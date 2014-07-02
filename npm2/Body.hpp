@@ -38,7 +38,10 @@ namespace npm2 {
   public:
     typedef vector <Line> lines_t;
     
-    /** Adds lines wrt the local reference frame. */
+    /** Adds a line wrt the local reference frame. */
+    void addLine (Line const & line);
+    
+    /** Adds a line wrt the local reference frame. */
     void addLine (double x0, double y0, double x1, double y1);
     
     /** Transforms the lines to the given global reference frame. */

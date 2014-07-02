@@ -1,5 +1,4 @@
-/* Nepumuk Mobile Robot Simulator v2
- *
+/* 
  * Copyright (C) 2014 Roland Philippsen. All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -18,38 +17,38 @@
  * USA
  */
 
-#include "Body.hpp"
+#ifndef NPM2_SIMULATOR_HPP
+#define NPM2_SIMULATOR_HPP
+
+#include <fpplib/configurable.hpp>
+
 
 namespace npm2 {
   
+  using namespace std;
   
-  void Body::
-  addLine (Line const & line)
+  class Object;
+  
+  
+  class Simulator
+    : public fpplib::Configurable
   {
-    local_lines_.push_back (line);
-  }
-  
-  
-  void Body::
-  addLine (double x0, double y0, double x1, double y1)
-  {
-    local_lines_.push_back (Line (x0, y0, x1, y1));
-  }
-
-  
-  void Body::
-  transformTo (Frame const & global)
-  {
-    if (global_lines_.size() != local_lines_.size()) {
-      global_lines_.resize (local_lines_.size());
-    }
+  public:
+    typedef enum {
+      PAUSE,
+      STEP,
+      RUN
+    } state_t;
     
-    bbox_.reset();
-    for (size_t il(0); il < local_lines_.size(); ++il) {
-      global_lines_[il] = local_lines_[il];
-      global_lines_[il].TransformTo (global);
-      bbox_.update (global_lines_[il]);
-    }
-  }
+    explicit Simulator (string const & name);
+    
+    bool setState (string const & value);
+    
+    Object * world_;
+    double timestep_;
+    state_t state_;
+  };
   
 }
+
+#endif // NPM2_SIMULATOR_HPP

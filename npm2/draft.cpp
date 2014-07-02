@@ -23,19 +23,21 @@
 #include <npm2/RevoluteServo.hpp>
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/gfx.hpp>
+#include <npm2/Simulator.hpp>
+#include <npm2/Factory.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 
 #include <cmath>
 #include <stdio.h>
+#include <err.h>
 
 
 using namespace npm2;
 
 
-static Object world ("world");
-
-static Object alice ("alice");
+static Simulator * simulator (0);
+static Object * alice (0);
 static DifferentialDrive alice_drive;
 static RevoluteServo alice_servo;
 static RayDistanceSensor alice_sensor ("alice_sensor");
@@ -47,12 +49,6 @@ static DifferentialTrailerDrive bob_drive;
 static double const timestep (0.1);
 
 static double mx0, my0, mx1, my1;
-
-static enum {
-  PAUSE,
-  STEP,
-  RUN
-} state (STEP);
 
 
 static void recurse_draw (Object const * obj)
@@ -80,7 +76,7 @@ static void recurse_draw (Object const * obj)
 
 static void cb_draw ()
 {
-  BBox const & bbox (world.getBBox());
+  BBox const & bbox (simulator->world_->getBBox());
   if ( ! bbox.isValid()) {
     return;
   }
@@ -89,7 +85,7 @@ static void cb_draw ()
   
   static double const margin (0.1);
   gfx::set_view (bbox.x0() - margin, bbox.y0() - margin, bbox.x1() + margin, bbox.y1() + margin);
-  recurse_draw (&world);
+  recurse_draw (simulator->world_);
   
   // bob drive
   
@@ -178,9 +174,9 @@ static void tick ()
   alice_servo.integrate (timestep);
   bob_drive.integrate (timestep);
   
-  world.updateTransform ();
+  simulator->world_->updateTransform ();
   alice_sensor.sensorReset ();
-  world.updateSensor (&alice_sensor);
+  simulator->world_->updateSensor (&alice_sensor);
   
   // printf ("% 3zu    %+6.3f  %+6.3f  %+6.3f    %+6.3f\n",
   // 	  count++,
@@ -192,26 +188,21 @@ static void tick ()
   double thref;
   if (bob_tractor.getGlobal().X() > bob_tractor.getGlobal().Y()) {
     if (bob_tractor.getGlobal().X() > - bob_tractor.getGlobal().Y()) {
-      thref = 105.0 * M_PI / 180.0;
-      //      printf ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+      thref = 100.0 * M_PI / 180.0;
     }
     else {
-      thref = 15.0 * M_PI / 180.0;
-      //      printf ("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n");
+      thref = 10.0 * M_PI / 180.0;
     }
   }
   else {
     if (bob_tractor.getGlobal().X() > - bob_tractor.getGlobal().Y()) {
-      thref = 195.0 * M_PI / 180.0;
-      //      printf ("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n");
+      thref = 190.0 * M_PI / 180.0;
     }
     else {
-      thref = -75.0 * M_PI / 180.0;
-      //      printf ("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n");
+      thref = -80.0 * M_PI / 180.0;
     }
   }
   double const dhead (mod2pi (thref - bob_tractor.getGlobal().Theta()));
-  //printf ("%g\n", dhead);
   static double const dth (5.0 * M_PI / 180.0);
   if (fabs (dhead) <= dth) {
     bob_drive.setSpeed (0.02, 0.02);
@@ -231,14 +222,14 @@ static void tick ()
 
 static void cb_idle ()
 {
-  switch (state) {
-  case PAUSE:
+  switch (simulator->state_) {
+  case Simulator::PAUSE:
     break;
-  case STEP:
+  case Simulator::STEP:
     tick();
-    state = PAUSE;
+    simulator->state_ = Simulator::PAUSE;
     break;
-  case RUN:
+  case Simulator::RUN:
   default:
     tick();
   }
@@ -247,45 +238,89 @@ static void cb_idle ()
 
 static void cb_pause ()
 {
-  if (state == RUN) {
-    state = PAUSE;
+  if (simulator->state_ == Simulator::RUN) {
+    simulator->state_ = Simulator::PAUSE;
   }
   else {
-    state = RUN;
+    simulator->state_ = Simulator::RUN;
   }
 }
 
 
 static void cb_next ()
 {
-  state = STEP;
+  simulator->state_ = Simulator::STEP;
+}
+
+
+static void parse_cfile (char const * cfname)
+{
+  npm2::Factory & ff (npm2::Factory::instance());
+  if ( ! ff.parseFile (cfname, &cerr)) {
+    errx (EXIT_FAILURE, "%s: parse error (see above messages)", cfname);
+  }
+}
+
+
+static void parse_args (int argc, char ** argv)
+{
+  bool config_ok (false);
+  
+  for (int ii (1); ii < argc; ++ii) {
+    if (0 == strcmp ("-c", argv[ii])) {
+      if (++ii >= argc) {
+	errx (EXIT_FAILURE, "-c option expects argument");
+      }
+      parse_cfile (argv[ii]);
+      config_ok = true;
+    }
+    else if (0 == strcmp ("-h", argv[ii])) {
+      printf ("%s cfile [-c cfile] [-h]\n"
+	      "  Nepumuk Mobile Robot Simulator v2\n"
+	      "  Copyright (C) 2014 Roland Philippsen. All rights reserved.\n"
+	      "  Released under the terms of the GNU General Public License.\n"
+	      "\n"
+	      "  -h        print this help message.\n"
+	      "  -c cfile  read additional configuration files.\n",
+	      argv[0]);
+    }
+    else {
+      parse_cfile (argv[ii]);
+      config_ok = true;
+    }
+  }
+  
+  if ( ! config_ok) {
+    errx (EXIT_FAILURE, "expected configuration file");
+  }
 }
 
 
 int main (int argc, char ** argv)
 {
+  parse_args (argc, argv);
+  
+  if (1 != npm2::Factory::instance().findRegistry <Simulator> ()->size()) {
+    errx (EXIT_FAILURE, "exactly one Simulator needs to be configured (for now)");
+  }
+  simulator = npm2::Factory::instance().findRegistry <Simulator> ()->at (0);
+  if ( ! simulator->world_) {
+    errx (EXIT_FAILURE, "no world given to simulator");
+  }
+  
   //////////////////////////////////////////////////
   
-  world.body_.addLine (-5.0, -5.0,  5.0, -5.0);
-  world.body_.addLine ( 5.0, -5.0,  5.0,  5.0);
-  world.body_.addLine ( 5.0,  5.0, -5.0,  5.0);
-  world.body_.addLine (-5.0,  5.0, -5.0, -5.0);
+  alice = npm2::Factory::instance().find <Object> ("alice");
+  if ( ! alice) {
+    errx (EXIT_FAILURE, "cannot find alice");
+  }
   
-  //////////////////////////////////////////////////
-  
-  alice.body_.addLine (-0.2, -0.4,  0.4, -0.2);
-  alice.body_.addLine (-0.2,  0.4,  0.4,  0.2);
-  alice.body_.addLine ( 0.4, -0.2,  0.4,  0.2);
-  alice.body_.addLine (-0.2,  0.4, -0.2, -0.4);
-  alice.setParent (&world);
-  alice.mount_.Set (0.0, -2.5, 0.0);
-  
-  alice_drive.object_ = &alice;
+  alice_drive.object_ = alice;
   
   alice_servo.object_ = &alice_sensor;
   
   alice_sensor.max_distance_ = 10000000.0;
-  alice_sensor.setParent (&alice);
+  alice_sensor.setParent (alice);
   alice_sensor.mount_.Set (0.2, 0.0, 0.0);
   
   //////////////////////////////////////////////////
@@ -305,7 +340,7 @@ int main (int argc, char ** argv)
   bob_tractor.body_.addLine (-hitch_offset,  0.3,           0.4,  0.3);
   bob_tractor.body_.addLine (-hitch_offset, -0.3, -hitch_offset,  0.3);
   bob_tractor.body_.addLine (          0.4, -0.3,           0.4,  0.3);
-  bob_tractor.setParent (&world);
+  bob_tractor.setParent (simulator->world_);
   
   bob_tractor.mount_.Set (0.0, 2.5, M_PI);
   
@@ -317,7 +352,7 @@ int main (int argc, char ** argv)
   
   // Make sure we can draw something before we start running.
   //
-  world.updateTransform ();
+  simulator->world_->updateTransform ();
   
   //////////////////////////////////////////////////
   
