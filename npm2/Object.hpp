@@ -71,6 +71,8 @@ namespace npm2 {
     
     Frame const & getGlobal () const { return global_; }
     
+    Object const * getParent () const { return parent_; }
+    
     /** \note The bounds include the bodies of all children. */
     BBox const & getBBox () const { return bbox_; }
     

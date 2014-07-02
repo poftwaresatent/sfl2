@@ -31,6 +31,8 @@ namespace npm2 {
       distance_ (1.0),
       max_distance_ (1.0)
   {
+    reflectParameter ("max_distance", &max_distance_);
+    reflectParameter ("distance", &distance_);
   }
   
   

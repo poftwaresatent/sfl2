@@ -18,13 +18,13 @@
  * USA
  */
 
-#include <npm2/DifferentialDrive.hpp>
 #include <npm2/DifferentialTrailerDrive.hpp>
-#include <npm2/RevoluteServo.hpp>
 #include <npm2/RayDistanceSensor.hpp>
+#include <npm2/RevoluteServo.hpp>
 #include <npm2/gfx.hpp>
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
+#include <npm2/Alice.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 
@@ -37,14 +37,11 @@ using namespace npm2;
 
 
 static Simulator * simulator (0);
-static Object * alice (0);
-static DifferentialDrive alice_drive;
-static RevoluteServo alice_servo;
-static RayDistanceSensor alice_sensor ("alice_sensor");
+static Alice * alice (0);
 
 static Object bob_tractor ("bob_tractor");
 static Object bob_trailer ("bob_trailer");
-static DifferentialTrailerDrive bob_drive;
+static DifferentialTrailerDrive bob_drive ("bob_drive");
 
 static double const timestep (0.1);
 
@@ -87,7 +84,7 @@ static void cb_draw ()
   gfx::set_view (bbox.x0() - margin, bbox.y0() - margin, bbox.x1() + margin, bbox.y1() + margin);
   recurse_draw (simulator->world_);
   
-  // bob drive
+  // bob drive: should now be handled via some standardized object drawing scheme
   
   gfx::set_pen (2.0, 0.0, 0.5, 0.5, 1.0);
   double x0, y0, x1, y1;
@@ -95,36 +92,36 @@ static void cb_draw ()
   y0 = -bob_drive.wheel_base_ / 2.0;
   x1 =  0.0;
   y1 = -y0;
-  bob_drive.tractor_->getGlobal().To (x0, y0);
-  bob_drive.tractor_->getGlobal().To (x1, y1);
+  bob_drive.getParent()->getGlobal().To (x0, y0);
+  bob_drive.getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
   x0 = -bob_drive.wheel_radius_;
   y0 =  bob_drive.wheel_base_ / 2.0;
   x1 = -x0;
   y1 =  y0;
-  bob_drive.tractor_->getGlobal().To (x0, y0);
-  bob_drive.tractor_->getGlobal().To (x1, y1);
+  bob_drive.getParent()->getGlobal().To (x0, y0);
+  bob_drive.getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
   x0 = -bob_drive.wheel_radius_;
   y0 = -bob_drive.wheel_base_ / 2.0;
   x1 = -x0;
   y1 =  y0;
-  bob_drive.tractor_->getGlobal().To (x0, y0);
-  bob_drive.tractor_->getGlobal().To (x1, y1);
+  bob_drive.getParent()->getGlobal().To (x0, y0);
+  bob_drive.getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
   x0 = -bob_drive.hitch_offset_;
   y0 =  0.0;
   x1 =  0.0;
   y1 =  0.0;
-  bob_drive.tractor_->getGlobal().To (x0, y0);
-  bob_drive.tractor_->getGlobal().To (x1, y1);
+  bob_drive.getParent()->getGlobal().To (x0, y0);
+  bob_drive.getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
   x0 = -bob_drive.hitch_offset_;
   y0 =  0.0;
   x1 =  x0 - bob_drive.trailer_arm_ * cos (bob_drive.getTrailerAngle());
   y1 =     - bob_drive.trailer_arm_ * sin (bob_drive.getTrailerAngle());
-  bob_drive.tractor_->getGlobal().To (x0, y0);
-  bob_drive.tractor_->getGlobal().To (x1, y1);
+  bob_drive.getParent()->getGlobal().To (x0, y0);
+  bob_drive.getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
 
   gfx::set_pen (2.0, 0.0, 0.6, 0.4, 1.0);
@@ -170,20 +167,15 @@ static void tick ()
 {
   static size_t count (0);
   
-  alice_drive.integrate (timestep);
-  alice_servo.integrate (timestep);
+  alice->drive_->integrate (timestep);
+  alice->servo_->integrate (timestep);
   bob_drive.integrate (timestep);
   
   simulator->world_->updateTransform ();
-  alice_sensor.sensorReset ();
-  simulator->world_->updateSensor (&alice_sensor);
+  alice->sensor_->sensorReset ();
+  simulator->world_->updateSensor (alice->sensor_);
   
-  // printf ("% 3zu    %+6.3f  %+6.3f  %+6.3f    %+6.3f\n",
-  // 	  count++,
-  // 	  alice.getGlobal().X(), alice.getGlobal().Y(), alice.getGlobal().Theta(),
-  // 	  alice_sensor.distance_);
-  
-  alice_drive.setSpeed (0.02, 0.04);
+  alice->drive_->setSpeed (0.02, 0.04);
   
   double thref;
   if (bob_tractor.getGlobal().X() > bob_tractor.getGlobal().Y()) {
@@ -216,7 +208,7 @@ static void tick ()
   
   static double amp (5.0 * M_PI / 180.0);
   static double omg (2.0 * M_PI / 5.0);
-  alice_servo.setAngle (amp * cos (omg * count * timestep));
+  alice->servo_->setAngle (amp * cos (omg * count * timestep));
 }
 
 
@@ -310,22 +302,14 @@ int main (int argc, char ** argv)
   
   //////////////////////////////////////////////////
   
-  alice = npm2::Factory::instance().find <Object> ("alice");
+  alice = npm2::Factory::instance().find <Alice> ("alice");
   if ( ! alice) {
     errx (EXIT_FAILURE, "cannot find alice");
   }
   
-  alice_drive.object_ = alice;
-  
-  alice_servo.object_ = &alice_sensor;
-  
-  alice_sensor.max_distance_ = 10000000.0;
-  alice_sensor.setParent (alice);
-  alice_sensor.mount_.Set (0.2, 0.0, 0.0);
-  
   //////////////////////////////////////////////////
   
-  bob_drive.tractor_ = &bob_tractor;
+  bob_drive.setParent (&bob_tractor);
   bob_drive.trailer_ = &bob_trailer;
   
   static double const hitch_offset (0.3);
