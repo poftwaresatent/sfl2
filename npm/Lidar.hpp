@@ -66,7 +66,6 @@ namespace npm {
   public:
     virtual void InitUpdate();
     virtual void StepUpdate(const sfl::Line & line);
-    virtual void FinalizeUpdate();
     
     boost::shared_ptr<sfl::Scanner> GetScanner() { return m_scanner; }
     boost::shared_ptr<const sfl::Scanner> GetScanner() const

@@ -26,6 +26,7 @@
 #define SUNFLOWER_SCANNER_HPP
 
 
+#include <sfl/api/LocalizationInterface.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
@@ -123,7 +124,8 @@ namespace sfl {
        section (Scanner class documentation, scroll your browser
        upwards).
     */
-    Scanner(/** proxy object used to retrieve actual data */
+    Scanner(boost::shared_ptr<LocalizationInterface> localization,
+	    /** proxy object used to retrieve actual data */
 	    boost::shared_ptr<HAL> hal,
 	    /** HAL channel number */
 	    int hal_channel,
@@ -237,6 +239,7 @@ namespace sfl {
   protected:
     typedef std::vector<double> vector_t;
     
+    boost::shared_ptr<LocalizationInterface> m_localization;
     boost::shared_ptr<HAL> m_hal;
     std::vector<boost::shared_ptr<Scan> > m_buffer;
     boost::shared_ptr<Scan> m_dirty, m_clean; // would need to be mutexed for multithreading

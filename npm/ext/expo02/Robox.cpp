@@ -216,13 +216,13 @@ Initialize(npm::RobotServer &server)
 			      m_params.rear_phi0,
 			      m_params.rear_phirange,
 			      m_params.rear_channel)->GetScanner();
-  boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(m_hal));
+  boost::shared_ptr<sfl::Multiscanner> mscan(new Multiscanner(server.CreateFakeLocalization(), m_hal));
   mscan->Add(front);
   mscan->Add(rear);
   
   m_drive = server.DefineDiffDrive(m_params.model_wheelbase, m_params.model_wheelradius);
   
-  m_imp.reset(new npm::VisualRobox(name, m_params, hull, m_hal, mscan));
+  m_imp.reset(new npm::VisualRobox(name, m_params, hull, server.CreateFakeLocalization(), m_hal, mscan));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     server.AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));

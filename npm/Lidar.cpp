@@ -102,10 +102,4 @@ namespace npm {
     }
   }
   
-  
-  void Lidar::
-  FinalizeUpdate()
-  {
-  }
-  
 }

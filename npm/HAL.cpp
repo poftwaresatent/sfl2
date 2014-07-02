@@ -62,38 +62,6 @@ namespace npm {
   
   
   int HAL::
-  odometry_get(struct timespec * stamp,
-	       double * x, double * y, double * theta,
-	       double * sxx, double * syy, double * stt,
-	       double * sxy, double * sxt, double * syt)
-  {
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    TIMEVAL_TO_TIMESPEC(&tv, stamp);
-    
-    const sfl::Frame * pose;
-    if(m_odometry_noise){
-      pose = m_owner->GetNoisyPose();
-      if( ! pose){
-	pose = & m_owner->GetTruePose();
-	PVDEBUG("noisy odometry is BROKEN!\n");
-      }
-    }
-    else
-      pose = & m_owner->GetTruePose();
-    
-    pose->Get(*x, *y, *theta);
-    *sxx = 1;
-    *syy = 1;
-    *stt = 1;
-    *sxy = 0;
-    *sxt = 0;
-    *syt = 0;
-    return 0;
-  }
-  
-  
-  int HAL::
   speed_set(const double * qdot, size_t * qdot_len)
   {
     if (( ! qdot) || ( ! qdot_len)) {

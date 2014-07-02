@@ -26,6 +26,7 @@
 #include "HAL.hpp"
 #include "Scan.hpp"
 #include "Timestamp.hpp"
+#include "Pose.hpp"
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Frame.hpp>
 #include <boost/scoped_array.hpp>
@@ -40,7 +41,8 @@ namespace sfl {
   
   
   Scanner::
-  Scanner(shared_ptr<HAL> hal, int _hal_channel, const Frame & _mount,
+  Scanner(shared_ptr<LocalizationInterface> localization,
+	  shared_ptr<HAL> hal, int _hal_channel, const Frame & _mount,
 	  size_t _nscans, double _rhomax, double _phi0, double _phirange)
     : mount(new Frame(_mount)),
       hal_channel(_hal_channel),
@@ -50,6 +52,7 @@ namespace sfl {
       phirange(_phirange),
       dphi(_phirange / _nscans),
       strict_nscans_check(true),
+      m_localization(localization),
       m_hal(hal),
       m_acquisition_ok(false),
       m_cosphi(nscans, 0.0),
@@ -108,20 +111,12 @@ namespace sfl {
       }
     }
     
-    double x, y, theta, sxx, syy, stt, sxy, sxt, syt;
-    timespec_t foo;
-    status = m_hal->odometry_get(&foo, &x, &y, &theta, &sxx, &syy, &stt,
-				 &sxy, &sxt, &syt);
-    if(0 != status){
-      PDEBUG("m_hal->odometry_get() failed with status %d\n", status);
-      m_acquisition_ok = false;
-      return status;
-    }
+    Pose robot_pose;
+    m_localization->GetPose(robot_pose);
     
     m_dirty->tlower = t0;
     m_dirty->tupper = t1;
     m_dirty->scanner_pose.Set(*mount);
-    Frame const robot_pose (x, y, theta);
     robot_pose.To(m_dirty->scanner_pose);
     for(size_t ii(0); ii < nscans; ++ii){
       m_dirty->data[ii].rho = rho[ii];

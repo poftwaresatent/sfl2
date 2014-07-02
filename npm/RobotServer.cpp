@@ -44,15 +44,46 @@
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Scanner.hpp>
+#include <sfl/api/Pose.hpp>
 #include <iostream>
 #include <sstream>
 #include <cmath>
+
+// rfct
+#include <sys/time.h>
 
 
 using namespace sfl;
 using namespace boost;
 using namespace std;
 
+
+namespace {
+  
+  class rfct
+    : public sfl::LocalizationInterface
+  {
+  public:
+    explicit rfct(npm::RobotServer const * server): m_server(server) {}
+    
+    virtual void GetPose (sfl::Pose & pose) {
+      struct timeval tv;
+      gettimeofday(&tv, 0);
+      sfl::timespec_t ts;
+      TIMEVAL_TO_TIMESPEC(&tv, &ts);
+      
+      pose.Set(m_server->GetTruePose().X(),
+	       m_server->GetTruePose().Y(),
+	       m_server->GetTruePose().Theta(),
+	       ts,
+	       1.0, 1.0, 1.0,
+	       0.0, 0.0, 0.0);
+    }
+    
+    npm::RobotServer const * m_server;
+  };
+  
+}
 
 namespace npm {
   
@@ -96,7 +127,8 @@ namespace npm {
     ostringstream os;
     os << m_client->name << "-lidar-" << hal_channel;
     shared_ptr<Scanner>
-      scanner(new Scanner(GetHAL(), hal_channel, mount, nscans,
+      scanner(new Scanner(CreateFakeLocalization(),
+			  GetHAL(), hal_channel, mount, nscans,
 			  rhomax, phi0, phirange));
     return DefineLidar(scanner);
   }
@@ -200,6 +232,13 @@ namespace npm {
   GetHAL()
   {
     return m_hal;
+  }
+  
+  
+  shared_ptr<sfl::LocalizationInterface> RobotServer::
+  CreateFakeLocalization() const
+  {
+    return shared_ptr<rfct>(new rfct(this));
   }
   
   

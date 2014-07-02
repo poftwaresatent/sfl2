@@ -40,32 +40,8 @@
 #include "MotionController.hpp"
 #include <sstream>
 
-// rfct
-#include <sfl/api/HAL.hpp>
-#include <sfl/api/Pose.hpp>
-
 using namespace boost;
 using namespace std;
-
-namespace {
-  
-  class rfct
-    : public sfl::LocalizationInterface
-  {
-  public:
-    explicit rfct(boost::shared_ptr<sfl::HAL> hal): m_hal(hal) {}
-    
-    virtual void GetPose (sfl::Pose & pose) {
-      sfl::timespec_t ts;
-      double xx, yy, th, a, b, c, d, e, f;
-      m_hal->odometry_get(&ts, &xx, &yy, &th, &a, &b, &c, &d, &e, &f);
-      pose.Set(xx, yy, th, ts, a, b, c, d, e, f);
-    }
-    
-    boost::shared_ptr<sfl::HAL> m_hal;
-  };
-  
-}
 
 
 namespace expo {
@@ -74,6 +50,7 @@ namespace expo {
   Robox::
   Robox(expo_parameters const & params,
 	boost::shared_ptr<sfl::Hull> _hull,
+	boost::shared_ptr<sfl::LocalizationInterface> localization,
 	shared_ptr<sfl::HAL> hal,
 	shared_ptr<sfl::Multiscanner> _mscan)
     : hull(_hull),
@@ -92,8 +69,7 @@ namespace expo {
     robotModel.reset(new sfl::RobotModel(modelParms, hull));
     motionController.
       reset(new MotionController(robotModel, hal));
-    odometry.reset(new sfl::Odometry());
-    odometry->Init(boost::shared_ptr<rfct>(new rfct(hal)));
+    odometry.reset(new sfl::Odometry(localization));
     if (params.bband_enabled) {
       bubbleBand.
 	reset(new sfl::BubbleBand(*robotModel, *odometry, *mscan,

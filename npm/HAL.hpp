@@ -43,10 +43,6 @@ namespace npm {
     explicit HAL(RobotServer * owner);
     virtual ~HAL();
     
-    virtual int odometry_get(struct ::timespec * stamp,
-			     double * x, double * y, double * theta,
-			     double * sxx, double * syy, double * stt,
-			     double * sxy, double * sxt, double * syt);
     virtual int speed_set(const double * qdot, size_t * qdot_len);
     virtual int speed_get(double * qdot, size_t * qdot_len);
     virtual int scan_get(int channel, double * rho, size_t * rho_len,

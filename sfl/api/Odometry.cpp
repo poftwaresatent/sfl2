@@ -34,23 +34,17 @@ using namespace std;
 namespace sfl {
   
   
-  int Odometry::
-  Init(boost::shared_ptr<LocalizationInterface> localization)
+  Odometry::
+  Odometry(boost::shared_ptr<sfl::LocalizationInterface> localization)
+    : m_localization(localization)
   {
-    m_history.clear();
-    m_localization = localization;
-    return 0;
   }
   
   
   int Odometry::
   Update()
   {
-    if ( ! m_localization) {
-      return 1;
-    }
     Pose pose;
-    Timestamp stamp;
     m_localization->GetPose(pose);
     Update(pose);
     return 0;

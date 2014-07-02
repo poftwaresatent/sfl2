@@ -31,6 +31,7 @@ namespace sfl {
   class Line;
   class Frame;
   class Scanner;
+  class LocalizationInterface;
 }
 
 
@@ -84,6 +85,7 @@ namespace npm {
     boost::shared_ptr<const Lidar> GetLidar(int channel) const;
     boost::shared_ptr<const Sharp> GetSharp(int channel) const;
     boost::shared_ptr<HAL> GetHAL();
+    boost::shared_ptr<sfl::LocalizationInterface> CreateFakeLocalization() const;
     
     void AddLine(double x0, double y0, double x1, double y1);
     void AddLine(const sfl::Line & line);

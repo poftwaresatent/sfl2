@@ -27,6 +27,7 @@
 
 
 #include <sfl/api/Timestamp.hpp>
+#include <sfl/api/LocalizationInterface.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
 
@@ -37,14 +38,6 @@ namespace sfl {
   class Pose;
   
   
-  class LocalizationInterface
-  {
-  public:
-    virtual ~LocalizationInterface() {}
-    virtual void GetPose (Pose & pose) = 0;
-  };
-  
-  
   /**
      \todo nohal: rename to PoseHistory
   */
@@ -53,21 +46,12 @@ namespace sfl {
   public:
     typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
     
-    /**
-       This clears any previous pose history.  If given a non-null
-       LocalizationInterface, subsequent calls to the non-argument
-       variant of Update() will use the timestamped pose provided by
-       that.
-       
-       \todo nohal: void retval
-    */
-    int Init(boost::shared_ptr<LocalizationInterface> localization);
+    explicit Odometry(boost::shared_ptr<sfl::LocalizationInterface> localization);
     
     void Clear() { m_history.clear(); }
     
     /**
-       Uses LocalizationInterface provided to Init().  If that was
-       null, then here we fail with a non-zero error code.
+       Uses LocalizationInterface to get the latest pose.
     */
     int Update();
     

@@ -32,6 +32,7 @@
 
 namespace sfl {
   
+  class LocalizationInterface;
   class HAL;
   class Scanner;
   class Scan;
@@ -54,7 +55,8 @@ namespace sfl {
        \note If you expected an Odometry as argument here, simply use
        Odometry::GetHAL() to bring your code up to date.
     */
-    explicit Multiscanner(boost::shared_ptr<HAL> hal);
+    Multiscanner(boost::shared_ptr<LocalizationInterface> localization,
+		 boost::shared_ptr<HAL> hal);
     
     
     /** Appends a Scanner instance to the list of registered devices. */
@@ -108,6 +110,7 @@ namespace sfl {
   protected:
     typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
     
+    boost::shared_ptr<LocalizationInterface> m_localization;
     boost::shared_ptr<HAL> m_hal;
     size_t m_total_nscans;
     vector_t m_scanner;

@@ -47,9 +47,10 @@ namespace npm {
   VisualRobox(std::string const & name,
 	      expo::expo_parameters const & params,
 	      boost::shared_ptr<sfl::Hull> hull,
+	      boost::shared_ptr<sfl::LocalizationInterface> localization,
 	      boost::shared_ptr<sfl::HAL> hal,
 	      boost::shared_ptr<sfl::Multiscanner> mscan)
-    : expo::Robox(params, hull, hal, mscan)
+    : expo::Robox(params, hull, localization, hal, mscan)
   {
     AddDrawing(new MPDrawing(name + "_goaldrawing", *motionPlanner));
     AddDrawing(new DWDrawing(name + "_dwdrawing", *dynamicWindow));
