@@ -90,7 +90,7 @@ namespace fpplib {
     Reflectable * lookup(string const & name);
     
     /**
-       Read-only access to Refleactbale attributes. Any attribute that
+       Read-only access to Reflectable attributes. Any attribute that
        has been declared by this specific Confiburable subtype or any
        of its ancestors can be retrieved in this manner.
        
