@@ -46,6 +46,17 @@ namespace fpplib {
   using std::vector;
 
 
+  /**
+     Maintains a dictionary of (single-entry) instances, and at the
+     same time a vector of instances.  Multiply defined names end up
+     being single entries in the dictionary (newer additions kick out
+     older entries), whereas the vector remembers all of them.
+     Instances with empty names are ignored (stored neither in the
+     dictionary nor the vector).
+     
+     By default, the registry owns the instances passed to it (except
+     the ones it ignored because they had an empty name).
+  */
   template<typename value_type, bool owns_registered_instances = true>
   class Registry
   {
@@ -74,6 +85,34 @@ namespace fpplib {
       if ( ! instance_name.empty()) {
 	map_[instance_name] = pointer;
 	vector_.push_back(pointer);
+      }
+    }
+    
+    /** Removes an entry, and deletes it in case this registry owns
+	its instances (which is the default behavior). The pointer is
+	needed to ensure that any instance with the given name
+	actually matches the one you want to remove.  Pass a null
+	pointer if you want to skip this check.
+    */
+    void remove(string const & instance_name,
+		pointer_type pointer)
+    {
+      typename map_t::iterator im(map_.find(instance_name));
+      if (map_.end() == im) {
+	return;			// not found
+      }
+      if ((0 != pointer) && (pointer != im->second)) {
+	return;			// mismatching instance
+      }
+      map_.erase (im);
+      for (typename vector_t::iterator iv(vector_.begin()); iv != vector_.end(); ++iv) {
+	if (*iv == pointer) {
+	  vector_.erase (iv);
+	  break;
+	}
+      }
+      if (owns_registered_instances) {
+	delete pointer;
       }
     }
     
