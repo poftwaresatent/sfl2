@@ -216,6 +216,7 @@ if (GTK2_FOUND)
     npm2/Factory.cpp
     npm2/gfx.cpp
     npm2/Alice.cpp
+    npm2/Bob.cpp
     )
   target_link_libraries (npm2 sfl fpplib ${GTK2_LIBRARIES})
   

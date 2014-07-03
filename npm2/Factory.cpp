@@ -25,6 +25,7 @@
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/RevoluteServo.hpp>
 #include <npm2/Alice.hpp>
+#include <npm2/Bob.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <fpplib/yaml_parser.hpp>
@@ -66,6 +67,7 @@ namespace npm2 {
     declare <RayDistanceSensor> ("RayDistanceSensor");
     declare <RevoluteServo> ("RevoluteServo");
     declare <Alice> ("Alice");
+    declare <Bob> ("Bob");
     
     parser_.addConverter <sfl::Line> ();
     parser_.addConverter <sfl::Frame> ();
