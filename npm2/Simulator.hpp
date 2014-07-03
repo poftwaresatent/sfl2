@@ -46,10 +46,12 @@ namespace npm2 {
     
     void simulateActuators ();
     void simulateSensors ();
+    void simulateProcesses ();
     
     Object * world_;
     double timestep_;
     state_t state_;
+    ostream & erros_;
   };
   
 }

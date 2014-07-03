@@ -35,7 +35,7 @@ namespace npm2 {
   public:
     explicit Bob (string const & name);
     
-    virtual bool tick (double timestep);
+    virtual state_t run (double timestep, ostream & erros);
     
     DifferentialTrailerDrive * drive_;
   };

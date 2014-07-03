@@ -37,7 +37,7 @@ namespace npm2 {
   public:
     explicit Alice (string const & name);
     
-    virtual bool tick (double timestep);
+    virtual state_t run (double timestep, ostream & erros);
     
     DifferentialDrive * drive_;
     RevoluteServo * servo_;
