@@ -21,12 +21,11 @@
 #include <npm/Factory.hpp>
 #include <npm/RobotClient.hpp>
 #include <npm/RobotServer.hpp>
-#include <npm/HAL.hpp>
 #include <npm/World.hpp>
 #include <npm/Object.hpp>
+#include <npm/HoloDrive.hpp>
 #include <npm/gfx/TraversabilityDrawing.hpp>
 #include <npm/gfx/wrap_glu.hpp>
-#include <sfl/api/Pose.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -164,7 +163,7 @@ public:
     task_[msg->vehicle] = msg;
     npm::RobotClient const * robot (npm::RobotClient::registry.find (msg->vehicle));
     if (robot) {
-      sfl::Pose pose;
+      sfl::Frame pose;
       if (robot->GetPose (pose)) {
 	start_[msg->vehicle] = pose;
       }
@@ -177,7 +176,7 @@ public:
 private:
   typedef std::map <std::string, Task::ConstPtr> task_t;
   task_t task_;
-  typedef std::map <std::string, sfl::Pose> start_t;
+  typedef std::map <std::string, sfl::Frame> start_t;
   start_t start_;
 };
 
@@ -329,15 +328,15 @@ public:
   }
   
   
-  virtual void InitPose (sfl::Pose const & pose) {}
-  virtual void SetPose (sfl::Pose const & pose) {}
+  virtual void InitPose (sfl::Frame const & pose) {}
+  virtual void SetPose (sfl::Frame const & pose) {}
   
-  virtual bool GetPose (sfl::Pose & pose) const
+  virtual bool GetPose (sfl::Frame & pose) const
   {
     if ( ! server_) {
       return false;
     }
-    pose = server_->GetTruePose();
+    pose = server_->GetPose();
     return true;
   }
   
@@ -537,39 +536,37 @@ public:
   bool move (TrajectoryPoint const & target, double timestep)
   {
     sfl::Frame target_pose (target.x, target.y, target.th);
-    sfl::Frame const & pose (server_->GetTruePose());
+    sfl::Frame const & pose (server_->GetPose());
     pose.From (target_pose);
     double const dhead (atan2 (target_pose.Y(), target_pose.X()));
     double const dist (sqrt (pow (target_pose.X(), 2) + pow (target_pose.Y(), 2)));
     
-    double qd[3];
-    size_t len (3);
     if (dist > align_distance_) {
       if (fabs (dhead) > align_heading_) {
-	qd[0] = 0.0;
-	qd[1] = 0.0;
-	qd[2] = sfl::boundval (-vrot_, dhead / timestep, vrot_);
+	drive_->vx =    0.0;
+	drive_->vy =    0.0;
+	drive_->omega = sfl::boundval (-vrot_, dhead / timestep, vrot_);
       }
       else {
-	qd[0] = sfl::boundval (-vtrans_, dist  / timestep, vtrans_);
-	qd[1] = 0.0;
-	qd[2] = sfl::boundval (-vrot_,   dhead / timestep, vrot_);
+	drive_->vx =    sfl::boundval (-vtrans_, dist  / timestep, vtrans_);
+	drive_->vy =    0.0;
+	drive_->omega = sfl::boundval (-vrot_,   dhead / timestep, vrot_);
       }
     }
     else {
-      qd[0] = sfl::boundval (-vtrans_, target_pose.X()     / timestep, vtrans_);
-      qd[1] = sfl::boundval (-vtrans_, target_pose.Y()     / timestep, vtrans_);
-      qd[2] = sfl::boundval (-vrot_,   target_pose.Theta() / timestep, vrot_);
+      drive_->vx =    sfl::boundval (-vtrans_, target_pose.X()     / timestep, vtrans_);
+      drive_->vy =    sfl::boundval (-vtrans_, target_pose.Y()     / timestep, vtrans_);
+      drive_->omega = sfl::boundval (-vrot_,   target_pose.Theta() / timestep, vrot_);
     }
     
-    return (0 == m_hal->speed_set (qd, &len)) && (3 == len);
+    return true;
   }
   
   
   void publish ()
   {
     VehicleState vehicle_state;
-    sfl::Frame const & pose (server_->GetTruePose());
+    sfl::Frame const & pose (server_->GetPose());
     vehicle_state.location.x = pose.X();
     vehicle_state.location.y = pose.Y();
     vehicle_state.location.z = 0.0;
