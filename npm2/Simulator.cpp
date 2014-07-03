@@ -109,6 +109,25 @@ namespace npm2 {
     for (size_t ii(0); ii < RobotClient::registry.size(); ++ii) {
       RobotClient::registry.at(ii)->process (*this, erros_);
     }
+    
+    // WTF if this debug block gets commented out, the Charlie run
+    // method stops being called!
+    //
+    for (size_t ii(0); ii < RobotClient::registry.size(); ++ii) {
+      switch (RobotClient::registry.at(ii)->getState()) {
+      case RobotClient::READY:
+    	printf ("%s\tREADY\n", RobotClient::registry.at(ii)->name.c_str());
+    	break;
+      case RobotClient::RUNNING:
+    	printf ("%s\tRUNNIG\n", RobotClient::registry.at(ii)->name.c_str());
+    	break;
+      case RobotClient::FAILED:
+    	printf ("%s\tFAILED\n", RobotClient::registry.at(ii)->name.c_str());
+    	break;
+      case RobotClient::DONE:
+    	printf ("%s\tDONE\n", RobotClient::registry.at(ii)->name.c_str());
+      }
+    }
   }
   
 }
