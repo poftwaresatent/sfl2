@@ -57,6 +57,9 @@ static void recurse_draw (Object const * obj)
 		    rds->getGlobal().Y(),
 		    rds->getGlobal().X() + rds->distance_ * rds->getGlobal().Costheta(),
 		    rds->getGlobal().Y() + rds->distance_ * rds->getGlobal().Sintheta());
+    gfx::set_pen (4.0, 1.0, 0.5, 0.0, 1.0);
+    gfx::draw_point (rds->getGlobal().X() + rds->distance_ * rds->getGlobal().Costheta(),
+		     rds->getGlobal().Y() + rds->distance_ * rds->getGlobal().Sintheta());
   }
   
   for (Object::child_iterator_t ic(obj->childBegin()); ic != obj->childEnd(); ++ic) {
