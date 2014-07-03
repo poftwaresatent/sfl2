@@ -24,7 +24,6 @@
 #include <npm2/gfx.hpp>
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
-#include <npm2/Alice.hpp>
 #include <npm2/Bob.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
@@ -38,7 +37,6 @@ using namespace npm2;
 
 
 static Simulator * simulator (0);
-static Alice * alice (0);
 static Bob * bob (0);
 
 static double mx0, my0, mx1, my1;
@@ -163,9 +161,7 @@ static void tick ()
 {
   simulator->simulateActuators ();
   simulator->simulateSensors ();
-  
-  alice->tick (simulator->timestep_);
-  bob->tick (simulator->timestep_);
+  simulator->simulateProcesses ();
 }
 
 
@@ -257,10 +253,6 @@ int main (int argc, char ** argv)
     errx (EXIT_FAILURE, "no world given to simulator");
   }
   
-  alice = npm2::Factory::instance().find <Alice> ("alice");
-  if ( ! alice) {
-    errx (EXIT_FAILURE, "cannot find alice");
-  }
   bob = npm2::Factory::instance().find <Bob> ("bob");
   if ( ! bob) {
     errx (EXIT_FAILURE, "cannot find bob");

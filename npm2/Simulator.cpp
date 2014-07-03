@@ -20,6 +20,7 @@
 #include "Simulator.hpp"
 #include "Actuator.hpp"
 #include "Sensor.hpp"
+#include "RobotClient.hpp"
 #include <boost/bind.hpp>
 
 
@@ -31,7 +32,8 @@ namespace npm2 {
     : fpplib::Configurable (name),
       world_ (0),
       timestep_ (0.1),
-      state_ (PAUSE)
+      state_ (PAUSE),
+      erros_ (cout)
   {
     reflectSlot ("world", &world_);
     reflectParameter ("timestep", &timestep_,
@@ -98,6 +100,15 @@ namespace npm2 {
   simulateSensors ()
   {
     recurse_sense (world_, world_);
+  }
+  
+  
+  void Simulator::
+  simulateProcesses ()
+  {
+    for (size_t ii(0); ii < RobotClient::registry.size(); ++ii) {
+      RobotClient::registry.at(ii)->process (*this, erros_);
+    }
   }
   
 }

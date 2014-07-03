@@ -35,11 +35,12 @@ namespace npm2 {
   }
   
   
-  bool Bob::
-  tick (double timestep)
+  Bob::state_t Bob::
+  run (double timestep, ostream & erros)
   {
     if ( ! drive_) {
-      return false;
+      erros << "Bob " << name << " is missing a drive\n";
+      return FAILED;
     }
     
     double thref;
@@ -71,7 +72,7 @@ namespace npm2 {
       drive_->setSpeed (0.02, 0.0);
     }
     
-    return true;
+    return RUNNING;
   }
   
 }

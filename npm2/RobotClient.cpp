@@ -18,46 +18,63 @@
  * USA
  */
 
-#include "Alice.hpp"
-#include "DifferentialDrive.hpp"
-#include "RevoluteServo.hpp"
-#include "RayDistanceSensor.hpp"
-
-#include <cmath>
+#include "RobotClient.hpp"
+#include "Simulator.hpp"
 
 
 namespace npm2 {
   
   
-  Alice::
-  Alice (string const & name)
-    : RobotClient (name),
-      drive_ (0),
-      servo_ (0),
-      sensor_ (0)
+  RobotClient::registry_t RobotClient::registry;
+  
+  
+  RobotClient::
+  RobotClient (string const & name)
+    : fpplib::Configurable (name),
+      state_ (READY)
   {
-    reflectSlot ("drive", &drive_);
-    reflectSlot ("servo", &servo_);
-    reflectSlot ("sensor", &sensor_);
+    registry.add (name, this);
   }
   
   
-  Alice::state_t Alice::
-  run (double timestep, ostream & erros)
+  RobotClient::
+  ~RobotClient ()
   {
-    if (( ! drive_) || ( ! servo_) || ( ! sensor_)) {
-      erros << "Alice " << name << " needs a drive, servo, and sensor\n";
-      return FAILED;
+    registry.remove (name, this);
+  }
+  
+  
+  RobotClient::state_t RobotClient::
+  process (Simulator const & sim, ostream & erros)
+  {
+    switch (state_) {
+    case READY:
+      state_ = init (erros);
+      break;
+    case RUNNING:
+      state_ = run (sim.timestep_, erros);
+      break;
+    case FAILED:
+      state_ = recover (erros);
+      break;
+      // case DONE:
+      //   do nothing
     }
-    
-    drive_->setSpeed (0.02, 0.04);
-    
-    static double amp (5.0 * M_PI / 180.0);
-    static double omg (2.0 * M_PI / 5.0);
-    static size_t count (0);
-    servo_->setAngle (amp * cos (omg * (count++) * timestep));
-    
+    return state_;
+  }
+  
+  
+  RobotClient::state_t RobotClient::
+  init (ostream & erros)
+  {
     return RUNNING;
+  }
+  
+  
+  RobotClient::state_t RobotClient::
+  recover (ostream & erros)
+  {
+    return FAILED;
   }
   
 }

@@ -22,22 +22,43 @@
 #define NPM2_ROBOT_CLIENT_HPP
 
 #include <fpplib/configurable.hpp>
+#include <iostream>
 
 
 namespace npm2 {
   
   using namespace std;
+
+  class Simulator;
   
   
   class RobotClient
     : public fpplib::Configurable
   {
   public:
-    explicit RobotClient (string const & name): fpplib::Configurable (name) {}
+    typedef enum {
+      READY,
+      RUNNING,
+      FAILED,
+      DONE
+    } state_t;
     
-    virtual bool init () { return true; }
+    typedef fpplib::Registry<RobotClient, false> registry_t;
+    static registry_t registry;
     
-    virtual bool tick (double timestep) = 0;
+    explicit RobotClient (string const & name);
+    virtual ~RobotClient ();
+    
+    state_t process (Simulator const & sim, ostream & erros);
+    state_t getState () const { return state_; }
+    
+  protected:
+    virtual state_t init (ostream & erros);
+    virtual state_t run (double timestep, ostream & erros) = 0;
+    virtual state_t recover (ostream & erros);
+    
+  private:
+    state_t state_;
   };
   
 }

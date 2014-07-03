@@ -215,6 +215,7 @@ if (GTK2_FOUND)
     npm2/Simulator.cpp
     npm2/Factory.cpp
     npm2/gfx.cpp
+    npm2/RobotClient.cpp
     npm2/Alice.cpp
     npm2/Bob.cpp
     )
