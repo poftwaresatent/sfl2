@@ -15,28 +15,53 @@
       - [ -0.2,  0.4,  0.4,  0.2 ]
       - [  0.4, -0.2,  0.4,  0.2 ]
       - [ -0.2,  0.4, -0.2, -0.4 ]
-
 - DifferentialDrive:
     name: alice_drive
     parent: alice_base
     wheel_radius: 0.2
     wheel_base: 0.3
-
 - RayDistanceSensor:
     name: alice_sensor
     parent: alice_base
     mount: [ 0.2, 0.0, 0.0 ]
     max_distance: 100.0
-
 - RevoluteServo:
     name: alice_servo
     parent: alice_sensor
-
 - Alice:
     name: alice
     drive: alice_drive
     sensor: alice_sensor
     servo: alice_servo
+
+- Object:
+    name: bob_tractor
+    parent: world
+    mount: [ 0.0, 2.5, 3.142 ]
+    lines:
+      - [ -0.3, -0.3,  0.4, -0.3 ]
+      - [ -0.3,  0.3,  0.4,  0.3 ]
+      - [ -0.3, -0.3, -0.3,  0.3 ]
+      - [  0.4, -0.3,  0.4,  0.3 ]
+- Object:
+    name: bob_trailer
+    parent: bob_tractor
+    lines:
+      - [ -0.3, -0.3,  1.0, -0.3 ]
+      - [ -0.3,  0.3,  1.0,  0.3 ]
+      - [ -0.3, -0.3, -0.3,  0.3 ]
+      - [  1.0, -0.3,  1.0,  0.3 ]
+- DifferentialTrailerDrive:
+    name: bob_drive
+    parent: bob_tractor
+    trailer: bob_trailer
+    wheel_radius: 0.2
+    wheel_base: 0.4
+    hitch_offset: 0.3
+    trailer_arm: 1.0
+- Bob:
+    name: bob
+    drive: bob_drive
     
 - Simulator:
     name: draft

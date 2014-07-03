@@ -25,6 +25,7 @@
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
 #include <npm2/Alice.hpp>
+#include <npm2/Bob.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 
@@ -38,10 +39,7 @@ using namespace npm2;
 
 static Simulator * simulator (0);
 static Alice * alice (0);
-
-static Object bob_tractor ("bob_tractor");
-static Object bob_trailer ("bob_trailer");
-static DifferentialTrailerDrive bob_drive ("bob_drive");
+static Bob * bob (0);
 
 static double mx0, my0, mx1, my1;
 
@@ -87,62 +85,62 @@ static void cb_draw ()
   gfx::set_pen (2.0, 0.0, 0.5, 0.5, 1.0);
   double x0, y0, x1, y1;
   x0 =  0.0;
-  y0 = -bob_drive.wheel_base_ / 2.0;
+  y0 = -bob->drive_->wheel_base_ / 2.0;
   x1 =  0.0;
   y1 = -y0;
-  bob_drive.getParent()->getGlobal().To (x0, y0);
-  bob_drive.getParent()->getGlobal().To (x1, y1);
+  bob->drive_->getParent()->getGlobal().To (x0, y0);
+  bob->drive_->getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
-  x0 = -bob_drive.wheel_radius_;
-  y0 =  bob_drive.wheel_base_ / 2.0;
+  x0 = -bob->drive_->wheel_radius_;
+  y0 =  bob->drive_->wheel_base_ / 2.0;
   x1 = -x0;
   y1 =  y0;
-  bob_drive.getParent()->getGlobal().To (x0, y0);
-  bob_drive.getParent()->getGlobal().To (x1, y1);
+  bob->drive_->getParent()->getGlobal().To (x0, y0);
+  bob->drive_->getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
-  x0 = -bob_drive.wheel_radius_;
-  y0 = -bob_drive.wheel_base_ / 2.0;
+  x0 = -bob->drive_->wheel_radius_;
+  y0 = -bob->drive_->wheel_base_ / 2.0;
   x1 = -x0;
   y1 =  y0;
-  bob_drive.getParent()->getGlobal().To (x0, y0);
-  bob_drive.getParent()->getGlobal().To (x1, y1);
+  bob->drive_->getParent()->getGlobal().To (x0, y0);
+  bob->drive_->getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
-  x0 = -bob_drive.hitch_offset_;
+  x0 = -bob->drive_->hitch_offset_;
   y0 =  0.0;
   x1 =  0.0;
   y1 =  0.0;
-  bob_drive.getParent()->getGlobal().To (x0, y0);
-  bob_drive.getParent()->getGlobal().To (x1, y1);
+  bob->drive_->getParent()->getGlobal().To (x0, y0);
+  bob->drive_->getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
-  x0 = -bob_drive.hitch_offset_;
+  x0 = -bob->drive_->hitch_offset_;
   y0 =  0.0;
-  x1 =  x0 - bob_drive.trailer_arm_ * cos (bob_drive.getTrailerAngle());
-  y1 =     - bob_drive.trailer_arm_ * sin (bob_drive.getTrailerAngle());
-  bob_drive.getParent()->getGlobal().To (x0, y0);
-  bob_drive.getParent()->getGlobal().To (x1, y1);
+  x1 =  x0 - bob->drive_->trailer_arm_ * cos (bob->drive_->getTrailerAngle());
+  y1 =     - bob->drive_->trailer_arm_ * sin (bob->drive_->getTrailerAngle());
+  bob->drive_->getParent()->getGlobal().To (x0, y0);
+  bob->drive_->getParent()->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
 
   gfx::set_pen (2.0, 0.0, 0.6, 0.4, 1.0);
   x0 =  0.0;
-  y0 = -bob_drive.wheel_base_ / 2.0;
+  y0 = -bob->drive_->wheel_base_ / 2.0;
   x1 =  0.0;
   y1 = -y0;
-  bob_drive.trailer_->getGlobal().To (x0, y0);
-  bob_drive.trailer_->getGlobal().To (x1, y1);
+  bob->drive_->trailer_->getGlobal().To (x0, y0);
+  bob->drive_->trailer_->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
-  x0 = -bob_drive.wheel_radius_;
-  y0 =  bob_drive.wheel_base_ / 2.0;
+  x0 = -bob->drive_->wheel_radius_;
+  y0 =  bob->drive_->wheel_base_ / 2.0;
   x1 = -x0;
   y1 =  y0;
-  bob_drive.trailer_->getGlobal().To (x0, y0);
-  bob_drive.trailer_->getGlobal().To (x1, y1);
+  bob->drive_->trailer_->getGlobal().To (x0, y0);
+  bob->drive_->trailer_->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
-  x0 = -bob_drive.wheel_radius_;
-  y0 = -bob_drive.wheel_base_ / 2.0;
+  x0 = -bob->drive_->wheel_radius_;
+  y0 = -bob->drive_->wheel_base_ / 2.0;
   x1 = -x0;
   y1 =  y0;
-  bob_drive.trailer_->getGlobal().To (x0, y0);
-  bob_drive.trailer_->getGlobal().To (x1, y1);
+  bob->drive_->trailer_->getGlobal().To (x0, y0);
+  bob->drive_->trailer_->getGlobal().To (x1, y1);
   gfx::draw_line (x0, y0, x1, y1);
   
 }
@@ -163,45 +161,11 @@ static void cb_mouse (double mx, double my, int flags)
 
 static void tick ()
 {
-  static size_t count (0);
-  
   simulator->simulateActuators ();
   simulator->simulateSensors ();
   
-  //////////////////////////////////////////////////
-  
   alice->tick (simulator->timestep_);
-  
-  //////////////////////////////////////////////////
-  
-  double thref;
-  if (bob_tractor.getGlobal().X() > bob_tractor.getGlobal().Y()) {
-    if (bob_tractor.getGlobal().X() > - bob_tractor.getGlobal().Y()) {
-      thref = 100.0 * M_PI / 180.0;
-    }
-    else {
-      thref = 10.0 * M_PI / 180.0;
-    }
-  }
-  else {
-    if (bob_tractor.getGlobal().X() > - bob_tractor.getGlobal().Y()) {
-      thref = 190.0 * M_PI / 180.0;
-    }
-    else {
-      thref = -80.0 * M_PI / 180.0;
-    }
-  }
-  double const dhead (mod2pi (thref - bob_tractor.getGlobal().Theta()));
-  static double const dth (5.0 * M_PI / 180.0);
-  if (fabs (dhead) <= dth) {
-    bob_drive.setSpeed (0.02, 0.02);
-  }
-  else if (dhead > 0.0) {
-    bob_drive.setSpeed (0.0, 0.02);
-  }
-  else {
-    bob_drive.setSpeed (0.02, 0.0);
-  }
+  bob->tick (simulator->timestep_);
 }
 
 
@@ -293,39 +257,14 @@ int main (int argc, char ** argv)
     errx (EXIT_FAILURE, "no world given to simulator");
   }
   
-  //////////////////////////////////////////////////
-  
   alice = npm2::Factory::instance().find <Alice> ("alice");
   if ( ! alice) {
     errx (EXIT_FAILURE, "cannot find alice");
   }
-  
-  //////////////////////////////////////////////////
-  
-  bob_drive.setParent (&bob_tractor);
-  bob_drive.trailer_ = &bob_trailer;
-  
-  static double const hitch_offset (0.3);
-  static double const trailer_arm (1.0);
-  
-  bob_drive.wheel_radius_ = 0.2;
-  bob_drive.wheel_base_ = 0.4;
-  bob_drive.hitch_offset_ = hitch_offset;
-  bob_drive.trailer_arm_ = trailer_arm;
-  
-  bob_tractor.body_.addLine (-hitch_offset, -0.3,           0.4, -0.3);
-  bob_tractor.body_.addLine (-hitch_offset,  0.3,           0.4,  0.3);
-  bob_tractor.body_.addLine (-hitch_offset, -0.3, -hitch_offset,  0.3);
-  bob_tractor.body_.addLine (          0.4, -0.3,           0.4,  0.3);
-  bob_tractor.setParent (simulator->world_);
-  
-  bob_tractor.mount_.Set (0.0, 2.5, M_PI);
-  
-  bob_trailer.body_.addLine (       -0.3, -0.3, trailer_arm, -0.3);
-  bob_trailer.body_.addLine (       -0.3,  0.3, trailer_arm,  0.3);
-  bob_trailer.body_.addLine (       -0.3, -0.3,        -0.3,  0.3);
-  bob_trailer.body_.addLine (trailer_arm, -0.3, trailer_arm,  0.3);
-  bob_trailer.setParent (&bob_tractor);
+  bob = npm2::Factory::instance().find <Bob> ("bob");
+  if ( ! bob) {
+    errx (EXIT_FAILURE, "cannot find bob");
+  }
   
   // Make sure we can draw something before we start running.
   //
