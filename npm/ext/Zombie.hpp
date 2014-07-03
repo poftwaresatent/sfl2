@@ -37,9 +37,9 @@ namespace npm {
     
     virtual bool Initialize(RobotServer &server);
     virtual bool PrepareAction(double timestep);
-    virtual void InitPose(sfl::Pose const &pose) {}
-    virtual void SetPose(sfl::Pose const &pose) {}
-    virtual bool GetPose(sfl::Pose &pose) const { return false; }
+    virtual void InitPose(sfl::Frame const &pose) {}
+    virtual void SetPose(sfl::Frame const &pose) {}
+    virtual bool GetPose(sfl::Frame &pose) const { return false; }
     virtual void SetGoal(double timestep, const sfl::Goal & goal);
     virtual bool GetGoal(sfl::Goal &goal) const;
     virtual bool GoalReached() const;

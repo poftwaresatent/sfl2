@@ -65,7 +65,6 @@ using sfl::Hull;
 using sfl::HullIterator;
 using sfl::Line;
 using sfl::Polygon;
-using sfl::Pose;
 using sfl::Goal;
 using sfl::RobotModel;
 using sfl::LegacyDynamicWindow;
@@ -271,21 +270,21 @@ CreateGfxStuff(npm::RobotServer &server, const std::string & name)
 
 
 void Esbot::
-InitPose(sfl::Pose const &pose)
+InitPose(sfl::Frame const &pose)
 {
   m_odometry->Init(pose);
 }
 
 
 void Esbot::
-SetPose(sfl::Pose const &pose)
+SetPose(sfl::Frame const &pose)
 {
   m_odometry->Set(pose);
 }
 
 
 bool Esbot::
-GetPose(sfl::Pose &pose)
+GetPose(sfl::Frame &pose)
 {
   pose = *m_pose;
   return true;

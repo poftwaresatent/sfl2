@@ -30,12 +30,12 @@
 #include <npm/DiffDrive.hpp>
 #include <npm/pdebug.hpp>
 #include <sfl/util/strutil.hpp>
-#include <sfl/api/Pose.hpp>
 #include <sfl/api/Odometry.hpp>
 #include <sfl/api/Scanner.hpp>
 #include <sfl/api/Multiscanner.hpp>
 #include <sfl/api/RobotModel.hpp>
 #include <sfl/api/Goal.hpp>
+#include <sfl/api/Pose.hpp>
 #include <sfl/dwa/DynamicWindow.hpp>
 #include <sfl/dwa/DistanceObjective.hpp>
 #include <sfl/dwa/SpeedObjective.hpp>
@@ -411,22 +411,22 @@ Initialize(npm::RobotServer &server)
 
 
 void Robox::
-InitPose(sfl::Pose const &pp)
+InitPose(sfl::Frame const &pp)
 {
   m_imp->odometry->Clear();
-  m_imp->odometry->Update(pp);
+  m_imp->odometry->Update(sfl::Pose(pp.X(), pp.Y(), pp.Theta()));
 }
 
 
 void Robox::
-SetPose(sfl::Pose const &pp)
+SetPose(sfl::Frame const &pp)
 {
-  m_imp->odometry->Update(pp);
+  m_imp->odometry->Update(sfl::Pose(pp.X(), pp.Y(), pp.Theta()));
 }
 
 
 bool Robox::
-GetPose(sfl::Pose &pp)
+GetPose(sfl::Frame &pp)
   const
 {
   boost::shared_ptr<const Pose> pose(m_imp->odometry->Get());

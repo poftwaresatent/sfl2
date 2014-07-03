@@ -31,7 +31,6 @@ namespace sfl {
   class Polygon;
   class Frame;
   class Scanner;
-  class Pose;
 }
 
 
@@ -57,7 +56,7 @@ namespace npm {
     double x, y, theta, dr, dtheta;
   };
 
-  /** \todo XXXX to do: just a quick hack... should extend sfl::Pose instead */
+  /** \todo XXXX to do: just a quick hack... should extend sfl::Frame instead */
   struct qhpose_s {
     double x, y, theta;
   };
@@ -109,18 +108,18 @@ namespace npm {
     /** Hook for initially placing the robot, before simulation
 	starts. Subclasses can provide an empty implementation if they
 	don't track the pose. */
-    virtual void InitPose(sfl::Pose const &pose) = 0;
+    virtual void InitPose(sfl::Frame const &pose) = 0;
     
     /** Hook for telling the robot where it is, after simulation has
 	started. This could be used to simulate e.g. GPS-based
 	updates. Subclasses can provide an empty implementation if
 	they do not track the pose. */
-    virtual void SetPose(sfl::Pose const &pose) = 0;
+    virtual void SetPose(sfl::Frame const &pose) = 0;
     
     /** Hook for knowing where the robot thinks it is. Subclasses can
 	implement this simpluy by returning false, which signifies
 	that the robot has no estimate of its position. */
-    virtual bool GetPose(sfl::Pose &pose) const = 0;
+    virtual bool GetPose(sfl::Frame &pose) const = 0;
     
     /** Hook to set the robot's goal. Subclasses can use an empty
 	implementation if they do not handle explicit goals. */
