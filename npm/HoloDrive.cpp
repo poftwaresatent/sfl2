@@ -23,7 +23,6 @@
 
 
 #include "HoloDrive.hpp"
-#include "HAL.hpp"
 #include <sfl/util/Frame.hpp>
 
 
@@ -35,8 +34,8 @@ namespace npm {
 
 
   HoloDrive::
-  HoloDrive(shared_ptr<HAL> hal, double _axislength)
-    : Drive(hal), axislength(_axislength)
+  HoloDrive(double _axislength)
+    : axislength(_axislength), vx(0.0), vy(0.0), omega(0.0)
   {
   }
 
@@ -45,13 +44,9 @@ namespace npm {
   ComputeNextPose(const Frame & current, double timestep) const
   {
     shared_ptr<Frame> result(new Frame(current));
-    double qd[3];
-    size_t len(3);
-    if ((0 != m_hal->speed_get(qd, &len)) || (3 != len))
-      return result;
-    double dx(qd[0] * timestep);
-    double dy(qd[1] * timestep);
-    double dtheta(qd[2] * timestep);
+    double dx(vx * timestep);
+    double dy(vy * timestep);
+    double dtheta(omega * timestep);
     current.RotateTo(dx, dy);
     result->Add(dx, dy, dtheta);
     return result;

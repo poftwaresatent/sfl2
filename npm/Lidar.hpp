@@ -74,8 +74,6 @@ namespace npm {
     double GetNoisyRho(size_t index) const { return m_noisy_rho[index]; }
     const sfl::Frame & GetGlobalPose() const { return * m_global_pose; }
     
-    bool HaveNoiseModel() const { return m_noise_model.get() != 0; }
-    
     const std::string name;
     const size_t nscans;
     const double rhomax;

@@ -51,7 +51,7 @@ namespace expo {
   Robox(expo_parameters const & params,
 	boost::shared_ptr<sfl::Hull> _hull,
 	boost::shared_ptr<sfl::LocalizationInterface> localization,
-	shared_ptr<sfl::HAL> hal,
+	shared_ptr<sfl::DiffDriveChannel> drive,
 	shared_ptr<sfl::Multiscanner> _mscan)
     : hull(_hull),
       mscan(_mscan)
@@ -68,7 +68,7 @@ namespace expo {
 		 params.model_thetadd_max);
     robotModel.reset(new sfl::RobotModel(modelParms, hull));
     motionController.
-      reset(new MotionController(robotModel, hal));
+      reset(new MotionController(robotModel, drive));
     odometry.reset(new sfl::Odometry(localization));
     if (params.bband_enabled) {
       bubbleBand.

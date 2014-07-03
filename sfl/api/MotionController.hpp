@@ -26,6 +26,7 @@
 #define SUNFLOWER_MOTIONCONTROLLER_HPP
 
 
+#include <sfl/api/DiffDriveChannel.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -33,8 +34,6 @@ namespace sfl {
   
   
   class RobotModel;
-  class HAL;
-  class MotionController;
   
   
   /**
@@ -47,16 +46,16 @@ namespace sfl {
   {
   public:
     MotionController(boost::shared_ptr<const RobotModel> robotModel,
-		     boost::shared_ptr<HAL> hal);
+		     boost::shared_ptr<DiffDriveChannel> drive);
     
     /**
        Template method for determining the next motion command. The
        speeds are set through ProposeSpeed() or
-       ProposeActuators(). Gets current speeds from HAL, applies
-       kinodynamic limits to proposed speeds, and passes them to HAL.
+       ProposeActuators(). Gets current speeds from DiffDriveChannel, applies
+       kinodynamic limits to proposed speeds, and passes them to DiffDriveChannel.
        
-       \return 0 on success, -1 if HAL::speed_get() failed, -2 if
-       HAL::speed_set() failed.
+       \return 0 on success, -1 if DiffDriveChannel::GetSpeed() failed, -2 if
+       DiffDriveChannel::SetSpeed() failed.
     */
     int Update(/** (estimated or fixed) delay until next invocation */
 	       double timestep,
@@ -97,7 +96,7 @@ namespace sfl {
     
   protected:
     boost::shared_ptr<const RobotModel> m_robotModel;
-    boost::shared_ptr<HAL> m_hal;
+    boost::shared_ptr<DiffDriveChannel> m_drive;
     double m_proposedQdl, m_proposedQdr;
     double m_currentQdl, m_currentQdr;
     double m_wantedQdl, m_wantedQdr;

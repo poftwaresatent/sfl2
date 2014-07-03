@@ -25,7 +25,6 @@
 #include "MotionController.hpp"
 #include "Timestamp.hpp"
 #include "RobotModel.hpp"
-#include "HAL.hpp"
 #include <iostream>
 
 
@@ -38,13 +37,13 @@ namespace sfl {
   
   MotionController::
   MotionController(shared_ptr<const RobotModel> robotModel,
-		   shared_ptr<HAL> hal)
+		   shared_ptr<DiffDriveChannel> drive)
     : qdMax(robotModel->QdMax()),
       qddMax(robotModel->QddMax()),
       sdMax(robotModel->SdMax()),
       thetadMax(robotModel->ThetadMax()),
       m_robotModel(robotModel),
-      m_hal(hal),
+      m_drive(drive),
       m_proposedQdl(0),
       m_proposedQdr(0),
       m_currentQdl(0),
@@ -59,11 +58,10 @@ namespace sfl {
   Update(double timestep, ostream * dbgos)
   {
     double cqdl, cqdr;
-    int status(m_hal->deprecated_speed_get( & cqdl, & cqdr));
-    if(0 != status){
+    if(!m_drive->GetSpeed(cqdl, cqdr)){
       if(dbgos != 0)
 	(*dbgos) << "ERROR in MotionController::Update():\n"
-		 << "  HAL::speed_get() returned " << status << "\n";
+		 << "  m_drive->GetSpeed failed\n";
       return -1;
     }
     if(dbgos != 0){
@@ -95,7 +93,6 @@ namespace sfl {
     // send it
     if(dbgos != 0)
       (*dbgos) << "  wanted:   (" << wqdl << ", " << wqdr << ")\n";
-    status = m_hal->deprecated_speed_set(wqdl, wqdr);
     
     // synch cached values before treating status
     m_currentQdl = cqdl;
@@ -105,10 +102,10 @@ namespace sfl {
     m_wantedQdl = wqdl;
     m_wantedQdr = wqdr;
     
-    if(0 != status){
+    if(!m_drive->SetSpeed(wqdl, wqdr)){
       if(dbgos != 0)
 	(*dbgos) << "ERROR in MotionController::Update():\n"
-		 << "  HAL::speed_set() returned " << status << "\n";
+		 << "  m_drive->SetSpeed() failed\n";
       return -2;
     }
     return 0;

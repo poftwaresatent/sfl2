@@ -37,7 +37,6 @@ namespace sfl {
 
 namespace npm {
   
-  class HAL;
   class Lidar;
   class Sharp;
   class Drawing;
@@ -139,20 +138,11 @@ namespace npm {
     
     color_s const & GetColor() const { return m_color; }
     
-  protected:
-    boost::shared_ptr<HAL> m_hal; // set via Initialize
-    
   private:
     friend class RobotServer;
     friend class Simulator;	// quick hack due to initial pose hack
     
     bool m_enable_trajectory;
-    
-    bool m_noisy_odometry;
-    double m_odometry_noise_min_factor; // factors <0 are ignored
-    double m_odometry_noise_max_factor;
-    double m_odometry_noise_min_offset; // if min>max then offsets are ignored
-    double m_odometry_noise_max_offset;
     
     bool m_noisy_scanners;
     double m_scanner_noise_min_factor; // factors <0 are ignored

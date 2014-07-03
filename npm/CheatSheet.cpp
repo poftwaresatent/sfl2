@@ -64,8 +64,8 @@ namespace npm {
       if(world->m_robot[ir] == robot)
 	continue;
       dynobj_t dd;
-      dd.x = world->m_robot[ir]->GetTruePose().X() ;
-      dd.y = world->m_robot[ir]->GetTruePose().Y();
+      dd.x = world->m_robot[ir]->GetPose().X() ;
+      dd.y = world->m_robot[ir]->GetPose().Y();
       dd.r = world->m_robot[ir]->GetBody().GetRadius();
       dynobj.push_back(dd);
     }

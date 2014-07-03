@@ -49,14 +49,16 @@ namespace npm {
     : public Drive
   {
   public:
-    BicycleDrive(boost::shared_ptr<HAL> hal,  double wheelbase,
-		 double wheelradius, double axlewidth);
-    
-    void GetState(double & v_trans, double & steer) const;
+    BicycleDrive(double wheelbase,
+		 double wheelradius,
+		 double axlewidth);
     
     const double wheelbase;
     const double wheelradius;
     const double axlewidth;
+    
+    double v_trans;
+    double steer;
     
   protected:
     virtual boost::shared_ptr<sfl::Frame>

@@ -29,26 +29,23 @@
 #include <npm/Drive.hpp>
 
 
+namespace sfl {
+  class DiffDriveChannel;
+}
+
+
 namespace npm {
   
   /**
-     Differential drive actuator. Bit of an overkill as long as HAL is
-     not independent of drive architecture, which is hard to conceive
-     anyway.
+     Differential drive actuator.
   */
   class DiffDrive
     : public Drive
   {
   public:
-    DiffDrive(boost::shared_ptr<HAL> hal,
-	      double wheelbase, double wheelradius);
+    DiffDrive(double wheelbase, double wheelradius);
     
-    virtual bool ComputeSpeedState(/** speed in [m/s] along the local X-axis */
-				   double & xdot,
-				   /** speed in [m/s] along the local Y-axis */
-				   double & ydot,
-				   /** rotational speed in [rad/s] */
-				   double & thdot) const;
+    boost::shared_ptr<sfl::DiffDriveChannel> CreateChannel();
     
     /** distance between wheel contact points [m] */
     const double wheelbase;
@@ -56,11 +53,13 @@ namespace npm {
     /** radius of drive wheels [m] */
     const double wheelradius;
     
+    double qdl, qdr;
+    
   protected:
     virtual boost::shared_ptr<sfl::Frame>
     ComputeNextPose(const sfl::Frame & current, double timestep) const;
   };
-
+  
 }
 
 #endif // NPM_DIFFDRIVE_HPP

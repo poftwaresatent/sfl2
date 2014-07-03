@@ -22,7 +22,6 @@
  */
 
 #include "Zombie.hpp"
-#include <npm/HAL.hpp>
 #include <npm/HoloDrive.hpp>
 #include <npm/RobotServer.hpp>
 #include <npm/Lidar.hpp>
@@ -76,7 +75,7 @@ namespace npm {
     static const double thetadmax(0.8 * M_PI);
     static const double sdmax(0.4);
     
-    const Frame & pose(m_server->GetTruePose());
+    const Frame & pose(m_server->GetPose());
     double dx(m_goal.X() - pose.X());
     double dy(m_goal.Y() - pose.Y());
     pose.RotateFrom(dx, dy);
@@ -86,17 +85,14 @@ namespace npm {
     double xd(sqrt(dx * dx + dy * dy) / timestep);
     double yd(0);
     
-    if(absval(dtheta) > dthetathresh)
-      dx = 0;
+    // if(absval(dtheta) > dthetathresh)
+    //   xd = 0;
     
-    double qd[3] = {
-      boundval(-sdmax, xd, sdmax),
-      boundval(-sdmax, yd, sdmax),
-      boundval(-thetadmax, thetad, thetadmax)
-    };
-    size_t len(3);
+    m_drive->vx = boundval(-sdmax, xd, sdmax);
+    m_drive->vy = boundval(-sdmax, yd, sdmax);
+    m_drive->omega = boundval(-thetadmax, thetad, thetadmax);
     
-    return (0 == m_hal->speed_set(qd, &len)) && (3 == len);
+    return true;
   }
   
   
@@ -120,7 +116,7 @@ namespace npm {
   GoalReached()
     const
   {
-    return m_goal.DistanceReached(m_server->GetTruePose());
+    return m_goal.DistanceReached(m_server->GetPose());
   }
   
   

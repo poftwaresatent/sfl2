@@ -23,7 +23,7 @@
 
 
 #include "DiffDrive.hpp"
-#include "HAL.hpp"
+#include <sfl/api/DiffDriveChannel.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/numeric.hpp>
 
@@ -32,30 +32,64 @@ using namespace sfl;
 using namespace boost;
 
 
+namespace {
+  
+  class Channel
+    : public sfl::DiffDriveChannel
+  {
+  public:
+    explicit Channel(npm::DiffDrive * drive): m_drive(drive) {}
+    
+    virtual bool SetSpeed(double qdl, double qdr)
+    {
+      m_drive->qdl = qdl;
+      m_drive->qdr = qdr;
+      return true;
+    }
+    
+    virtual bool GetSpeed(double &qdl, double &qdr) const
+    {
+      qdl = m_drive->qdl;
+      qdr = m_drive->qdr;
+      return true;
+    }
+    
+    npm::DiffDrive * m_drive;
+  };
+  
+}
+
+
 namespace npm {
 
 
   DiffDrive::
-  DiffDrive(shared_ptr<HAL> hal, double _wheelbase, double _wheelradius)
-    : Drive(hal), wheelbase(_wheelbase), wheelradius(_wheelradius)
+  DiffDrive(double _wheelbase, double _wheelradius)
+    : wheelbase(_wheelbase), wheelradius(_wheelradius),
+      qdl(0.0), qdr(0.0)
   {
   }
-
-
+  
+  
+  boost::shared_ptr<DiffDriveChannel> DiffDrive::
+  CreateChannel()
+  {
+    boost::shared_ptr<DiffDriveChannel> ch(new Channel(this));
+    return ch;
+  }
+  
+  
+  ////    boost::shared_ptr<DiffDriveChannel> CreateNoisyChannel();
+  
+  
   shared_ptr<Frame> DiffDrive::
   ComputeNextPose(const Frame & current, double timestep) const
   {
     shared_ptr<Frame> result(new Frame(current));
   
-    double qd[2];
-    size_t len(2);
-    const int status(m_hal->speed_get(qd, &len));
-    if ((0 != status) || (2 != len))
-      return result;
-    
     // actuator speed -> global speed
-    double dl    = qd[0] * wheelradius;
-    double dr    = qd[1] * wheelradius;
+    double dl    = qdl  * wheelradius;
+    double dr    = qdr * wheelradius;
     double v     = (dl + dr) / 2;
     double omega = (dr - dl) / wheelbase;
   
@@ -81,26 +115,6 @@ namespace npm {
     result->Add(dx, dy, dtheta);
   
     return result;
-  }
-  
-  
-  /**
-     \note A tad of code-duplication wrt ComputeNextPose.
-  */
-  bool DiffDrive::
-  ComputeSpeedState(double & xdot, double & ydot, double & thdot) const
-  {
-    double qd[2];
-    size_t len(2);
-    const int status(m_hal->speed_get(qd, &len));
-    if ((0 != status) || (2 != len))
-      return false;
-    double const dl(qd[0] * wheelradius);
-    double const dr(qd[1] * wheelradius);
-    xdot = (dl + dr) / 2;
-    ydot = 0;
-    thdot = (dr - dl) / wheelbase;
-    return true;
   }
   
 }

@@ -50,7 +50,7 @@ namespace npm {
   InitUpdate()
   {
     Frame trans(*m_mount);
-    owner->GetTruePose().To(trans);
+    owner->GetPose().To(trans);
     m_ray.reset(new Ray(trans));
     m_rho = rmax;
   }

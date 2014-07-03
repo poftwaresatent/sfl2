@@ -42,7 +42,6 @@ namespace npm {
   class World;
   class Lidar;
   class Sharp;
-  class HAL;
   class Drawing;
   class Camera;
   class Drive;
@@ -68,22 +67,14 @@ namespace npm {
     void InitializePose(const sfl::Frame & pose);
     void AddPose(boost::shared_ptr<const sfl::Frame> pose);
     
-  private:
-    void AddTruePose(boost::shared_ptr<const sfl::Frame> pose);
-    void AddNoisyPose(boost::shared_ptr<const sfl::Frame> pose);
-    
   public:
     const std::string & GetName() const;
-    const sfl::Frame & GetTruePose() const;
-    const sfl::Frame * GetNoisyPose() const;
+    const sfl::Frame & GetPose() const;
     const Object & GetBody() const;
-    const Object * GetNoisyBody() const;
-    const trajectory_t & GetTrueTrajectory() const;
-    const trajectory_t * GetNoisyTrajectory() const;
+    const trajectory_t & GetTrajectory() const;
     const World & GetWorld() const;
     boost::shared_ptr<const Lidar> GetLidar(std::string const & name) const;
     boost::shared_ptr<const Sharp> GetSharp(int channel) const;
-    boost::shared_ptr<HAL> GetHAL();
     boost::shared_ptr<sfl::LocalizationInterface> CreateFakeLocalization() const;
     
     void AddLine(double x0, double y0, double x1, double y1);
@@ -121,21 +112,16 @@ namespace npm {
     
     RobotClient *m_client;
     World const &m_world;
-    boost::shared_ptr<HAL> m_hal;
     std::vector<boost::shared_ptr<Drawing> > m_drawing;
     std::vector<boost::shared_ptr<Camera> > m_camera;
     std::vector<boost::shared_ptr<Sensor> > m_sensor;
     boost::shared_ptr<Drive> m_drive;
     std::map<std::string, boost::shared_ptr<Lidar> > m_lidar;
     std::map<int, boost::shared_ptr<Sharp> > m_sharp;
-    boost::shared_ptr<Object> m_true_body;
-    boost::shared_ptr<Object> m_noisy_body;
-    trajectory_t m_true_trajectory;
-    boost::shared_ptr<trajectory_t> m_noisy_trajectory;
-    boost::shared_ptr<sfl::Frame> m_true_pose;
-    boost::shared_ptr<sfl::Frame> m_noisy_pose;
+    boost::shared_ptr<Object> m_body;
+    trajectory_t m_trajectory;
+    boost::shared_ptr<sfl::Frame> m_pose;
     boost::shared_ptr<NoiseModel> m_scanner_noise_model;
-    boost::shared_ptr<NoiseModel> m_odometry_noise_model;
   };
   
 }

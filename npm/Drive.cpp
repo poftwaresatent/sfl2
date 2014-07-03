@@ -34,8 +34,8 @@ namespace npm {
 
 
   Drive::
-  Drive(shared_ptr<HAL> hal)
-    : m_hal(hal), m_cache(new Frame())
+  Drive()
+    : m_cache(new Frame())
   {
   }
 
@@ -59,13 +59,6 @@ namespace npm {
   PoseCache() const
   {
     return m_cache;
-  }
-  
-  
-  bool Drive::
-  ComputeSpeedState(double & xdot, double & ydot, double & thdot) const
-  {
-    return false;
   }
 
 }

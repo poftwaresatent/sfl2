@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2005
+ * Copyright (C) 2004
  * Swiss Federal Institute of Technology, Lausanne. All rights reserved.
  * 
  * Author: Roland Philippsen <roland dot philippsen at gmx dot net>
@@ -22,48 +22,20 @@
  */
 
 
-#ifndef NPM_HAL_HPP
-#define NPM_HAL_HPP
+#ifndef SUNFLOWER_DIFFDRIVECHANNEL_HPP
+#define SUNFLOWER_DIFFDRIVECHANNEL_HPP
 
-
-#include <sfl/api/HAL.hpp>
-
-
-namespace npm {
+namespace sfl {
   
-  
-  class RobotServer;
-  class NoiseModel;
-  
-  
-  class HAL
-    : public sfl::HAL
+  class DiffDriveChannel
   {
   public:
-    explicit HAL(RobotServer * owner);
-    virtual ~HAL();
+    virtual ~DiffDriveChannel() {}
     
-    virtual int speed_set(const double * qdot, size_t * qdot_len);
-    virtual int speed_get(double * qdot, size_t * qdot_len);
-    
-  protected:
-    friend class RobotServer;
-    
-    virtual void UpdateSpeeds();
-    void EnableOdometryNoise(const NoiseModel * noise);
-    void DisableOdometryNoise();
-    void EnableScannerNoise();
-    void DisableScannerNoise();
-    
-  private:
-    size_t m_ndof;
-    RobotServer * m_owner;
-    double *m_wanted_speed;
-    double *m_current_speed;
-    const NoiseModel * m_odometry_noise;
-    bool m_noisy_scanners;
+    virtual bool SetSpeed(double qdl, double qdr) = 0;
+    virtual bool GetSpeed(double &qdl, double &qdr) const = 0;
   };
-  
+
 }
 
-#endif // NPM_HAL_HPP
+#endif // SUNFLOWER_DIFFDRIVECHANNEL_HPP

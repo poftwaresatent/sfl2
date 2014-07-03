@@ -26,8 +26,8 @@
 #include "VisualRobox.hpp"
 #include <npm/RobotServer.hpp>
 #include <npm/World.hpp>
-#include <npm/HAL.hpp>
 #include <npm/Lidar.hpp>
+#include <npm/DiffDrive.hpp>
 #include <npm/pdebug.hpp>
 #include <sfl/util/strutil.hpp>
 #include <sfl/api/Pose.hpp>
@@ -240,7 +240,10 @@ Initialize(npm::RobotServer &server)
   
   m_drive = server.DefineDiffDrive(m_params.model_wheelbase, m_params.model_wheelradius);
   
-  m_imp.reset(new npm::VisualRobox(name, m_params, hull, server.CreateFakeLocalization(), m_hal, mscan));
+  m_imp.reset(new npm::VisualRobox(name, m_params, hull,
+				   server.CreateFakeLocalization(),
+				   m_drive->CreateChannel(),
+				   mscan));
   
   for (HullIterator ih(*m_imp->hull); ih.IsValid(); ih.Increment()) {
     server.AddLine(Line(ih.GetX0(), ih.GetY0(), ih.GetX1(), ih.GetY1()));

@@ -38,11 +38,6 @@ namespace npm {
   RobotClient(std::string const &name)
     : fpplib::Configurable(name),
       m_enable_trajectory(true),
-      m_noisy_odometry(false),
-      m_odometry_noise_min_factor(0.95), // factors <0 are ignored
-      m_odometry_noise_max_factor(1.05),
-      m_odometry_noise_min_offset(1), // if min>max then offsets are ignored
-      m_odometry_noise_max_offset(-1),
       m_noisy_scanners(false),
       m_scanner_noise_min_factor(-1), // factors <0 are ignored
       m_scanner_noise_max_factor(-1),
@@ -53,11 +48,6 @@ namespace npm {
   {
     registry.add(name, this);
     reflectParameter("enable_trajectory", &m_enable_trajectory);
-    reflectParameter("noisy_odometry", &m_noisy_odometry);
-    reflectParameter("odometry_noise_min_factor", &m_odometry_noise_min_factor);
-    reflectParameter("odometry_noise_max_factor", &m_odometry_noise_max_factor);
-    reflectParameter("odometry_noise_min_offset", &m_odometry_noise_min_offset);
-    reflectParameter("odometry_noise_max_offset", &m_odometry_noise_max_offset);
     reflectParameter("noisy_scanners", &m_noisy_scanners);
     reflectParameter("scanner_noise_min_factor", &m_scanner_noise_min_factor);
     reflectParameter("scanner_noise_max_factor", &m_scanner_noise_max_factor);
@@ -73,7 +63,6 @@ namespace npm {
   bool RobotClient::
   Initialize(RobotServer &server)
   {
-    m_hal = server.GetHAL();
     return true;
   }
   

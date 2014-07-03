@@ -46,8 +46,7 @@ namespace sfl {
   public:
     /**
        Abstract class for providing actual numerical values to
-       RobotModel. It would be nice to retrieve this information from
-       the HAL, which knows about most other such information anyways.
+       RobotModel.
      
        If you play with model parameters, good ballpark figures for
        the max accelerations are:

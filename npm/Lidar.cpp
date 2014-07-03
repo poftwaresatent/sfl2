@@ -74,7 +74,7 @@ namespace npm {
   InitUpdate()
   {
     *m_global_pose = *mount;
-    owner->GetTruePose().To(*m_global_pose);
+    owner->GetPose().To(*m_global_pose);
     for(size_t ir(0); ir < nscans; ++ir){
       m_true_rho[ir] = rhomax;
       m_noisy_rho[ir] = rhomax;

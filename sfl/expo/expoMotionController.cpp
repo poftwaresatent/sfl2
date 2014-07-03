@@ -35,8 +35,8 @@ namespace expo {
 
   MotionController::
   MotionController(shared_ptr<const sfl::RobotModel> robotModel,
-		   shared_ptr<sfl::HAL> hal)
-    : sfl::MotionController(robotModel, hal)
+		   shared_ptr<sfl::DiffDriveChannel> drive)
+    : sfl::MotionController(robotModel, drive)
   {
   }
   

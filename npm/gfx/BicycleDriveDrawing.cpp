@@ -51,8 +51,6 @@ namespace npm {
   Draw()
   {
     shared_ptr<const sfl::Frame> trans(m_drive->PoseCache());
-    double v_trans, steer;
-    m_drive->GetState(v_trans, steer);
     
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -72,7 +70,7 @@ namespace npm {
     glEnd();
     
     glTranslated(m_wheelbase, 0, 0);
-    glRotated(180 * steer / M_PI, 0, 0, 1);
+    glRotated(180 * m_drive->steer / M_PI, 0, 0, 1);
     
     glBegin(GL_LINES);
     glColor3d(1, 1, 1);

@@ -23,7 +23,6 @@
 
 
 #include "BicycleDrive.hpp"
-#include "HAL.hpp"
 #include <sfl/util/Frame.hpp>
 #include <sfl/util/numeric.hpp>
 
@@ -36,10 +35,11 @@ namespace npm {
   
   
   BicycleDrive::
-  BicycleDrive(shared_ptr<HAL> hal, double _wheelbase,
+  BicycleDrive(double _wheelbase,
 	       double _wheelradius, double _axlewidth)
-    : Drive(hal), wheelbase(_wheelbase), wheelradius(_wheelradius),
-      axlewidth(_axlewidth)
+    : wheelbase(_wheelbase), wheelradius(_wheelradius),
+      axlewidth(_axlewidth),
+      v_trans(0.0), steer(0.0)
   {
   }
   
@@ -47,8 +47,6 @@ namespace npm {
   shared_ptr<Frame> BicycleDrive::
   ComputeNextPose(const Frame & current, double timestep) const
   {
-    double v_trans, steer;
-    GetState(v_trans, steer);
     if(absval(v_trans) < epsilon) // otherwise we get NaN results...
       return shared_ptr<Frame>(new Frame(current));
     
@@ -72,22 +70,6 @@ namespace npm {
     shared_ptr<Frame> result(new Frame(current));
     result->Add(dx, dy, dtheta);
     return result;
-  }
-  
-  
-  void BicycleDrive::
-  GetState(double & v_trans, double & steer) const
-  {
-    double qd[2];
-    size_t len(2);
-    if ((0 != m_hal->speed_get(qd, &len)) || (2 != len)) {
-      v_trans = 0;
-      steer = 0;
-    }
-    else {
-      v_trans = qd[0];
-      steer = qd[1];
-    }
   }
   
 }

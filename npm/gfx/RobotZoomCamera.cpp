@@ -49,7 +49,7 @@ namespace npm {
   void RobotZoomCamera::
   ConfigureView(class View &view)
   {
-    const Frame & pose(m_robot->GetTruePose());
+    const Frame & pose(m_robot->GetPose());
     view.SetBounds (pose.X() - m_radius,
 		    pose.Y() - m_radius,
 		    pose.X() + m_radius,

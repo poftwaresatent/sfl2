@@ -37,10 +37,12 @@ namespace npm {
     : public Drive
   {
   public:
-    HoloDrive(boost::shared_ptr<HAL> hal, double axislength);
+    explicit HoloDrive(double axislength);
     
     /** length of axes when drawing the drive position */
     const double axislength;
+    
+    double vx, vy, omega;
     
   protected:
     virtual boost::shared_ptr<sfl::Frame>

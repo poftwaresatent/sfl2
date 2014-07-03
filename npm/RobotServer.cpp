@@ -24,7 +24,6 @@
 
 #include "RobotServer.hpp"
 #include "RobotClient.hpp"
-#include "HAL.hpp"
 #include "Object.hpp"
 #include "gfx/RobotDrawing.hpp"
 #include "gfx/TrajectoryDrawing.hpp"
@@ -72,9 +71,9 @@ namespace {
       sfl::timespec_t ts;
       TIMEVAL_TO_TIMESPEC(&tv, &ts);
       
-      pose.Set(m_server->GetTruePose().X(),
-	       m_server->GetTruePose().Y(),
-	       m_server->GetTruePose().Theta(),
+      pose.Set(m_server->GetPose().X(),
+	       m_server->GetPose().Y(),
+	       m_server->GetPose().Theta(),
 	       ts,
 	       1.0, 1.0, 1.0,
 	       0.0, 0.0, 0.0);
@@ -93,20 +92,9 @@ namespace npm {
 	      const World & world)
     : m_client(client),
       m_world(world),
-      m_hal(new HAL(this)),
-      m_true_body(new Object(client->name, "true_body")),
-      m_true_pose(new Frame())
+      m_body(new Object(client->name, "body")),
+      m_pose(new Frame())
   {
-    if(client->m_noisy_odometry){
-      m_noisy_pose.reset(new Frame());
-      m_noisy_body.reset(new Object(client->name, "noisy_body"));
-      m_noisy_trajectory.reset(new trajectory_t());
-      m_odometry_noise_model.reset(new NoiseModel(client->m_odometry_noise_min_factor,
-						  client->m_odometry_noise_max_factor,
-						  client->m_odometry_noise_min_offset,
-						  client->m_odometry_noise_max_offset));
-    }
-    
     if(client->m_noisy_scanners){
       m_scanner_noise_model.reset(new NoiseModel(client->m_scanner_noise_min_factor,
 						 client->m_scanner_noise_max_factor,
@@ -153,7 +141,7 @@ namespace npm {
   {
     if(m_drive)
       return shared_ptr<DiffDrive>();
-    shared_ptr<DiffDrive> dd(new DiffDrive(GetHAL(), wheelbase, wheelradius));
+    shared_ptr<DiffDrive> dd(new DiffDrive(wheelbase, wheelradius));
     m_drive = dd;
     AddDrawing(new DiffDriveDrawing(m_client->name + "_drive", dd));
     return dd;
@@ -165,7 +153,7 @@ namespace npm {
   {
     if(m_drive)
       return shared_ptr<HoloDrive>();
-    shared_ptr<HoloDrive> hd(new HoloDrive(GetHAL(), axislength));
+    shared_ptr<HoloDrive> hd(new HoloDrive(axislength));
     m_drive = hd;
     AddDrawing(new HoloDriveDrawing(m_client->name + "_drive", hd));
     return hd;
@@ -177,7 +165,7 @@ namespace npm {
     if(m_drive)
       return shared_ptr<BicycleDrive>();
     shared_ptr<BicycleDrive>
-      hd(new BicycleDrive(GetHAL(), wheelbase, wheelradius, axlewidth));
+      hd(new BicycleDrive(wheelbase, wheelradius, axlewidth));
     m_drive = hd;
     AddDrawing(new BicycleDriveDrawing(m_client->name + "_drive", hd));
     return hd;
@@ -194,9 +182,7 @@ namespace npm {
   void RobotServer::
   AddLine(const Line & line)
   {
-    m_true_body->AddLine(line);
-    if(m_noisy_body)
-      m_noisy_body->AddLine(line);      
+    m_body->AddLine(line);
   }
   
   
@@ -211,13 +197,6 @@ namespace npm {
   AddCamera(Camera * camera)
   {
     m_camera.push_back(shared_ptr<Camera>(camera));
-  }
-  
-  
-  shared_ptr<npm::HAL> RobotServer::
-  GetHAL()
-  {
-    return m_hal;
   }
   
   
@@ -240,66 +219,34 @@ namespace npm {
   UpdateSensor(Sensor & sensor) const
   {
     if(sensor.owner != this)
-      m_true_body->UpdateSensor(sensor);
+      m_body->UpdateSensor(sensor);
   }
   
   
   void RobotServer::
   SimulateAction(double timestep)
   {
-    m_hal->UpdateSpeeds();
     if( ! m_drive)
       return;
-    AddTruePose(m_drive->NextPose( * m_true_pose, timestep));
-    if( ! m_noisy_pose)
-      return;
-    m_hal->EnableOdometryNoise(m_odometry_noise_model.get());
-    AddNoisyPose(m_drive->NextPose( * m_noisy_pose, timestep));
-    m_hal->DisableOdometryNoise();
+    AddPose(m_drive->NextPose( * m_pose, timestep));
   }
   
   
   void RobotServer::
   InitializePose(const Frame & pose)
   {
-    m_true_trajectory.clear();
-    AddTruePose(shared_ptr<Frame>(new Frame(pose)));
-    if(m_noisy_trajectory)
-      m_noisy_trajectory->clear();
-    AddNoisyPose(shared_ptr<Frame>(new Frame(pose)));
+    m_trajectory.clear();
+    AddPose(shared_ptr<Frame>(new Frame(pose)));
   }
   
   
   void RobotServer::
   AddPose(shared_ptr<const Frame> pose)
   {
-    if(m_noisy_pose)
-      AddNoisyPose(pose);
-    else
-      AddTruePose(pose);
-  }
-  
-  
-  void RobotServer::
-  AddTruePose(shared_ptr<const Frame> pose)
-  {
-    m_true_pose->Set( * pose);
+    m_pose->Set( * pose);
     if(m_client->m_enable_trajectory)
-      m_true_trajectory.push_back(pose);
-    m_true_body->TransformTo( * m_true_pose);
-  }
-  
-  
-  void RobotServer::
-  AddNoisyPose(shared_ptr<const Frame> pose)
-  {
-    if( ! m_noisy_pose)
-      return;
-    m_noisy_pose->Set( * pose);
-    if(m_client->m_enable_trajectory && m_noisy_trajectory)
-      m_noisy_trajectory->push_back(pose);
-    if(m_noisy_body)
-      m_noisy_body->TransformTo( * m_noisy_pose);
+      m_trajectory.push_back(pose);
+    m_body->TransformTo( * m_pose);
   }
   
   
@@ -311,44 +258,23 @@ namespace npm {
   
   
   const Frame & RobotServer::
-  GetTruePose() const
+  GetPose() const
   {
-    return  * m_true_pose;
-  }
-  
-  
-  const Frame * RobotServer::
-  GetNoisyPose() const
-  {
-    return m_noisy_pose.get();
+    return  * m_pose;
   }
   
   
   const Object & RobotServer::
   GetBody() const
   {
-    return * m_true_body;
-  }
-  
-  
-  const Object * RobotServer::
-  GetNoisyBody() const
-  {
-    return m_noisy_body.get();
+    return * m_body;
   }
   
   
   const RobotServer::trajectory_t & RobotServer::
-  GetTrueTrajectory() const
+  GetTrajectory() const
   {
-    return m_true_trajectory;
-  }
-  
-  
-  const RobotServer::trajectory_t * RobotServer::
-  GetNoisyTrajectory() const
-  {
-    return m_noisy_trajectory.get();
+    return m_trajectory;
   }
   
   

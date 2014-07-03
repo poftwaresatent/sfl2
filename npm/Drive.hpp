@@ -35,10 +35,8 @@ namespace sfl {
 
 namespace npm {
   
-  class HAL;
-  
   /**
-     Pure abstract actuator class. Somewhat overkill, but very useful
+     Partially abstract actuator class. Somewhat overkill, but very useful
      for code that should be independent of the drive
      architecture. See DiffDrive and HoloDrive for (the currently
      only) subclasses.
@@ -46,7 +44,7 @@ namespace npm {
   class Drive
   {
   public:
-    Drive(boost::shared_ptr<HAL> hal);
+    Drive();
     virtual ~Drive();
     
     /** Compute the displacement of the robot when moving with the
@@ -58,31 +56,14 @@ namespace npm {
     /** \return The last value returned by NextPose(). */
     boost::shared_ptr<const sfl::Frame> PoseCache() const;
     
-    /**
-       Transform the current motor commands into a Euclidean speed
-       state expressed in the robot's local frame of reference.
-       
-       \note The default implementation always returns false.
-       
-       \return true if the computation succeeded (subclasses might
-       not provide it)
-    */
-    virtual bool ComputeSpeedState(/** speed in [m/s] along the local X-axis */
-				   double & xdot,
-				   /** speed in [m/s] along the local Y-axis */
-				   double & ydot,
-				   /** rotational speed in [rad/s] */
-				   double & thdot) const;
-    
   protected:
     /** Implemented by subclasses. */
     virtual boost::shared_ptr<sfl::Frame>
     ComputeNextPose(const sfl::Frame & current, double timestep) const = 0;
     
-    boost::shared_ptr<HAL> m_hal;
     boost::shared_ptr<sfl::Frame> m_cache;
   };
-
+  
 }
 
 #endif // NPM_DRIVE_HPP
