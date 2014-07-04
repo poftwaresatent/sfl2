@@ -46,8 +46,52 @@ namespace npm2 {
     typedef set <Object*> children_t;
     typedef children_t::const_iterator child_iterator_t;
     
+    
     explicit Object (string const & name);
     virtual ~Object();
+    
+    
+    template <typename sub_t>
+    static sub_t * find_r (Object * super, string const & name)
+    {
+      sub_t * sub (dynamic_cast <sub_t*> (super));
+      if (0 != sub) {
+	if (name.empty() || (name == sub->name)) {
+	  return sub;
+	}
+      }
+      for (children_t::iterator ic(super->children_.begin()); ic != super->children_.end(); ++ic) {
+	sub = find_r <sub_t> (*ic, name);
+	if (0 != sub) {
+	  return sub;
+	}
+      }
+      return 0;
+    }
+    
+    /**
+       To find the first DifferentialDrive anywhere in the tree rooted
+       in the Object stored in variable "blah", regardless of the name
+       of the DifferentialDrive instance:
+
+       \code
+       DifferentialDrive * drive = blah->find <DifferentialDrive> (""):
+       \endcode
+       
+       To find a RayDistanceSensor called "foo" in the same object, use:
+       
+       \code
+       RayDistanceSensor * foo = blah->find <RayDistanceSensor> ("foo"):
+       \endcode
+       
+       \return Null if no matching object was found.
+    */
+    template <typename sub_t>
+    sub_t * find (string const & object_name)
+    {
+      return find_r <sub_t> (this, object_name);
+    }
+    
     
     /** \note Does not perform sanity checks (i.e.: if you pass obj to
 	its own setParent() you create a problem...) */

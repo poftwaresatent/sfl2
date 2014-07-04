@@ -18,32 +18,28 @@
  * USA
  */
 
-#ifndef NPM2_ALICE_HPP
-#define NPM2_ALICE_HPP
+#ifndef NPM2_BOB_PROCESS_HPP
+#define NPM2_BOB_PROCESS_HPP
 
 #include <npm2/Process.hpp>
 
 
 namespace npm2 {
   
-  class DifferentialDrive;
-  class RevoluteServo;
-  class RayDistanceSensor;
+  class DifferentialTrailerDrive;
   
   
-  class Alice
+  class BobProcess
     : public Process
   {
   public:
-    explicit Alice (string const & name);
+    explicit BobProcess (string const & name);
     
     virtual state_t run (double timestep, ostream & erros);
     
-    DifferentialDrive * drive_;
-    RevoluteServo * servo_;
-    RayDistanceSensor * sensor_;
+    DifferentialTrailerDrive * drive_;
   };
   
 }
 
-#endif // NPM2_ALICE_HPP
+#endif // NPM2_BOB_PROCESS_HPP

@@ -18,46 +18,36 @@
  * USA
  */
 
-#include "Alice.hpp"
-#include "DifferentialDrive.hpp"
-#include "RevoluteServo.hpp"
-#include "RayDistanceSensor.hpp"
+#ifndef NPM2_ALICE_PROCESS_HPP
+#define NPM2_ALICE_PROCESS_HPP
 
-#include <cmath>
+#include <npm2/Process.hpp>
 
 
 namespace npm2 {
   
+  class DifferentialDrive;
+  class RevoluteServo;
+  class RayDistanceSensor;
   
-  Alice::
-  Alice (string const & name)
-    : Process (name),
-      drive_ (0),
-      servo_ (0),
-      sensor_ (0)
+  
+  class AliceProcess
+    : public Process
   {
-    reflectSlot ("drive", &drive_);
-    reflectSlot ("servo", &servo_);
-    reflectSlot ("sensor", &sensor_);
-  }
-  
-  
-  Alice::state_t Alice::
-  run (double timestep, ostream & erros)
-  {
-    if (( ! drive_) || ( ! servo_) || ( ! sensor_)) {
-      erros << "Alice " << name << " needs a drive, servo, and sensor\n";
-      return FAILED;
-    }
+  public:
+    explicit AliceProcess (string const & name);
     
-    drive_->setSpeed (0.02, 0.04);
+    bool attach (string const & base_name);
     
-    static double amp (5.0 * M_PI / 180.0);
-    static double omg (2.0 * M_PI / 5.0);
-    static size_t count (0);
-    servo_->setAngle (amp * cos (omg * (count++) * timestep));
+  protected:
+    virtual state_t init (ostream & erros);
+    virtual state_t run (double timestep, ostream & erros);
     
-    return RUNNING;
-  }
+    DifferentialDrive * drive_;
+    RevoluteServo * servo_;
+    RayDistanceSensor * sensor_;
+  };
   
 }
+
+#endif // NPM2_ALICE_PROCESS_HPP

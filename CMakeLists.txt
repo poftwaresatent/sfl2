@@ -216,9 +216,10 @@ if (GTK2_FOUND)
     npm2/Factory.cpp
     npm2/gfx.cpp
     npm2/Process.cpp
-    npm2/Alice.cpp
-    npm2/Bob.cpp
-    npm2/Charlie.cpp
+    npm2/AliceProcess.cpp
+    npm2/BobProcess.cpp
+    npm2/CharlieProcess.cpp
+    npm2/Robot.hpp
     )
   target_link_libraries (npm2 sfl fpplib ${GTK2_LIBRARIES})
   

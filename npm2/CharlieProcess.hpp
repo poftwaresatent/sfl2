@@ -18,8 +18,8 @@
  * USA
  */
 
-#ifndef NPM2_CHARLIE_HPP
-#define NPM2_CHARLIE_HPP
+#ifndef NPM2_CHARLIE_PROCESS_HPP
+#define NPM2_CHARLIE_PROCESS_HPP
 
 #include <npm2/Object.hpp>
 #include <npm2/Process.hpp>
@@ -31,13 +31,13 @@ namespace npm2 {
   class RayDistanceSensor;
   
   
-  class Charlie
+  class CharlieProcess
     : public Process
   {
   public:
-    explicit Charlie (string const & name);
+    explicit CharlieProcess (string const & name);
     
-    static Charlie * create (string const & name, Object * parent, Frame const & mount);
+    static CharlieProcess * create (string const & name, Object * parent, Frame const & mount);
     
     virtual state_t init (ostream & erros);
     virtual state_t run (double timestep, ostream & erros);
@@ -51,4 +51,4 @@ namespace npm2 {
   
 }
 
-#endif // NPM2_CHARLIE_HPP
+#endif // NPM2_CHARLIE_PROCESS_HPP

@@ -18,7 +18,7 @@
  * USA
  */
 
-#include "Charlie.hpp"
+#include "CharlieProcess.hpp"
 #include "DifferentialDrive.hpp"
 #include "RayDistanceSensor.hpp"
 #include <cmath>
@@ -27,8 +27,8 @@
 namespace npm2 {
   
   
-  Charlie::
-  Charlie (string const & name)
+  CharlieProcess::
+  CharlieProcess (string const & name)
     : Process (name),
       drive_ (0),
       left_ (0),
@@ -44,10 +44,10 @@ namespace npm2 {
   }
   
 
-  Charlie * Charlie::
+  CharlieProcess * CharlieProcess::
   create (string const & name, Object * parent, Frame const & mount)
   {
-    Charlie * charlie (new Charlie (name));
+    CharlieProcess * charlie (new CharlieProcess (name));
     
     Object * base (new Object (name + "_base"));
     base->setParent (parent);
@@ -76,33 +76,33 @@ namespace npm2 {
   }
   
   
-  Charlie::state_t Charlie::
+  CharlieProcess::state_t CharlieProcess::
   init (ostream & erros)
   {
     if ( ! drive_) {
-      erros << "Charlie " << name << " needs a drive\n";
+      erros << "CharlieProcess " << name << " needs a drive\n";
       return FAILED;
     }
     if ( ! left_) {
-      erros << "Charlie " << name << " needs a left sensor\n";
+      erros << "CharlieProcess " << name << " needs a left sensor\n";
       return FAILED;
     }
     if ( ! right_) {
-      erros << "Charlie " << name << " needs a right sensor\n";
+      erros << "CharlieProcess " << name << " needs a right sensor\n";
       return FAILED;
     }
     return RUNNING;
   }
   
   
-  Charlie::state_t Charlie::
+  CharlieProcess::state_t CharlieProcess::
   run (double timestep, ostream & erros)
   {
     double const wl (pow ((right_->distance_ - offset_) / right_->max_distance_, 2.0));
     double const wr (pow ((left_->distance_ - offset_) / left_->max_distance_, 2.0));
     drive_->setSpeed (gain_ * wl, gain_ * wr);
     
-    printf ("Charlie %s  (%6.2f  %6.2f)  (%6.2f  %6.2f)\n",
+    printf ("CharlieProcess %s  (%6.2f  %6.2f)  (%6.2f  %6.2f)\n",
 	    name.c_str(), left_->distance_, right_->distance_, wl, wr);
     
     return RUNNING;
