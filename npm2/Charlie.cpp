@@ -104,6 +104,8 @@ namespace npm2 {
     
     printf ("Charlie %s  (%6.2f  %6.2f)  (%6.2f  %6.2f)\n",
 	    name.c_str(), left_->distance_, right_->distance_, wl, wr);
+    
+    return RUNNING;
   }
   
 }
