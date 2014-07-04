@@ -25,6 +25,7 @@
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
 #include <npm2/Bob.hpp>
+#include <npm2/Charlie.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 
@@ -152,10 +153,15 @@ static void cb_mouse (double mx, double my, int flags)
   if (flags & gfx::MOUSE_PRESS) {
     mx0 = mx;
     my0 = my;
+    mx1 = mx;
+    my1 = my;
   }
   else if (flags & gfx::MOUSE_DRAG) {
     mx1 = mx;
     my1 = my;
+  }
+  else if (flags & gfx::MOUSE_RELEASE) {
+    Charlie::create ("blah", simulator->world_, Frame (mx0, my0, atan2 (my1 - my0, mx1 - mx0)));
   }
 }
 
