@@ -18,8 +18,8 @@
  * USA
  */
 
-#ifndef NPM2_ROBOT_CLIENT_HPP
-#define NPM2_ROBOT_CLIENT_HPP
+#ifndef NPM2_PROCESS_HPP
+#define NPM2_PROCESS_HPP
 
 #include <fpplib/configurable.hpp>
 #include <iostream>
@@ -32,7 +32,7 @@ namespace npm2 {
   class Simulator;
   
   
-  class RobotClient
+  class Process
     : public fpplib::Configurable
   {
   public:
@@ -43,11 +43,11 @@ namespace npm2 {
       DONE
     } state_t;
     
-    typedef fpplib::Registry<RobotClient, false> registry_t;
+    typedef fpplib::Registry<Process, false> registry_t;
     static registry_t registry;
     
-    explicit RobotClient (string const & name);
-    virtual ~RobotClient ();
+    explicit Process (string const & name);
+    virtual ~Process ();
     
     state_t process (Simulator const & sim, ostream & erros);
     state_t getState () const { return state_; }
@@ -63,4 +63,4 @@ namespace npm2 {
   
 }
 
-#endif // NPM2_ROBOT_CLIENT_HPP
+#endif // NPM2_PROCESS_HPP

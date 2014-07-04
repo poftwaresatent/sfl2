@@ -20,7 +20,7 @@
 #include "Simulator.hpp"
 #include "Actuator.hpp"
 #include "Sensor.hpp"
-#include "RobotClient.hpp"
+#include "Process.hpp"
 #include <boost/bind.hpp>
 
 
@@ -106,26 +106,26 @@ namespace npm2 {
   void Simulator::
   simulateProcesses ()
   {
-    for (size_t ii(0); ii < RobotClient::registry.size(); ++ii) {
-      RobotClient::registry.at(ii)->process (*this, erros_);
+    for (size_t ii(0); ii < Process::registry.size(); ++ii) {
+      Process::registry.at(ii)->process (*this, erros_);
     }
     
     // WTF if this debug block gets commented out, the Charlie run
     // method stops being called!
     //
-    for (size_t ii(0); ii < RobotClient::registry.size(); ++ii) {
-      switch (RobotClient::registry.at(ii)->getState()) {
-      case RobotClient::READY:
-    	printf ("%s\tREADY\n", RobotClient::registry.at(ii)->name.c_str());
+    for (size_t ii(0); ii < Process::registry.size(); ++ii) {
+      switch (Process::registry.at(ii)->getState()) {
+      case Process::READY:
+    	printf ("%s\tREADY\n", Process::registry.at(ii)->name.c_str());
     	break;
-      case RobotClient::RUNNING:
-    	printf ("%s\tRUNNIG\n", RobotClient::registry.at(ii)->name.c_str());
+      case Process::RUNNING:
+    	printf ("%s\tRUNNIG\n", Process::registry.at(ii)->name.c_str());
     	break;
-      case RobotClient::FAILED:
-    	printf ("%s\tFAILED\n", RobotClient::registry.at(ii)->name.c_str());
+      case Process::FAILED:
+    	printf ("%s\tFAILED\n", Process::registry.at(ii)->name.c_str());
     	break;
-      case RobotClient::DONE:
-    	printf ("%s\tDONE\n", RobotClient::registry.at(ii)->name.c_str());
+      case Process::DONE:
+    	printf ("%s\tDONE\n", Process::registry.at(ii)->name.c_str());
       }
     }
   }

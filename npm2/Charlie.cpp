@@ -29,7 +29,7 @@ namespace npm2 {
   
   Charlie::
   Charlie (string const & name)
-    : RobotClient (name),
+    : Process (name),
       drive_ (0),
       left_ (0),
       right_ (0),

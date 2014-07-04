@@ -28,7 +28,7 @@ namespace npm2 {
   
   Bob::
   Bob (string const & name)
-    : RobotClient (name),
+    : Process (name),
       drive_ (0)
   {
     reflectSlot ("drive", &drive_);

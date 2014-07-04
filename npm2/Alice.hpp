@@ -21,7 +21,7 @@
 #ifndef NPM2_ALICE_HPP
 #define NPM2_ALICE_HPP
 
-#include <npm2/RobotClient.hpp>
+#include <npm2/Process.hpp>
 
 
 namespace npm2 {
@@ -32,7 +32,7 @@ namespace npm2 {
   
   
   class Alice
-    : public RobotClient
+    : public Process
   {
   public:
     explicit Alice (string const & name);
