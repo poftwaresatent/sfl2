@@ -195,34 +195,26 @@ add_library (plugin-test MODULE apps/plugin-test.cpp)
 target_link_libraries (plugin-test npm) # not sure if this is required on Linux
 set_target_properties (plugin-test PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
+add_library (npm2 SHARED
+  npm2/Body.cpp
+  npm2/BBox.cpp
+  npm2/Object.cpp
+  npm2/Actuator.cpp
+  npm2/Sensor.cpp
+  npm2/DifferentialDrive.cpp
+  npm2/DifferentialTrailerDrive.cpp
+  npm2/RevoluteServo.cpp
+  npm2/RayDistanceSensor.cpp
+  npm2/Simulator.cpp
+  npm2/Factory.cpp
+  npm2/gl.cpp
+  npm2/Process.cpp
+  npm2/AliceProcess.cpp
+  npm2/BobProcess.cpp
+  npm2/CharlieProcess.cpp
+  npm2/Viewport.cpp
+  )
+target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-include (FindGTK2)
-find_package (GTK2 2.24.23 COMPONENTS gtk)
-
-if (GTK2_FOUND)
-  include_directories (${GTK2_INCLUDE_DIRS})
-  
-  add_library (npm2 SHARED
-    npm2/Body.cpp
-    npm2/BBox.cpp
-    npm2/Object.cpp
-    npm2/Actuator.cpp
-    npm2/Sensor.cpp
-    npm2/DifferentialDrive.cpp
-    npm2/DifferentialTrailerDrive.cpp
-    npm2/RevoluteServo.cpp
-    npm2/RayDistanceSensor.cpp
-    npm2/Simulator.cpp
-    npm2/Factory.cpp
-    npm2/gfx.cpp
-    npm2/Process.cpp
-    npm2/AliceProcess.cpp
-    npm2/BobProcess.cpp
-    npm2/CharlieProcess.cpp
-    npm2/Robot.hpp
-    )
-  target_link_libraries (npm2 sfl fpplib ${GTK2_LIBRARIES})
-  
-  add_executable (draftnpm2 npm2/draft.cpp)
-  target_link_libraries (draftnpm2 npm2)
-endif ()
+add_executable (nepumuk2 npm2/nepumuk2.cpp)
+target_link_libraries (nepumuk2 npm2)

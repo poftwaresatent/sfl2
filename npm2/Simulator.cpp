@@ -33,7 +33,11 @@ namespace npm2 {
       world_ (0),
       timestep_ (0.1),
       state_ (PAUSE),
-      erros_ (cout)
+      erros_ (cout),
+      window_width_ (200),
+      window_height_ (200),
+      window_posx_ (0),
+      window_posy_ (0)
   {
     reflectSlot ("world", &world_);
     reflectParameter ("timestep", &timestep_,
@@ -41,6 +45,12 @@ namespace npm2 {
 		      new fpplib::StrictlyPositiveGuard <double> ());
     reflectCallback <string> ("state", true,
 			      boost::bind (&Simulator::setState, this, _1));
+    
+    fpplib::StrictlyPositiveGuard <int> * guard (new fpplib::StrictlyPositiveGuard <int> ());
+    reflectParameter ("window_width", &window_width_, guard);
+    reflectParameter ("window_height", &window_height_, guard);
+    reflectParameter ("window_posx", &window_posx_, guard);
+    reflectParameter ("window_posy", &window_posy_, guard);
   }
   
   

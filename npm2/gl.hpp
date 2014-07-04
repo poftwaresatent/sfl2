@@ -1,4 +1,5 @@
-/* 
+/* Nepumuk Mobile Robot Simulator v2
+ *
  * Copyright (C) 2014 Roland Philippsen. All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -17,47 +18,24 @@
  * USA
  */
 
-#ifndef NPM2_SIMULATOR_HPP
-#define NPM2_SIMULATOR_HPP
 
-#include <fpplib/configurable.hpp>
+#ifndef NPM2_GL_HPP
+#define NPM2_GL_HPP
 
+#if defined(OSX)
+# include <GLUT/glut.h>
+# include <OpenGL/glu.h>
+# include <OpenGL/gl.h>
+#else
+# include <GL/glut.h>
+# include <GL/glu.h>
+# include <GL/gl.h>
+#endif
 
 namespace npm2 {
-  
-  using namespace std;
-  
-  class Object;
-  
-  
-  class Simulator
-    : public fpplib::Configurable
-  {
-  public:
-    typedef enum {
-      PAUSE,
-      STEP,
-      RUN
-    } state_t;
-    
-    explicit Simulator (string const & name);
-    
-    bool setState (string const & value);
-    
-    void simulateActuators ();
-    void simulateSensors ();
-    void simulateProcesses ();
-    
-    Object * world_;
-    double timestep_;
-    state_t state_;
-    ostream & erros_;
-    int window_width_;
-    int window_height_;
-    int window_posx_;
-    int window_posy_;
-  };
-  
+  namespace gl {
+    ::GLUquadricObj * quadric ();
+  }
 }
 
-#endif // NPM2_SIMULATOR_HPP
+#endif // NPM2_GL_HPP
