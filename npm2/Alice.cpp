@@ -31,7 +31,7 @@ namespace npm2 {
   
   Alice::
   Alice (string const & name)
-    : RobotClient (name),
+    : Process (name),
       drive_ (0),
       servo_ (0),
       sensor_ (0)

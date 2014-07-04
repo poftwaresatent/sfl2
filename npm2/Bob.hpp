@@ -21,7 +21,7 @@
 #ifndef NPM2_BOB_HPP
 #define NPM2_BOB_HPP
 
-#include <npm2/RobotClient.hpp>
+#include <npm2/Process.hpp>
 
 
 namespace npm2 {
@@ -30,7 +30,7 @@ namespace npm2 {
   
   
   class Bob
-    : public RobotClient
+    : public Process
   {
   public:
     explicit Bob (string const & name);

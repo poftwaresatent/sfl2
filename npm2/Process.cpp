@@ -18,18 +18,18 @@
  * USA
  */
 
-#include "RobotClient.hpp"
+#include "Process.hpp"
 #include "Simulator.hpp"
 
 
 namespace npm2 {
   
   
-  RobotClient::registry_t RobotClient::registry;
+  Process::registry_t Process::registry;
   
   
-  RobotClient::
-  RobotClient (string const & name)
+  Process::
+  Process (string const & name)
     : fpplib::Configurable (name),
       state_ (READY)
   {
@@ -37,14 +37,14 @@ namespace npm2 {
   }
   
   
-  RobotClient::
-  ~RobotClient ()
+  Process::
+  ~Process ()
   {
     registry.remove (name, this);
   }
   
   
-  RobotClient::state_t RobotClient::
+  Process::state_t Process::
   process (Simulator const & sim, ostream & erros)
   {
     switch (state_) {
@@ -64,14 +64,14 @@ namespace npm2 {
   }
   
   
-  RobotClient::state_t RobotClient::
+  Process::state_t Process::
   init (ostream & erros)
   {
     return RUNNING;
   }
   
   
-  RobotClient::state_t RobotClient::
+  Process::state_t Process::
   recover (ostream & erros)
   {
     return FAILED;
