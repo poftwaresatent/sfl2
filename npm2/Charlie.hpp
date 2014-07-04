@@ -21,6 +21,7 @@
 #ifndef NPM2_CHARLIE_HPP
 #define NPM2_CHARLIE_HPP
 
+#include <npm2/Object.hpp>
 #include <npm2/RobotClient.hpp>
 
 
@@ -36,7 +37,7 @@ namespace npm2 {
   public:
     explicit Charlie (string const & name);
     
-    ////static Charlie * create (string const & name, Frame const & pos, Object * parent);
+    static Charlie * create (string const & name, Object * parent, Frame const & mount);
     
     virtual state_t init (ostream & erros);
     virtual state_t run (double timestep, ostream & erros);
