@@ -24,8 +24,8 @@
 #include <npm2/gfx.hpp>
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
-#include <npm2/Bob.hpp>
-#include <npm2/Charlie.hpp>
+#include <npm2/BobProcess.hpp>
+#include <npm2/CharlieProcess.hpp>
 #include <sfl/util/numeric.hpp>
 #include <iostream>
 
@@ -38,7 +38,7 @@ using namespace npm2;
 
 
 static Simulator * simulator (0);
-static Bob * bob (0);
+static BobProcess * bob (0);
 
 static double mx0, my0, mx1, my1;
 
@@ -161,7 +161,7 @@ static void cb_mouse (double mx, double my, int flags)
     my1 = my;
   }
   else if (flags & gfx::MOUSE_RELEASE) {
-    Charlie::create ("blah", simulator->world_, Frame (mx0, my0, atan2 (my1 - my0, mx1 - mx0)));
+    CharlieProcess::create ("blah", simulator->world_, Frame (mx0, my0, atan2 (my1 - my0, mx1 - mx0)));
   }
 }
 
@@ -262,7 +262,7 @@ int main (int argc, char ** argv)
     errx (EXIT_FAILURE, "no world given to simulator");
   }
   
-  bob = npm2::Factory::instance().find <Bob> ("bob");
+  bob = npm2::Factory::instance().find <BobProcess> ("bob");
   if ( ! bob) {
     errx (EXIT_FAILURE, "cannot find bob");
   }

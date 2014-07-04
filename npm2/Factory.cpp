@@ -24,9 +24,9 @@
 #include <npm2/DifferentialTrailerDrive.hpp>
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/RevoluteServo.hpp>
-#include <npm2/Alice.hpp>
-#include <npm2/Bob.hpp>
-#include <npm2/Charlie.hpp>
+#include <npm2/AliceProcess.hpp>
+#include <npm2/BobProcess.hpp>
+#include <npm2/CharlieProcess.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <fpplib/yaml_parser.hpp>
@@ -67,9 +67,9 @@ namespace npm2 {
     declare <DifferentialTrailerDrive> ("DifferentialTrailerDrive");
     declare <RayDistanceSensor> ("RayDistanceSensor");
     declare <RevoluteServo> ("RevoluteServo");
-    declare <Alice> ("Alice");
-    declare <Bob> ("Bob");
-    declare <Charlie> ("Charlie");
+    declare <AliceProcess> ("AliceProcess");
+    declare <BobProcess> ("BobProcess");
+    declare <CharlieProcess> ("CharlieProcess");
     
     parser_.addConverter <sfl::Line> ();
     parser_.addConverter <sfl::Frame> ();

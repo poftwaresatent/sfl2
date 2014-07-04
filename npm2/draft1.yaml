@@ -7,35 +7,32 @@
       - [ -5,  5, -5, -5 ]
 
 - Object:
-    name: charlie_base
+    name: alice_base
     parent: world
-    mount: [ 0.0, -2.5, 0.2 ]
+    mount: [ 0.0, -2.5, 0.0 ]
     lines:
       - [ -0.2, -0.4,  0.4, -0.2 ]
       - [ -0.2,  0.4,  0.4,  0.2 ]
       - [  0.4, -0.2,  0.4,  0.2 ]
       - [ -0.2,  0.4, -0.2, -0.4 ]
 - DifferentialDrive:
-    name: charlie_drive
-    parent: charlie_base
+    name: alice_drive
+    parent: alice_base
     wheel_radius: 0.2
     wheel_base: 0.3
 - RayDistanceSensor:
-    name: charlie_left
-    parent: charlie_base
-    mount: [ 0.1, 0.1, 0.35 ]
-    max_distance: 2.5
-- RayDistanceSensor:
-    name: charlie_right
-    parent: charlie_base
-    mount: [ 0.1, -0.1, -0.35 ]
-    max_distance: 2.5
-- CharlieProcess:
-    name: charlie
-    drive: charlie_drive
-    left: charlie_left
-    right: charlie_right
-    gain: 0.3
+    name: alice_sensor
+    parent: alice_base
+    mount: [ 0.2, 0.0, 0.0 ]
+    max_distance: 100.0
+- RevoluteServo:
+    name: alice_servo
+    parent: alice_sensor
+- AliceProcess:
+    name: alice
+    drive: alice_drive
+    sensor: alice_sensor
+    servo: alice_servo
 
 - Object:
     name: bob_tractor
@@ -70,4 +67,4 @@
     name: draft
     world: world
     timestep: 0.1
-    state: pause
+    state: run

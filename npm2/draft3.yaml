@@ -28,11 +28,9 @@
 - RevoluteServo:
     name: alice_servo
     parent: alice_sensor
-- Alice:
+- AliceProcess:
     name: alice
-    drive: alice_drive
-    sensor: alice_sensor
-    servo: alice_servo
+    attach: alice_base
 
 - Object:
     name: bob_tractor
@@ -59,7 +57,7 @@
     wheel_base: 0.4
     hitch_offset: 0.3
     trailer_arm: 1.0
-- Bob:
+- BobProcess:
     name: bob
     drive: bob_drive
     

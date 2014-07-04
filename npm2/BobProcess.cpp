@@ -18,7 +18,7 @@
  * USA
  */
 
-#include "Bob.hpp"
+#include "BobProcess.hpp"
 #include "DifferentialTrailerDrive.hpp"
 #include <sfl/util/numeric.hpp>
 
@@ -26,8 +26,8 @@
 namespace npm2 {
   
   
-  Bob::
-  Bob (string const & name)
+  BobProcess::
+  BobProcess (string const & name)
     : Process (name),
       drive_ (0)
   {
@@ -35,11 +35,11 @@ namespace npm2 {
   }
   
   
-  Bob::state_t Bob::
+  BobProcess::state_t BobProcess::
   run (double timestep, ostream & erros)
   {
     if ( ! drive_) {
-      erros << "Bob " << name << " is missing a drive\n";
+      erros << "BobProcess " << name << " is missing a drive\n";
       return FAILED;
     }
     
