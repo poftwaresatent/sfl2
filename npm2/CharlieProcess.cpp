@@ -102,8 +102,8 @@ namespace npm2 {
     double const wr (pow ((left_->distance_ - offset_) / left_->max_distance_, 2.0));
     drive_->setSpeed (gain_ * wl, gain_ * wr);
     
-    printf ("CharlieProcess %s  (%6.2f  %6.2f)  (%6.2f  %6.2f)\n",
-	    name.c_str(), left_->distance_, right_->distance_, wl, wr);
+    // printf ("CharlieProcess %s  (%6.2f  %6.2f)  (%6.2f  %6.2f)\n",
+    // 	    name.c_str(), left_->distance_, right_->distance_, wl, wr);
     
     return RUNNING;
   }
