@@ -123,21 +123,21 @@ namespace npm2 {
     // WTF if this debug block gets commented out, the Charlie run
     // method stops being called!
     //
-    for (size_t ii(0); ii < Process::registry.size(); ++ii) {
-      switch (Process::registry.at(ii)->getState()) {
-      case Process::READY:
-    	printf ("%s\tREADY\n", Process::registry.at(ii)->name.c_str());
-    	break;
-      case Process::RUNNING:
-    	printf ("%s\tRUNNIG\n", Process::registry.at(ii)->name.c_str());
-    	break;
-      case Process::FAILED:
-    	printf ("%s\tFAILED\n", Process::registry.at(ii)->name.c_str());
-    	break;
-      case Process::DONE:
-    	printf ("%s\tDONE\n", Process::registry.at(ii)->name.c_str());
-      }
-    }
+    // for (size_t ii(0); ii < Process::registry.size(); ++ii) {
+    //   switch (Process::registry.at(ii)->getState()) {
+    //   case Process::READY:
+    // 	printf ("%s\tREADY\n", Process::registry.at(ii)->name.c_str());
+    // 	break;
+    //   case Process::RUNNING:
+    // 	printf ("%s\tRUNNIG\n", Process::registry.at(ii)->name.c_str());
+    // 	break;
+    //   case Process::FAILED:
+    // 	printf ("%s\tFAILED\n", Process::registry.at(ii)->name.c_str());
+    // 	break;
+    //   case Process::DONE:
+    // 	printf ("%s\tDONE\n", Process::registry.at(ii)->name.c_str());
+    //   }
+    // }
   }
   
 }
