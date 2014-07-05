@@ -23,100 +23,134 @@
 #include <limits>
 #include <cmath>
 
+// dbg
+//#include <stdio.h>
+
+
 namespace npm2 {
-  namespace gl {
     
     
-    Viewport::
-    Viewport ()
-    {
-      updateSubwin (0.0, 0.0, 1.0, 1.0);
-      updateShape (100, 100);
-      updateBounds (0.0, 0.0, 1.0, 1.0);
+  Viewport::
+  Viewport ()
+    : border_ (3),
+      squish_ (false)
+  {
+    updateSubwin (0.0, 0.0, 1.0, 1.0);
+    updateShape (100, 100);
+    updateBounds (0.0, 0.0, 1.0, 1.0);
+  }
+    
+    
+  Viewport::
+  Viewport (double subwin_x0, double subwin_y0, double subwin_x1, double subwin_y1)
+    : squish_ (false)
+  {
+    updateSubwin (subwin_x0, subwin_y0, subwin_x1, subwin_y1);
+    updateShape (100, 100);
+    updateBounds (0.0, 0.0, 1.0, 1.0);
+  }
+    
+    
+  void Viewport::
+  updateSubwin (double x0, double y0, double x1, double y1)
+  {
+    subwin_.x0 = x0;
+    subwin_.y0 = y0;
+    subwin_.width = x1 - x0;
+    subwin_.height = y1 - y0;
+    dirty_ = true;
+  }
+    
+    
+  void Viewport::
+  updateShape (int width, int height)
+  {
+    shape_.winwidth = width;
+    shape_.winheight = height;
+    dirty_ = true;
+  }
+    
+    
+  void Viewport::
+  updateBounds (double x0, double y0, double x1, double y1)
+  {
+    bounds_.x0 = x0 < x1 ? x0 : x1;
+    bounds_.y0 = y0 < y1 ? y0 : y1;
+    bounds_.x1 = x0 > x1 ? x0 : x1;
+    bounds_.y1 = y0 > y1 ? y0 : y1;
+    bounds_.cx = (bounds_.x0 + bounds_.x1) / 2.0;
+    bounds_.cy = (bounds_.y0 + bounds_.y1) / 2.0;
+    dirty_ = true;
+  }
+    
+    
+  void Viewport::
+  pushOrtho ()
+  {
+    if (dirty_) {
+      updatePadding ();
+      dirty_ = false;
     }
     
+    // printf ("pushOrtho:\n"
+    // 	    "  viewport   x0: %d   y0: %d   w: %d   h: %d\n"
+    // 	    "  ortho l: %6.2f   r: %6.2f   b: %6.2f   t: %6.2f\n",
+    // 	    padding_.x0, padding_.y0, padding_.width, padding_.height,
+    // 	    bounds_.x0, bounds_.x1, bounds_.y0, bounds_.y1);
     
-    Viewport::
-    Viewport (double subwin_x0, double subwin_y0, double subwin_x1, double subwin_y1)
-    {
-      updateSubwin (subwin_x0, subwin_y0, subwin_x1, subwin_y1);
-      updateShape (100, 100);
-      updateBounds (0.0, 0.0, 1.0, 1.0);
-    }
-    
-    
-    void Viewport::
-    updateSubwin (double x0, double y0, double x1, double y1)
-    {
-      subwin_.x0 = x0;
-      subwin_.y0 = y0;
-      subwin_.width = x1 - x0;
-      subwin_.height = y1 - y0;
-      dirty_ = true;
-    }
-    
-    
-    void Viewport::
-    updateShape (int width, int height)
-    {
-      shape_.winwidth = width;
-      shape_.winheight = height;
-      dirty_ = true;
-    }
-    
-    
-    void Viewport::
-    updateBounds (double x0, double y0, double x1, double y1)
-    {
-      bounds_.x0 = x0 < x1 ? x0 : x1;
-      bounds_.y0 = y0 < y1 ? y0 : y1;
-      bounds_.x1 = x0 > x1 ? x0 : x1;
-      bounds_.y1 = y0 > y1 ? y0 : y1;
-      bounds_.cx = (bounds_.x0 + bounds_.x1) / 2.0;
-      bounds_.cy = (bounds_.y0 + bounds_.y1) / 2.0;
-      dirty_ = true;
-    }
-    
-    
-    void Viewport::
-    pushOrtho ()
-    {
-      if (dirty_) {
-	updatePadding ();
-	dirty_ = false;
-      }
+    glViewport (padding_.x0, padding_.y0, padding_.width, padding_.height);
+    gluLookAt (bounds_.cx, bounds_.cy, 1.0, // eye
+	       bounds_.cx, bounds_.cy, 0.0, // center
+	       0.0, 1.0, 0.0		    // up
+	       );
       
-      glViewport (padding_.x0, padding_.y0, padding_.width, padding_.height);
-      gluLookAt (bounds_.cx, bounds_.cy, 1.0, // eye
-		 bounds_.cx, bounds_.cy, 0.0, // center
-		 0.0, 1.0, 0.0		      // up
-		 );
-      
-      glMatrixMode (GL_PROJECTION);
-      glPushMatrix ();
-      glLoadIdentity ();
-      glOrtho (bounds_.x0, bounds_.x1,
-	       bounds_.y0, bounds_.y1,
-	       -0.5, 0.5);
+    glMatrixMode (GL_PROJECTION);
+    glPushMatrix ();
+    glLoadIdentity ();
+    glOrtho (bounds_.x0, bounds_.x1,
+	     bounds_.y0, bounds_.y1,
+	     -0.5, 0.5);
+    
+    glMatrixMode (GL_MODELVIEW);
+    glLoadIdentity ();
+  }
+  
+  
+  void Viewport::
+  pop ()
+  {
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();  
+  }
+  
+  
+  bool Viewport::
+  squish (bool enable)
+  {
+    if (squish_ == enable) {
+      return enable;
     }
+    squish_ = enable;
+    dirty_ = true;
+    return ! enable;
+  }
+  
+  
+  void Viewport::
+  updatePadding ()
+  {
+    shape_.x0     = ceil  (shape_.winwidth  * subwin_.x0)     +     border_;
+    shape_.y0     = ceil  (shape_.winheight * subwin_.y0)     +     border_;
+    shape_.width  = floor (shape_.winwidth  * subwin_.width)  - 2 * border_;
+    shape_.height = floor (shape_.winheight * subwin_.height) - 2 * border_;
     
-    
-    void Viewport::
-    pop ()
-    {
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();  
+    if (squish_) {
+      padding_.x0 = shape_.x0;
+      padding_.y0 = shape_.y0;
+      padding_.width = shape_.width;
+      padding_.height = shape_.height;
     }
-    
-    
-    void Viewport::
-    updatePadding ()
-    {
-      shape_.x0 = ceil (shape_.winwidth * subwin_.x0);
-      shape_.y0 = ceil (shape_.winheight * subwin_.y0);
-      shape_.width = floor (shape_.winwidth * subwin_.width);
-      shape_.height = floor (shape_.winheight * subwin_.height);
-      
+    else {
       int const pad ((shape_.width - shape_.height) / 2);
       if (pad > 0) {		// pad left and right
 	padding_.x0 = shape_.x0 + pad;
@@ -124,19 +158,28 @@ namespace npm2 {
 	padding_.width = shape_.height;
 	padding_.height = shape_.height;
       }
-      else if (pad < 0) {	// pad below and above
+      else {	// pad below and above
 	padding_.x0 = shape_.x0;
 	padding_.y0 = shape_.y0 - pad; // notice pad is negative
 	padding_.width = shape_.width;
 	padding_.height = shape_.width;
       }
-      else {
-	padding_.x0 = shape_.x0;
-	padding_.y0 = shape_.y0;
-	padding_.width = shape_.width;
-	padding_.height = shape_.height;
-      }
     }
+  }
+  
+  
+  int Viewport::
+  setBorder (int border)
+  {
+    if (border == border_) {
+      return border;
+    }
+    
+    int const old (border_);
+    border_ = border;
+    dirty_ = true;
+    
+    return old;
   }
   
 }

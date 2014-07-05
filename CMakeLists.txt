@@ -23,10 +23,6 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
   add_definitions (-DSFL2_DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL Debug)
 
-### XXXX to do: some leftovers from GNU Automake setup
-# for PNG we should -DSFL2_HAVE_PNG
-# the doc/Doxyfile.in should be (manually?) handled
-
 ##################################################
 # OS detection
 
@@ -213,6 +209,7 @@ add_library (npm2 SHARED
   npm2/BobProcess.cpp
   npm2/CharlieProcess.cpp
   npm2/Viewport.cpp
+  npm2/View.cpp
   npm2/Camera.cpp
   npm2/Drawing.cpp
   )

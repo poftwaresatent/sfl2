@@ -22,8 +22,7 @@
 
 #include "Drawing.hpp"
 
-
-namespace npm {
+namespace npm2 {
   
   
   Drawing::registry_t Drawing::registry;
