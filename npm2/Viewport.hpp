@@ -22,45 +22,48 @@
 #define NPM2_VIEWPORT_HPP
 
 namespace npm2 {
-  namespace gl {
     
     
-    class Viewport
-    {
-    public:
-      Viewport ();
-      Viewport (double subwin_x0, double subwin_y0, double subwin_x1, double subwin_y1);
+  class Viewport
+  {
+  public:
+    Viewport ();
+    Viewport (double subwin_x0, double subwin_y0, double subwin_x1, double subwin_y1);
       
-      /** The subwindow, in relative coordinates (0...1). */
-      void updateSubwin (double x0, double y0, double x1, double y1);
-      void updateShape (int width, int height);
-      void updateBounds (double x0, double y0, double x1, double y1);
-      void pushOrtho ();
-      void pop ();
+    /** The subwindow, in relative coordinates (0...1). */
+    void updateSubwin (double x0, double y0, double x1, double y1);
+    void updateShape (int width, int height);
+    void updateBounds (double x0, double y0, double x1, double y1);
+    void pushOrtho ();
+    void pop ();
+    
+    int setBorder (int border);
+    bool squish (bool enable);
+    
+  protected:
+    void updatePadding ();
       
-    protected:
-      void updatePadding ();
+    struct {
+      double x0, y0, width, height;
+    } subwin_;
       
-      struct {
-	double x0, y0, width, height;
-      } subwin_;
+    struct {
+      double x0, x1, y0, y1, cx, cy;
+    } bounds_;
       
-      struct {
-	double x0, x1, y0, y1, cx, cy;
-      } bounds_;
+    struct {
+      int x0, y0, width, height, winwidth, winheight;
+    } shape_;
       
-      struct {
-	int x0, y0, width, height, winwidth, winheight;
-      } shape_;
-      
-      struct {
-	int x0, y0, width, height;
-      } padding_;
-      
-      bool dirty_;
-    };
+    struct {
+      int x0, y0, width, height;
+    } padding_;
+    
+    int border_;
+    bool squish_;
+    bool dirty_;
+  };
 
-  }
 }
 
 #endif // NPM2_VIEWPORT_HPP

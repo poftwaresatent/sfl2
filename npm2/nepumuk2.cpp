@@ -18,8 +18,7 @@
  * USA
  */
 
-#include <npm2/gl.hpp>
-#include <npm2/Viewport.hpp>
+#include <npm2/View.hpp>
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
 #include <npm2/Object.hpp>
@@ -27,23 +26,38 @@
 
 // tmp
 #include <npm2/RayDistanceSensor.hpp>
-
-// #include <sfl/util/numeric.hpp>
-// #include <npm2/Camera.hpp>
-// #include <npm2/Drawing.hpp>
-// #include <iostream>
-// #include <signal.h>
-// #include <cmath>
-// #include <stdio.h>
+#include <npm2/Drawing.hpp>
+#include <npm2/Camera.hpp>
+#include <npm2/gl.hpp>
 
 using namespace npm2;
-using namespace npm2::gl;
 
 
 static Simulator * simulator (0);
 static int window_handle;
 static unsigned int const glut_timer_ms (1);
-static Viewport view (0, 0, 1, 1);
+static View view ("tmp");
+
+
+namespace {
+  
+  class tmpDrawing
+    : public Drawing
+  {
+  public:
+    tmpDrawing (): Drawing ("tmp", "tmp") {}
+    virtual void draw ();
+  };
+  
+  class tmpCamera
+    : public Camera
+  {
+  public:
+    tmpCamera (): Camera ("tmp", "tmp") {}
+    virtual void configureView (View & view);
+  };
+  
+}
 
 
 static void parse_cfile (char const * cfname)
@@ -51,6 +65,16 @@ static void parse_cfile (char const * cfname)
   npm2::Factory & ff (npm2::Factory::instance());
   if ( ! ff.parseFile (cfname, &cerr)) {
     errx (EXIT_FAILURE, "%s: parse error (see above messages)", cfname);
+  }
+  
+  new tmpCamera ();
+  if ( ! view.setCamera ("tmp")) {
+    exit (EXIT_FAILURE);
+  }
+  
+  new tmpDrawing ();
+  if ( ! view.addDrawing ("tmp")) {
+    exit (EXIT_FAILURE);
   }
 }
 
@@ -98,7 +122,7 @@ static void parse_args (int argc, char ** argv)
 
 static void reshape (int width, int height)
 {
-  view.updateShape (width, height);
+  view.reshape (width, height);
 }
 
 
@@ -143,22 +167,7 @@ static void draw ()
   glClear (GL_COLOR_BUFFER_BIT);
   
   // for each view, draw its things ... later.
-
-  BBox const & bbox (simulator->world_->getBBox());
-  if (bbox.isValid()) {
-    static double const margin (0.1);
-    view.updateBounds (bbox.x0() - margin, bbox.y0() - margin,
-		       bbox.x1() + margin, bbox.y1() + margin);
-    view.pushOrtho ();
-    
-    // needed?
-    //
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
-    tmp_recurse_draw (simulator->world_);
-    view.pop ();
-  }
+  view.draw ();
   
   glFlush ();
   glutSwapBuffers ();
@@ -252,4 +261,26 @@ int main (int argc, char ** argv)
   
   init_glut (argc, argv);
   glutMainLoop();
+}
+
+
+namespace {
+
+  void tmpDrawing::draw ()
+  {
+    tmp_recurse_draw (simulator->world_);
+  }
+  
+  void tmpCamera::configureView (View & view)
+  {
+    BBox const & bbox (simulator->world_->getBBox());
+    if (bbox.isValid()) {
+      static double const margin (0.1);
+      view.setBounds (bbox, margin);
+    }
+    else {
+      view.setBounds (0.0, 0.0, 1.0, 1.0);
+    }
+  }
+  
 }
