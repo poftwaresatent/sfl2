@@ -214,6 +214,7 @@ add_library (npm2 SHARED
   npm2/CharlieProcess.cpp
   npm2/Viewport.cpp
   npm2/Camera.cpp
+  npm2/Drawing.cpp
   )
 target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
