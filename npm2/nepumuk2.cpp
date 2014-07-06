@@ -27,7 +27,6 @@
 // tmp
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/Drawing.hpp>
-#include <npm2/Camera.hpp>
 #include <npm2/gl.hpp>
 
 using namespace npm2;
@@ -36,7 +35,6 @@ using namespace npm2;
 static Simulator * simulator (0);
 static int window_handle;
 static unsigned int const glut_timer_ms (1);
-static View view ("tmp");
 
 
 namespace {
@@ -49,14 +47,6 @@ namespace {
     virtual void draw ();
   };
   
-  class tmpCamera
-    : public Camera
-  {
-  public:
-    tmpCamera (): Camera ("tmp", "tmp") {}
-    virtual void configureView (View & view);
-  };
-  
 }
 
 
@@ -67,14 +57,9 @@ static void parse_cfile (char const * cfname)
     errx (EXIT_FAILURE, "%s: parse error (see above messages)", cfname);
   }
   
-  new tmpCamera ();
-  if ( ! view.setCamera ("tmp")) {
-    exit (EXIT_FAILURE);
-  }
-  
   new tmpDrawing ();
-  if ( ! view.addDrawing ("tmp")) {
-    exit (EXIT_FAILURE);
+  if ( ! View::registry.at(0)->addDrawing ("tmp")) {
+    errx (EXIT_FAILURE, "blah");
   }
 }
 
@@ -122,7 +107,9 @@ static void parse_args (int argc, char ** argv)
 
 static void reshape (int width, int height)
 {
-  view.reshape (width, height);
+  for (size_t iv (0); iv < View::registry.size(); ++iv) {
+    View::registry.at(iv)->reshape (width, height);
+  }
 }
 
 
@@ -166,8 +153,9 @@ static void draw ()
   glutSetWindow (window_handle); // not sure this is needed...
   glClear (GL_COLOR_BUFFER_BIT);
   
-  // for each view, draw its things ... later.
-  view.draw ();
+  for (size_t iv (0); iv < View::registry.size(); ++iv) {
+    View::registry.at(iv)->draw();
+  }
   
   glFlush ();
   glutSwapBuffers ();
@@ -269,18 +257,6 @@ namespace {
   void tmpDrawing::draw ()
   {
     tmp_recurse_draw (simulator->world_);
-  }
-  
-  void tmpCamera::configureView (View & view)
-  {
-    BBox const & bbox (simulator->world_->getBBox());
-    if (bbox.isValid()) {
-      static double const margin (0.1);
-      view.setBounds (bbox, margin);
-    }
-    else {
-      view.setBounds (0.0, 0.0, 1.0, 1.0);
-    }
   }
   
 }

@@ -68,3 +68,14 @@
     world: world
     timestep: 0.1
     state: run
+
+- ObjectCamera:
+    name: world_camera
+    object: world
+    
+- View:
+    name: world_view
+    camera: world_camera
+    
+
+    
