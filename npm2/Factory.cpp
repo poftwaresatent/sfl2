@@ -27,6 +27,8 @@
 #include <npm2/AliceProcess.hpp>
 #include <npm2/BobProcess.hpp>
 #include <npm2/CharlieProcess.hpp>
+#include <npm2/View.hpp>
+#include <npm2/ObjectCamera.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <fpplib/yaml_parser.hpp>
@@ -70,6 +72,8 @@ namespace npm2 {
     declare <AliceProcess> ("AliceProcess");
     declare <BobProcess> ("BobProcess");
     declare <CharlieProcess> ("CharlieProcess");
+    declare <View> ("View");
+    declare <ObjectCamera> ("ObjectCamera");
     
     parser_.addConverter <sfl::Line> ();
     parser_.addConverter <sfl::Frame> ();
