@@ -82,7 +82,7 @@ namespace npm2 {
       erros << "AliceProcess " << name << " needs a drive, servo, and sensor\n";
       return FAILED;
     }
-    
+    return RUNNING;
   }
   
   
