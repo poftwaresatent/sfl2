@@ -72,11 +72,9 @@
 - ObjectCamera:
     name: world_camera
     object: world
-
 - ObjectDrawing:
     name: world_drawing
     object: world
-    
 - View:
     name: world_view
     camera: world_camera
