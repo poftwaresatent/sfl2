@@ -29,9 +29,11 @@ namespace npm2 {
   BobProcess::
   BobProcess (string const & name)
     : Process (name),
-      drive_ (0)
+      drive_ (0),
+      foo_ (0)
   {
     reflectSlot ("drive", &drive_);
+    reflectSlot ("foo", &foo_);
   }
   
   
@@ -63,13 +65,31 @@ namespace npm2 {
     double const dhead (mod2pi (thref - drive_->getParent()->getGlobal().Theta()));
     static double const dth (5.0 * M_PI / 180.0);
     if (fabs (dhead) <= dth) {
-      drive_->setSpeed (0.02, 0.02);
+      drive_->setSpeed (0.04, 0.04);
     }
     else if (dhead > 0.0) {
-      drive_->setSpeed (0.0, 0.02);
+      drive_->setSpeed (0.0, 0.04);
     }
     else {
-      drive_->setSpeed (0.02, 0.0);
+      drive_->setSpeed (0.04, 0.0);
+    }
+    
+    if (foo_) {
+      static Object * world (0);
+      static int cnt (100);
+      if (0 == --cnt) {
+	if (drive_->getParent() != foo_->getParent()) {
+	  world = foo_->attach (drive_->getParent());
+	  printf ("drive\n");
+	}
+	else {
+	  foo_->attach (world);
+	  printf ("world\n");
+ 	}
+	cnt = 100;
+      }
+
+      printf ("%d  %g\n", cnt, timestep);
     }
     
     return RUNNING;

@@ -36,7 +36,7 @@ namespace npm2 {
   {
     registry.add (name, this);
     reflectParameter ("mount", &mount_);
-    reflectCallback<string> ("parent", true, boost::bind (&Object::findSetParent, this, _1));
+    reflectCallback<string> ("parent", true, boost::bind (&Object::initParent, this, _1));
     reflectCallback<Line> ("lines", true, boost::bind (&Object::addLine, this, _1));
   }
   
@@ -49,12 +49,12 @@ namespace npm2 {
   
   
   void Object::
-  setParent (Object * obj)
+  setParent (Object * parent)
   {
     if (parent_) {
       parent_->children_.erase (this);
     }
-    parent_ = obj;
+    parent_ = parent;
     if (parent_) {
       parent_->children_.insert (this);
     }
@@ -62,17 +62,33 @@ namespace npm2 {
   
   
   bool Object::
-  findSetParent (string const & name)
+  initParent (string const & name)
   {
-    Object * obj (registry.find(name));
-    if( ! obj) {
+    Object * parent (registry.find(name));
+    if( ! parent) {
       return false;
     }
-    if (obj == this) {
+    if (parent == this) {
       return false;
     }
-    setParent (obj);
+    setParent (parent);
     return true;
+  }
+  
+  
+  Object * Object::
+  attach (Object * new_parent)
+  {
+    if ( ! parent_) {
+      setParent (new_parent);
+      return 0;
+    }
+    
+    Object * old_parent (parent_);
+    mount_ = global_;
+    new_parent->getGlobal().From (mount_);
+    setParent (new_parent);
+    return old_parent;
   }
   
   

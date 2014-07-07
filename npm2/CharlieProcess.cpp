@@ -50,7 +50,7 @@ namespace npm2 {
     CharlieProcess * charlie (new CharlieProcess (name));
     
     Object * base (new Object (name + "_base"));
-    base->setParent (parent);
+    base->attach (parent);
     base->mount_ = mount;
     base->addLine (Line (-0.2, -0.4,  0.4, -0.2));
     base->addLine (Line (-0.2,  0.4,  0.4,  0.2));
@@ -58,17 +58,17 @@ namespace npm2 {
     base->addLine (Line (-0.2,  0.4, -0.2, -0.4));
     
     charlie->drive_ = new DifferentialDrive (name + "_drive");
-    charlie->drive_->setParent (base);
+    charlie->drive_->attach (base);
     charlie->drive_->wheel_base_ = 0.3;
     charlie->drive_->wheel_radius_ = 0.2;
     
     charlie->left_ = new RayDistanceSensor (name + "_left");
-    charlie->left_->setParent (base);
+    charlie->left_->attach (base);
     charlie->left_->mount_.Set (0.1, -0.1, -0.35);
     charlie->left_->max_distance_ = 2.5;
     
     charlie->right_ = new RayDistanceSensor (name + "_right");
-    charlie->right_->setParent (base);
+    charlie->right_->attach (base);
     charlie->right_->mount_.Set (0.1, 0.1, 0.35);
     charlie->right_->max_distance_ = 2.5;
     

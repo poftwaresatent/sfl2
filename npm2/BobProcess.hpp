@@ -22,6 +22,7 @@
 #define NPM2_BOB_PROCESS_HPP
 
 #include <npm2/Process.hpp>
+#include <npm2/Object.hpp>
 
 
 namespace npm2 {
@@ -38,6 +39,7 @@ namespace npm2 {
     virtual state_t run (double timestep, ostream & erros);
     
     DifferentialTrailerDrive * drive_;
+    Object * foo_;
   };
   
 }
