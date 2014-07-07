@@ -50,7 +50,10 @@ namespace npm2 {
     explicit Object (string const & name);
     virtual ~Object();
     
-    
+
+    /**
+       Helper function for find().
+    */    
     template <typename sub_t>
     static sub_t * find_r (Object * super, string const & name)
     {
