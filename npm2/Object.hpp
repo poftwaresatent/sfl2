@@ -96,15 +96,13 @@ namespace npm2 {
     }
     
     
-    /** \note Does not perform sanity checks (i.e.: if you pass obj to
-	its own setParent() you create a problem...) */
-    void setParent (Object * obj);
-    
     /** Configurability method. The parent object is looked up in the
 	registry, and this method fails (returns false) if you attempt
 	to set itself as parent or the name is not found in the
 	registry. */
-    bool findSetParent (string const & name);
+    bool initParent (string const & name);
+    
+    Object * attach (Object * new_parent);
     
     /** Configurability method.  Adds a line to the body_ of this
 	object. */
@@ -118,7 +116,7 @@ namespace npm2 {
     
     Frame const & getGlobal () const { return global_; }
     
-    Object const * getParent () const { return parent_; }
+    Object * getParent () { return parent_; }
     
     /** \note The bounds include the bodies of all children. */
     BBox const & getBBox () const { return bbox_; }
@@ -130,7 +128,9 @@ namespace npm2 {
     Frame motion_;
     Body body_;
     
-  protected:    
+  protected:
+    void setParent (Object * parent);
+    
     Frame global_;
     Object * parent_;
     children_t children_;

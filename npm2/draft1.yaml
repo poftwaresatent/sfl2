@@ -35,6 +35,14 @@
     servo: alice_servo
 
 - Object:
+    name: foo
+    parent: world
+    lines:
+      - [ 0.0, 0.0, 0.2, 0.0 ]
+      - [ 0.2, 0.0, 0.0, 0.2 ]
+      - [ 0.0, 0.2, 0.0, 0.0 ]
+
+- Object:
     name: bob_tractor
     parent: world
     mount: [ 0.0, 2.5, 3.142 ]
@@ -62,6 +70,7 @@
 - BobProcess:
     name: bob
     drive: bob_drive
+    foo: foo
     
 - Simulator:
     name: draft
