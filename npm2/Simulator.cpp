@@ -126,16 +126,20 @@ namespace npm2 {
     for (size_t ii(0); ii < Process::registry.size(); ++ii) {
       switch (Process::registry.at(ii)->getState()) {
       case Process::READY:
-    	printf ("%s\tREADY\n", Process::registry.at(ii)->name.c_str());
+	//   	printf ("%s\tREADY\n", Process::registry.at(ii)->name.c_str());
     	break;
       case Process::RUNNING:
-    	printf ("%s\tRUNNIG\n", Process::registry.at(ii)->name.c_str());
+	//    	printf ("%s\tRUNNIG\n", Process::registry.at(ii)->name.c_str());
     	break;
       case Process::FAILED:
-    	printf ("%s\tFAILED\n", Process::registry.at(ii)->name.c_str());
+	//    	printf ("%s\tFAILED\n", Process::registry.at(ii)->name.c_str());
     	break;
       case Process::DONE:
-    	printf ("%s\tDONE\n", Process::registry.at(ii)->name.c_str());
+	//    	printf ("%s\tDONE\n", Process::registry.at(ii)->name.c_str());
+      default:
+	printf ("%s\tinvalid state %d\n", Process::registry.at(ii)->name.c_str(),
+		Process::registry.at(ii)->getState());
+	exit (42);
       }
     }
   }
