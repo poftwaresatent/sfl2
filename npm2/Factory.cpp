@@ -29,6 +29,7 @@
 #include <npm2/CharlieProcess.hpp>
 #include <npm2/View.hpp>
 #include <npm2/ObjectCamera.hpp>
+#include <npm2/ObjectDrawing.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <fpplib/yaml_parser.hpp>
@@ -74,6 +75,7 @@ namespace npm2 {
     declare <CharlieProcess> ("CharlieProcess");
     declare <View> ("View");
     declare <ObjectCamera> ("ObjectCamera");
+    declare <ObjectDrawing> ("ObjectDrawing");
     
     parser_.addConverter <sfl::Line> ();
     parser_.addConverter <sfl::Frame> ();

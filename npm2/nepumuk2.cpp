@@ -22,12 +22,8 @@
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
 #include <npm2/Object.hpp>
-#include <err.h>
-
-// tmp
-#include <npm2/RayDistanceSensor.hpp>
-#include <npm2/Drawing.hpp>
 #include <npm2/gl.hpp>
+#include <err.h>
 
 using namespace npm2;
 
@@ -37,29 +33,11 @@ static int window_handle;
 static unsigned int const glut_timer_ms (1);
 
 
-namespace {
-  
-  class tmpDrawing
-    : public Drawing
-  {
-  public:
-    tmpDrawing (): Drawing ("tmp", "tmp") {}
-    virtual void draw ();
-  };
-  
-}
-
-
 static void parse_cfile (char const * cfname)
 {
   npm2::Factory & ff (npm2::Factory::instance());
   if ( ! ff.parseFile (cfname, &cerr)) {
     errx (EXIT_FAILURE, "%s: parse error (see above messages)", cfname);
-  }
-  
-  new tmpDrawing ();
-  if ( ! View::registry.at(0)->addDrawing ("tmp")) {
-    errx (EXIT_FAILURE, "blah");
   }
 }
 
@@ -109,41 +87,6 @@ static void reshape (int width, int height)
 {
   for (size_t iv (0); iv < View::registry.size(); ++iv) {
     View::registry.at(iv)->reshape (width, height);
-  }
-}
-
-
-static void tmp_recurse_draw (Object const * obj)
-{
-  glLineWidth (2);
-  glColor3d (1.0, 1.0, 1.0);
-  glBegin (GL_LINES);
-  Body::lines_t const & lines (obj->body_.getLines());
-  for (size_t il(0); il < lines.size(); ++il) {
-    glVertex2d (lines[il].X0(), lines[il].Y0());
-    glVertex2d (lines[il].X1(), lines[il].Y1());
-  }
-  glEnd ();
-  
-  RayDistanceSensor const * rds (dynamic_cast <RayDistanceSensor const *> (obj));
-  if (rds) {
-    glLineWidth (1);
-    glColor3d (1.0, 0.0, 0.0);
-    glBegin (GL_LINES);
-    glVertex2d (rds->getGlobal().X(),
-		rds->getGlobal().Y());
-    glVertex2d (rds->getGlobal().X() + rds->distance_ * rds->getGlobal().Costheta(),
-		rds->getGlobal().Y() + rds->distance_ * rds->getGlobal().Sintheta());
-    glEnd ();
-    glPointSize (3);
-    glColor3d (1.0, 0.5, 0.0);
-    glVertex2d (rds->getGlobal().X() + rds->distance_ * rds->getGlobal().Costheta(),
-		rds->getGlobal().Y() + rds->distance_ * rds->getGlobal().Sintheta());
-    glEnd();
-  }
-  
-  for (Object::child_iterator_t ic(obj->childBegin()); ic != obj->childEnd(); ++ic) {
-    tmp_recurse_draw (*ic);
   }
 }
 
@@ -249,14 +192,4 @@ int main (int argc, char ** argv)
   
   init_glut (argc, argv);
   glutMainLoop();
-}
-
-
-namespace {
-
-  void tmpDrawing::draw ()
-  {
-    tmp_recurse_draw (simulator->world_);
-  }
-  
 }

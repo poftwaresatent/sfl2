@@ -18,34 +18,29 @@
  * USA
  */
 
-#include "ObjectCamera.hpp"
-#include "View.hpp"
+#ifndef NPM2_OBJECT_DRAWING_HPP
+#define NPM2_OBJECT_DRAWING_HPP
+
+#include <npm2/Drawing.hpp>
+#include <npm2/Object.hpp>
 
 
 namespace npm2 {
   
 
-  ObjectCamera::
-  ObjectCamera (string const & name)
-    : Camera (name, "bounds of the tree rooted at a given object"),
-      object_ (0),
-      margin_ (0.1)
+  class ObjectDrawing
+    : public Drawing
   {
-    reflectSlot ("object", &object_);
-    reflectParameter ("margin", &margin_);
-  }
-  
-  
-  void ObjectCamera::
-  configureView (View & view)
-  {
-    BBox const & bbox (object_->getBBox());
-    if (bbox.isValid()) {
-      view.setBounds (bbox, margin_);
-    }
-    else {
-      view.setBounds (0.0, 0.0, 1.0, 1.0);
-    }
-  }
+  public:
+    explicit ObjectDrawing (string const & name);
+
+    virtual void draw ();
+
+  protected:
+    Object * object_;
+    double margin_;
+  };
   
 }
+
+#endif // NPM2_OBJECT_DRAWING_HPP
