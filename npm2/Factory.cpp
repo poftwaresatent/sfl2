@@ -1,4 +1,5 @@
-/* 
+/* Nepumuk Mobile Robot Simulator v2
+ *
  * Copyright (C) 2014 Roland Philippsen. All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +35,7 @@
 #include <npm2/KinematicControl.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
+#include <sfl/api/Goal.hpp>
 #include <fpplib/yaml_parser.hpp>
 #include <err.h>
 
@@ -55,6 +57,17 @@ namespace sfl {
     node[1] >> yy;
     node[2] >> th;
     ff.Set (xx, yy, th);
+  }
+  
+  void operator >> (const YAML::Node & node, Goal & gg)
+  {
+    double xx, yy, th, dr, dth;
+    node[0] >> xx;
+    node[1] >> yy;
+    node[2] >> th;
+    node[3] >> dr;
+    node[4] >> dth;
+    gg.Set (xx, yy, th, dr, dth);
   }
   
 }
@@ -81,8 +94,9 @@ namespace npm2 {
     declare <GenericDrive> ("GenericDrive");
     declare <KinematicControl> ("KinematicControl");
     
-    parser_.addConverter <sfl::Line> ();
-    parser_.addConverter <sfl::Frame> ();
+    parser_.addConverter <Line> ();
+    parser_.addConverter <Frame> ();
+    parser_.addConverter <Goal> ();
   }
   
   
