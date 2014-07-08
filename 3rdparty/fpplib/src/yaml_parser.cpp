@@ -227,7 +227,7 @@ namespace fpplib {
 	    return false;
 	  }
 	  continue;
-	}	  
+	}
 	YAML::NodeType::value const nt(irefl.second().Type());
 	if (nt == YAML::NodeType::Scalar) {
 	  if ( ! processCallback(cb, irefl.second())) {
