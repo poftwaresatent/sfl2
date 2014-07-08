@@ -37,6 +37,7 @@
 #include <fpplib/registry.hpp>
 #include <iosfwd>
 #include <typeinfo>
+#include <set>
 
 
 namespace fpplib {
@@ -97,6 +98,43 @@ namespace fpplib {
     typedef Registry<SubType> registry_t;
     registry_t registry_;
   };
+
+
+  template<class SubType>
+  class Singleton
+    : public BaseCreator
+  {
+  public:
+    explicit Singleton(SubType * instance)
+      : instance_(instance)
+    {
+      if ( ! instance->name.empty()) {
+	alias_.insert (instance->name);
+      }
+    }
+    
+    virtual Configurable * create(string const & instance_name)
+    {
+      alias_.insert(instance_name);
+      return instance_;
+    }
+    
+    virtual Configurable * find(string const & instance_name)
+    {
+      if ((instance_name == instance_->name) || (0 != alias_.count(instance_name))) {
+	return instance_;
+      }
+      return 0;
+    }
+    
+    virtual void dump(string const & prefix, ostream & os) const
+    {
+      instance_->dump(prefix, os);
+    }
+    
+    std::set<std::string> alias_;
+    SubType * instance_;
+  };
   
   
   /**
@@ -137,6 +175,20 @@ namespace fpplib {
       else {
 	delete ic->second;
 	ic->second = new Creator<SubType>();
+      }
+    }
+    
+    template<class SubType>
+    void declareSingleton(string const & type_name, SubType * instance)
+    {
+      creator_t::iterator ic(creator_.find(type_name));
+      if (ic == creator_.end()) {
+	creator_.insert(make_pair(type_name, new Singleton<SubType>(instance)));
+	type_code_to_name_.insert(make_pair(string(typeid(SubType).name()), type_name));
+      }
+      else {
+	delete ic->second;
+	ic->second = new Singleton<SubType>(instance);
       }
     }
     
