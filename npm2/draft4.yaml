@@ -1,0 +1,42 @@
+- Object:
+    name: world
+    lines:
+      - [ -5, -5,  5, -5 ]
+      - [  5, -5,  5,  5 ]
+      - [  5,  5, -5,  5 ]
+      - [ -5,  5, -5, -5 ]
+
+- Object:
+    name: charlie_base
+    parent: world
+    mount: [ 0.0, -2.5, 0.2 ]
+    lines:
+      - [ -0.2, -0.4,  0.4, -0.2 ]
+      - [ -0.2,  0.4,  0.4,  0.2 ]
+      - [  0.4, -0.2,  0.4,  0.2 ]
+      - [ -0.2,  0.4, -0.2, -0.4 ]
+- GenericDrive:
+    name: charlie_drive
+    parent: charlie_base
+- KinematicControl:
+    name: charlie
+    drive: charlie_drive
+    goal: [ 0.1, 0.2, 0.3, 0.1, 0.1 ]
+
+- Simulator:
+    name: draft
+    world: world
+    timestep: 0.01
+    state: pause
+
+- ObjectCamera:
+    name: world_camera
+    object: world
+- ObjectDrawing:
+    name: world_drawing
+    object: world
+- View:
+    name: world_view
+    camera: world_camera
+    drawings:
+      - world_drawing
