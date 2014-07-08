@@ -66,7 +66,9 @@ namespace fpplib {
     {
     }
     
-    virtual bool parse(YAML::Node const & node, BaseParameter * parameter) const = 0;
+    virtual bool parse(YAML::Node const & node,
+		       BaseParameter * parameter,
+		       ostream & erros) const = 0;
   };
   
   
@@ -89,15 +91,16 @@ namespace fpplib {
        success/failure here.  Particularly when using parameter guards
        to fend off i.e. negative values.
     */
-    virtual bool parse(YAML::Node const & node, BaseParameter * parameter) const
+    virtual bool parse(YAML::Node const & node, BaseParameter * parameter, ostream & erros) const
     {
       Parameter<value_type> * pp(dynamic_cast<Parameter<value_type> * >(parameter));
       if (0 == pp) {
+	erros << "type mismatch: expected " << type << " but got " << parameter->type;
 	return false;
       }
       value_type value;
       node >> value;
-      return pp->set(value);
+      return pp->set(value, erros);
     }
   };
   
@@ -123,14 +126,16 @@ namespace fpplib {
        method will get significantly more involved because we should
        then not give blanket access to the underlying vector instance.
     */
-    virtual bool parse(YAML::Node const & node, BaseParameter * parameter) const
+    virtual bool parse(YAML::Node const & node, BaseParameter * parameter, ostream & erros) const
     {
       VectorParameter<value_type> * pp(dynamic_cast<VectorParameter<value_type> * >(parameter));
       if (0 == pp) {
+	erros << "type mismatch: expected " << type << " but got " << parameter->type;
 	return false;
       }
       vector_type * vv(pp->get());
       if (0 == vv) {
+	erros << "no vector instance";
 	return false;
       }
       vv->clear();

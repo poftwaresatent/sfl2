@@ -47,21 +47,21 @@ namespace fpplib {
     BaseCallback(string const & type,
 		 string const & name,
 		 bool sequence_mode_,
-		 BaseParameter * quickhack)
+		 BaseParameter * argptr)
       : Reflectable(type, name),
 	sequence_mode(sequence_mode_),
-	quickhack_(quickhack)
+	argptr_(argptr)
     {}
     
     ~BaseCallback()
     {
-      delete quickhack_;
+      delete argptr_;
     }
     
     virtual bool call () = 0;
     
     bool const sequence_mode;
-    BaseParameter * quickhack_;
+    BaseParameter * argptr_;
   };
   
   
@@ -74,7 +74,7 @@ namespace fpplib {
 	     bool sequence_mode,
 	     callable_type callback)
       : BaseCallback(typeid(value_type).name(), name, sequence_mode,
-		     new Parameter<value_type>(name, &tmp, 0)),
+		     new Parameter<value_type>(name, &arginst, 0)),
 	callback_(callback)
     {
     }
@@ -84,7 +84,7 @@ namespace fpplib {
       if (0 == this) {
 	return false;
       }
-      return callback_(tmp);
+      return callback_(arginst);
     }
     
     virtual void dump(string const & prefix, ostream & os) const
@@ -92,7 +92,7 @@ namespace fpplib {
       os << prefix << name << " : callback for " << type << "\n";
     }
     
-    value_type tmp;
+    value_type arginst;
     
   protected:
     callable_type callback_;

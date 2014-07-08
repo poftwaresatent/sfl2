@@ -56,6 +56,12 @@ namespace fpplib {
   class ParameterGuard
   {
   public:
+    string const description;
+    
+    explicit ParameterGuard (string const & description_)
+      : description (description_)
+    {}
+    
     virtual ~ParameterGuard() {}
     
     /**
@@ -76,6 +82,10 @@ namespace fpplib {
     : public ParameterGuard
   {
   public:
+    ReadOnlyGuard()
+      : ParameterGuard ("read-only")
+    {}
+    
     virtual bool check(void const * instance, void const * value) const
     {
       return false;
@@ -91,6 +101,10 @@ namespace fpplib {
     : public ParameterGuard
   {
   public:
+    StrictlyPositiveGuard()
+      : ParameterGuard ("strictly-positive")
+    {}
+    
     virtual bool check(void const * instance, void const * value) const
     {
       if (0 >= * reinterpret_cast <value_type const *> (value)) {
@@ -144,13 +158,15 @@ namespace fpplib {
       return instance_;
     }
     
-    bool set(value_type const & value)
+    bool set(value_type const & value, ostream & erros)
     {
       if (0 == this) {
+	erros << "BUG? null == this";
 	return false;
       }
       if ((0 != guard)
 	  && ( ! guard->check(instance_, &value))) {
+	erros << "guard check failed: " << guard->description;
 	return false;
       }
       *instance_ = value;
@@ -197,37 +213,6 @@ namespace fpplib {
     {
       return instance_;
     }
-    
-    // size_t size() const
-    // {
-    //   return instance_->size();
-    // }
-    
-    // value_type const * at(size_t idx) const
-    // {
-    //   return instance_->at(idx);
-    // }
-    
-    bool set(size_t idx, value_type const & value)
-    {
-      if (0 == this) {
-	return false;
-      }
-      if (idx >= instance_->size()) {
-	return false;
-      }
-      instance_->at(idx) = value;
-      return true;
-    }
-    
-    // bool push_back(value_type const & value)
-    // {
-    //   if (0 == this) {
-    // 	return false;
-    //   }
-    //   instance_->push_back(value);
-    //   return true;
-    // }
     
     virtual void dump(string const & prefix, ostream & os) const
     {

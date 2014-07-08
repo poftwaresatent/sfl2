@@ -104,8 +104,9 @@ namespace fpplib {
       *dbg << "  parsing...\n";
     }
     
-    if ( ! cc->parse(value, pp)) {
-      error = "failed to parse parameter '" + pp->name + "'";
+    ostringstream erros;
+    if ( ! cc->parse(value, pp, erros)) {
+      error = "failed to parse parameter '" + pp->name + "': " + erros.str();
       return false;
     }
     
@@ -136,8 +137,9 @@ namespace fpplib {
       *dbg << "  parsing...\n";
     }
     
-    if ( ! cc->parse(value, cb->quickhack_)) {
-      error = "failed quickhack parse for callback '" + cb->name + "'";
+    ostringstream erros;
+    if ( ! cc->parse(value, cb->argptr_, erros)) {
+      error = "failed argument parse for callback '" + cb->name + "': " + erros.str();
       return false;
     }
     
