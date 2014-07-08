@@ -52,6 +52,17 @@ namespace npm2 {
     reflectParameter ("window_posx", &window_posx_, guard);
     reflectParameter ("window_posy", &window_posy_, guard);
   }
+
+
+  Simulator * Simulator::
+  instance ()
+  {
+    static Simulator * instance (0);
+    if ( ! instance) {
+      instance = new Simulator ("npm2");
+    }
+    return instance;
+  }
   
   
   bool Simulator::

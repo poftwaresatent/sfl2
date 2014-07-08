@@ -80,7 +80,7 @@ namespace npm2 {
     : parser_ (*this)
   {
     declare <Object> ("Object");
-    declare <Simulator> ("Simulator");
+    declareSingleton <Simulator> ("Simulator", Simulator::instance());
     declare <DifferentialDrive> ("DifferentialDrive");
     declare <DifferentialTrailerDrive> ("DifferentialTrailerDrive");
     declare <RayDistanceSensor> ("RayDistanceSensor");
