@@ -197,6 +197,7 @@ add_library (npm2 SHARED
   npm2/Object.cpp
   npm2/Actuator.cpp
   npm2/Sensor.cpp
+  npm2/GenericDrive.cpp
   npm2/DifferentialDrive.cpp
   npm2/DifferentialTrailerDrive.cpp
   npm2/RevoluteServo.cpp
@@ -208,6 +209,7 @@ add_library (npm2 SHARED
   npm2/AliceProcess.cpp
   npm2/BobProcess.cpp
   npm2/CharlieProcess.cpp
+  npm2/KinematicControl.cpp
   npm2/Viewport.cpp
   npm2/View.cpp
   npm2/Camera.cpp

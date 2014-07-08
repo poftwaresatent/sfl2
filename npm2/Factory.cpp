@@ -30,6 +30,8 @@
 #include <npm2/View.hpp>
 #include <npm2/ObjectCamera.hpp>
 #include <npm2/ObjectDrawing.hpp>
+#include <npm2/GenericDrive.hpp>
+#include <npm2/KinematicControl.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <fpplib/yaml_parser.hpp>
@@ -76,6 +78,8 @@ namespace npm2 {
     declare <View> ("View");
     declare <ObjectCamera> ("ObjectCamera");
     declare <ObjectDrawing> ("ObjectDrawing");
+    declare <GenericDrive> ("GenericDrive");
+    declare <KinematicControl> ("KinematicControl");
     
     parser_.addConverter <sfl::Line> ();
     parser_.addConverter <sfl::Frame> ();
