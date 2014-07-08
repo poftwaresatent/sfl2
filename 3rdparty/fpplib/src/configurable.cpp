@@ -63,36 +63,6 @@ namespace fpplib {
   {
     return reflected_.find(name);
   }
-  
-  
-  // BaseParameter * Configurable::
-  // lookupParameter(string const & name)
-  // {
-  //   return dynamic_cast<BaseParameter*>(reflected_.find(name));
-  // }
-  
-  
-  // BaseParameter const * Configurable::
-  // lookupParameter(string const & name)
-  //   const
-  // {
-  //   return dynamic_cast<BaseParameter const *>(reflected_.find(name));
-  // }
-  
-  
-  // BaseSlot * Configurable::
-  // lookupSlot(string const & name)
-  // {
-  //   return dynamic_cast<BaseSlot*>(reflected_.find(name));
-  // }
-  
-  
-  // BaseSlot const * Configurable::
-  // lookupSlot(string const & name)
-  //   const
-  // {
-  //   return dynamic_cast<BaseSlot const *>(reflected_.find(name));
-  // }
 
 
   void Configurable::

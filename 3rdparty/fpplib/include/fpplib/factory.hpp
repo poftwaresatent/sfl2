@@ -35,6 +35,7 @@
 #define FPPLIB_FACTORY_HPP
 
 #include <fpplib/registry.hpp>
+#include <fpplib/configurable.hpp>
 #include <iosfwd>
 #include <typeinfo>
 #include <set>
@@ -44,8 +45,6 @@ namespace fpplib {
   
   using std::string;
   using std::ostream;
-  
-  class Configurable;
   
   
   /**
@@ -98,43 +97,6 @@ namespace fpplib {
     typedef Registry<SubType> registry_t;
     registry_t registry_;
   };
-
-
-  template<class SubType>
-  class Singleton
-    : public BaseCreator
-  {
-  public:
-    explicit Singleton(SubType * instance)
-      : instance_(instance)
-    {
-      if ( ! instance->name.empty()) {
-	alias_.insert (instance->name);
-      }
-    }
-    
-    virtual Configurable * create(string const & instance_name)
-    {
-      alias_.insert(instance_name);
-      return instance_;
-    }
-    
-    virtual Configurable * find(string const & instance_name)
-    {
-      if ((instance_name == instance_->name) || (0 != alias_.count(instance_name))) {
-	return instance_;
-      }
-      return 0;
-    }
-    
-    virtual void dump(string const & prefix, ostream & os) const
-    {
-      instance_->dump(prefix, os);
-    }
-    
-    std::set<std::string> alias_;
-    SubType * instance_;
-  };
   
   
   /**
@@ -181,14 +143,13 @@ namespace fpplib {
     template<class SubType>
     void declareSingleton(string const & type_name, SubType * instance)
     {
-      creator_t::iterator ic(creator_.find(type_name));
-      if (ic == creator_.end()) {
-	creator_.insert(make_pair(type_name, new Singleton<SubType>(instance)));
+      singleton_t::iterator is(singleton_.find(type_name));
+      if (is == singleton_.end()) {
+	singleton_.insert(make_pair(type_name, instance));
 	type_code_to_name_.insert(make_pair(string(typeid(SubType).name()), type_name));
       }
       else {
-	delete ic->second;
-	ic->second = new Singleton<SubType>(instance);
+	is->second = instance;
       }
     }
     
@@ -224,8 +185,13 @@ namespace fpplib {
        retrieving base class pointers for things that were registered
        using a more specific sub-class. This method first tries the
        exactly matching type entry, then iterates over all registered
-       creators until it finds an instance that matches both the name
-       and can be cast to the given SubType.
+       creators, and then all registered singletons until it finds an
+       instance that matches.  For non-singletons, a match implies a
+       matching name, for singletons an empty instance_name argument
+       serves as a wildcard.  For both singletons and non-singletons.
+       
+       If you know that you are looking for a singleton, it is better
+       to use one of the findSingleton() methods.
        
        \note The factory has no notion of type inheritance.  In case
        of ambiguity, you get whichever castable sub-subtype happens to
@@ -243,6 +209,22 @@ namespace fpplib {
 	if (instance) {
 	  return instance;
 	}
+      }
+      Configurable * sgl (findSingleton(id->second));
+      if (sgl && (instance_name.empty() || instance_name == sgl->name)) {
+	return dynamic_cast <SubType*> (sgl);
+      }
+      return 0;
+    }
+    
+    Configurable * findSingleton(string const & type_name) const;
+    
+    template<class SubType>
+    SubType * findSingleton() const
+    {
+      dict_t::const_iterator id(type_code_to_name_.find(typeid(SubType).name()));
+      if (type_code_to_name_.end() != id) {
+        return dynamic_cast<SubType*> (findSingleton (id->second));
       }
       return 0;
     }
@@ -285,6 +267,8 @@ namespace fpplib {
   protected:
     typedef map<string, BaseCreator * > creator_t;
     creator_t creator_;
+    typedef map<string, Configurable * > singleton_t;
+    singleton_t singleton_;
     typedef map<string, string> dict_t;
     dict_t type_code_to_name_; // XXXX to do: do we need a multimap here?
   };
