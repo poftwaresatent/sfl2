@@ -33,6 +33,9 @@ namespace npm2 {
   class Simulator
     : public fpplib::Configurable
   {
+  private:
+    explicit Simulator (string const & name);
+    
   public:
     typedef enum {
       PAUSE,
@@ -40,7 +43,7 @@ namespace npm2 {
       RUN
     } state_t;
     
-    explicit Simulator (string const & name);
+    static Simulator * instance ();
     
     bool setState (string const & value);
     

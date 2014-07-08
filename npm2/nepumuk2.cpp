@@ -178,16 +178,10 @@ int main (int argc, char ** argv)
 {
   parse_args (argc, argv);
   
-  // Should really add support for singletons to fpplib
-  //
-  if (1 != npm2::Factory::instance().findRegistry <Simulator> ()->size()) {
-    errx (EXIT_FAILURE, "exactly one Simulator needs to be configured (for now)");
-  }
-  simulator = npm2::Factory::instance().findRegistry <Simulator> ()->at (0);
+  simulator = npm2::Simulator::instance();
   if ( ! simulator->world_) {
     errx (EXIT_FAILURE, "no world given to simulator");
   }
-  
   simulator->world_->updateTransform ();
   
   init_glut (argc, argv);
