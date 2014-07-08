@@ -302,23 +302,27 @@ namespace fpplib {
 	  
 	  for (YAML::Iterator ientity(itop->begin()); ientity != itop->end(); ++ientity) {
 	    
-	    string type_name, instance_name;
+	    string type_name;
 	    ientity.first() >> type_name;
-	    ientity.second()["name"] >> instance_name;
+	    Configurable * instance(factory_.findSingleton(type_name));
 	    
-	    if (dbg) {
-	      *dbg << "* type: " << type_name << "\n"
-		   << "  instance: " << instance_name << "\n";
+	    if (instance) {
+	      if (dbg) {
+		*dbg << "* singleton of type: " << type_name << "\n";
+	      }
 	    }
-	    
-	    Configurable * instance(factory_.create(type_name, instance_name));
-	    if ( ! instance) {
-	      error = "unknown type `" + type_name + "' for instance `" + instance_name + "'";
-	      return false;
-	    }
-	    
-	    if (dbg) {
-	      *dbg << "  created instance\n";
+	    else {
+	      string instance_name;
+	      ientity.second()["name"] >> instance_name;
+	      instance = factory_.create(type_name, instance_name);
+	      if ( ! instance) {
+		error = "unknown type `" + type_name + "' for instance `" + instance_name + "'";
+		return false;
+	      }
+	      if (dbg) {
+		*dbg << "* type: " << type_name << "\n"
+		     << "  instance: " << instance_name << "\n";
+	      }
 	    }
 	    
 	    if ( ! configure(instance, ientity.second())) {

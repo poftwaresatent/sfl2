@@ -87,6 +87,17 @@ namespace fpplib {
   }
   
   
+  Configurable * Factory::
+  findSingleton(string const & type_name) const
+  {
+    singleton_t::const_iterator is(singleton_.find(type_name));
+    if (singleton_.end() != is) {
+      return is->second;
+    }
+    return 0;
+  }
+  
+  
   void Factory::
   dump(string const & prefix, ostream & os)
     const
