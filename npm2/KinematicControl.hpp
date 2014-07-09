@@ -29,6 +29,11 @@
 namespace npm2 {
   
   
+  /**
+     Uses the non-holonomic velocity control method from (Siegwart and
+     Nourbakhsh, Introduction to Autonomous Mobile Robots, MIT Press,
+     ISBN 0-262-19502-X).
+  */
   class KinematicControl
     : public Process
   {
@@ -36,9 +41,11 @@ namespace npm2 {
     explicit KinematicControl (string const & name);
     
     Goal goal_;
-    double kv_;
-    double ka_;
-    double kb_;
+    double kr_;			// default 3.0;  kr_ > 0.0
+    double kd_;			// default -1.5; kd_ < 0.0
+    double kg_;			// default 8.0;  kg_ + 5 kd_ / 3 - 2 kr_ / pi > 0.0
+    double vtrans_max_;
+    double vrot_max_;
     
   protected:
     virtual state_t init (ostream & erros);

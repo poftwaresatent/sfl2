@@ -19,6 +19,7 @@
  */
 
 #include "KinematicControl.hpp"
+#include <sfl/util/numeric.hpp>
 #include <cmath>
 
 
@@ -28,16 +29,20 @@ namespace npm2 {
   KinematicControl::
   KinematicControl (string const & name)
     : Process (name),
-      kv_ (3.0),
-      ka_ (8.0),
-      kb_ (-1.5),
-      drive_ (0)
+      kr_ (3.0),
+      kd_ (-1.5),
+      kg_ (8.0),
+      drive_ (0),
+      vtrans_max_ (-1.0),
+      vrot_max_ (-1.0)
   {
     reflectParameter ("goal", &goal_);
-    reflectParameter ("kv", &kv_);
-    reflectParameter ("ka", &ka_);
-    reflectParameter ("kb", &kb_);
+    reflectParameter ("kr", &kr_);
+    reflectParameter ("kd", &kd_);
+    reflectParameter ("kg", &kg_);
     reflectSlot ("drive", &drive_);
+    reflectParameter ("vtrans_max", &vtrans_max_);
+    reflectParameter ("vrot_max", &vrot_max_);
   }
   
   
@@ -56,13 +61,40 @@ namespace npm2 {
   run (double timestep, ostream & erros)
   {
     Object const * obj (drive_->getParent());
-    double const ex (goal_.X() - obj->getGlobal().X());
-    double const ey (goal_.Y() - obj->getGlobal().Y());
-    double const eth (goal_.Theta() - obj->getGlobal().Theta());
+    double const dx (goal_.X() - obj->getGlobal().X());
+    double const dy (goal_.Y() - obj->getGlobal().Y());
+
+    double rho (sqrt (dx * dx + dy * dy));
+    double eps, gamma, delta;
+    if (fabs (rho) > 1.0e-5) {	// a discontinuous way of avoiding numerical instability of atan2
+      eps = atan2 (dy, dx);
+      gamma = mod2pi (eps - obj->getGlobal().Theta());
+      delta = mod2pi (goal_.Theta() - gamma - obj->getGlobal().Theta());
+    }
+    else {
+      rho = 0.0;
+      eps = 0.0;
+      gamma = mod2pi (goal_.Theta() - obj->getGlobal().Theta());
+      delta = 0.0;
+    }
     
-    // should also include damping...
-    drive_->setSpeed (kv_ * sqrt (ex * ex + ey * ey),
-		      (ka_ - kb_) * atan2 (ey, ex) + ka_ * eth);
+    double vtrans (kr_ * rho);
+    double vrot (kg_ * gamma + kd_ * delta);
+    double strans (1.0);
+    if ((0.0 < vtrans_max_) && (fabs (vtrans) > vtrans_max_)) {
+      strans = vtrans_max_ / fabs (vtrans);
+    }
+    double srot (1.0);
+    if ((0.0 < vrot_max_) && (fabs (vrot) > vrot_max_)) {
+      srot = vrot_max_ / fabs (vrot);
+    }
+    double const sat (srot < strans ? srot : strans);
+    
+    // printf ("%6.4f  %6.4f  %6.4f   %6.4f  %6.4f    %6.4f  %6.4f\n",
+    // 	    strans, srot, sat, vtrans, vrot, sat * vtrans, sat * vrot);
+    
+    drive_->setSpeed (sat * vtrans, sat * vrot);
+    return RUNNING;
   }
   
 }
