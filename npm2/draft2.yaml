@@ -67,7 +67,6 @@
     drive: bob_drive
     
 - Simulator:
-    name: draft
     world: world
     timestep: 0.1
     state: pause
