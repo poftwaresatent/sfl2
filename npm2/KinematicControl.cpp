@@ -20,6 +20,7 @@
 
 #include "KinematicControl.hpp"
 #include <sfl/util/numeric.hpp>
+#include <boost/bind.hpp>
 #include <cmath>
 
 
@@ -34,15 +35,33 @@ namespace npm2 {
       kg_ (8.0),
       drive_ (0),
       vtrans_max_ (-1.0),
-      vrot_max_ (-1.0)
+      vrot_max_ (-1.0),
+      have_goal_ (false)
   {
-    reflectParameter ("goal", &goal_);
+    // OK this is subtle and counter-intuitive.  If you set
+    // sequence_mode (the 2nd arg) to false, then the yaml parses
+    // fails with an invalid dereference.  What happens is that it
+    // looks inside the sequence of 5 numbers that defines the goal,
+    // and the first member of that sequence is a scalar, but the Goal
+    // converter needs a vector.  I need to find a way to produce an
+    // appropriate error message in this case.
+    //
+    reflectCallback<Goal> ("goal", false, boost::bind (&KinematicControl::setGoal, this, _1));
     reflectParameter ("kr", &kr_);
     reflectParameter ("kd", &kd_);
     reflectParameter ("kg", &kg_);
     reflectSlot ("drive", &drive_);
     reflectParameter ("vtrans_max", &vtrans_max_);
     reflectParameter ("vrot_max", &vrot_max_);
+  }
+  
+  
+  bool KinematicControl::
+  setGoal (Goal const & goal)
+  {
+    goal_ = goal;
+    have_goal_ = true;
+    return true;
   }
   
   
@@ -60,6 +79,11 @@ namespace npm2 {
   KinematicControl::state_t KinematicControl::
   run (double timestep, ostream & erros)
   {
+    if ( ! have_goal_) {
+      drive_->setSpeed (0.0, 0.0);
+      return RUNNING;
+    }
+    
     Object const * obj (drive_->getParent());
     double const dx (goal_.X() - obj->getGlobal().X());
     double const dy (goal_.Y() - obj->getGlobal().Y());

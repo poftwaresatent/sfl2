@@ -209,6 +209,7 @@ add_library (npm2 SHARED
   npm2/AliceProcess.cpp
   npm2/BobProcess.cpp
   npm2/CharlieProcess.cpp
+  npm2/DennisProcess.cpp
   npm2/KinematicControl.cpp
   npm2/Viewport.cpp
   npm2/View.cpp

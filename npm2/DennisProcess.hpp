@@ -18,45 +18,31 @@
  * USA
  */
 
-#ifndef NPM2_KINEMATIC_CONTROL_HPP
-#define NPM2_KINEMATIC_CONTROL_HPP
+#ifndef NPM2_DENNIS_PROCESS_HPP
+#define NPM2_DENNIS_PROCESS_HPP
 
 #include <npm2/Process.hpp>
-#include <npm2/GenericDrive.hpp>
+#include <npm2/KinematicControl.hpp>
 #include <sfl/api/Goal.hpp>
-
 
 namespace npm2 {
   
   
-  /**
-     Uses the non-holonomic velocity control method from (Siegwart and
-     Nourbakhsh, Introduction to Autonomous Mobile Robots, MIT Press,
-     ISBN 0-262-19502-X).
-  */
-  class KinematicControl
+  class DennisProcess
     : public Process
   {
   public:
-    explicit KinematicControl (string const & name);
-    
-    bool setGoal (Goal const & goal);
-    
-    double kr_;			// default 3.0;  kr_ > 0.0
-    double kd_;			// default -1.5; kd_ < 0.0
-    double kg_;			// default 8.0;  kg_ + 5 kd_ / 3 - 2 kr_ / pi > 0.0
-    double vtrans_max_;
-    double vrot_max_;
-    GenericDrive * drive_;
+    explicit DennisProcess (string const & name);
     
   protected:
     virtual state_t init (ostream & erros);
     virtual state_t run (double timestep, ostream & erros);
     
-    bool have_goal_;
-    Goal goal_;
+    KinematicControl * control_;
+    vector <Goal> goals_;
+    size_t current_;
   };
   
 }
 
-#endif // NPM2_KINEMATIC_CONTROL_HPP
+#endif // NPM2_DENNIS_PROCESS_HPP

@@ -146,19 +146,19 @@ namespace sfl {
     
     friend std::ostream & operator << (std::ostream & os, const Goal & goal);
     
-    
-  protected:
-    friend class Frame;	// quick hack to compensate for historical design choices
-    
     /**
        Default goal disk radius.
     */
     static const double DEFAULTGOALDR;
-
+    
     /**
        Default alignment tolerance with the goal heading.
     */
     static const double DEFAULTGOALDTHETA;
+    
+    
+  protected:
+    friend class Frame;	// quick hack to compensate for historical design choices
     
     double _x, _y, _theta;
     double _dr, _dr2, _dtheta;

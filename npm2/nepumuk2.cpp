@@ -36,7 +36,7 @@ static unsigned int const glut_timer_ms (1);
 static void parse_cfile (char const * cfname)
 {
   npm2::Factory & ff (npm2::Factory::instance());
-  if ( ! ff.parseFile (cfname, &cerr)) {
+  if ( ! ff.parseFile (cfname, &cerr, &cerr)) {
     errx (EXIT_FAILURE, "%s: parse error (see above messages)", cfname);
   }
 }
