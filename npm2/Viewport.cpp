@@ -23,9 +23,6 @@
 #include <limits>
 #include <cmath>
 
-// dbg
-//#include <stdio.h>
-
 
 namespace npm2 {
     
@@ -151,18 +148,19 @@ namespace npm2 {
       padding_.height = shape_.height;
     }
     else {
-      int const pad ((shape_.width - shape_.height) / 2);
-      if (pad > 0) {		// pad left and right
-	padding_.x0 = shape_.x0 + pad;
-	padding_.y0 = shape_.y0;
-	padding_.width = shape_.height;
+      double const bw (bounds_.x1 - bounds_.x0);
+      double const bh (bounds_.y1 - bounds_.y0);
+      if (shape_.width * bh > shape_.height * bw) {
+	padding_.width  = floor (shape_.height * bw / bh);
 	padding_.height = shape_.height;
+	padding_.x0     = shape_.x0 + (shape_.width - padding_.width) / 2;
+	padding_.y0     = shape_.y0;
       }
-      else {	// pad below and above
-	padding_.x0 = shape_.x0;
-	padding_.y0 = shape_.y0 - pad; // notice pad is negative
-	padding_.width = shape_.width;
-	padding_.height = shape_.width;
+      else {
+	padding_.width  = shape_.width;
+	padding_.height = floor (shape_.width *  bh / bw);
+	padding_.x0     = shape_.x0;
+	padding_.y0     = shape_.y0 + (shape_.height - padding_.height) / 2;
       }
     }
   }

@@ -26,13 +26,7 @@
 #include "Viewport.hpp"
 #include "BBox.hpp"
 #include "Drawing.hpp"
-// #include <sfl/util/strutil.hpp>
-// #include <sfl/util/numeric.hpp>
 #include <boost/bind.hpp>
-// #include <cmath>
-// #include <iostream>
-// #include <algorithm>
-// #include <stdio.h>
 
 
 namespace npm2 {
