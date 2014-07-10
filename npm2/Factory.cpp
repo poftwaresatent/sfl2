@@ -28,6 +28,7 @@
 #include <npm2/AliceProcess.hpp>
 #include <npm2/BobProcess.hpp>
 #include <npm2/CharlieProcess.hpp>
+#include <npm2/DennisProcess.hpp>
 #include <npm2/View.hpp>
 #include <npm2/ObjectCamera.hpp>
 #include <npm2/ObjectDrawing.hpp>
@@ -61,13 +62,24 @@ namespace sfl {
   
   void operator >> (const YAML::Node & node, Goal & gg)
   {
-    double xx, yy, th, dr, dth;
+    double xx, yy, th;
     node[0] >> xx;
     node[1] >> yy;
     node[2] >> th;
-    node[3] >> dr;
-    node[4] >> dth;
-    gg.Set (xx, yy, th, dr, dth);
+    if (node.size() > 3) {
+      double dr, dth;
+      node[3] >> dr;
+      node[4] >> dth;
+      gg.Set (xx, yy, th, dr, dth);
+    }
+    else {
+      // "BTW" yaml_parser segfaults miserably without usable error
+      // message if an insufficient number of elements are in the
+      // sequence that is being parsed.  I guess I should use yamlcpp
+      // exceptions or something to signal that problem to the user.
+      //
+      gg.Set (xx, yy, th, Goal::DEFAULTGOALDR, Goal::DEFAULTGOALDTHETA);
+    }
   }
   
 }
@@ -88,6 +100,7 @@ namespace npm2 {
     declare <AliceProcess> ("AliceProcess");
     declare <BobProcess> ("BobProcess");
     declare <CharlieProcess> ("CharlieProcess");
+    declare <DennisProcess> ("DennisProcess");
     declare <View> ("View");
     declare <ObjectCamera> ("ObjectCamera");
     declare <ObjectDrawing> ("ObjectDrawing");
