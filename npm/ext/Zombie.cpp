@@ -71,7 +71,7 @@ namespace npm {
   bool Zombie::
   PrepareAction(double timestep)
   {
-    static const double dthetathresh(5 * M_PI / 180);
+    //    static const double dthetathresh(5 * M_PI / 180);
     static const double thetadmax(0.8 * M_PI);
     static const double sdmax(0.4);
     
