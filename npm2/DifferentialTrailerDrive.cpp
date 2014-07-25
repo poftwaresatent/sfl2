@@ -51,7 +51,6 @@ namespace npm2 {
     double const dr (wheel_radius_ * speed_right_);
     double const vtrans ((dl + dr) / 2.0);
     double const vrot ((dr - dl) / wheel_base_);
-    double const dphi ();
     
     parent_->motion_.Add (dt * vtrans * parent_->motion_.Costheta(),
 			  dt * vtrans * parent_->motion_.Sintheta(),
