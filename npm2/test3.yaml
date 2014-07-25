@@ -1,3 +1,7 @@
+- Plugin:
+    name: draft
+    search: draft-plugin
+
 - Object:
     name: world
     lines:
@@ -30,17 +34,7 @@
     parent: alice_sensor
 - AliceProcess:
     name: alice
-    drive: alice_drive
-    sensor: alice_sensor
-    servo: alice_servo
-
-- Object:
-    name: foo
-    parent: world
-    lines:
-      - [ 0.0, 0.0, 0.2, 0.0 ]
-      - [ 0.2, 0.0, 0.0, 0.2 ]
-      - [ 0.0, 0.2, 0.0, 0.0 ]
+    attach: alice_base
 
 - Object:
     name: bob_tractor
@@ -70,7 +64,6 @@
 - BobProcess:
     name: bob
     drive: bob_drive
-    foo: foo
     
 - Simulator:
     name: draft

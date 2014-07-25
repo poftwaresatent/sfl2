@@ -206,10 +206,6 @@ add_library (npm2 SHARED
   npm2/Factory.cpp
   npm2/gl.cpp
   npm2/Process.cpp
-  npm2/AliceProcess.cpp
-  npm2/BobProcess.cpp
-  npm2/CharlieProcess.cpp
-  npm2/DennisProcess.cpp
   npm2/KinematicControl.cpp
   npm2/Viewport.cpp
   npm2/View.cpp
@@ -221,9 +217,9 @@ add_library (npm2 SHARED
   )
 target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-add_library (dennis-plugin MODULE npm2/dennis-plugin.cpp)
-target_link_libraries (dennis-plugin npm2)
-set_target_properties (dennis-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+add_library (draft-plugin MODULE npm2/draft-plugin.cpp)
+target_link_libraries (draft-plugin npm2)
+set_target_properties (draft-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_executable (nepumuk2 npm2/nepumuk2.cpp)
 target_link_libraries (nepumuk2 npm2)

@@ -25,9 +25,6 @@
 #include <npm2/DifferentialTrailerDrive.hpp>
 #include <npm2/RayDistanceSensor.hpp>
 #include <npm2/RevoluteServo.hpp>
-#include <npm2/AliceProcess.hpp>
-#include <npm2/BobProcess.hpp>
-#include <npm2/CharlieProcess.hpp>
 #include <npm2/View.hpp>
 #include <npm2/ObjectCamera.hpp>
 #include <npm2/ObjectDrawing.hpp>
@@ -97,9 +94,6 @@ namespace npm2 {
     declare <DifferentialTrailerDrive> ("DifferentialTrailerDrive");
     declare <RayDistanceSensor> ("RayDistanceSensor");
     declare <RevoluteServo> ("RevoluteServo");
-    declare <AliceProcess> ("AliceProcess");
-    declare <BobProcess> ("BobProcess");
-    declare <CharlieProcess> ("CharlieProcess");
     declare <View> ("View");
     declare <ObjectCamera> ("ObjectCamera");
     declare <ObjectDrawing> ("ObjectDrawing");
