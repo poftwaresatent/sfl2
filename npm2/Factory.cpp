@@ -125,13 +125,10 @@ namespace npm2 {
   
   
   bool Factory::
-  parseFile (string const &yaml_filename, ostream *erros, ostream *dbgos)
+  parseFile (string const &yaml_filename, ostream & erros, ostream *dbgos)
   {
     parser_.dbg = dbgos;
-    if ( ! parser_.parseFile (yaml_filename)) {
-      if (erros) {
-	*erros << "YAML error: " << parser_.error << "\n";
-      }
+    if ( ! parser_.parseFile (yaml_filename, erros)) {
       return false;
     }
     return true;

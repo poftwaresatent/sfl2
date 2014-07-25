@@ -38,7 +38,7 @@ namespace npm2 {
   public:
     static Factory & instance ();
     
-    bool parseFile (string const & yaml_filename, ostream *erros, ostream *dbgos = 0);
+    bool parseFile (string const & yaml_filename, ostream & erros, ostream * dbgos = 0);
     
   private:
     fpplib::YamlParser parser_;
