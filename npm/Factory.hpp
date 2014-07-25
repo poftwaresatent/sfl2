@@ -41,7 +41,9 @@ namespace npm {
     World * GetWorld();
     fpplib::YamlParser & GetParser();
     
-    bool ParseFile(std::string const &yaml_filename, std::ostream *erros, std::ostream *dbgos = 0);
+    bool ParseFile(std::string const &yaml_filename,
+		   std::ostream &erros,
+		   std::ostream *dbgos = 0);
 
   private:
     fpplib::YamlParser parser_;

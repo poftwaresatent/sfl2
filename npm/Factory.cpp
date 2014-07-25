@@ -140,13 +140,10 @@ namespace npm {
   
   
   bool Factory::
-  ParseFile(std::string const &yaml_filename, std::ostream *erros, std::ostream *dbgos)
+  ParseFile(std::string const &yaml_filename, std::ostream & erros, std::ostream *dbgos)
   {
     parser_.dbg = dbgos;
-    if ( ! parser_.parseFile(yaml_filename)) {
-      if (erros) {
-	*erros << "YAML error: " << parser_.error << "\n";
-      }
+    if ( ! parser_.parseFile(yaml_filename, erros)) {
       return false;
     }
     return true;
