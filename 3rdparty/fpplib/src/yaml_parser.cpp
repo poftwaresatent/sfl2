@@ -66,28 +66,31 @@ namespace fpplib {
   
   
   bool YamlParser::
-  parseString(string const & yaml_string)
+  parseString(string const & yaml_string,
+	      ostream & erros)
   {
     istringstream is(yaml_string);
-    return parseStream(is);
+    return parseStream(is, erros);
   }
   
   
   bool YamlParser::
-  parseFile(string const & yaml_filename)
+  parseFile(string const & yaml_filename,
+	    ostream & erros)
   {
     ifstream is(yaml_filename.c_str());
     if ( ! is) {
-      error = "could not open file `" + yaml_filename + "' for reading";
+      erros << "could not open file `" << yaml_filename << "' for reading\n";
       return false;
     }
-    return parseStream(is);
+    return parseStream(is, erros);
   }
   
   
   bool YamlParser::
   processParameter(BaseParameter * pp,
-		   YAML::Node const & value)
+		   YAML::Node const & value,
+		   ostream & erros)
   {
     if (dbg) {
       *dbg << "  looking up converter for parameter " << pp->name << " : " << pp->type << "\n";
@@ -95,8 +98,8 @@ namespace fpplib {
     
     BaseValueConverter * cc(converters_.find(pp->type));
     if (0 == cc) {
-      error = "no converter for parameter type '" + pp->type
-	+ "' of parameter '" + pp->name + "'";
+      erros << "no converter for parameter type `" << pp->type
+	    << "' of parameter `" << pp->name << "'\n";
       return false;
     }
     
@@ -104,9 +107,8 @@ namespace fpplib {
       *dbg << "  parsing...\n";
     }
     
-    ostringstream erros;
     if ( ! cc->parse(value, pp, erros)) {
-      error = "failed to parse parameter '" + pp->name + "': " + erros.str();
+      erros << "failed to parse parameter '" << pp->name << "'\n";
       return false;
     }
     
@@ -120,7 +122,8 @@ namespace fpplib {
   
   bool YamlParser::
   processCallback(BaseCallback * cb,
-		  YAML::Node const & value)
+		  YAML::Node const & value,
+		  ostream & erros)
   {
     if (dbg) {
       *dbg << "  looking up converter for callback " << cb->name << " : " << cb->type << "\n";
@@ -128,8 +131,8 @@ namespace fpplib {
     
     BaseValueConverter * cc(converters_.find(cb->type));
     if (0 == cc) {
-      error = "no converter for callback type '" + cb->type
-	+ "' of callback '" + cb->name + "'";
+      erros << "no converter for callback type `" << cb->type
+	    << "' of callback `" << cb->name << "'\n";
       return false;
     }
     
@@ -137,9 +140,8 @@ namespace fpplib {
       *dbg << "  parsing...\n";
     }
     
-    ostringstream erros;
     if ( ! cc->parse(value, cb->argptr_, erros)) {
-      error = "failed argument parse for callback '" + cb->name + "': " + erros.str();
+      erros << "failed argument parse for callback `" << cb->name << "'\n";
       return false;
     }
     
@@ -147,13 +149,14 @@ namespace fpplib {
       cb->dump("    ", *dbg);
     }
     
-    return cb->call();
+    return cb->call(erros);
   }
 
 
   bool YamlParser::
   processSlot(BaseSlot * ss,
-	      YAML::Node const & value)
+	      YAML::Node const & value,
+	      ostream & erros)
   {
     if (dbg) {
       *dbg << "  processing slot '" << ss->name << "'\n";
@@ -169,8 +172,8 @@ namespace fpplib {
     Configurable * cc(factory_.find(configurable_name));
     
     if (0 == cc) {
-      error = "no instance '" + configurable_name
-	+ "' for slot '" + ss->name + "'";
+      erros << "no instance `" << configurable_name
+	    << "' for slot `" << ss->name << "'\n";
       return false;
     }
     
@@ -179,8 +182,8 @@ namespace fpplib {
     }
     
     if ( ! ss->set(cc)) {
-      error = "failed to assign instance '" + configurable_name
-	+ "' to slot '" + ss->name + "'";
+      erros << "failed to assign instance `" << configurable_name
+	    << "' to slot `" << ss->name << "'\n";
       return false;
     }
     
@@ -194,7 +197,8 @@ namespace fpplib {
   
   bool YamlParser::
   configure(Configurable * instance,
-	    YAML::Node const & dict)
+	    YAML::Node const & dict,
+	    ostream & erros)
   {
     for (YAML::Iterator irefl(dict.begin()); irefl != dict.end(); ++irefl) {
       string reflectable_name;
@@ -209,14 +213,14 @@ namespace fpplib {
       
       Reflectable * rr(instance->lookup(reflectable_name));
       if (0 == rr) {
-	error = "unknown reflectable '" + reflectable_name
-	  + "' in instance '" + instance->name + "'";
+	erros << "unknown reflectable `" << reflectable_name
+	      << "' in instance `" << instance->name << "'\n";
 	return false;
       }
       
       BaseParameter * pp(dynamic_cast<BaseParameter*>(rr));
       if (pp) {
-	if ( ! processParameter(pp, irefl.second())) {
+	if ( ! processParameter(pp, irefl.second(), erros)) {
 	  return false;
 	}
 	continue;
@@ -225,27 +229,27 @@ namespace fpplib {
       BaseCallback * cb(dynamic_cast<BaseCallback*>(rr));
       if (cb) {
 	if ( !cb->sequence_mode) {
-	  if ( ! processCallback(cb, irefl.second())) {
+	  if ( ! processCallback(cb, irefl.second(), erros)) {
 	    return false;
 	  }
 	  continue;
 	}
 	YAML::NodeType::value const nt(irefl.second().Type());
 	if (nt == YAML::NodeType::Scalar) {
-	  if ( ! processCallback(cb, irefl.second())) {
+	  if ( ! processCallback(cb, irefl.second(), erros)) {
 	    return false;
 	  }
 	  continue;
 	}
 	if (nt == YAML::NodeType::Sequence) {
 	  for (YAML::Iterator ival(irefl.second().begin()); ival != irefl.second().end(); ++ival) {
-	    if ( ! processCallback(cb, *ival)) {
+	    if ( ! processCallback(cb, *ival, erros)) {
 	      return false;
 	    }
 	  }
 	  continue;
 	}
-	error = "callback '" + cb->name + "' must be scalar or sequence";
+	erros << "callback `" << cb->name << "' must be scalar or sequence\n";
 	return false;
       }
       
@@ -253,26 +257,26 @@ namespace fpplib {
       if (ss) {
 	YAML::NodeType::value const nt(irefl.second().Type());
 	if (nt == YAML::NodeType::Scalar) {
-	  if ( ! processSlot(ss, irefl.second())) {
+	  if ( ! processSlot(ss, irefl.second(), erros)) {
 	    return false;
 	  }
 	  continue;
 	}
 	if (nt == YAML::NodeType::Sequence) {
 	  for (YAML::Iterator ival(irefl.second().begin()); ival != irefl.second().end(); ++ival) {
-	    if ( ! processSlot(ss, *ival)) {
+	    if ( ! processSlot(ss, *ival, erros)) {
 	      return false;
 	    }
 	  }
 	  continue;
 	}
-	error = "slot '" + ss->name + "' must be scalar or sequence";
+	erros << "slot `" << ss->name << "' must be scalar or sequence\n";
 	return false;
       }
       
-      error = "BUG? unhandled reflectable type '" + rr->type
-	+ "' for '" + reflectable_name
-	+ "' in instance '" + instance->name + "'";
+      erros << "BUG? unhandled reflectable type `" << rr->type
+	    << "' for `" << reflectable_name
+	    << "' in instance `" << instance->name << "'\n";
       return false;
     }
     
@@ -281,9 +285,9 @@ namespace fpplib {
   
   
   bool YamlParser::
-  parseStream(istream & yaml_istream)
+  parseStream(istream & yaml_istream,
+	      ostream & erros)
   {
-    error = "";
     try {
       YAML::Parser parser(yaml_istream);
       YAML::Node doc;
@@ -316,7 +320,8 @@ namespace fpplib {
 	      ientity.second()["name"] >> instance_name;
 	      instance = factory_.create(type_name, instance_name);
 	      if ( ! instance) {
-		error = "unknown type `" + type_name + "' for instance `" + instance_name + "'";
+		erros << "unknown type `" << type_name
+		      << "' for instance `" << instance_name << "'\n";
 		return false;
 	      }
 	      if (dbg) {
@@ -325,7 +330,7 @@ namespace fpplib {
 	      }
 	    }
 	    
-	    if ( ! configure(instance, ientity.second())) {
+	    if ( ! configure(instance, ientity.second(), erros)) {
 	      return false;
 	    }
 	    
@@ -334,11 +339,11 @@ namespace fpplib {
       } // end while (get next document)
     } // end try
     catch (YAML::Exception const & ee) {
-      error = ee.what();
+      erros << "YAML::Exception: " << ee.what() << "\n";
       return false;
     }
     catch (runtime_error const & ee) {
-      error = ee.what();
+      erros << "runtime error: " << ee.what() << "\n";
       return false;
     }
     return true;

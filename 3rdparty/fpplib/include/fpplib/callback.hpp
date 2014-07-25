@@ -58,7 +58,7 @@ namespace fpplib {
       delete argptr_;
     }
     
-    virtual bool call () = 0;
+    virtual bool call (ostream & erros) = 0;
     
     bool const sequence_mode;
     BaseParameter * argptr_;
@@ -79,12 +79,13 @@ namespace fpplib {
     {
     }
     
-    virtual bool call ()
+    virtual bool call (ostream & erros)
     {
       if (0 == this) {
+	erros << "callback `" << name << "' is null\n";
 	return false;
       }
-      return callback_(arginst);
+      return callback_(arginst, erros);
     }
     
     virtual void dump(string const & prefix, ostream & os) const

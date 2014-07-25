@@ -180,24 +180,20 @@ namespace fpplib {
       addConverter(new VectorConverter<value_type>());
     }
     
-    bool parseString(string const & yaml_string);
-    bool parseFile(string const & yaml_filename);
-    bool parseStream(istream & yaml_istream);
+    bool parseString(string const & yaml_string, ostream & erros);
+    bool parseFile(string const & yaml_filename, ostream & erros);
+    bool parseStream(istream & yaml_istream, ostream & erros);
     
     ostream * dbg;
-    string error;
     
   protected:
     Registry<BaseValueConverter> converters_;
     Factory & factory_;
     
-    bool configure(Configurable * instance, YAML::Node const & dict);
-    
-    bool processParameter(BaseParameter * pp, YAML::Node const & value);
-    
-    bool processCallback(BaseCallback * cb, YAML::Node const & value);
-    
-    bool processSlot(BaseSlot * ss, YAML::Node const & value);
+    bool configure(Configurable * instance, YAML::Node const & dict, ostream & erros);
+    bool processParameter(BaseParameter * pp, YAML::Node const & value, ostream & erros);
+    bool processCallback(BaseCallback * cb, YAML::Node const & value, ostream & erros);
+    bool processSlot(BaseSlot * ss, YAML::Node const & value, ostream & erros);
   };
   
 }
