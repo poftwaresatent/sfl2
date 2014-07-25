@@ -1,7 +1,3 @@
-- Plugin:
-    name: dennis
-    search: dennis-plugin
-
 - Object:
     name: world
     lines:
@@ -27,8 +23,13 @@
     drive: d_drive
     vtrans_max: 0.3
     vrot_max: 0.3
-- DennisProcess:
+
+- Plugin:
     name: dennis
+    search: dennis-plugin
+
+- DennisProcess:
+    name: dennis_process
     control: d_ctrl
     goals:
       - [ -4, -4,  0 ]

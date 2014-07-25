@@ -221,5 +221,9 @@ add_library (npm2 SHARED
   )
 target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
+add_library (dennis-plugin MODULE npm2/dennis-plugin.cpp)
+target_link_libraries (dennis-plugin npm2)
+set_target_properties (dennis-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+
 add_executable (nepumuk2 npm2/nepumuk2.cpp)
 target_link_libraries (nepumuk2 npm2)

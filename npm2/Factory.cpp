@@ -28,12 +28,12 @@
 #include <npm2/AliceProcess.hpp>
 #include <npm2/BobProcess.hpp>
 #include <npm2/CharlieProcess.hpp>
-#include <npm2/DennisProcess.hpp>
 #include <npm2/View.hpp>
 #include <npm2/ObjectCamera.hpp>
 #include <npm2/ObjectDrawing.hpp>
 #include <npm2/GenericDrive.hpp>
 #include <npm2/KinematicControl.hpp>
+#include <npm2/Plugin.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Goal.hpp>
@@ -100,12 +100,12 @@ namespace npm2 {
     declare <AliceProcess> ("AliceProcess");
     declare <BobProcess> ("BobProcess");
     declare <CharlieProcess> ("CharlieProcess");
-    declare <DennisProcess> ("DennisProcess");
     declare <View> ("View");
     declare <ObjectCamera> ("ObjectCamera");
     declare <ObjectDrawing> ("ObjectDrawing");
     declare <GenericDrive> ("GenericDrive");
     declare <KinematicControl> ("KinematicControl");
+    declare <Plugin> ("Plugin");
     
     parser_.addConverter <Line> ();
     parser_.addConverter <Frame> ();

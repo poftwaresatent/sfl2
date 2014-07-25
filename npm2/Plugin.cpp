@@ -127,18 +127,23 @@ namespace npm2 {
     
     string searchpath;
     
-#ifdef NPM2_PLUGIN_PATH_STR
-    if (getenv("NPM2_PLUGIN_PATH")) {
-      searchpath = string (NPM2_PLUGIN_PATH_STR) + ":" + getenv("NPM2_PLUGIN_PATH");
+#ifdef NPM_PLUGIN_PATH_STR
+    if (getenv("NPM_PLUGIN_PATH")) {
+      searchpath = string (NPM_PLUGIN_PATH_STR) + ":" + getenv("NPM_PLUGIN_PATH");
     }
     else {
-      searchpath = string (NPM2_PLUGIN_PATH_STR);
+      searchpath = string (NPM_PLUGIN_PATH_STR);
     }
-#else // NPM2_PLUGIN_PATH_STR
-    if (getenv("NPM2_PLUGIN_PATH")) {
-      searchpath = getenv("NPM2_PLUGIN_PATH");
+#else // NPM_PLUGIN_PATH_STR
+    if (getenv("NPM_PLUGIN_PATH")) {
+      searchpath = getenv("NPM_PLUGIN_PATH");
     }
-#endif // NPM2_PLUGIN_PATH_STR
+#endif // NPM_PLUGIN_PATH_STR
+    
+    if (searchpath.empty()) {
+      erros << "npm2::Plugin::search(): empty search path, try setting NPM_PLUGIN_PATH\n";
+      return false;
+    }
     
     typedef list <string> directories_t;
     directories_t directories;
