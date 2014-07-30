@@ -24,7 +24,6 @@ endif(WIN32)
 # ROS stuff
 
 find_package(catkin REQUIRED COMPONENTS
-  cargo_ants_msgs
   roscpp
   message_generation
 )
