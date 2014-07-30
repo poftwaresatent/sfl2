@@ -33,14 +33,9 @@ add_message_files(
   DIRECTORY msg
   FILES
   Scan.msg
-  TraversabilityMap.msg
-  Estar.msg
 )
 
-generate_messages(
-  DEPENDENCIES
-  cargo_ants_msgs
-)
+generate_messages()
 
 ###################################
 ## catkin specific configuration ##
@@ -70,10 +65,6 @@ include_directories(
   ../3rdparty/fpplib/yaml-cpp-0.2.7/include
   ${catkin_INCLUDE_DIRS}
 )
-
-add_library (cargo-ants-plugin MODULE src/cargo-ants-plugin.cpp)
-target_link_libraries (cargo-ants-plugin npm ${catkin_LIBRARIES})
-set_target_properties (cargo-ants-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_library (vasco-plugin MODULE src/vasco-plugin.cpp)
 target_link_libraries (vasco-plugin npm ${catkin_LIBRARIES})
