@@ -5,6 +5,9 @@ if (COMMAND cmake_policy)
   if (POLICY CMP0011)
     cmake_policy (SET CMP0011 NEW)
   endif (POLICY CMP0011)
+  if (POLICY CMP0042)
+    cmake_policy (SET CMP0042 NEW)
+  endif (POLICY CMP0042)
 endif (COMMAND cmake_policy)
 
 ##################################################
@@ -220,6 +223,10 @@ target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 add_library (draft-plugin MODULE npm2/draft-plugin.cpp)
 target_link_libraries (draft-plugin npm2)
 set_target_properties (draft-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+
+add_library (pickplace-plugin MODULE npm2/pickplace-plugin.cpp)
+target_link_libraries (pickplace-plugin npm2)
+set_target_properties (pickplace-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_executable (nepumuk2 npm2/nepumuk2.cpp)
 target_link_libraries (nepumuk2 npm2)

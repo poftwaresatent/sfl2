@@ -29,13 +29,10 @@
 #include <npm/gfx/wrap_glut.hpp>
 #include <npm/gfx/Camera.hpp>
 #include <npm/gfx/Drawing.hpp>
-// #include <sfl/gplan/TraversabilityMap.hpp>
-// #include <fpplib/yaml_parser.hpp>
 #include <iostream>
-// #include <fstream>
-// #include <map>
 #include <signal.h>
 #include <err.h>
+#include <libgen.h>
 // #include <unistd.h>
 
 
@@ -97,6 +94,14 @@ int main(int argc, char ** argv)
   if(signal(SIGTERM, sighandle) == SIG_ERR){
     errx(EXIT_FAILURE, "signal(SIGTERM)");
   }
+  
+  string ppath (dirname (argv[0]));
+  cout << "ppath is " << ppath << "\n";
+  if (getenv ("NPM_PLUGIN_PATH")) {
+    ppath = string (getenv ("NPM_PLUGIN_PATH")) + ":" + ppath;
+  }
+  setenv ("NPM_PLUGIN_PATH", ppath.c_str(), 1);
+  cout << "set NPM_PLUGIN_PATH to " << ppath << "\n";
   
   parse_options(argc, argv);
   

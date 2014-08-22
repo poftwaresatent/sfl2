@@ -114,6 +114,7 @@ namespace npm2 {
     
     void updateSensor (Sensor * sensor) const;
     
+    /** \return Current global pose of this object. */
     Frame const & getGlobal () const { return global_; }
     
     Object * getParent () { return parent_; }
@@ -123,7 +124,7 @@ namespace npm2 {
     
     child_iterator_t const childBegin () const { return children_.begin(); }
     child_iterator_t const childEnd () const { return children_.end(); }
-
+    
     Frame mount_;
     Frame motion_;
     Body body_;

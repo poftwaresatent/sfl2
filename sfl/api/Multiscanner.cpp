@@ -29,6 +29,7 @@
 #include "Pose.hpp"
 #include "../util/numeric.hpp"
 #include "../util/pdebug.hpp"
+#include <iostream>
 #include <cmath>
 
 
@@ -120,7 +121,7 @@ namespace sfl {
 
 
   bool Multiscanner::
-  UpdateAll(std::ostream * erros )
+  UpdateAll(std::ostream * erros)
   {
     bool ok(true);
     for (size_t ii(0); ii < m_scanner.size(); ++ii) {
