@@ -31,6 +31,7 @@
 #include <npm2/GenericDrive.hpp>
 #include <npm2/KinematicControl.hpp>
 #include <npm2/Plugin.hpp>
+#include <npm2/FixedCamera.hpp>
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Goal.hpp>
@@ -101,6 +102,7 @@ namespace npm2 {
     declare <GenericDrive> ("GenericDrive");
     declare <KinematicControl> ("KinematicControl");
     declare <Plugin> ("Plugin");
+    declare <FixedCamera> ("FixedCamera");
     
     parser_.addConverter <Line> ();
     parser_.addConverter <Frame> ();

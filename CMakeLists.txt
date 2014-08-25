@@ -222,6 +222,7 @@ add_library (npm2 SHARED
   npm2/ObjectCamera.cpp
   npm2/ObjectDrawing.cpp
   npm2/Plugin.cpp
+  npm2/FixedCamera.cpp
   )
 target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
