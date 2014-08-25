@@ -90,6 +90,7 @@ namespace npm2 {
   {
     declare <Object> ("Object");
     declareSingleton <Simulator> ("Simulator", Simulator::instance());
+    declareSingleton <Object> ("World", Simulator::world());
     declare <DifferentialDrive> ("DifferentialDrive");
     declare <DifferentialTrailerDrive> ("DifferentialTrailerDrive");
     declare <RayDistanceSensor> ("RayDistanceSensor");

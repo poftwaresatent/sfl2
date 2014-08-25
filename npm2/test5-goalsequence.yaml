@@ -2,8 +2,7 @@
     name: abcd
     search: abcd-plugin
 
-- Object:
-    name: world
+- World:
     lines:
       - [ -6, -5,  6, -5 ]
       - [  6, -5,  6,  5 ]
@@ -42,7 +41,6 @@
       - [  4, -4,  0 ]
 
 - Simulator:
-    world: world
     timestep: 0.1
     state: pause
 

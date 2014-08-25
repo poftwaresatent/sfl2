@@ -30,16 +30,15 @@ namespace npm2 {
   Simulator::
   Simulator (string const & name)
     : fpplib::Configurable (name),
-      world_ (0),
       timestep_ (0.1),
       state_ (PAUSE),
       erros_ (cout),
       window_width_ (200),
       window_height_ (200),
       window_posx_ (0),
-      window_posy_ (0)
+      window_posy_ (0),
+      world_ (new Object("world"))
   {
-    reflectSlot ("world", &world_);
     reflectParameter ("timestep", &timestep_,
 		      /** \todo parameter guards have unclear ownership */
 		      new fpplib::StrictlyPositiveGuard <double> ());
@@ -57,6 +56,7 @@ namespace npm2 {
   Simulator::
   ~Simulator ()
   {
+    delete world_;
     for (size_t ih (0); ih < hooks_.size(); ++ih) {
       if (hooks_[ih].own) {
 	delete hooks_[ih].hook;
@@ -70,9 +70,16 @@ namespace npm2 {
   {
     static Simulator * instance (0);
     if ( ! instance) {
-      instance = new Simulator ("npm2");
+      instance = new Simulator ("simulator");
     }
     return instance;
+  }
+  
+  
+  Object * Simulator::
+  world ()
+  {
+    return instance()->world_;
   }
   
   

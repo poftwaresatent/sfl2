@@ -54,6 +54,7 @@ namespace npm2 {
     virtual ~Simulator();
     
     static Simulator * instance ();
+    static Object * world ();
     
     void addHook (bool own, SimulatorHook * hook);
     
@@ -65,7 +66,6 @@ namespace npm2 {
     
     // XXXX to do: some or most of the fields should be protected
     
-    Object * world_;
     double timestep_;
     state_t state_;
     ostream & erros_;
@@ -74,7 +74,9 @@ namespace npm2 {
     int window_posx_;
     int window_posy_;
     
-  protected:
+  private:
+    Object * world_;
+    
     struct hook_entry_t {
       hook_entry_t (bool own_, SimulatorHook * hook_)
 	: own (own_), hook (hook_) {}

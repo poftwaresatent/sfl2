@@ -179,10 +179,7 @@ int main (int argc, char ** argv)
   parse_args (argc, argv);
   
   simulator = npm2::Simulator::instance();
-  if ( ! simulator->world_) {
-    errx (EXIT_FAILURE, "no world given to simulator");
-  }
-  simulator->world_->updateTransform ();
+  simulator->world()->updateTransform ();
   
   init_glut (argc, argv);
   glutMainLoop();

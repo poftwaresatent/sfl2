@@ -42,7 +42,6 @@ public:
   virtual void preSensing (ostream & err);
   virtual void preProcessing (ostream & err);
   
-  npm2::Object * world_;
   npm2::Object * container_;
   sfl::Line bounds_;
   bool container_attached_;
@@ -73,12 +72,10 @@ int npm2_plugin_init ()
 ContainerTeleport::
 ContainerTeleport ()
   : fpplib::Configurable ("ContainerTeleport"),
-    world_ (0),
     container_ (0),
     bounds_ (0.0, 0.0, 0.0, 0.0),
     container_attached_ (false)
 {
-  reflectSlot ("world", &world_);
   reflectSlot ("container", &container_);
   reflectParameter ("bounds", &bounds_);
 }
@@ -87,10 +84,6 @@ ContainerTeleport ()
 void ContainerTeleport::
 preActuation (ostream & err)
 {
-  if ( ! world_) {
-    err << "ContainerTeleport: undefined world\n";
-    return;
-  }
   if ( ! container_) {
     err << "ContainerTeleport: undefined container\n";
     return;
@@ -101,7 +94,7 @@ preActuation (ostream & err)
   }
   
   if (container_attached_) {
-    if (container_->getParent() == world_) {
+    if (container_->getParent() == npm2::Simulator::world()) {
       container_attached_ = false;
       static double const nn (1.0 / std::numeric_limits <unsigned int> ::max());
       double const px (bounds_.X0() + (bounds_.X1() - bounds_.X0()) * rand() * nn);
@@ -112,7 +105,7 @@ preActuation (ostream & err)
     }
   }
   else {
-    if (container_->getParent() != world_) {
+    if (container_->getParent() != npm2::Simulator::world()) {
       container_attached_ = true;
     }
   }

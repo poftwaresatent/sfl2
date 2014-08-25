@@ -20,6 +20,7 @@
 
 #include <npm2/Plugin.hpp>
 #include <npm2/Factory.hpp>
+#include <npm2/Simulator.hpp>
 #include <npm2/Process.hpp>
 #include <npm2/KinematicControl.hpp>
 #include <npm2/Object.hpp>
@@ -48,7 +49,6 @@ protected:
   vector <Goal> goals_;
   size_t current_;
   Goal goal_;
-  Object * world_;
   Object * container_;
   mode_t mode_;
 };
@@ -73,7 +73,6 @@ PickPlaceProcess (string const & name)
 {
   reflectVectorParameter ("goals", &goals_);
   reflectSlot ("control", &control_);
-  reflectSlot ("world", &world_);
   reflectSlot ("container", &container_);
 }
   
@@ -91,10 +90,6 @@ init (ostream & erros)
   }
   if ( ! container_) {
     erros << "PickPlaceProcess needs a container (Object instance)\n";
-    return FAILED;
-  }
-  if ( ! world_) {
-    erros << "PickPlaceProcess needs the world (Object instance)\n";
     return FAILED;
   }
   
@@ -125,7 +120,7 @@ run (double timestep, ostream & erros)
     mode_ = PLACE;
     break;
   case PLACE:
-    container_->attach (world_);
+    container_->attach (Simulator::world());
     current_ = (current_ + 1) % goals_.size();
     goal_ = goals_[current_];
     control_->setGoal (goals_[current_]);

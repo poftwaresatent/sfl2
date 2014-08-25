@@ -2,8 +2,7 @@
     name: pickplace
     search: pickplace-plugin
 
-- Object:
-    name: world
+- World:
     lines:
       - [ -5, -5,  5, -5 ]
       - [  5, -5,  5,  5 ]
@@ -39,7 +38,6 @@
 - PickPlaceProcess:
     name: ppp
     control: ctrl
-    world: world
     container: container
     goals:
       - [ -2, -2,  0 ]
@@ -49,7 +47,6 @@
       - [  2, -2,  0 ]
     
 - Simulator:
-    world: world
     timestep: 0.1
     state: run
 

@@ -1,5 +1,4 @@
-- Object:
-    name: world
+- World:
     lines:
       - [ -5, -5,  5, -5 ]
       - [  5, -5,  5,  5 ]
@@ -39,7 +38,6 @@
 - PickPlaceProcess:
     name: ppp
     control: ctrl
-    world: world
     container: container
     goals:
       - [ -2, -2,  0 ]
@@ -52,12 +50,10 @@
     name: containerteleport
     search: containerteleport-plugin
 - ContainerTeleport:
-    world: world
     container: container
     bounds: [ -3, -3,  3,  3 ]
 
 - Simulator:
-    world: world
     timestep: 0.1
     state: run
 
