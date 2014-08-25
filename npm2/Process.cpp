@@ -57,8 +57,10 @@ namespace npm2 {
     case FAILED:
       state_ = recover (erros);
       break;
-      // case DONE:
+    case DONE:
+    default:
       //   do nothing
+      break;
     }
     return state_;
   }
