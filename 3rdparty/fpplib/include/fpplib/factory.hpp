@@ -188,7 +188,7 @@ namespace fpplib {
        creators, and then all registered singletons until it finds an
        instance that matches.  For non-singletons, a match implies a
        matching name, for singletons an empty instance_name argument
-       serves as a wildcard.  For both singletons and non-singletons.
+       serves as a wildcard.
        
        If you know that you are looking for a singleton, it is better
        to use one of the findSingleton() methods.
