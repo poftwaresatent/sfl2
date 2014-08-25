@@ -179,8 +179,8 @@ int main (int argc, char ** argv)
   parse_args (argc, argv);
   
   simulator = npm2::Simulator::instance();
-  simulator->world()->updateTransform ();
-  
-  init_glut (argc, argv);
-  glutMainLoop();
+  if (simulator->init (cout)) {
+    init_glut (argc, argv);
+    glutMainLoop();
+  }    
 }

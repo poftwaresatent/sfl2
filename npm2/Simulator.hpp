@@ -34,6 +34,7 @@ namespace npm2 {
   public:
     virtual ~SimulatorHook () {}
     
+    virtual bool init (ostream & err) = 0;
     virtual void preActuation (ostream & err) = 0;
     virtual void preSensing (ostream & err) = 0;
     virtual void preProcessing (ostream & err) = 0;
@@ -58,10 +59,10 @@ namespace npm2 {
     static Simulator * instance ();
     static Object * world ();
     
-    void addHook (bool own, SimulatorHook * hook);
-    
     bool setState (string const & value);
     
+    void addHook (bool own, SimulatorHook * hook);
+    bool init (ostream & err);
     void simulateActuators (ostream & err);
     void simulateSensors (ostream & err);
     void simulateProcesses (ostream & err);

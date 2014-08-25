@@ -38,6 +38,7 @@ class ContainerTeleport
 public:
   ContainerTeleport ();
   
+  virtual bool init (ostream & err);
   virtual void preActuation (ostream & err);
   virtual void preSensing (ostream & err);
   virtual void preProcessing (ostream & err);
@@ -78,6 +79,13 @@ ContainerTeleport ()
 {
   reflectSlot ("container", &container_);
   reflectParameter ("bounds", &bounds_);
+}
+
+
+bool ContainerTeleport::
+init (ostream & err)
+{
+  return true;
 }
 
 

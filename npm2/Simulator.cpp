@@ -121,6 +121,21 @@ namespace npm2 {
   }
   
   
+  bool Simulator::
+  init (ostream & err)
+  {
+    world_->updateTransform ();
+    
+    for (size_t ih (0); ih < hooks_.size(); ++ih) {
+      if ( ! hooks_[ih].hook->init (err)) {
+	return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  
   void Simulator::
   simulateActuators (ostream & err)
   {
