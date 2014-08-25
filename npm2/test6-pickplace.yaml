@@ -49,7 +49,6 @@
       - [  2, -2,  0 ]
     
 - Simulator:
-    name: draft
     world: world
     timestep: 0.1
     state: run

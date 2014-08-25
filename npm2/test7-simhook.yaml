@@ -57,7 +57,6 @@
     bounds: [ -3, -3,  3,  3 ]
 
 - Simulator:
-    name: draft
     world: world
     timestep: 0.1
     state: run

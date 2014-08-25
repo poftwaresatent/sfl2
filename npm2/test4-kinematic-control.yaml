@@ -79,7 +79,6 @@
     vrot_max: 0.3
 
 - Simulator:
-    name: draft
     world: world
     timestep: 0.01
     state: pause
