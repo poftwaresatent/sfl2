@@ -194,6 +194,11 @@ add_library (plugin-test MODULE apps/plugin-test.cpp)
 target_link_libraries (plugin-test npm) # not sure if this is required on Linux
 set_target_properties (plugin-test PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
+##################################################
+# Nepumuk v2
+
+add_definitions (-DNPM2PATH_STR="${SFL2_BINARY_DIR}")
+
 add_library (npm2 SHARED
   npm2/Body.cpp
   npm2/BBox.cpp
@@ -222,15 +227,12 @@ target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 add_library (abcd-plugin MODULE npm2/abcd-plugin.cpp)
 target_link_libraries (abcd-plugin npm2)
-set_target_properties (abcd-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_library (pickplace-plugin MODULE npm2/pickplace-plugin.cpp)
 target_link_libraries (pickplace-plugin npm2)
-set_target_properties (pickplace-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_library (containerteleport-plugin MODULE npm2/containerteleport-plugin.cpp)
 target_link_libraries (containerteleport-plugin npm2)
-set_target_properties (containerteleport-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_executable (nepumuk2 npm2/nepumuk2.cpp)
 target_link_libraries (nepumuk2 npm2)

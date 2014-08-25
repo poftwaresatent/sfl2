@@ -127,21 +127,21 @@ namespace npm2 {
     
     string searchpath;
     
-#ifdef NPM_PLUGIN_PATH_STR
-    if (getenv("NPM_PLUGIN_PATH")) {
-      searchpath = string (NPM_PLUGIN_PATH_STR) + ":" + getenv("NPM_PLUGIN_PATH");
+#ifdef NPM2PATH_STR
+    if (getenv("NPM2PATH")) {
+      searchpath = string (NPM2PATH_STR) + ":" + getenv("NPM2PATH");
     }
     else {
-      searchpath = string (NPM_PLUGIN_PATH_STR);
+      searchpath = string (NPM2PATH_STR);
     }
-#else // NPM_PLUGIN_PATH_STR
-    if (getenv("NPM_PLUGIN_PATH")) {
-      searchpath = getenv("NPM_PLUGIN_PATH");
+#else // NPM2PATH_STR
+    if (getenv("NPM2PATH")) {
+      searchpath = getenv("NPM2PATH");
     }
-#endif // NPM_PLUGIN_PATH_STR
+#endif // NPM2PATH_STR
     
     if (searchpath.empty()) {
-      erros << "npm2::Plugin::search(): empty search path, try setting NPM_PLUGIN_PATH\n";
+      erros << "npm2::Plugin::search(): empty search path, try setting NPM2PATH\n";
       return false;
     }
     
