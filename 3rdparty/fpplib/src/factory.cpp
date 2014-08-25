@@ -66,10 +66,14 @@ namespace fpplib {
     const
   {
     creator_t::const_iterator ic(creator_.find(type_name));
-    if (creator_.end() == ic) {
-      return 0;
+    if (creator_.end() != ic) {
+      return ic->second->find(instance_name);
     }
-    return ic->second->find(instance_name);
+    Configurable * const cc (findSingleton(type_name));
+    if (cc && (instance_name == cc->name)) {
+      return cc;
+    }
+    return 0;
   }
   
   
@@ -77,13 +81,22 @@ namespace fpplib {
   find(string const & instance_name)
     const
   {
+    Configurable * cc (0);
     for (creator_t::const_iterator ic(creator_.begin()); ic != creator_.end(); ++ic) {
-      Configurable * cc(ic->second->find(instance_name));
+      cc = ic->second->find(instance_name);
       if (cc) {
-	return cc;
+	break;
       }
     }
-    return 0;
+    if ( ! cc) {
+      for (singleton_t::const_iterator is(singleton_.begin()); is != singleton_.end(); ++is) {
+	if (instance_name == is->second->name) {
+	  cc = is->second;
+	  break;
+	}
+      }
+    }
+    return cc;
   }
   
   

@@ -165,7 +165,10 @@ namespace fpplib {
 
     /**
        Find an existing Configurable instance, given its type and
-       instance names. See also the templatized find<> method.
+       instance names. See also the templatized find<> method.  It
+       first searches through the non-singleton configurables. If that
+       fails, it checks if there is a singleton with matching
+       instance_name for that type_name.
        
        \return The existing instance, or zero if either the type or
        instance name did not match.
@@ -232,7 +235,8 @@ namespace fpplib {
     /**
        Alternative find method, which uses only the instance name. If
        there are instances of several types which have the same
-       instance name, then the first one found is returned.
+       instance name, then the first one found is returned.  It first
+       tries all the non-singletons, and then the singletons.
        
        \return The existing instance, or zero if the instance name did
        not match.
@@ -265,9 +269,9 @@ namespace fpplib {
     
     
   protected:
-    typedef map<string, BaseCreator * > creator_t;
+    typedef map<string, BaseCreator * > creator_t; // key: type name 
     creator_t creator_;
-    typedef map<string, Configurable * > singleton_t;
+    typedef map<string, Configurable * > singleton_t; // key: type name
     singleton_t singleton_;
     typedef map<string, string> dict_t;
     dict_t type_code_to_name_; // XXXX to do: do we need a multimap here?
