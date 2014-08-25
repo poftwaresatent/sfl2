@@ -22,13 +22,8 @@
 #include <npm2/Factory.hpp>
 #include <npm2/Process.hpp>
 #include <npm2/KinematicControl.hpp>
-// #include <npm2/DifferentialDrive.hpp>
 #include <npm2/Object.hpp>
-// #include <npm2/DifferentialTrailerDrive.hpp>
-#include <sfl/util/numeric.hpp>
 #include <sfl/api/Goal.hpp>
-#include <boost/bind.hpp>
-#include <cmath>
 
 using namespace npm2;
 
