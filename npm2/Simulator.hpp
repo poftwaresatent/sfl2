@@ -29,6 +29,14 @@ namespace npm2 {
   
   class Object;
   
+  class SimulatorHook
+  {
+  public:
+    virtual void preActuation (ostream & err) = 0;
+    virtual void preSensing (ostream & err) = 0;
+    virtual void preProcessing (ostream & err) = 0;
+  };
+  
   
   class Simulator
     : public fpplib::Configurable
@@ -43,13 +51,19 @@ namespace npm2 {
       RUN
     } state_t;
     
+    virtual ~Simulator();
+    
     static Simulator * instance ();
+    
+    void addHook (bool own, SimulatorHook * hook);
     
     bool setState (string const & value);
     
-    void simulateActuators ();
-    void simulateSensors ();
-    void simulateProcesses ();
+    void simulateActuators (ostream & err);
+    void simulateSensors (ostream & err);
+    void simulateProcesses (ostream & err);
+    
+    // XXXX to do: some or most of the fields should be protected
     
     Object * world_;
     double timestep_;
@@ -59,6 +73,16 @@ namespace npm2 {
     int window_height_;
     int window_posx_;
     int window_posy_;
+    
+  protected:
+    struct hook_entry_t {
+      hook_entry_t (bool own_, SimulatorHook * hook_)
+	: own (own_), hook (hook_) {}
+      bool own;
+      SimulatorHook * hook;
+    };
+    typedef vector <hook_entry_t> hooks_t;
+    hooks_t hooks_;
   };
   
 }

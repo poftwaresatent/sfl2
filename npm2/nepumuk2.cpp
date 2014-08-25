@@ -128,9 +128,9 @@ static void keyboard (unsigned char key, int mx, int my)
 
 static void tick ()
 {
-  simulator->simulateActuators ();
-  simulator->simulateSensors ();
-  simulator->simulateProcesses ();
+  simulator->simulateActuators (cout);
+  simulator->simulateSensors (cout);
+  simulator->simulateProcesses (cout);
   
   glutSetWindow (window_handle); // needed?
   glutPostRedisplay ();

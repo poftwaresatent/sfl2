@@ -228,5 +228,9 @@ add_library (pickplace-plugin MODULE npm2/pickplace-plugin.cpp)
 target_link_libraries (pickplace-plugin npm2)
 set_target_properties (pickplace-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
+add_library (simhook-plugin MODULE npm2/simhook-plugin.cpp)
+target_link_libraries (simhook-plugin npm2)
+set_target_properties (simhook-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+
 add_executable (nepumuk2 npm2/nepumuk2.cpp)
 target_link_libraries (nepumuk2 npm2)

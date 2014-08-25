@@ -52,8 +52,19 @@ namespace npm2 {
     reflectParameter ("window_posx", &window_posx_, guard);
     reflectParameter ("window_posy", &window_posy_, guard);
   }
-
-
+  
+  
+  Simulator::
+  ~Simulator ()
+  {
+    for (size_t ih (0); ih < hooks_.size(); ++ih) {
+      if (hooks_[ih].own) {
+	delete hooks_[ih].hook;
+      }
+    }
+  }
+  
+  
   Simulator * Simulator::
   instance ()
   {
@@ -62,6 +73,13 @@ namespace npm2 {
       instance = new Simulator ("npm2");
     }
     return instance;
+  }
+  
+  
+  void Simulator::
+  addHook (bool own, SimulatorHook * hook)
+  {
+    hooks_.push_back (hook_entry_t (own, hook));
   }
   
   
@@ -97,8 +115,11 @@ namespace npm2 {
   
   
   void Simulator::
-  simulateActuators ()
+  simulateActuators (ostream & err)
   {
+    for (size_t ih (0); ih < hooks_.size(); ++ih) {
+      hooks_[ih].hook->preActuation (err);
+    }
     recurse_integrate (world_, timestep_);
     world_->updateTransform ();
   }
@@ -118,40 +139,23 @@ namespace npm2 {
   
   
   void Simulator::
-  simulateSensors ()
+  simulateSensors (ostream & err)
   {
+    for (size_t ih (0); ih < hooks_.size(); ++ih) {
+      hooks_[ih].hook->preSensing (err);
+    }
     recurse_sense (world_, world_);
   }
   
   
   void Simulator::
-  simulateProcesses ()
+  simulateProcesses (ostream & err)
   {
+    for (size_t ih (0); ih < hooks_.size(); ++ih) {
+      hooks_[ih].hook->preProcessing (err);
+    }
     for (size_t ii(0); ii < Process::registry.size(); ++ii) {
       Process::registry.at(ii)->process (*this, erros_);
-    }
-    
-    // WTF if this debug block gets commented out, the Charlie run
-    // method stops being called!
-    //
-    for (size_t ii(0); ii < Process::registry.size(); ++ii) {
-      switch (Process::registry.at(ii)->getState()) {
-      case Process::READY:
-	//   	printf ("%s\tREADY\n", Process::registry.at(ii)->name.c_str());
-    	break;
-      case Process::RUNNING:
-	//    	printf ("%s\tRUNNIG\n", Process::registry.at(ii)->name.c_str());
-    	break;
-      case Process::FAILED:
-	//    	printf ("%s\tFAILED\n", Process::registry.at(ii)->name.c_str());
-    	break;
-      case Process::DONE:
-	//    	printf ("%s\tDONE\n", Process::registry.at(ii)->name.c_str());
-      default:
-	printf ("%s\tinvalid state %d\n", Process::registry.at(ii)->name.c_str(),
-		Process::registry.at(ii)->getState());
-	exit (42);
-      }
     }
   }
   
