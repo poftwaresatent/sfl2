@@ -32,6 +32,8 @@ namespace npm2 {
   class SimulatorHook
   {
   public:
+    virtual ~SimulatorHook () {}
+    
     virtual void preActuation (ostream & err) = 0;
     virtual void preSensing (ostream & err) = 0;
     virtual void preProcessing (ostream & err) = 0;
