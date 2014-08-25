@@ -19,18 +19,28 @@
  */
 
 #include <npm2/Plugin.hpp>
+#include <npm2/Object.hpp>
 #include <npm2/Simulator.hpp>
+#include <npm2/Factory.hpp>
+#include <sfl/util/Line.hpp>
 
 using namespace std;
 
 
 class Hook
-  : public npm2::SimulatorHook
+  : public npm2::SimulatorHook,
+    public fpplib::Configurable
 {
 public:
+  Hook ();
+  
   virtual void preActuation (ostream & err);
   virtual void preSensing (ostream & err);
   virtual void preProcessing (ostream & err);
+  
+  npm2::Object * world_;
+  npm2::Object * container_;
+  sfl::Line bounds_;
 };
 
 static Hook hook;
@@ -41,12 +51,23 @@ static Hook hook;
 
 int npm2_plugin_init ()
 {
+  npm2::Factory::instance().declareSingleton <Hook> ("ContainerTeleport", &hook);
   npm2::Simulator::instance()->addHook (false, &hook);
   return 0;
 }
 
 
 //////////////////////////////////////////////////
+
+
+Hook::
+Hook ()
+  : fpplib::Configurable ("simhook")
+{
+  reflectSlot ("world", &world_);
+  reflectSlot ("container", &container_);
+  reflectParameter ("bounds", &bounds_);
+}
 
 
 void Hook::

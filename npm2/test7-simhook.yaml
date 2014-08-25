@@ -1,7 +1,3 @@
-- Plugin:
-    name: simhook
-    search: simhook-plugin
-
 - Object:
     name: world
     lines:
@@ -36,18 +32,30 @@
     drive: drive
     vtrans_max: 0.3
     vrot_max: 0.3
-# - PickPlaceProcess:
-#     name: ppp
-#     control: ctrl
-#     world: world
-#     container: container
-#     goals:
-#       - [ -2, -2,  0 ]
-#       - [ -1,  2,  0 ]
-#       - [  0, -2,  0 ]
-#       - [  1,  2,  0 ]
-#       - [  2, -2,  0 ]
-    
+
+- Plugin:
+    name: pickplace
+    search: pickplace-plugin
+- PickPlaceProcess:
+    name: ppp
+    control: ctrl
+    world: world
+    container: container
+    goals:
+      - [ -2, -2,  0 ]
+      - [ -1,  2,  0 ]
+      - [  0, -2,  0 ]
+      - [  1,  2,  0 ]
+      - [  2, -2,  0 ]
+
+- Plugin:
+    name: simhook
+    search: simhook-plugin
+- ContainerTeleport:
+    world: world
+    container: container
+    bounds: [ -3, -3,  3,  3 ]
+
 - Simulator:
     name: draft
     world: world
