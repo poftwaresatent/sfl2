@@ -49,8 +49,8 @@
       - [  2, -2,  0 ]
 
 - Plugin:
-    name: simhook
-    search: simhook-plugin
+    name: containerteleport
+    search: containerteleport-plugin
 - ContainerTeleport:
     world: world
     container: container

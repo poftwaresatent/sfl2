@@ -220,17 +220,17 @@ add_library (npm2 SHARED
   )
 target_link_libraries (npm2 sfl fpplib ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-add_library (draft-plugin MODULE npm2/draft-plugin.cpp)
-target_link_libraries (draft-plugin npm2)
-set_target_properties (draft-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+add_library (abcd-plugin MODULE npm2/abcd-plugin.cpp)
+target_link_libraries (abcd-plugin npm2)
+set_target_properties (abcd-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_library (pickplace-plugin MODULE npm2/pickplace-plugin.cpp)
 target_link_libraries (pickplace-plugin npm2)
 set_target_properties (pickplace-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
-add_library (simhook-plugin MODULE npm2/simhook-plugin.cpp)
-target_link_libraries (simhook-plugin npm2)
-set_target_properties (simhook-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
+add_library (containerteleport-plugin MODULE npm2/containerteleport-plugin.cpp)
+target_link_libraries (containerteleport-plugin npm2)
+set_target_properties (containerteleport-plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${NPM_PLUGIN_PATH})
 
 add_executable (nepumuk2 npm2/nepumuk2.cpp)
 target_link_libraries (nepumuk2 npm2)

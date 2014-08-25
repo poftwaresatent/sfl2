@@ -31,12 +31,12 @@
 using namespace std;
 
 
-class Hook
+class ContainerTeleport
   : public npm2::SimulatorHook,
     public fpplib::Configurable
 {
 public:
-  Hook ();
+  ContainerTeleport ();
   
   virtual void preActuation (ostream & err);
   virtual void preSensing (ostream & err);
@@ -48,7 +48,7 @@ public:
   bool container_attached_;
 };
 
-static Hook hook;
+static ContainerTeleport ct;
 
 
 //////////////////////////////////////////////////
@@ -56,8 +56,8 @@ static Hook hook;
 
 int npm2_plugin_init ()
 {
-  npm2::Factory::instance().declareSingleton <Hook> ("ContainerTeleport", &hook);
-  npm2::Simulator::instance()->addHook (false, &hook);
+  npm2::Factory::instance().declareSingleton <ContainerTeleport> ("ContainerTeleport", &ct);
+  npm2::Simulator::instance()->addHook (false, &ct);
   
   struct timeval tt;
   gettimeofday (&tt, NULL);
@@ -70,9 +70,9 @@ int npm2_plugin_init ()
 //////////////////////////////////////////////////
 
 
-Hook::
-Hook ()
-  : fpplib::Configurable ("simhook"),
+ContainerTeleport::
+ContainerTeleport ()
+  : fpplib::Configurable ("ContainerTeleport"),
     world_ (0),
     container_ (0),
     bounds_ (0.0, 0.0, 0.0, 0.0),
@@ -84,7 +84,7 @@ Hook ()
 }
 
 
-void Hook::
+void ContainerTeleport::
 preActuation (ostream & err)
 {
   if ( ! world_) {
@@ -120,13 +120,13 @@ preActuation (ostream & err)
 }
 
 
-void Hook::
+void ContainerTeleport::
 preSensing (ostream & err)
 {
 }
 
 
-void Hook::
+void ContainerTeleport::
 preProcessing (ostream & err)
 {
 }

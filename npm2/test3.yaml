@@ -1,6 +1,6 @@
 - Plugin:
-    name: draft
-    search: draft-plugin
+    name: abcd
+    search: abcd-plugin
 
 - Object:
     name: world
