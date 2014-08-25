@@ -82,7 +82,7 @@ namespace npm2 {
     char const * dlsym_error (dlerror());
     if (dlsym_error) {
       if (terse) {
-	erros << filename << ": npm2_plugin_init: " << dlerror() << "\n";
+	erros << filename << ": npm2_plugin_init symbol lookup error\n";
       }
       else {
 	erros << "npm2::Plugin::load invalid npm2_plugin_init symbol in " << filename
