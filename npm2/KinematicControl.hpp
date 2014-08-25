@@ -41,6 +41,7 @@ namespace npm2 {
     explicit KinematicControl (string const & name);
     
     bool setGoal (Goal const & goal);
+    bool enable (bool enable);
     
     double kr_;			// default 3.0;  kr_ > 0.0
     double kd_;			// default -1.5; kd_ < 0.0
@@ -53,6 +54,7 @@ namespace npm2 {
     virtual state_t init (ostream & erros);
     virtual state_t run (double timestep, ostream & erros);
     
+    bool enabled_;
     bool have_goal_;
     Goal goal_;
   };

@@ -33,9 +33,10 @@ namespace npm2 {
       kr_ (3.0),
       kd_ (-1.5),
       kg_ (8.0),
-      drive_ (0),
       vtrans_max_ (-1.0),
       vrot_max_ (-1.0),
+      drive_ (0),
+      enabled_ (true),
       have_goal_ (false)
   {
     // OK this is subtle and counter-intuitive.  If you set
@@ -65,6 +66,15 @@ namespace npm2 {
   }
   
   
+  bool KinematicControl::
+  enable (bool enable)
+  {
+    bool const res (enabled_);
+    enabled_ = enable;
+    return res;
+  }
+  
+  
   KinematicControl::state_t KinematicControl::
   init (ostream & erros)
   {
@@ -79,6 +89,10 @@ namespace npm2 {
   KinematicControl::state_t KinematicControl::
   run (double timestep, ostream & erros)
   {
+    if ( ! enabled_) {
+      drive_->setSpeed (0.0, 0.0);
+      return RUNNING;
+    }
     if ( ! have_goal_) {
       drive_->setSpeed (0.0, 0.0);
       return RUNNING;
