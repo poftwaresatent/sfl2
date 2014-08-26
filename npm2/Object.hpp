@@ -73,9 +73,11 @@ namespace npm2 {
     }
     
     /**
-       To find the first DifferentialDrive anywhere in the tree rooted
-       in the Object stored in variable "blah", regardless of the name
-       of the DifferentialDrive instance:
+       Find an object based on its name, starting the search at the
+       root of the tree rooted in this object. So, for example to find
+       the first DifferentialDrive anywhere in the tree rooted in the
+       Object stored in variable "blah", regardless of the name of the
+       DifferentialDrive instance:
 
        \code
        DifferentialDrive * drive = blah->find <DifferentialDrive> (""):
