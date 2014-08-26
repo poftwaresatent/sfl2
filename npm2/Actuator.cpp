@@ -18,7 +18,7 @@
  * USA
  */
 
-#include "actuator.hpp"
+#include "Actuator.hpp"
 
 
 namespace npm2 {
