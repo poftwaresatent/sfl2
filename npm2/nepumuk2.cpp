@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
+
 #include <stdio.h>
 #include <string.h>
 #include <npm2/View.hpp>
@@ -129,9 +130,7 @@ static void keyboard (unsigned char key, int mx, int my)
 
 static void tick ()
 {
-  simulator->simulateActuators (cout);
-  simulator->simulateSensors (cout);
-  simulator->simulateProcesses (cout);
+  simulator->tick (cout);
   
   glutSetWindow (window_handle); // needed?
   glutPostRedisplay ();

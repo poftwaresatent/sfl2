@@ -58,14 +58,13 @@ namespace npm2 {
     
     static Simulator * instance ();
     static Object * world ();
+    static double clock ();
     
     bool setState (string const & value);
     
     void addHook (bool own, SimulatorHook * hook);
     bool init (ostream & err);
-    void simulateActuators (ostream & err);
-    void simulateSensors (ostream & err);
-    void simulateProcesses (ostream & err);
+    void tick (ostream & err);
     
     // XXXX to do: some or most of the fields should be protected
     
@@ -78,7 +77,12 @@ namespace npm2 {
     int window_posy_;
     
   private:
+    void simulateActuators (ostream & err);
+    void simulateSensors (ostream & err);
+    void simulateProcesses (ostream & err);
+
     Object * world_;
+    double clock_;
     
     struct hook_entry_t {
       hook_entry_t (bool own_, SimulatorHook * hook_)
