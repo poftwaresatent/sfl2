@@ -45,12 +45,6 @@ namespace npm2 {
     
     const string comment;
     
-    /**
-       Drawing instances always need a Manager. You can typically just
-       use the singleton instance by passing in
-       'Instance<UniqueManager<Drawing> >()' which is declared in
-       Manager.hpp.
-    */
     Drawing (const string & name,
 	     const string & comment);
     
