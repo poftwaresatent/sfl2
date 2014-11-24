@@ -85,9 +85,13 @@ namespace npm2 {
     }
     
     Object * old_parent (parent_);
-    mount_ = global_;
-    new_parent->getGlobal().From (mount_);
     setParent (new_parent);
+    
+    if (new_parent) {
+      mount_ = global_;
+      new_parent->getGlobal().From (mount_);
+    }
+    
     return old_parent;
   }
   

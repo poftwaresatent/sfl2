@@ -18,6 +18,8 @@
  * USA
  */
 
+#include <stdio.h>
+#include <string.h>
 #include <npm2/View.hpp>
 #include <npm2/Simulator.hpp>
 #include <npm2/Factory.hpp>
@@ -128,9 +130,7 @@ static void keyboard (unsigned char key, int mx, int my)
 
 static void tick ()
 {
-  simulator->simulateActuators (cout);
-  simulator->simulateSensors (cout);
-  simulator->simulateProcesses (cout);
+  simulator->tick (cout);
   
   glutSetWindow (window_handle); // needed?
   glutPostRedisplay ();

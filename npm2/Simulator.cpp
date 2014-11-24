@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
-
+#include <stdio.h>
 #include "Simulator.hpp"
 #include "Actuator.hpp"
 #include "Sensor.hpp"
@@ -37,7 +37,8 @@ namespace npm2 {
       window_height_ (200),
       window_posx_ (0),
       window_posy_ (0),
-      world_ (new Object("world"))
+      world_ (new Object("world")),
+      clock_ (0.0)
   {
     reflectParameter ("timestep", &timestep_,
 		      /** \todo parameter guards have unclear ownership */
@@ -80,6 +81,13 @@ namespace npm2 {
   world ()
   {
     return instance()->world_;
+  }
+  
+
+  double Simulator::
+  clock ()
+  {
+    return instance()->clock_;
   }
   
   
@@ -132,10 +140,22 @@ namespace npm2 {
       }
     }
     
+    clock_ = 0.0;
+    
     return true;
   }
   
   
+  void Simulator::
+  tick (ostream & err)
+  {
+    simulateActuators (cout);
+    simulateSensors (cout);
+    simulateProcesses (cout);
+    clock_ += timestep_;
+  }
+
+
   void Simulator::
   simulateActuators (ostream & err)
   {
