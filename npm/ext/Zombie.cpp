@@ -41,10 +41,14 @@ namespace npm {
     : RobotClient(name),
       m_width(0.6),
       m_length(0.3),
+      m_thetad_max(0.8 * M_PI),
+      m_sd_max(0.4),
       m_server(0)
   {
     reflectParameter("width", &m_width);
     reflectParameter("length", &m_length);
+    reflectParameter("thetad_max", &m_thetad_max);
+    reflectParameter("sd_max", &m_sd_max);
   }
   
   
@@ -71,10 +75,6 @@ namespace npm {
   bool Zombie::
   PrepareAction(double timestep)
   {
-    //    static const double dthetathresh(5 * M_PI / 180);
-    static const double thetadmax(0.8 * M_PI);
-    static const double sdmax(0.4);
-    
     const Frame & pose(m_server->GetPose());
     double dx(m_goal.X() - pose.X());
     double dy(m_goal.Y() - pose.Y());
@@ -88,9 +88,9 @@ namespace npm {
     // if(absval(dtheta) > dthetathresh)
     //   xd = 0;
     
-    m_drive->vx = boundval(-sdmax, xd, sdmax);
-    m_drive->vy = boundval(-sdmax, yd, sdmax);
-    m_drive->omega = boundval(-thetadmax, thetad, thetadmax);
+    m_drive->vx = boundval(-m_sd_max, xd, m_sd_max);
+    m_drive->vy = boundval(-m_sd_max, yd, m_sd_max);
+    m_drive->omega = boundval(-m_thetad_max, thetad, m_thetad_max);
     
     return true;
   }

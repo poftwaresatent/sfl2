@@ -47,6 +47,8 @@ namespace npm {
   protected:
     double m_width;
     double m_length;
+    double m_thetad_max;
+    double m_sd_max;
     
   private:
     RobotServer *m_server;
