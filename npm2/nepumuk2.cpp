@@ -26,6 +26,8 @@
 #include <npm2/Object.hpp>
 #include <npm2/gl.hpp>
 #include <err.h>
+#include <cstdio>
+#include <string.h>
 
 using namespace npm2;
 

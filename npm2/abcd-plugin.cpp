@@ -31,6 +31,7 @@
 #include <sfl/api/Goal.hpp>
 #include <boost/bind.hpp>
 #include <cmath>
+#include <cstdio>
 
 using namespace npm2;
 

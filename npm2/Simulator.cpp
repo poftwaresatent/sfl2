@@ -22,6 +22,7 @@
 #include "Sensor.hpp"
 #include "Process.hpp"
 #include <boost/bind.hpp>
+#include <cstdio>
 
 
 namespace npm2 {
