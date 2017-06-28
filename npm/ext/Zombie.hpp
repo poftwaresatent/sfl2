@@ -52,7 +52,7 @@ namespace npm {
     
   private:
     RobotServer *m_server;
-    boost::shared_ptr<HoloDrive> m_drive;
+    std::shared_ptr<HoloDrive> m_drive;
     sfl::Goal m_goal;
   };
   
@@ -67,7 +67,7 @@ namespace npm {
     virtual bool PrepareAction(double timestep);
     
   protected:
-    boost::shared_ptr<Lidar> m_lidar;
+    std::shared_ptr<Lidar> m_lidar;
   };
 
 }

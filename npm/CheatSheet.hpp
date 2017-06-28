@@ -22,7 +22,7 @@
 #define NPM_CHEATSHEET_HPP
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 

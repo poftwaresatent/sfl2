@@ -37,17 +37,17 @@ namespace npm {
   public:
     VisualRobox(std::string const & name,
 		expo::expo_parameters const & params,
-		boost::shared_ptr<sfl::Hull> hull,
-		boost::shared_ptr<sfl::LocalizationInterface> localization,
-		boost::shared_ptr<sfl::DiffDriveChannel> drive,
-		boost::shared_ptr<sfl::Multiscanner> mscan);
+		std::shared_ptr<sfl::Hull> hull,
+		std::shared_ptr<sfl::LocalizationInterface> localization,
+		std::shared_ptr<sfl::DiffDriveChannel> drive,
+		std::shared_ptr<sfl::Multiscanner> mscan);
     
   protected:
     void AddDrawing(Drawing * drawing);
     void AddCamera(Camera * camera);
     
-    std::vector<boost::shared_ptr<Drawing> > m_drawing;
-    std::vector<boost::shared_ptr<Camera> > m_camera;
+    std::vector<std::shared_ptr<Drawing> > m_drawing;
+    std::vector<std::shared_ptr<Camera> > m_camera;
   };
   
 }

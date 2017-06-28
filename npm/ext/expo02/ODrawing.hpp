@@ -27,7 +27,7 @@
 
 
 #include <npm/gfx/Drawing.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -41,14 +41,14 @@ class ODrawing
 {
 public:
   ODrawing(const std::string & name,
-	   boost::shared_ptr<sfl::Objective const> obj,
-	   boost::shared_ptr<sfl::DynamicWindow const> dwa);
+	   std::shared_ptr<sfl::Objective const> obj,
+	   std::shared_ptr<sfl::DynamicWindow const> dwa);
   
   virtual void Draw();
   
 private:
-  boost::shared_ptr<sfl::Objective const> m_obj;
-  boost::shared_ptr<sfl::DynamicWindow const> m_dwa;
+  std::shared_ptr<sfl::Objective const> m_obj;
+  std::shared_ptr<sfl::DynamicWindow const> m_dwa;
 };
 
 #endif // ODRAWING_HPP

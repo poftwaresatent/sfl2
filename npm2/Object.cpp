@@ -20,7 +20,6 @@
 
 #include "Object.hpp"
 #include "Sensor.hpp"
-#include <boost/bind.hpp>
 
 
 namespace npm2 {
@@ -36,8 +35,14 @@ namespace npm2 {
   {
     registry.add (name, this);
     reflectParameter ("mount", &mount_);
-    reflectCallback<string> ("parent", true, boost::bind (&Object::initParent, this, _1));
-    reflectCallback<Line> ("lines", true, boost::bind (&Object::addLine, this, _1));
+    reflectCallback<string> ("parent", true,
+			     [this] (string const &name,
+				     ostream & erros) -> bool
+			     { return initParent(name); });
+    reflectCallback<Line> ("lines", true,
+			   [this] (Line const & line,
+				   ostream & erros) -> bool
+			   { return addLine(line); });
   }
   
   

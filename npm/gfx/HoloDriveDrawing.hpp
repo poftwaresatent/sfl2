@@ -36,12 +36,12 @@ namespace npm {
   {
   public:
     HoloDriveDrawing(const std::string & name,
-		     boost::shared_ptr<const HoloDrive> drive);
+		     std::shared_ptr<const HoloDrive> drive);
     
     virtual void Draw();
     
   private:
-    boost::shared_ptr<const HoloDrive> m_drive;
+    std::shared_ptr<const HoloDrive> m_drive;
     const double m_halfaxislength;
   };
 

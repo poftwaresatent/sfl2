@@ -29,8 +29,7 @@
 #include <sfl/util/Frame.hpp>
 #include <sfl/api/Goal.hpp>
 #include <sfl/bband/BubbleList.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -67,7 +66,7 @@ namespace sfl {
     BubbleBand(const RobotModel & robot_model,
 	       const Odometry & odometry,
 	       const Multiscanner & multiscanner,
-	       boost::shared_ptr<ReplanHandlerAPI> replan_handler,
+	       std::shared_ptr<ReplanHandlerAPI> replan_handler,
 	       BubbleList::Parameters parameters);
     
     ~BubbleBand();
@@ -82,7 +81,7 @@ namespace sfl {
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
     bool AppendGoal(const Goal & global_goal,
-		    boost::shared_ptr<const Scan> scan);
+		    std::shared_ptr<const Scan> scan);
     bool AppendTarget(const Goal & global_goal);
     
     /** \note (goalx, goaly) might actually be the global goal, for
@@ -126,9 +125,9 @@ namespace sfl {
     const Odometry & m_odometry;
     const Multiscanner & m_multiscanner;
     
-    boost::scoped_ptr<BubbleFactory> m_bubble_factory;
-    boost::shared_ptr<ReplanHandlerAPI> m_replan_handler;
-    boost::shared_ptr<const Frame> m_frame;
+    std::unique_ptr<BubbleFactory> m_bubble_factory;
+    std::shared_ptr<ReplanHandlerAPI> m_replan_handler;
+    std::shared_ptr<const Frame> m_frame;
     BubbleList * m_active_blist;
     const double m_reaction_radius;
     Goal m_global_goal;

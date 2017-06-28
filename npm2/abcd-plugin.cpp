@@ -29,7 +29,6 @@
 #include <npm2/DifferentialTrailerDrive.hpp>
 #include <sfl/util/numeric.hpp>
 #include <sfl/api/Goal.hpp>
-#include <boost/bind.hpp>
 #include <cmath>
 #include <cstdio>
 
@@ -127,7 +126,9 @@ AliceProcess (string const & name)
   reflectSlot ("drive", &drive_);
   reflectSlot ("servo", &servo_);
   reflectSlot ("sensor", &sensor_);
-  reflectCallback <string> ("attach", true, boost::bind (&AliceProcess::attach, this, _1));
+  reflectCallback <string> ("attach", true,
+			    [this] (string const & base_name, ostream &erros) -> bool
+			    { return attach(base_name); });
 }
   
   

@@ -28,7 +28,7 @@
 #include <iostream>
 
 
-using boost::shared_ptr;
+using std::shared_ptr;
 using namespace std;
 
 

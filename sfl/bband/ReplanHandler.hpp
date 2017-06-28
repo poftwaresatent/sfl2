@@ -26,8 +26,7 @@
 #define SUNFLOWER_REPLANHANDLER_HPP
 
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <string>
 
 
@@ -46,11 +45,11 @@ namespace sfl {
   public:
     virtual ~ReplanHandlerAPI() {}
     
-    virtual bool GeneratePlan(boost::shared_ptr<const Frame> pose,
-			      boost::shared_ptr<const Scan> scan) = 0;
+    virtual bool GeneratePlan(std::shared_ptr<const Frame> pose,
+			      std::shared_ptr<const Scan> scan) = 0;
 
-    virtual bool GenerateBand(boost::shared_ptr<const Frame> pose,
-			      boost::shared_ptr<const Scan> scan) = 0;
+    virtual bool GenerateBand(std::shared_ptr<const Frame> pose,
+			      std::shared_ptr<const Scan> scan) = 0;
 
     virtual BubbleList * SwapBubbleList(BubbleList * replace) = 0;
   };
@@ -69,16 +68,16 @@ namespace sfl {
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    bool GeneratePlan(boost::shared_ptr<const Frame> pose,
-		      boost::shared_ptr<const Scan> scan);
+    bool GeneratePlan(std::shared_ptr<const Frame> pose,
+		      std::shared_ptr<const Scan> scan);
 
     /** \note The Scan object should be filtered, ie contain only
 	valid readings. This can be obtained from
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    bool GenerateBand(boost::shared_ptr<const Frame> pose,
-		      boost::shared_ptr<const Scan> scan);
+    bool GenerateBand(std::shared_ptr<const Frame> pose,
+		      std::shared_ptr<const Scan> scan);
 
     /** Returns the "buffer" bubble list that contains the initial
 	bubble band if called at the right moment (ie if GetState() ==
@@ -104,11 +103,11 @@ namespace sfl {
     
     BubbleBand & m_bubble_band;
     BubbleFactory & m_bubble_factory;
-    boost::scoped_ptr<NF1> m_nf1;
+    std::unique_ptr<NF1> m_nf1;
     BubbleList * m_buffer_blist;
     
     /** \note only needed for debug plotting. */
-    boost::scoped_ptr<BubbleList> m_initial_band;
+    std::unique_ptr<BubbleList> m_initial_band;
     
     double m_nf1width;
     int m_nf1dimension;

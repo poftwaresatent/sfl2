@@ -33,7 +33,6 @@
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Random.hpp>
 #include <sfl/gplan/TraversabilityMap.hpp>
-#include <boost/bind.hpp>
 #include <iostream>
 #include <sstream>
 #include <cmath>
@@ -41,7 +40,6 @@
 
 
 using namespace sfl;
-using namespace boost;
 using namespace std;
 
 
@@ -55,8 +53,12 @@ namespace npm {
       m_camera(new WorldCamera(name, * this))
   {
     m_object.push_back(shared_ptr<Object>(new Object(name, "THE world")));
-    reflectCallback<string> ("builtin", false, boost::bind(&World::LoadBuiltin, this, _1));
-    reflectCallback<Line> ("lines", true, boost::bind(&World::AddLine, this, _1));
+    reflectCallback<string> ("builtin", false,
+			     [this] (const string & name, std::ostream & erros)
+			     { return LoadBuiltin(name); });
+    reflectCallback<Line> ("lines", true,
+			   [this] (const Line & line, std::ostream & erros) -> bool
+			   { return AddLine(line); });
   }
   
   
@@ -417,7 +419,7 @@ namespace npm {
   
   
   void World::
-  AddKeyListener(boost::shared_ptr<KeyListener> listener) const
+  AddKeyListener(std::shared_ptr<KeyListener> listener) const
   {
     m_listener.push_back(listener);
   }

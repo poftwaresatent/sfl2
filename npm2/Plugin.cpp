@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 #include <list>
-#include <boost/bind.hpp>
 #include <dlfcn.h>
 
 
@@ -36,7 +35,9 @@ namespace npm2 {
       init_(0),
       fini_(0)
   {
-    reflectCallback<string> ("search", false, boost::bind (&Plugin::search, this, _1, _2));
+    reflectCallback<string> ("search", false,
+			     [this] (string const & spec, ostream & erros) -> bool
+			     { return search(spec, erros); });
   }
   
   

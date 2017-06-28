@@ -40,7 +40,6 @@
 #include <cmath>
 
 
-using namespace boost;
 using namespace std;
 
 
@@ -61,7 +60,7 @@ namespace expo {
     explicit TakeAimState(MotionPlanner * mp,
 			  MotionPlannerStateMachine * sm);
 
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    void Act(double timestep, std::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
@@ -90,7 +89,7 @@ namespace expo {
     explicit AimedState(MotionPlanner * mp,
 			MotionPlannerStateMachine * sm);
 
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    void Act(double timestep, std::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
 
   protected:
@@ -118,7 +117,7 @@ namespace expo {
     explicit AdjustGoalHeadingState(MotionPlanner * mp,
 				    MotionPlannerStateMachine * sm);
 
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    void Act(double timestep, std::shared_ptr<const sfl::Scan> scan);
 
   protected:
     direction_t GetPathDirection();
@@ -139,7 +138,7 @@ namespace expo {
     explicit AtGoalState(MotionPlanner * mp,
 			 MotionPlannerStateMachine * sm);
 
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    void Act(double timestep, std::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
   };
   
@@ -157,7 +156,7 @@ namespace expo {
     explicit ManualStopState(MotionPlanner * mp,
 			     MotionPlannerStateMachine * sm);
 
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan);
+    void Act(double timestep, std::shared_ptr<const sfl::Scan> scan);
     MotionPlannerState * NextState(double timestep);
   };
   

@@ -22,7 +22,7 @@
 #define NPM_ROBOTSERVER_HPP
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 #include <map>
 
@@ -56,7 +56,7 @@ namespace npm {
   class RobotServer
   {
   public:
-    typedef std::vector<boost::shared_ptr<const sfl::Frame> > trajectory_t;
+    typedef std::vector<std::shared_ptr<const sfl::Frame> > trajectory_t;
     
     RobotServer(RobotClient *client,
 		World const &world);
@@ -65,7 +65,7 @@ namespace npm {
     void UpdateSensor(Sensor & sensor) const;
     void SimulateAction(double timestep);
     void InitializePose(const sfl::Frame & pose);
-    void AddPose(boost::shared_ptr<const sfl::Frame> pose);
+    void AddPose(std::shared_ptr<const sfl::Frame> pose);
     
   public:
     const std::string & GetName() const;
@@ -73,9 +73,9 @@ namespace npm {
     const Object & GetBody() const;
     const trajectory_t & GetTrajectory() const;
     const World & GetWorld() const;
-    boost::shared_ptr<const Lidar> GetLidar(std::string const & name) const;
-    boost::shared_ptr<const Sharp> GetSharp(int channel) const;
-    boost::shared_ptr<sfl::LocalizationInterface> CreateFakeLocalization() const;
+    std::shared_ptr<const Lidar> GetLidar(std::string const & name) const;
+    std::shared_ptr<const Sharp> GetSharp(int channel) const;
+    std::shared_ptr<sfl::LocalizationInterface> CreateFakeLocalization() const;
     
     void AddLine(double x0, double y0, double x1, double y1);
     void AddLine(const sfl::Line & line);
@@ -86,24 +86,24 @@ namespace npm {
     
   public:
     
-    boost::shared_ptr<Lidar>
+    std::shared_ptr<Lidar>
     DefineLidar(const sfl::Frame & mount, std::string const & name,
 		size_t nscans, double rhomax, double phi0, double phirange);
     
-    boost::shared_ptr<Sharp>
+    std::shared_ptr<Sharp>
     DefineSharp(const sfl::Frame & mount, double rmax, int channel);
     
-    boost::shared_ptr<DiffDrive>
+    std::shared_ptr<DiffDrive>
     DefineDiffDrive(double wheelbase, double wheelradius);
     
-    boost::shared_ptr<HoloDrive>
+    std::shared_ptr<HoloDrive>
     DefineHoloDrive(double axislength);
 
-    boost::shared_ptr<BicycleDrive>
+    std::shared_ptr<BicycleDrive>
     DefineBicycleDrive(double wheelbase, double wheelradius, double axlewidth);
     
-    void AddKeyListener(boost::shared_ptr<KeyListener> listener) const;
-    boost::shared_ptr<npm::CheatSheet> CreateCheatSheet() const;
+    void AddKeyListener(std::shared_ptr<KeyListener> listener) const;
+    std::shared_ptr<npm::CheatSheet> CreateCheatSheet() const;
     
     RobotClient const * GetClient() const { return m_client; }
     
@@ -112,16 +112,16 @@ namespace npm {
     
     RobotClient *m_client;
     World const &m_world;
-    std::vector<boost::shared_ptr<Drawing> > m_drawing;
-    std::vector<boost::shared_ptr<Camera> > m_camera;
-    std::vector<boost::shared_ptr<Sensor> > m_sensor;
-    boost::shared_ptr<Drive> m_drive;
-    std::map<std::string, boost::shared_ptr<Lidar> > m_lidar;
-    std::map<int, boost::shared_ptr<Sharp> > m_sharp;
-    boost::shared_ptr<Object> m_body;
+    std::vector<std::shared_ptr<Drawing> > m_drawing;
+    std::vector<std::shared_ptr<Camera> > m_camera;
+    std::vector<std::shared_ptr<Sensor> > m_sensor;
+    std::shared_ptr<Drive> m_drive;
+    std::map<std::string, std::shared_ptr<Lidar> > m_lidar;
+    std::map<int, std::shared_ptr<Sharp> > m_sharp;
+    std::shared_ptr<Object> m_body;
     trajectory_t m_trajectory;
-    boost::shared_ptr<sfl::Frame> m_pose;
-    boost::shared_ptr<NoiseModel> m_scanner_noise_model;
+    std::shared_ptr<sfl::Frame> m_pose;
+    std::shared_ptr<NoiseModel> m_scanner_noise_model;
   };
   
 }

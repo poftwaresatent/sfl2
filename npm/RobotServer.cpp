@@ -53,7 +53,6 @@
 
 
 using namespace sfl;
-using namespace boost;
 using namespace std;
 
 
@@ -306,16 +305,16 @@ namespace npm {
   
   
   void RobotServer::
-  AddKeyListener(boost::shared_ptr<KeyListener> listener) const
+  AddKeyListener(std::shared_ptr<KeyListener> listener) const
   {
     m_world.AddKeyListener(listener);
   }
   
   
-  boost::shared_ptr<npm::CheatSheet> RobotServer::
+  std::shared_ptr<npm::CheatSheet> RobotServer::
   CreateCheatSheet() const
   {
-    boost::shared_ptr<npm::CheatSheet> cs(new CheatSheet(&m_world, this));
+    std::shared_ptr<npm::CheatSheet> cs(new CheatSheet(&m_world, this));
     return cs;
   }
   

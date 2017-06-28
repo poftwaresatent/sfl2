@@ -36,12 +36,12 @@ namespace npm {
   {
   public:
     DiffDriveDrawing(const std::string & name,
-		     boost::shared_ptr<const DiffDrive> drive);
+		     std::shared_ptr<const DiffDrive> drive);
     
     virtual void Draw();
     
   private:
-    boost::shared_ptr<const DiffDrive> m_drive;
+    std::shared_ptr<const DiffDrive> m_drive;
     const double m_halfwheelbase;
   };
 

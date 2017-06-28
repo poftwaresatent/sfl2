@@ -28,11 +28,9 @@
 #include "Pose.hpp"
 #include <sfl/util/pdebug.hpp>
 #include <sfl/util/Frame.hpp>
-#include <boost/scoped_array.hpp>
 #include <cmath>
 
 
-using namespace boost;
 using namespace std;
 
 

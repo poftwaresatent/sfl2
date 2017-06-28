@@ -45,7 +45,7 @@ namespace npm {
   public:
     DiffDrive(double wheelbase, double wheelradius);
     
-    boost::shared_ptr<sfl::DiffDriveChannel> CreateChannel();
+    std::shared_ptr<sfl::DiffDriveChannel> CreateChannel();
     
     /** distance between wheel contact points [m] */
     const double wheelbase;
@@ -56,7 +56,7 @@ namespace npm {
     double qdl, qdr;
     
   protected:
-    virtual boost::shared_ptr<sfl::Frame>
+    virtual std::shared_ptr<sfl::Frame>
     ComputeNextPose(const sfl::Frame & current, double timestep) const;
   };
   

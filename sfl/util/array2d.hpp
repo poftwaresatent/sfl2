@@ -22,8 +22,8 @@
 #define SUNFLOWER_ARRAY2D_HPP
 
 
+#include <memory>
 #include <sfl/util/vec2d.hpp>
-#include <boost/scoped_array.hpp>
 
 #ifdef OPENBSD
 // is this a bug or a feature?
@@ -40,10 +40,6 @@ namespace sfl {
   
   /**
      Simple 2D-array with "self destroying" underlying data.
-     
-     \note If you want to put this into an STL container, wrap it into a
-     boost::shared_ptr to avoid problems with the non-copyable
-     boost::scoped_array fields.
   */
   template<typename value_t>
   class array2d
@@ -51,8 +47,8 @@ namespace sfl {
   public:
     typedef vec2d<size_t> index_t;
     typedef vec2d<ssize_t> sindex_t;
-    typedef boost::scoped_array<value_t> inner_t;
-    typedef boost::scoped_array<inner_t> outer_t;
+    typedef std::unique_ptr<value_t[]> inner_t;
+    typedef std::unique_ptr<inner_t[]> outer_t;
     
     array2d(): size(0, 0), xsize(0), ysize(0) {}
     

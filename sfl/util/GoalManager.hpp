@@ -25,7 +25,7 @@
 #ifndef SFL_GOALMANAGER_HPP
 #define SFL_GOALMANAGER_HPP
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <string>
 #include <iosfwd>
 #include <vector>
@@ -66,7 +66,7 @@ namespace sfl {
     
     /** \return 0 iff no goals are registered or the last goal has
 				been reached, a valid pointer otherwise. */
-    boost::shared_ptr<Goal> GetCurrentGoal() const;
+    std::shared_ptr<Goal> GetCurrentGoal() const;
     
     /** Simply appends to the list. */
     void AddGoal(double x, double y, double theta, double dr, double dtheta);
@@ -89,7 +89,7 @@ namespace sfl {
 				a shared ptr as well, to avoid problems if someone wants to
 				store that for later use (returning a raw pointer would cause
 				double-deletes). */
-    typedef std::vector<boost::shared_ptr<Goal> > goal_t;
+    typedef std::vector<std::shared_ptr<Goal> > goal_t;
     
     repeat_t m_repeat;
     goal_t m_goal;

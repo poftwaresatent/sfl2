@@ -57,7 +57,7 @@ namespace npm {
 	
   class PtrTravProxy: public TravProxyAPI {
 	public:
-		PtrTravProxy(boost::shared_ptr<sfl::TraversabilityMap const> travmap);
+		PtrTravProxy(std::shared_ptr<sfl::TraversabilityMap const> travmap);
 		virtual bool Enabled() const;
 		virtual double GetX() const;
 		virtual double GetY() const;
@@ -72,13 +72,13 @@ namespace npm {
 		virtual ssize_t GetYEnd() const;
 		virtual int GetValue(ssize_t ix, ssize_t iy) const;
 	protected:
-		boost::shared_ptr<sfl::TraversabilityMap const> m_travmap;
+		std::shared_ptr<sfl::TraversabilityMap const> m_travmap;
 	};
   
 	
   class RDTravProxy: public TravProxyAPI {
 	public:
-		RDTravProxy(boost::shared_ptr<sfl::RDTravmap> rdtravmap);
+		RDTravProxy(std::shared_ptr<sfl::RDTravmap> rdtravmap);
 		virtual bool Enabled() const;
 		virtual double GetX() const;
 		virtual double GetY() const;
@@ -93,7 +93,7 @@ namespace npm {
 		virtual ssize_t GetYEnd() const;
 		virtual int GetValue(ssize_t ix, ssize_t iy) const;
 	protected:
-		boost::shared_ptr<sfl::RDTravmap> m_rdtravmap;
+		std::shared_ptr<sfl::RDTravmap> m_rdtravmap;
 	};
 	
 	
@@ -107,10 +107,10 @@ namespace npm {
 		} color_code_t;
 		
     TraversabilityDrawing(const std::string & name,
-													boost::shared_ptr<TravProxyAPI> proxy,
+													std::shared_ptr<TravProxyAPI> proxy,
 													color_code_t color_code = DEFAULT);
 		
-		/** \note Packs proxy into a boost::shared_ptr<>, so only use this
+		/** \note Packs proxy into a std::shared_ptr<>, so only use this
 				if you have a raw pointer that will NOT be deleted in your
 				code. */
     TraversabilityDrawing(const std::string & name,
@@ -122,7 +122,7 @@ namespace npm {
 		color_code_t color_code;
     
   private:
-    boost::shared_ptr<TravProxyAPI> m_proxy;
+    std::shared_ptr<TravProxyAPI> m_proxy;
   };
 	
 	
@@ -131,9 +131,9 @@ namespace npm {
   {
   public:
     TraversabilityCamera(const std::string & name,
-												 boost::shared_ptr<TravProxyAPI> proxy);
+												 std::shared_ptr<TravProxyAPI> proxy);
 		
-		/** \note Packs proxy into a boost::shared_ptr<>, so only use this
+		/** \note Packs proxy into a std::shared_ptr<>, so only use this
 				if you have a raw pointer that will NOT be deleted in your
 				code. */
     TraversabilityCamera(const std::string & name,
@@ -142,7 +142,7 @@ namespace npm {
     virtual void ConfigureView(View & view);
     
   private:
-    boost::shared_ptr<TravProxyAPI> m_proxy;
+    std::shared_ptr<TravProxyAPI> m_proxy;
   };
 
 }

@@ -34,8 +34,8 @@ using namespace npm;
 
 ODrawing::
 ODrawing(const std::string & name,
-	 boost::shared_ptr<sfl::Objective const> obj,
-	 boost::shared_ptr<sfl::DynamicWindow const> dwa)
+	 std::shared_ptr<sfl::Objective const> obj,
+	 std::shared_ptr<sfl::DynamicWindow const> dwa)
   : Drawing(name,
 	    "a DWA's sub-objective (greyscale + special colors)"),
     m_obj(obj),

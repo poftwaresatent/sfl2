@@ -29,7 +29,6 @@
 
 
 using namespace std;
-using namespace boost;
 
 
 extern "C" {

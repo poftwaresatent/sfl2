@@ -26,7 +26,7 @@
 #define NPM_ARGTOOL_HPP
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <iosfwd>
 #include <stdexcept>
 #include <vector>
@@ -100,10 +100,10 @@ public:
   
   Argtool();
   
-  void Add(boost::shared_ptr<BaseCallback> callback) throw(std::runtime_error);
+  void Add(std::shared_ptr<BaseCallback> callback) throw(std::runtime_error);
   
   void Add(BaseCallback * callback) throw(std::runtime_error)
-  { Add(boost::shared_ptr<BaseCallback>(callback)); }
+  { Add(std::shared_ptr<BaseCallback>(callback)); }
 
   /**
      \return Index into argv of first non-option argument.
@@ -119,7 +119,7 @@ private:
   typedef std::map<char, unsigned int> index_map_t;
 
   index_map_t                  _index_map;  
-  std::vector<boost::shared_ptr<BaseCallback> >  _callback;
+  std::vector<std::shared_ptr<BaseCallback> >  _callback;
   std::vector<bool>            _present;
   std::vector<const char *>    _argument;
   unsigned int                 _longest_longopt;

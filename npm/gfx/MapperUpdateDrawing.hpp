@@ -28,7 +28,7 @@
 
 
 #include <npm/gfx/Drawing.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -53,14 +53,14 @@ namespace npm {
 		
     MapperUpdateDrawing(const std::string & name,
 												what_t what,
-												boost::shared_ptr<const sfl::Mapper2d> mapper);
+												std::shared_ptr<const sfl::Mapper2d> mapper);
     
     virtual void Draw();
 		
 		what_t what;
 		
   private:
-    boost::shared_ptr<const sfl::Mapper2d> m_mapper;
+    std::shared_ptr<const sfl::Mapper2d> m_mapper;
   };
 
 }

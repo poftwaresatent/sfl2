@@ -31,7 +31,6 @@
 #include "wrap_glu.hpp"
 #include <sfl/util/strutil.hpp>
 #include <sfl/util/numeric.hpp>
-#include <boost/bind.hpp>
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -58,9 +57,15 @@ namespace npm {
     Configure(0, 0, 1, 1);
     reflectParameter("camera", &pcamera);
     reflectVectorParameter("drawings", &pdrawing);
-    reflectCallback<qhwin_s>("window", false, boost::bind(&View::SetWindow, this, _1));
-    reflectCallback<int>("border", false, boost::bind(&View::SetBorder, this, _1));
-    reflectCallback<string>("anchor", false, boost::bind(&View::SetAnchorCB, this, _1));
+    reflectCallback<qhwin_s>("window", false,
+			     [this] (qhwin_s const &win, std::ostream & erros) -> bool
+			     { return SetWindow(win); });
+    reflectCallback<int>("border", false,
+			 [this] (int border, std::ostream & erros) -> bool
+			 { return SetBorder(border); });
+    reflectCallback<string>("anchor", false,
+			    [this] (string const &anchor, std::ostream & erros) -> bool
+			    { return SetAnchorCB(anchor); });
   }
   
   

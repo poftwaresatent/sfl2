@@ -57,7 +57,7 @@ namespace npm {
 	  double rhomax,
 	  double phi0,
 	  double phirange,
-	  boost::shared_ptr<NoiseModel> noise_model);
+	  std::shared_ptr<NoiseModel> noise_model);
     
     /** non-copyable */
     Lidar(const Lidar &);
@@ -66,7 +66,7 @@ namespace npm {
     virtual void InitUpdate();
     virtual void StepUpdate(const sfl::Line & line);
     
-    boost::shared_ptr<sfl::LidarChannel> CreateChannel() const;
+    std::shared_ptr<sfl::LidarChannel> CreateChannel() const;
     
     /** \pre index < nscans */
     double GetTrueRho(size_t index) const { return m_true_rho[index]; }
@@ -79,12 +79,12 @@ namespace npm {
     const double rhomax;
     const double phi0;
     const double phirange;
-    const boost::shared_ptr<const sfl::Frame> mount;
+    const std::shared_ptr<const sfl::Frame> mount;
     
   private:
-    boost::shared_ptr<NoiseModel> m_noise_model;
-    boost::shared_ptr<sfl::Frame> m_global_pose;
-    boost::shared_ptr<ScannerDrawing> m_drawing;
+    std::shared_ptr<NoiseModel> m_noise_model;
+    std::shared_ptr<sfl::Frame> m_global_pose;
+    std::shared_ptr<ScannerDrawing> m_drawing;
     std::vector<double> m_true_rho;
     std::vector<double> m_noisy_rho;
   };

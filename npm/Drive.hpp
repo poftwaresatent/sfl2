@@ -26,7 +26,7 @@
 #define NPM_DRIVE_HPP
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -50,18 +50,18 @@ namespace npm {
     /** Compute the displacement of the robot when moving with the
 	current speeds. Calls ComputeNextPose() and caches the result
 	for PoseCache(). */
-    boost::shared_ptr<sfl::Frame>
+    std::shared_ptr<sfl::Frame>
     NextPose(const sfl::Frame & current, double timestep);
     
     /** \return The last value returned by NextPose(). */
-    boost::shared_ptr<const sfl::Frame> PoseCache() const;
+    std::shared_ptr<const sfl::Frame> PoseCache() const;
     
   protected:
     /** Implemented by subclasses. */
-    virtual boost::shared_ptr<sfl::Frame>
+    virtual std::shared_ptr<sfl::Frame>
     ComputeNextPose(const sfl::Frame & current, double timestep) const = 0;
     
-    boost::shared_ptr<sfl::Frame> m_cache;
+    std::shared_ptr<sfl::Frame> m_cache;
   };
   
 }

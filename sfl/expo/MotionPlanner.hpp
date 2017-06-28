@@ -27,8 +27,7 @@
 
 
 #include <sfl/api/MotionPlanner.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -64,15 +63,15 @@ namespace expo {
       invalid	           //!< something went wrong (bug in state machine)
     };
     
-    MotionPlanner(boost::shared_ptr<MotionController> motion_controller,
-		  boost::shared_ptr<sfl::DynamicWindow> dynamic_window,
-		  boost::shared_ptr<sfl::SpeedObjective> speed_objective,
-		  boost::shared_ptr<sfl::HeadingObjective> heading_objective,
-		  boost::shared_ptr<sfl::Multiscanner> multiscanner,
-		  boost::shared_ptr<const sfl::RobotModel> robot_model,
+    MotionPlanner(std::shared_ptr<MotionController> motion_controller,
+		  std::shared_ptr<sfl::DynamicWindow> dynamic_window,
+		  std::shared_ptr<sfl::SpeedObjective> speed_objective,
+		  std::shared_ptr<sfl::HeadingObjective> heading_objective,
+		  std::shared_ptr<sfl::Multiscanner> multiscanner,
+		  std::shared_ptr<const sfl::RobotModel> robot_model,
 		  /** optional: if null then go straight towards goal */
-		  boost::shared_ptr<sfl::BubbleBand> bubble_band,
-		  boost::shared_ptr<const sfl::Odometry> odometry);
+		  std::shared_ptr<sfl::BubbleBand> bubble_band,
+		  std::shared_ptr<const sfl::Odometry> odometry);
     
     void Update(double timestep);
     void SetGoal(double timestep, const sfl::Goal & goal);
@@ -119,16 +118,16 @@ namespace expo {
 		    <li> -3: motion controller update error </li></ul> */
     int UpdateAll(double timestep);
     
-    boost::shared_ptr<MotionController> motion_controller;
-    boost::shared_ptr<sfl::DynamicWindow> dynamic_window;
-    boost::shared_ptr<sfl::SpeedObjective> speed_objective;
-    boost::shared_ptr<sfl::HeadingObjective> heading_objective;
-    boost::shared_ptr<const sfl::RobotModel> robot_model;
-    boost::shared_ptr<sfl::BubbleBand> bubble_band; // can be null!
-    boost::shared_ptr<const sfl::Odometry> odometry;
-    boost::shared_ptr<sfl::Multiscanner> multiscanner;
+    std::shared_ptr<MotionController> motion_controller;
+    std::shared_ptr<sfl::DynamicWindow> dynamic_window;
+    std::shared_ptr<sfl::SpeedObjective> speed_objective;
+    std::shared_ptr<sfl::HeadingObjective> heading_objective;
+    std::shared_ptr<const sfl::RobotModel> robot_model;
+    std::shared_ptr<sfl::BubbleBand> bubble_band; // can be null!
+    std::shared_ptr<const sfl::Odometry> odometry;
+    std::shared_ptr<sfl::Multiscanner> multiscanner;
     
-    boost::scoped_ptr<sfl::Goal> goal;
+    std::unique_ptr<sfl::Goal> goal;
     bool go_forward;
     
     double dtheta_starthoming; 	//!< default 10 * M_PI / 180

@@ -23,7 +23,7 @@
 
 #include <sfl/api/Goal.hpp>
 #include <fpplib/configurable.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {

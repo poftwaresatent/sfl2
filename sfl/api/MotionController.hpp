@@ -27,7 +27,7 @@
 
 
 #include <sfl/api/DiffDriveChannel.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -45,8 +45,8 @@ namespace sfl {
   class MotionController
   {
   public:
-    MotionController(boost::shared_ptr<const RobotModel> robotModel,
-		     boost::shared_ptr<DiffDriveChannel> drive);
+    MotionController(std::shared_ptr<const RobotModel> robotModel,
+		     std::shared_ptr<DiffDriveChannel> drive);
     
     /**
        Template method for determining the next motion command. The
@@ -95,8 +95,8 @@ namespace sfl {
     const double thetadMax;
     
   protected:
-    boost::shared_ptr<const RobotModel> m_robotModel;
-    boost::shared_ptr<DiffDriveChannel> m_drive;
+    std::shared_ptr<const RobotModel> m_robotModel;
+    std::shared_ptr<DiffDriveChannel> m_drive;
     double m_proposedQdl, m_proposedQdr;
     double m_currentQdl, m_currentQdr;
     double m_wantedQdl, m_wantedQdr;

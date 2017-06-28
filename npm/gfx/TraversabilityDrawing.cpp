@@ -33,7 +33,6 @@
 
 
 using namespace sfl;
-using namespace boost;
 using namespace std;
 
 
@@ -240,7 +239,7 @@ namespace npm {
   
 	
 	RDTravProxy::
-	RDTravProxy(boost::shared_ptr<sfl::RDTravmap> rdtravmap)
+	RDTravProxy(std::shared_ptr<sfl::RDTravmap> rdtravmap)
 		: m_rdtravmap(rdtravmap)
 	{
 	}

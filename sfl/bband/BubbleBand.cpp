@@ -33,7 +33,6 @@
 #include <iostream>
 
 
-using namespace boost;
 using namespace std;
 
 
@@ -69,7 +68,7 @@ namespace sfl {
   BubbleBand(const RobotModel & robot_model,
 	     const Odometry & odometry,
 	     const Multiscanner & multiscanner,
-	     boost::shared_ptr<ReplanHandlerAPI> replan_handler,
+	     std::shared_ptr<ReplanHandlerAPI> replan_handler,
 	     BubbleList::Parameters _parameters)
     : parameters(_parameters),
       robot_radius(robot_model.GetHull()->CalculateRadius()),

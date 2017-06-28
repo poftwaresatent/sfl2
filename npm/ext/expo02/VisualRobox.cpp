@@ -38,7 +38,8 @@
 #include <sfl/dwa/SpeedObjective.hpp>
 #include <sfl/api/RobotModel.hpp>
 
-using namespace boost;
+
+using namespace std;
 
 
 namespace npm {  
@@ -46,10 +47,10 @@ namespace npm {
   VisualRobox::
   VisualRobox(std::string const & name,
 	      expo::expo_parameters const & params,
-	      boost::shared_ptr<sfl::Hull> hull,
-	      boost::shared_ptr<sfl::LocalizationInterface> localization,
-	      boost::shared_ptr<sfl::DiffDriveChannel> drive,
-	      boost::shared_ptr<sfl::Multiscanner> mscan)
+	      std::shared_ptr<sfl::Hull> hull,
+	      std::shared_ptr<sfl::LocalizationInterface> localization,
+	      std::shared_ptr<sfl::DiffDriveChannel> drive,
+	      std::shared_ptr<sfl::Multiscanner> mscan)
     : expo::Robox(params, hull, localization, drive, mscan)
   {
     AddDrawing(new MPDrawing(name + "_goaldrawing", *motionPlanner));

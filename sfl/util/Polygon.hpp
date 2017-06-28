@@ -29,7 +29,7 @@
 #include <sfl/util/Line.hpp>
 #include <sfl/util/Point.hpp>
 #include <sfl/util/numeric.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 #include <iosfwd>
 
@@ -55,7 +55,7 @@ namespace sfl {
        returns the convex hull. Needed prior to using
        Polygon::Contains() and Polygon::CreateGrownPolygon().
     */
-    boost::shared_ptr<Polygon> CreateConvexHull() const;
+    std::shared_ptr<Polygon> CreateConvexHull() const;
     
     /** Calculates the bounding box of the polygon. */
     void ComputeBoundingBox(double & x0, double & y0, double & x1, double & y1)
@@ -74,7 +74,7 @@ namespace sfl {
        optimized.
        
     */
-    boost::shared_ptr<Polygon> CreateGrownPolygon(double padding) const;
+    std::shared_ptr<Polygon> CreateGrownPolygon(double padding) const;
     
     /**
        Determines the largest distance from the origin to any point of
@@ -90,7 +90,7 @@ namespace sfl {
        \return A copy of the line between the corners (index) and
        (index + 1). The last point is connected with the first one.
     */
-    boost::shared_ptr<Line> _GetLine(size_t index) const;
+    std::shared_ptr<Line> _GetLine(size_t index) const;
     
     /** \return Pointer to the point at given index, or 0 if invalid index. */
     const Point * GetPoint(size_t index) const;
@@ -102,7 +102,7 @@ namespace sfl {
 
     
   private:
-    typedef std::vector<boost::shared_ptr<Point> > pointlist_t;
+    typedef std::vector<std::shared_ptr<Point> > pointlist_t;
     
     pointlist_t m_point;
   };

@@ -40,7 +40,6 @@
 #include "MotionController.hpp"
 #include <sstream>
 
-using namespace boost;
 using namespace std;
 
 
@@ -49,8 +48,8 @@ namespace expo {
   
   Robox::
   Robox(expo_parameters const & params,
-	boost::shared_ptr<sfl::Hull> _hull,
-	boost::shared_ptr<sfl::LocalizationInterface> localization,
+	std::shared_ptr<sfl::Hull> _hull,
+	std::shared_ptr<sfl::LocalizationInterface> localization,
 	shared_ptr<sfl::DiffDriveChannel> drive,
 	shared_ptr<sfl::Multiscanner> _mscan)
     : hull(_hull),

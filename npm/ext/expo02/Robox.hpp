@@ -72,9 +72,9 @@ public:
 protected:
   robox_parameters m_params;
   
-  boost::shared_ptr<npm::VisualRobox> m_imp;
-  boost::shared_ptr<npm::DiffDrive> m_drive;
-  boost::shared_ptr<local::NGKeyListener> m_ngkl;
+  std::shared_ptr<npm::VisualRobox> m_imp;
+  std::shared_ptr<npm::DiffDrive> m_drive;
+  std::shared_ptr<local::NGKeyListener> m_ngkl;
 };
 
 #endif // ROBOX_HPP

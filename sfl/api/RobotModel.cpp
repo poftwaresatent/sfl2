@@ -27,7 +27,7 @@
 #include <cmath>
 
 
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 namespace sfl {
@@ -236,7 +236,7 @@ namespace sfl {
   }
   
   
-  boost::shared_ptr<const Hull> RobotModel::
+  std::shared_ptr<const Hull> RobotModel::
   GetSafetyHull() const
   {
     return m_safety_hull;

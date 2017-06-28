@@ -30,7 +30,6 @@
 #include <vector>
 #include <math.h>
 
-using namespace boost;
 using namespace std;
 
 

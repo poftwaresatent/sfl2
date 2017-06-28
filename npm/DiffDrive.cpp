@@ -29,7 +29,7 @@
 
 
 using namespace sfl;
-using namespace boost;
+using namespace std;
 
 
 namespace {
@@ -71,15 +71,15 @@ namespace npm {
   }
   
   
-  boost::shared_ptr<DiffDriveChannel> DiffDrive::
+  std::shared_ptr<DiffDriveChannel> DiffDrive::
   CreateChannel()
   {
-    boost::shared_ptr<DiffDriveChannel> ch(new Channel(this));
+    std::shared_ptr<DiffDriveChannel> ch(new Channel(this));
     return ch;
   }
   
   
-  ////    boost::shared_ptr<DiffDriveChannel> CreateNoisyChannel();
+  ////    std::shared_ptr<DiffDriveChannel> CreateNoisyChannel();
   
   
   shared_ptr<Frame> DiffDrive::

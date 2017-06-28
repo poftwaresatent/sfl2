@@ -27,7 +27,7 @@
 
 
 #include <sfl/util/array2d.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <iosfwd>
 
 
@@ -79,7 +79,7 @@ namespace sfl {
     virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 			   size_t qdrMin, size_t qdrMax,
 			   double carrot_lx, double carrot_ly,
-			   boost::shared_ptr<const Scan> local_scan) = 0;
+			   std::shared_ptr<const Scan> local_scan) = 0;
     
     /** \pre all indices must be valid. */
     void Rescale(size_t qdlMin, size_t qdlMax,

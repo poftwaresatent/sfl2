@@ -27,7 +27,7 @@
 
 
 #include <sfl/util/Line.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace npm {
@@ -47,7 +47,7 @@ namespace npm {
        Keep a reference to the robot which owns this sensors in order to
        know which lines are invisible.
        
-       \note Don't use a boost::shared_ptr for the owner, that would
+       \note Don't use a std::shared_ptr for the owner, that would
        create a reference loop because the owner maintains a shared
        pointer to the Sensor instance.
     */

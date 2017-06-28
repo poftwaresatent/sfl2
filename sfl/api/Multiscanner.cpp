@@ -33,7 +33,6 @@
 #include <cmath>
 
 
-using namespace boost;
 using namespace std;
 
 
@@ -107,10 +106,10 @@ namespace sfl {
   }
   
   
-  boost::shared_ptr<Multiscanner::raw_scan_collection_t> Multiscanner::
+  std::shared_ptr<Multiscanner::raw_scan_collection_t> Multiscanner::
   CollectRawScans() const
   {
-    boost::shared_ptr<raw_scan_collection_t>
+    std::shared_ptr<raw_scan_collection_t>
       result(new raw_scan_collection_t());
     for(size_t iScanner(0); iScanner < m_scanner.size(); ++iScanner){
       shared_ptr<Scanner> scanner(m_scanner[iScanner]);

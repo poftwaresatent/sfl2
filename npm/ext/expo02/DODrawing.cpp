@@ -44,10 +44,10 @@ static void DrawHull(sfl::HullIterator ihull,
 
 DODrawing::
 DODrawing(const std::string & name,
-	  boost::shared_ptr<const sfl::DistanceObjective> distobj,
-	  boost::shared_ptr<const sfl::HeadingObjective> headobj,
-	  boost::shared_ptr<const sfl::DynamicWindow> dwa,
-	  boost::shared_ptr<const sfl::RobotModel> rm)
+	  std::shared_ptr<const sfl::DistanceObjective> distobj,
+	  std::shared_ptr<const sfl::HeadingObjective> headobj,
+	  std::shared_ptr<const sfl::DynamicWindow> dwa,
+	  std::shared_ptr<const sfl::RobotModel> rm)
   : Drawing(name,
 	    "sfl::DistanceObjective (greyscale with special colors)"),
     m_distobj(distobj),

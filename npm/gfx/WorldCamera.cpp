@@ -29,7 +29,6 @@
 #include "View.hpp"
 
 
-using namespace boost;
 using namespace std;
 
 

@@ -36,8 +36,8 @@ namespace expo {
     public sfl::MotionController
   {
   public:
-    MotionController(boost::shared_ptr<const sfl::RobotModel> robotModel,
-		     boost::shared_ptr<sfl::DiffDriveChannel> drive);
+    MotionController(std::shared_ptr<const sfl::RobotModel> robotModel,
+		     std::shared_ptr<sfl::DiffDriveChannel> drive);
     
     /** \note This is a bit of a hack that never really performed well. */
     bool AlmostStraight() const;

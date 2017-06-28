@@ -29,7 +29,7 @@
 #include <npm/RobotServer.hpp>
 #include <npm/gfx/View.hpp>
 #include <fpplib/registry.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -77,7 +77,7 @@ namespace npm {
   public:
     bool const fatal_warnings;	// rfct
     
-    Simulator(boost::shared_ptr<World> world, double timestep,
+    Simulator(std::shared_ptr<World> world, double timestep,
 	      bool fatal_warnings);
     ~Simulator();
   
@@ -91,7 +91,7 @@ namespace npm {
     
   private:
     friend class AppWindow;	// rfct
-    std::vector<boost::shared_ptr<AppWindow> > m_appwin;
+    std::vector<std::shared_ptr<AppWindow> > m_appwin;
     
     struct robot_s {
       robot_s(RobotServer * _server,
@@ -101,7 +101,7 @@ namespace npm {
 	  goalidx(0),
 	  runnable(true)
       {}
-      boost::shared_ptr<RobotServer> server;
+      std::shared_ptr<RobotServer> server;
       RobotClient *client;
       size_t goalidx;
       bool runnable;
@@ -112,7 +112,7 @@ namespace npm {
     void UpdateAllSensors();
     void UpdateRobots();
   
-    boost::shared_ptr<World> m_world;  
+    std::shared_ptr<World> m_world;  
     robot_t m_robot;
     bool m_step;
     bool m_continuous;

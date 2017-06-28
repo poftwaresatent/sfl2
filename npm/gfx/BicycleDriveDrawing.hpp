@@ -37,12 +37,12 @@ namespace npm {
   {
   public:
     BicycleDriveDrawing(const std::string & name,
-		     boost::shared_ptr<const BicycleDrive> drive);
+		     std::shared_ptr<const BicycleDrive> drive);
     
     virtual void Draw();
     
   private:
-    boost::shared_ptr<const BicycleDrive> m_drive;
+    std::shared_ptr<const BicycleDrive> m_drive;
     const double m_wheelbase;
     const double m_wheelradius;
     const double m_axlewidth;

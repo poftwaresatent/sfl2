@@ -34,7 +34,6 @@
 #include <stdio.h>
 
 
-using namespace boost;
 using namespace std;
 
 
@@ -65,7 +64,7 @@ namespace sfl {
   
   
   void DynamicWindow::
-  AddObjective(boost::shared_ptr<Objective> objective,
+  AddObjective(std::shared_ptr<Objective> objective,
 	       double alpha)
   {
     m_objmap.insert(make_pair(objective, alpha));
@@ -117,7 +116,7 @@ namespace sfl {
 
   void DynamicWindow::
   Update(double qdl, double qdr, double timestep, double dx, double dy,
-	 boost::shared_ptr<const Scan> local_scan,
+	 std::shared_ptr<const Scan> local_scan,
 	 ostream * dbgos)
   {
     PVDEBUG("DWA dt: %g   goal: %g   %g   qd: %g   %g\n",
@@ -414,7 +413,7 @@ namespace sfl {
 	 double timestep,
 	 double dx,
 	 double dy,
-	 boost::shared_ptr<const Scan> local_scan,
+	 std::shared_ptr<const Scan> local_scan,
 	 std::ostream * dbgos)
   {
     DynamicWindow::Update(qdl, qdr, timestep, dx, dy, local_scan, dbgos);

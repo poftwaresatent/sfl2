@@ -27,7 +27,7 @@
 
 
 #include <sfl/util/Polygon.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -58,7 +58,7 @@ namespace sfl {
     void AddPolygon(const Polygon & polygon);
     
     /** Grows the hull by growing each contained sub-hull. */
-    boost::shared_ptr<Hull> CreateGrownHull(double amount) const;
+    std::shared_ptr<Hull> CreateGrownHull(double amount) const;
     
     /**
        Determines the largest distance from the origin to any point of
@@ -71,7 +71,7 @@ namespace sfl {
     
     /** \return A pointer to a subhull iff 0<=index<GetNPolygons(), 0
 	otherwise. */
-    boost::shared_ptr<const Polygon> GetPolygon(size_t index) const;
+    std::shared_ptr<const Polygon> GetPolygon(size_t index) const;
     
     /** \return The total number of points in the sub-hulls. */
     size_t GetNPoints() const { return m_npoints; }
@@ -84,7 +84,7 @@ namespace sfl {
        \return A copy of one of the lines of one of the sub-hulls (iff
        0<=index<GetNPoints()).
     */
-    boost::shared_ptr<Line> _GetLine(size_t index) const;
+    std::shared_ptr<Line> _GetLine(size_t index) const;
     
     /**
        Determine whether a given point lies within any of the
@@ -94,7 +94,7 @@ namespace sfl {
 
 
   protected:
-    typedef std::vector<boost::shared_ptr<Polygon> > subhulls_t;
+    typedef std::vector<std::shared_ptr<Polygon> > subhulls_t;
     
     subhulls_t m_subhulls;
     size_t m_npoints;
@@ -136,7 +136,7 @@ namespace sfl {
     const Point * m_p0;
     const Point * m_p1;
     size_t m_ipoly;
-    boost::shared_ptr<const Polygon> m_poly;
+    std::shared_ptr<const Polygon> m_poly;
     size_t m_ipoint;
   };
   

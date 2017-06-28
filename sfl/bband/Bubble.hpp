@@ -27,7 +27,7 @@
 
 
 #include <sfl/api/Scan.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -72,7 +72,7 @@ namespace sfl {
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
     void
-    UpdateExternalParameters(boost::shared_ptr<const Scan> scan,
+    UpdateExternalParameters(std::shared_ptr<const Scan> scan,
 			     double ignore_radius);
     
     void ResetInternalParameters();

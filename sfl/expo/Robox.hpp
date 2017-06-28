@@ -24,7 +24,7 @@
 #ifndef EXPO_ROBOX_HPP
 #define EXPO_ROBOX_HPP
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <stdexcept>
 
 namespace sfl {
@@ -58,10 +58,10 @@ namespace expo {
     Robox(expo_parameters const & params,
 	  /** If you do not have a special hull, then simply use
 	      expo::Robox::CreateDefaultHull() here. */
-	  boost::shared_ptr<sfl::Hull> hull,
-	  boost::shared_ptr<sfl::LocalizationInterface> localization,
-	  boost::shared_ptr<sfl::DiffDriveChannel> drive,
-	  boost::shared_ptr<sfl::Multiscanner> mscan);
+	  std::shared_ptr<sfl::Hull> hull,
+	  std::shared_ptr<sfl::LocalizationInterface> localization,
+	  std::shared_ptr<sfl::DiffDriveChannel> drive,
+	  std::shared_ptr<sfl::Multiscanner> mscan);
     
     void SetGoal(double timestep, sfl::Goal const & goal);
     
@@ -78,20 +78,20 @@ namespace expo {
     
     int UpdateMotionController(double timestep, std::ostream * err_os);
     
-    static boost::shared_ptr<sfl::Hull> CreateDefaultHull();
+    static std::shared_ptr<sfl::Hull> CreateDefaultHull();
     
     
-    boost::shared_ptr<sfl::Hull> hull;
-    boost::shared_ptr<sfl::RobotModel> robotModel;
-    boost::shared_ptr<MotionController> motionController;
-    boost::shared_ptr<sfl::DynamicWindow> dynamicWindow;
-    boost::shared_ptr<sfl::DistanceObjective> distanceObjective;
-    boost::shared_ptr<sfl::HeadingObjective> headingObjective;
-    boost::shared_ptr<sfl::SpeedObjective> speedObjective;
-    boost::shared_ptr<sfl::Odometry> odometry;
-    boost::shared_ptr<sfl::BubbleBand> bubbleBand;
-    boost::shared_ptr<sfl::Multiscanner> mscan;
-    boost::shared_ptr<MotionPlanner> motionPlanner;
+    std::shared_ptr<sfl::Hull> hull;
+    std::shared_ptr<sfl::RobotModel> robotModel;
+    std::shared_ptr<MotionController> motionController;
+    std::shared_ptr<sfl::DynamicWindow> dynamicWindow;
+    std::shared_ptr<sfl::DistanceObjective> distanceObjective;
+    std::shared_ptr<sfl::HeadingObjective> headingObjective;
+    std::shared_ptr<sfl::SpeedObjective> speedObjective;
+    std::shared_ptr<sfl::Odometry> odometry;
+    std::shared_ptr<sfl::BubbleBand> bubbleBand;
+    std::shared_ptr<sfl::Multiscanner> mscan;
+    std::shared_ptr<MotionPlanner> motionPlanner;
   };
 
 }

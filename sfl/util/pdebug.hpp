@@ -22,17 +22,11 @@
 #define SFL_PDEBUG_HPP
 
 
-#include <boost/current_function.hpp>
-
 #ifndef WIN32
-# define PDEBUG_FULL_ERR(fmt, arg...) fprintf(stderr, "%s:\n  " fmt, BOOST_CURRENT_FUNCTION, ## arg)
-# define PDEBUG_FULL_OUT(fmt, arg...) fprintf(stdout, "%s:\n  " fmt, BOOST_CURRENT_FUNCTION, ## arg)
 # define PDEBUG_ERR(fmt, arg...) fprintf(stderr, "%s(): " fmt, __func__, ## arg)
 # define PDEBUG_OUT(fmt, arg...) fprintf(stdout, "%s(): " fmt, __func__, ## arg)
 # define PDEBUG_OFF(fmt, arg...)
 #else
-inline void PDEBUG_FULL_ERR(char const * fmt, ...) {}
-inline void PDEBUG_FULL_OUT(char const * fmt, ...) {}
 inline void PDEBUG_ERR(char const * fmt, ...) {}
 inline void PDEBUG_OUT(char const * fmt, ...) {}
 inline void PDEBUG_OFF(char const * fmt, ...) {}

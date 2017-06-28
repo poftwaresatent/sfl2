@@ -31,8 +31,7 @@
 #include <sfl/util/Hull.hpp>
 #include <sfl/util/array2d.hpp>
 #include <sfl/dwa/Objective.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 #include <vector>
 
 
@@ -73,7 +72,7 @@ namespace sfl {
     
     DistanceObjective(/** NOT a shared ptr because of circularity */
 		      const DynamicWindow & dynamic_window,
-		      boost::shared_ptr<const RobotModel> robot_model,
+		      std::shared_ptr<const RobotModel> robot_model,
 		      double grid_width,
 		      double grid_height,
 		      double grid_resolution);
@@ -94,7 +93,7 @@ namespace sfl {
     virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 			   size_t qdrMin, size_t qdrMax,
 			   double carrot_lx, double carrot_ly,
-			   boost::shared_ptr<const Scan> local_scan);
+			   std::shared_ptr<const Scan> local_scan);
     
     void GetRange(double & x0, double & y0, double & x1, double & y1) const;
     size_t DimX() const;
@@ -119,9 +118,9 @@ namespace sfl {
     /** \note Returns signed ssize_t to facilitate domain detection. */
     ssize_t FindYindex(double d) const;
     
-    boost::shared_ptr<const Hull> GetHull() const;
-    boost::shared_ptr<const Hull> GetPaddedHull() const;
-    boost::shared_ptr<const Hull> GetEvaluationHull() const;
+    std::shared_ptr<const Hull> GetHull() const;
+    std::shared_ptr<const Hull> GetPaddedHull() const;
+    std::shared_ptr<const Hull> GetEvaluationHull() const;
     double GetDeltaX() const;
     double GetDeltaY() const;
     size_t GetNNear() const;
@@ -138,7 +137,7 @@ namespace sfl {
     
     
   protected:
-    typedef array2d<boost::shared_ptr<Lookup> > lookup_t;
+    typedef array2d<std::shared_ptr<Lookup> > lookup_t;
     typedef vec2d<double> point_t;
     typedef std::vector<point_t> nearpoints_t;
     
@@ -150,7 +149,7 @@ namespace sfl {
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    void UpdateGrid(boost::shared_ptr<const Scan> local_scan);
+    void UpdateGrid(std::shared_ptr<const Scan> local_scan);
     
     /** \return The minimum predicted time until collision for a given
 	actuator command, given the current obstacles. In case the are
@@ -165,13 +164,13 @@ namespace sfl {
     static const size_t nearpoints_chunksize;
     const double m_qdd_max;
     const double m_max_brake_time;
-    const boost::shared_ptr<const RobotModel> m_robot_model;
-    const boost::shared_ptr<const Hull> m_hull;
-    boost::shared_ptr<const Hull> m_padded_hull;
-    boost::shared_ptr<const Hull> m_evaluation_hull; // overkill, use bbox
+    const std::shared_ptr<const RobotModel> m_robot_model;
+    const std::shared_ptr<const Hull> m_hull;
+    std::shared_ptr<const Hull> m_padded_hull;
+    std::shared_ptr<const Hull> m_evaluation_hull; // overkill, use bbox
     
-    boost::scoped_ptr<array2d<bool> > m_grid;
-    boost::scoped_ptr<array2d<short> > m_region;
+    std::unique_ptr<array2d<bool> > m_grid;
+    std::unique_ptr<array2d<short> > m_region;
     
     double m_x0, m_y0, m_x1, m_y1; // bounding box of grid (currently symetric)
     double _dx, _dy, _dxInv, _dyInv; // effective resolution along x and y
@@ -180,7 +179,7 @@ namespace sfl {
     bool m_point_in_hull;
     std::vector<double> m_qd_lookup;
     array2d<double> m_base_brake_time;
-    boost::scoped_ptr<lookup_t> m_time_lookup;
+    std::unique_ptr<lookup_t> m_time_lookup;
     nearpoints_t m_nearpoints;
     size_t m_n_nearpoints;
   };

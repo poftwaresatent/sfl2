@@ -28,7 +28,7 @@
 
 #include <sfl/util/array2d.hpp>
 #include <sfl/gplan/GridFrame.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace sfl {
@@ -58,7 +58,7 @@ namespace sfl {
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    void Initialize(boost::shared_ptr<const Scan> scan,
+    void Initialize(std::shared_ptr<const Scan> scan,
 		    double robot_radius, double goal_radius);
     
     void Calculate();
@@ -66,21 +66,21 @@ namespace sfl {
     bool GlobalTrace(position_t & point);
     
     /** \note for plotting. */
-    boost::shared_ptr<const grid_t> GetGridLayer() const;
+    std::shared_ptr<const grid_t> GetGridLayer() const;
     
     /** \note for plotting. */
-    boost::shared_ptr<const GridFrame> GetGridFrame() const;
+    std::shared_ptr<const GridFrame> GetGridFrame() const;
     
     
   private:
-    boost::shared_ptr<GridFrame> m_frame;
+    std::shared_ptr<GridFrame> m_frame;
     index_t m_grid_dimension;
     position_t m_goal;
     index_t m_goal_index;
     position_t m_home;
     index_t m_home_index;
-    boost::shared_ptr<grid_t> m_grid;
-    boost::shared_ptr<NF1Wave> m_wave;
+    std::shared_ptr<grid_t> m_grid;
+    std::shared_ptr<NF1Wave> m_wave;
     index_t m_trace;
     
     

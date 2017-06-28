@@ -20,7 +20,6 @@
 
 #include "KinematicControl.hpp"
 #include <sfl/util/numeric.hpp>
-#include <boost/bind.hpp>
 #include <cmath>
 
 
@@ -47,7 +46,9 @@ namespace npm2 {
     // converter needs a vector.  I need to find a way to produce an
     // appropriate error message in this case.
     //
-    reflectCallback<Goal> ("goal", false, boost::bind (&KinematicControl::setGoal, this, _1));
+    reflectCallback<Goal> ("goal", false,
+			   [this] (Goal const & goal, ostream & erros)
+			   { return setGoal(goal); });
     reflectParameter ("kr", &kr_);
     reflectParameter ("kd", &kd_);
     reflectParameter ("kg", &kg_);

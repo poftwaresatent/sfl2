@@ -38,7 +38,6 @@
 #include <sys/time.h>
 
 using namespace sfl;
-using namespace boost;
 using namespace std;
 
 
@@ -137,10 +136,10 @@ namespace npm {
   };
   
   
-  boost::shared_ptr<sfl::LidarChannel> Lidar::
+  std::shared_ptr<sfl::LidarChannel> Lidar::
   CreateChannel() const
   {
-    boost::shared_ptr<sfl::LidarChannel> myfavoritelittlelidar(new LidarChannel(this));
+    std::shared_ptr<sfl::LidarChannel> myfavoritelittlelidar(new LidarChannel(this));
     return myfavoritelittlelidar;
   }
   

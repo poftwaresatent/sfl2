@@ -39,7 +39,7 @@ namespace npm {
   MapperUpdateDrawing::
   MapperUpdateDrawing(const std::string & name,
 											what_t _what,
-											boost::shared_ptr<const sfl::Mapper2d> mapper)
+											std::shared_ptr<const sfl::Mapper2d> mapper)
     : Drawing(name,
 							"most recent changes of a sweeping-update sfl::Mapper2d"),
 			what(_what),

@@ -95,9 +95,9 @@ namespace sfl {
 						 double buffer_zone,
 						 double padding_factor,
 						 /** use linear_travmap_cost_decay for legacy behavior */
-						 boost::shared_ptr<travmap_cost_decay const> decay,
-						 boost::shared_ptr<TraversabilityMap> travmap,
-						 boost::shared_ptr<travmap_grow_strategy> grow_strategy);
+						 std::shared_ptr<travmap_cost_decay const> decay,
+						 std::shared_ptr<TraversabilityMap> travmap,
+						 std::shared_ptr<travmap_grow_strategy> grow_strategy);
 		
   public:
 		typedef GridFrame::index_t index_t;
@@ -116,25 +116,25 @@ namespace sfl {
 						 int freespace,
 						 int obstacle,
 						 /** use linear_travmap_cost_decay for legacy behavior */
-						 boost::shared_ptr<travmap_cost_decay const> decay,
+						 std::shared_ptr<travmap_cost_decay const> decay,
 						 const std::string & name,
 						 /** Optional. Defaults to never_grow. */
-						 boost::shared_ptr<travmap_grow_strategy> grow_strategy);
+						 std::shared_ptr<travmap_grow_strategy> grow_strategy);
 
 		virtual ~Mapper2d() {}
 		
 		/**
 			 Create a Mapper2d from a traversability map file.
 		*/
-		static boost::shared_ptr<Mapper2d>
+		static std::shared_ptr<Mapper2d>
 		Create(double robot_radius,
 					 double buffer_zone,
 					 double padding_factor,
 					 /** use linear_travmap_cost_decay for legacy behavior */
-					 boost::shared_ptr<travmap_cost_decay const> decay,
+					 std::shared_ptr<travmap_cost_decay const> decay,
 					 const std::string & traversability_file,
 					 /** Optional. Defaults to never_grow. */
-					 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
+					 std::shared_ptr<travmap_grow_strategy> grow_strategy,
 					 std::ostream * err_os);
 		
 		
@@ -144,7 +144,7 @@ namespace sfl {
 			 because that's the value I saw being used in legacy code, which
 			 marked it as coming from legacy code. Double legacy, wonderful.
 		*/
-		static boost::shared_ptr <Mapper2d>
+		static std::shared_ptr <Mapper2d>
 		Create (GridFrame const & gframe,
 						double robot_radius,
 						double buffer_zone,
@@ -204,8 +204,8 @@ namespace sfl {
 													 /** gets passed to AddOneObstacle() */
 													 draw_callback * cb = 0);
 		
-		boost::shared_ptr<RDTravmap> CreateRDTravmap() const;
-		boost::shared_ptr<WRTravmap> CreateWRTravmap();
+		std::shared_ptr<RDTravmap> CreateRDTravmap() const;
+		std::shared_ptr<WRTravmap> CreateWRTravmap();
 		
 		const GridFrame & GetGridFrame() const { return gridframe; }
 		
@@ -313,8 +313,8 @@ namespace sfl {
 		
 		/** Use at your own risk: gives access to the underlying
 				travmap. */
-		boost::shared_ptr<TraversabilityMap> GetTravmap();
-		boost::shared_ptr<TraversabilityMap const> GetTravmap() const;
+		std::shared_ptr<TraversabilityMap> GetTravmap();
+		std::shared_ptr<TraversabilityMap const> GetTravmap() const;
 		
 	protected:
     typedef std::map<index_t, int> addmask_t; // cell-to-cost map
@@ -323,12 +323,12 @@ namespace sfl {
 		void InitAddmask();
 		void InitRemovemask();
 		
-		boost::shared_ptr<TraversabilityMap> m_travmap;
+		std::shared_ptr<TraversabilityMap> m_travmap;
 		addmask_t m_addmask;
 		ssize_t m_addmask_x0, m_addmask_y0, m_addmask_x1, m_addmask_y1;	// bbox
 		
-		boost::shared_ptr<travmap_grow_strategy> m_grow_strategy;
-		boost::shared_ptr<travmap_cost_decay const> m_cost_decay;
+		std::shared_ptr<travmap_grow_strategy> m_grow_strategy;
+		std::shared_ptr<travmap_cost_decay const> m_cost_decay;
 
 		removemask_t m_removemask;
 		

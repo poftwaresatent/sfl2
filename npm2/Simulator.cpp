@@ -21,7 +21,6 @@
 #include "Actuator.hpp"
 #include "Sensor.hpp"
 #include "Process.hpp"
-#include <boost/bind.hpp>
 #include <cstdio>
 
 
@@ -45,7 +44,8 @@ namespace npm2 {
 		      /** \todo parameter guards have unclear ownership */
 		      new fpplib::StrictlyPositiveGuard <double> ());
     reflectCallback <string> ("state", true,
-			      boost::bind (&Simulator::setState, this, _1));
+			      [this] (string const & value, ostream & erros) -> bool
+			      { return setState(value); });
     
     fpplib::StrictlyPositiveGuard <int> * guard (new fpplib::StrictlyPositiveGuard <int> ());
     reflectParameter ("window_width", &window_width_, guard);

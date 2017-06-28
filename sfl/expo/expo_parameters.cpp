@@ -43,7 +43,7 @@ expo_parameters()
 
 
 expo_parameters::
-expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt)
+expo_parameters(std::shared_ptr<sfl::OptionDictionary> opt)
 {
   expo_default_parameters(this);
   expo_parameters_load(*this, opt);
@@ -86,7 +86,7 @@ void expo_default_parameters(struct expo_parameters * params)
 
 
 void expo_parameters_load(expo_parameters & params,
-			  boost::shared_ptr<sfl::OptionDictionary> opt)
+			  std::shared_ptr<sfl::OptionDictionary> opt)
 {
   string_to(opt->GetOption("model_security_distance"), params.model_security_distance);
   string_to(opt->GetOption("model_wheelbase"), params.model_wheelbase);

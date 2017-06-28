@@ -26,7 +26,7 @@
 #define SUNFLOWER_MULTISCANNER_HPP
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 
@@ -48,19 +48,19 @@ namespace sfl {
   class Multiscanner
   {
   public:
-    typedef std::vector<boost::shared_ptr<Scan> > raw_scan_collection_t;
+    typedef std::vector<std::shared_ptr<Scan> > raw_scan_collection_t;
     
-    explicit Multiscanner(boost::shared_ptr<LocalizationInterface> localization);
+    explicit Multiscanner(std::shared_ptr<LocalizationInterface> localization);
     
     
     /** Appends a Scanner instance to the list of registered devices. */
-    void Add(boost::shared_ptr<Scanner> scanner);
+    void Add(std::shared_ptr<Scanner> scanner);
 
     /** \return The number of registered Scanners. */
     size_t Nscanners() const;
 
     /** \return A pointer to a registered Scanner, or 0 if no such index. */
-    boost::shared_ptr<Scanner> GetScanner(size_t i) const;
+    std::shared_ptr<Scanner> GetScanner(size_t i) const;
 
     /**
        Concatenates data from all Scanners into a single Scan
@@ -88,7 +88,7 @@ namespace sfl {
        the robot pose. Use CollectRawScans() if you need to have more
        sensible value the scanner pose.
     */
-    boost::shared_ptr<Scan> CollectScans() const;
+    std::shared_ptr<Scan> CollectScans() const;
     
     /**
        Similar to CollectScans(), but it contains all scan data (also
@@ -96,7 +96,7 @@ namespace sfl {
        to each sensor's frame. This is more appropriate e.g. for
        "sweeped map updates".
     */
-    boost::shared_ptr<raw_scan_collection_t> CollectRawScans() const;
+    std::shared_ptr<raw_scan_collection_t> CollectRawScans() const;
     
     /** Calls Scanner::Update() on all registered instances and
 	returns true if all of these calls succeeded. Does NOT take
@@ -104,9 +104,9 @@ namespace sfl {
     bool UpdateAll(std::ostream * erros = 0);
     
   protected:
-    typedef std::vector<boost::shared_ptr<Scanner> > vector_t;
+    typedef std::vector<std::shared_ptr<Scanner> > vector_t;
     
-    boost::shared_ptr<LocalizationInterface> m_localization;
+    std::shared_ptr<LocalizationInterface> m_localization;
     size_t m_total_nscans;
     vector_t m_scanner;
   };

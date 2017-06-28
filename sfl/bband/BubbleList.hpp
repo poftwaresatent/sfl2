@@ -63,7 +63,7 @@ namespace sfl {
 	Multiscanner::CollectScans(), whereas Scanner::GetScanCopy()
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
-    bool Update(boost::shared_ptr<const Scan> scan);
+    bool Update(std::shared_ptr<const Scan> scan);
     
     /** Appends to the list of bubbles (or initailizes if empty list). */
     void Append(Bubble * bubble);
@@ -118,7 +118,7 @@ namespace sfl {
 	as readings at the maximum rho value).
 
 	\todo Remove the re-computating of external parameters! */
-    void UpdateBubbles(boost::shared_ptr<const Scan> scan);
+    void UpdateBubbles(std::shared_ptr<const Scan> scan);
     
     /** Copmutes the cumulated path length for each bubble. */
     void UpdatePathLength();
@@ -161,7 +161,7 @@ namespace sfl {
 	 </li>
 	</ul>
     */
-    bool CheckAdd(Bubble * bubble, boost::shared_ptr<const Scan> scan);
+    bool CheckAdd(Bubble * bubble, std::shared_ptr<const Scan> scan);
     
     /** Initializes the list of bubbles. */
     void FirstBubble(Bubble * bubble);

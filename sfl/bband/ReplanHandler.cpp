@@ -31,7 +31,6 @@
 #include <sfl/gplan/NF1Wave.hpp>
 
 
-using namespace boost;
 using namespace std;
 
 

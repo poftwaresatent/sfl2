@@ -20,7 +20,6 @@
 #include "DistanceObjectiveToBI.hpp"
 #include "DynamicWindow.hpp"
 
-using namespace boost;
 using namespace std;
 
 
@@ -29,7 +28,7 @@ namespace sfl {
   
   DistanceObjectiveToBI::
   DistanceObjectiveToBI(const DynamicWindow & dynamic_window,
-			boost::shared_ptr<const RobotModel> robot_model,
+			std::shared_ptr<const RobotModel> robot_model,
 			double grid_width,
 			double grid_height,
 			double grid_resolution,
@@ -93,7 +92,7 @@ namespace sfl {
   Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 	    size_t qdrMin, size_t qdrMax,
 	    double carrot_lx, double carrot_ly,
-	    boost::shared_ptr<const Scan> local_scan)
+	    std::shared_ptr<const Scan> local_scan)
   {
     // It's not really required to reset the blur over the entire
     // speed space because DWA does not look outside the valid range

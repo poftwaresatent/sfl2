@@ -28,7 +28,7 @@
 
 #include <sfl/util/numeric.hpp>
 #include <sfl/util/Hull.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 
@@ -111,18 +111,18 @@ namespace sfl {
     
     /** \todo Good to pass parameters as instance? */
     RobotModel(Parameters parameters,
-	       boost::shared_ptr<const Hull> hull);
+	       std::shared_ptr<const Hull> hull);
     
     /**
        \return The robot's hull (without safety buffer zone).
     */
-    boost::shared_ptr<const Hull> GetHull() const;
+    std::shared_ptr<const Hull> GetHull() const;
     
     /**
        \return The robot's hull with safety buffer zone
        (Parameters::safetyDistance).
     */
-    boost::shared_ptr<const Hull> GetSafetyHull() const;    
+    std::shared_ptr<const Hull> GetSafetyHull() const;    
     
     /**
        \return The radius of the robot's (non-grown) hull (max
@@ -260,8 +260,8 @@ namespace sfl {
     
   protected:
     const Parameters m_params;
-    boost::shared_ptr<const Hull> m_hull;
-    boost::shared_ptr<const Hull> m_safety_hull;
+    std::shared_ptr<const Hull> m_hull;
+    std::shared_ptr<const Hull> m_safety_hull;
     mutable double m_robot_radius;
   };
 

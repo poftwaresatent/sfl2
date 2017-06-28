@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 #include <list>
-#include <boost/bind.hpp>
 #include <dlfcn.h>
 
 
@@ -36,7 +35,9 @@ namespace npm {
       init_(0),
       fini_(0)
   {
-    reflectCallback<std::string> ("spec", false, boost::bind (&Plugin::search, this, _1));
+    reflectCallback<std::string> ("spec", false,
+				  [this] (std::string const & spec, std::ostream & erros) -> bool
+				  { return search(spec, erros); });
   }
   
   
@@ -114,15 +115,15 @@ namespace npm {
   
   
   bool Plugin::
-  search (std::string const & spec)
+  search (std::string const & spec, std::ostream & erros)
   {
     if (spec.empty()) {
-      std::cerr << "npm::Plugin::search(): empty spec\n";
+      erros << "npm::Plugin::search(): empty spec\n";
       return false;
     }
     
     if (spec[0] == '/') {
-      return load (spec, std::cerr);
+      return load (spec, erros);
     }
     
     std::string searchpath;
@@ -167,7 +168,7 @@ namespace npm {
       }
     }
     
-    std::cerr << err.str() << "\n";
+    erros << err.str() << "\n";
     return false;
   }
   

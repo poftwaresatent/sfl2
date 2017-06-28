@@ -27,8 +27,7 @@
 
 
 #include <sfl/expo/MotionPlanner.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 #include <string>
 
 
@@ -62,7 +61,7 @@ namespace expo {
 	can still contain readings that are out of range (represented
 	as readings at the maximum rho value). */
     virtual
-    void Act(double timestep, boost::shared_ptr<const sfl::Scan> scan) = 0;
+    void Act(double timestep, std::shared_ptr<const sfl::Scan> scan) = 0;
     virtual MotionPlannerState * NextState(double timestep);
     
     const std::string & Name() const;
@@ -75,15 +74,15 @@ namespace expo {
     const std::string m_name;
 
     void TurnToward(double timestep, direction_t local_direction,
-		    boost::shared_ptr<const sfl::Scan> scan) const;
+		    std::shared_ptr<const sfl::Scan> scan) const;
     
     void GoAlong(double timestep, direction_t local_direction,
-		 boost::shared_ptr<const sfl::Scan> scan) const;
+		 std::shared_ptr<const sfl::Scan> scan) const;
     
     direction_t AskBubbleBand() const;
     
     void AskDynamicWindow(double timestep, direction_t local_direction,
-			  boost::shared_ptr<const sfl::Scan> scan) const;
+			  std::shared_ptr<const sfl::Scan> scan) const;
   };
   
   
@@ -101,11 +100,11 @@ namespace expo {
     MotionPlanner::state_id_t GetStateId() const;
     const char * GetStateName() const;
     
-    boost::scoped_ptr<MotionPlannerState> manual_stop_state;
-    boost::scoped_ptr<MotionPlannerState> take_aim_state;
-    boost::scoped_ptr<MotionPlannerState> aimed_state;
-    boost::scoped_ptr<MotionPlannerState> adjust_goal_heading_state;
-    boost::scoped_ptr<MotionPlannerState> at_goal_state;
+    std::unique_ptr<MotionPlannerState> manual_stop_state;
+    std::unique_ptr<MotionPlannerState> take_aim_state;
+    std::unique_ptr<MotionPlannerState> aimed_state;
+    std::unique_ptr<MotionPlannerState> adjust_goal_heading_state;
+    std::unique_ptr<MotionPlannerState> at_goal_state;
     MotionPlannerState * current_state;
     
   private:

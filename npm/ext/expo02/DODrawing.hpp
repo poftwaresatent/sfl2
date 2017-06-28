@@ -27,7 +27,7 @@
 
 
 #include <npm/gfx/Drawing.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 
@@ -46,18 +46,18 @@ class DODrawing
 {
 public:
   DODrawing(const std::string & name,
-	    boost::shared_ptr<const sfl::DistanceObjective> distobj,
-	    boost::shared_ptr<const sfl::HeadingObjective> headobj,
-	    boost::shared_ptr<const sfl::DynamicWindow> dwa,
-	    boost::shared_ptr<const sfl::RobotModel> rm);
+	    std::shared_ptr<const sfl::DistanceObjective> distobj,
+	    std::shared_ptr<const sfl::HeadingObjective> headobj,
+	    std::shared_ptr<const sfl::DynamicWindow> dwa,
+	    std::shared_ptr<const sfl::RobotModel> rm);
   
   virtual void Draw();
   
 private:
-  boost::shared_ptr<const sfl::DistanceObjective> m_distobj;
-  boost::shared_ptr<const sfl::HeadingObjective> m_headobj;
-  boost::shared_ptr<const sfl::DynamicWindow> m_dwa;
-  boost::shared_ptr<const sfl::RobotModel> m_rm;
+  std::shared_ptr<const sfl::DistanceObjective> m_distobj;
+  std::shared_ptr<const sfl::HeadingObjective> m_headobj;
+  std::shared_ptr<const sfl::DynamicWindow> m_dwa;
+  std::shared_ptr<const sfl::RobotModel> m_rm;
   
   void DrawObstaclePaths(size_t iqdl, size_t iqdr);
   void DrawCollisionPrediction(size_t iqdl, size_t iqdr,

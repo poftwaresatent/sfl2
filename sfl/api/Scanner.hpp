@@ -28,7 +28,7 @@
 
 #include <sfl/api/LocalizationInterface.hpp>
 #include <sfl/api/LidarChannel.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 #include <string>
 
@@ -123,9 +123,9 @@ namespace sfl {
        section (Scanner class documentation, scroll your browser
        upwards).
     */
-    Scanner(boost::shared_ptr<LocalizationInterface> localization,
+    Scanner(std::shared_ptr<LocalizationInterface> localization,
 	    /** proxy object used to retrieve actual data */
-	    boost::shared_ptr<LidarChannel> channel,
+	    std::shared_ptr<LidarChannel> channel,
 	    /** sensor origin wrt robot frame, copied over */
 	    const Frame & mount,
 	    /** number of scans per measurement */
@@ -147,7 +147,7 @@ namespace sfl {
        out-of-range readings very well. Consider using
        Multiscanner::CollectScans() in such cases.
     */
-    boost::shared_ptr<Scan> GetScanCopy() const;
+    std::shared_ptr<Scan> GetScanCopy() const;
     
     /**
        Refresh the scan data.
@@ -216,7 +216,7 @@ namespace sfl {
     
     bool AcquisitionOk() const;
     
-    const boost::shared_ptr<const Frame> mount;
+    const std::shared_ptr<const Frame> mount;
     const size_t nscans;
     const double rhomax;
     const double phi0;
@@ -226,12 +226,12 @@ namespace sfl {
   protected:
     typedef std::vector<double> vector_t;
     
-    boost::shared_ptr<LocalizationInterface> m_localization;
-    boost::shared_ptr<LidarChannel> m_channel;
-    std::vector<boost::shared_ptr<Scan> > m_buffer;
+    std::shared_ptr<LocalizationInterface> m_localization;
+    std::shared_ptr<LidarChannel> m_channel;
+    std::vector<std::shared_ptr<Scan> > m_buffer;
     
     /** \todo The dirty/clean scheme makes little sense anymore... */
-    boost::shared_ptr<Scan> m_dirty, m_clean; // would need to be mutexed for multithreading
+    std::shared_ptr<Scan> m_dirty, m_clean; // would need to be mutexed for multithreading
     bool m_acquisition_ok;		      // would need to be mutexed for multithreading
     vector_t m_cosphi;
     vector_t m_sinphi;

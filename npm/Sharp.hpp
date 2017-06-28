@@ -59,14 +59,14 @@ namespace npm {
     virtual void StepUpdate(const sfl::Line & line);
     
     double Get() const { return m_rho; }
-    boost::shared_ptr<const sfl::Ray> GetRay() const { return m_ray; }
+    std::shared_ptr<const sfl::Ray> GetRay() const { return m_ray; }
     
     const double rmax;
     
   protected:
-    boost::shared_ptr<const sfl::Frame> m_mount;
-    boost::shared_ptr<sfl::Ray> m_ray;
-    boost::shared_ptr<SharpDrawing> m_drawing;
+    std::shared_ptr<const sfl::Frame> m_mount;
+    std::shared_ptr<sfl::Ray> m_ray;
+    std::shared_ptr<SharpDrawing> m_drawing;
     double m_rho;
   };
 

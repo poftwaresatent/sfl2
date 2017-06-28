@@ -61,7 +61,7 @@ namespace npm {
     double steer;
     
   protected:
-    virtual boost::shared_ptr<sfl::Frame>
+    virtual std::shared_ptr<sfl::Frame>
     ComputeNextPose(const sfl::Frame & current, double timestep) const;
   };
   

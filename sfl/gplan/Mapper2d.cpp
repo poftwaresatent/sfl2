@@ -35,7 +35,6 @@
 
 
 using namespace std;
-using namespace boost;
 
 
 //static const double sqrt_of_two(1.41421356237);
@@ -143,7 +142,7 @@ namespace sfl {
 				 double padding_factor,
 				 shared_ptr<travmap_cost_decay const> decay,
 				 const std::string & traversability_file,
-				 boost::shared_ptr<travmap_grow_strategy> grow_strategy,
+				 std::shared_ptr<travmap_grow_strategy> grow_strategy,
 				 std::ostream * err_os)
 	{
 		ifstream trav(traversability_file.c_str());
@@ -597,14 +596,14 @@ namespace sfl {
 	}
 	
 	
-	boost::shared_ptr<TraversabilityMap const> Mapper2d::
+	std::shared_ptr<TraversabilityMap const> Mapper2d::
 	GetTravmap() const
 	{
 		return m_travmap;
 	}
 	
 	
-	boost::shared_ptr<TraversabilityMap> Mapper2d::
+	std::shared_ptr<TraversabilityMap> Mapper2d::
 	GetTravmap()
 	{
 		return m_travmap;

@@ -31,7 +31,6 @@
 #include <sfl/api/Scanner.hpp>
 
 using namespace sfl;
-using namespace boost;
 
 namespace npm {
   

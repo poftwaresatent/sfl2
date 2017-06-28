@@ -25,7 +25,7 @@
 #ifndef EXPO_PARAMETERS_H
 #define EXPO_PARAMETERS_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace sfl {
   class OptionDictionary;
@@ -36,7 +36,7 @@ namespace expo {
   struct expo_parameters
   {
     expo_parameters();
-    explicit expo_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
+    explicit expo_parameters(std::shared_ptr<sfl::OptionDictionary> opt);
       
     double model_security_distance, model_wheelbase, model_wheelradius;
     double model_qd_max, model_qdd_max, model_sd_max, model_thetad_max;
@@ -57,7 +57,7 @@ namespace expo {
   void expo_default_parameters(struct expo_parameters * params);
   
   void expo_parameters_load(expo_parameters & params,
-			    boost::shared_ptr<sfl::OptionDictionary> opt);
+			    std::shared_ptr<sfl::OptionDictionary> opt);
 
 }
 

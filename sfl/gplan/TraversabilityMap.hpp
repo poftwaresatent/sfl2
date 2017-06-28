@@ -30,7 +30,7 @@
 #include <sfl/util/flexgrid.hpp>
 #include <sfl/gplan/GridFrame.hpp>
 #include <sfl/util/Frame.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <string>
 #include <iosfwd>
 
@@ -86,7 +86,7 @@ namespace sfl {
 											int freespace, int obstacle,
 											const std::string & name);
 		
-    static boost::shared_ptr<TraversabilityMap>
+    static std::shared_ptr<TraversabilityMap>
     Parse(std::istream & is, std::ostream * os);
     
 		/** Fill all cells of the traversability map with the given value

@@ -26,7 +26,7 @@
 #define NPM_OBJECT_HPP
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 #include <string>
 
@@ -60,20 +60,20 @@ namespace npm {
     
     size_t GetNlines() const { return m_local.size(); }
     double GetRadius() const { return m_radius; }
-    boost::shared_ptr<const BBox> GetLocalBB() const { return m_local_bb; }
-    boost::shared_ptr<const BBox> GetGlobalBB() const;
-    boost::shared_ptr<const sfl::Line> GetLocalLine(size_t index) const;
-    boost::shared_ptr<const sfl::Line> GetGlobalLine(size_t index) const;
+    std::shared_ptr<const BBox> GetLocalBB() const { return m_local_bb; }
+    std::shared_ptr<const BBox> GetGlobalBB() const;
+    std::shared_ptr<const sfl::Line> GetLocalLine(size_t index) const;
+    std::shared_ptr<const sfl::Line> GetGlobalLine(size_t index) const;
     
   protected:
     void LazyTransform() const;
     
-    typedef std::vector<boost::shared_ptr<sfl::Line> > line_t;
+    typedef std::vector<std::shared_ptr<sfl::Line> > line_t;
     line_t m_local;
     mutable line_t m_global;
-    mutable boost::shared_ptr<sfl::Frame> m_lazy_transform;
-    boost::shared_ptr<BBox> m_local_bb;
-    mutable boost::shared_ptr<BBox> m_global_bb;
+    mutable std::shared_ptr<sfl::Frame> m_lazy_transform;
+    std::shared_ptr<BBox> m_local_bb;
+    mutable std::shared_ptr<BBox> m_global_bb;
     double m_radius;
   };
   

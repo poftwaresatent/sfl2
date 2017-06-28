@@ -42,7 +42,7 @@ robox_parameters()
 
 
 robox_parameters::
-robox_parameters(boost::shared_ptr<sfl::OptionDictionary> opt)
+robox_parameters(std::shared_ptr<sfl::OptionDictionary> opt)
   : expo_parameters(opt)
 {
   robox_default_parameters(this);
@@ -73,7 +73,7 @@ void robox_default_parameters(struct robox_parameters * params)
 
 
 void robox_parameters_load(robox_parameters & params,
-			  boost::shared_ptr<sfl::OptionDictionary> opt)
+			  std::shared_ptr<sfl::OptionDictionary> opt)
 {
   expo_parameters_load(params, opt);
 

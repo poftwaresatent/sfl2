@@ -51,7 +51,7 @@ namespace sfl {
     virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 			   size_t qdrMin, size_t qdrMax,
 			   double carrot_lx, double carrot_ly,
-			   boost::shared_ptr<const Scan> local_scan);
+			   std::shared_ptr<const Scan> local_scan);
     
     void GoFast();
     void GoSlow();

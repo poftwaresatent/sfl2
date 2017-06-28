@@ -2,7 +2,7 @@
 
 **For the Impatient**
 
-You need CMake, Boost, OpenGL, GLU, and GLUT.
+You need CMake, OpenGL, GLU, and GLUT.
 
     mkdir build
     cd build
@@ -62,26 +62,21 @@ the ASL (see chapter 3).
 ## Compiling
 
 This software has been compiled under Linux, Mac OS X, OpenBSD, and
-even once or twice under Windows. For a basic setup, you need
-
-- a C++ compiler (tested with GCC 3 and 4)
-- the [Boost][] smart_ptr and bind libraries
-
-[Boost]: http://www.boost.org/
+even once or twice under Windows. For a basic setup, you need a C++
+compiler (tested with GCC 3 and 4)
 
 In order to build the Nepumuk simulator which comes bundled with
-Sunflower, you will also need
+Sunflower, you will also need OpenGL, GLU, and GLUT development packages.
 
-- OpenGL, GLU, and GLUT development packages
-
-We use GNU Automake with Libtool and Autoconf to provide a
-cross-platform configure script. The recommended way of building is in
-a separate directory:
+We use [CMake][] to provide a cross-platform build setup. It is
+recommended to build in a separate directory:
 
     $ mkdir build
     $ cd build
     $ cmake ..
     $ make
+
+[CMake]: https://cmake.org/
 
 ## Running
 
@@ -101,7 +96,9 @@ keybindings exist, check the `apps/Simulator.cpp` code.
 Sunflower uses [Doxygen][] to provide documentation through comments
 inside the sourcecode. You can either rely on the fact that the vast
 majority of these comments is in the class declarations (ie header
-files), or go into the `doc/` subfolder and run Doxygen there.
+files), or go into the `doc/` subfolder and run Doxygen there. The
+doxy config assumes you have [Graphviz][] installed, to generate
+diagrams.
 
     cd doc
     doxygen Doxyfile
@@ -109,9 +106,10 @@ files), or go into the `doc/` subfolder and run Doxygen there.
 Open the resulting `html/index.html` file to start browsing the
 documentation. It's still somewhat under construction, of course...
 
-[Doxygen]: http://www.doxygen.org
+[Doxygen]: http://www.doxygen.org/
+[Graphviz]: http://www.graphviz.org/
 
-## Project Layout
+## Project Layout (somewhat outdated)
 
 * sfl/util/
 

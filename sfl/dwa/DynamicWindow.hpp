@@ -27,7 +27,7 @@
 
 
 #include <sfl/util/array2d.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <map>
 #include <list>
 
@@ -77,7 +77,7 @@ namespace sfl {
        signature, try using a LegacyDynamicWindow instead.
     */
     DynamicWindow(int dimension,
-		  boost::shared_ptr<const RobotModel> robot_model);
+		  std::shared_ptr<const RobotModel> robot_model);
     
     /** Add a (subclass of) Objective to the DynamicWindow. The
 	LegacyDynamicWindow constructor automatically adds the three
@@ -88,7 +88,7 @@ namespace sfl {
 	"probably possible" if you take care of initializing them, but
 	this is not explicitly supported.
     */
-    void AddObjective(boost::shared_ptr<Objective> objective,
+    void AddObjective(std::shared_ptr<Objective> objective,
 		      double alpha);
     
     /** Initialize all objectives registered using AddObjective(), and
@@ -136,7 +136,7 @@ namespace sfl {
 		double dx,
 		/** local goal y component */
 		double dy,
-		boost::shared_ptr<const Scan> local_scan,
+		std::shared_ptr<const Scan> local_scan,
 		std::ostream * dbgos = 0);
     
     
@@ -183,15 +183,15 @@ namespace sfl {
       ADMISSIBLE, REACHABLE, FORBIDDEN
     } speedstate_t;
     
-    typedef std::map<boost::shared_ptr<Objective>, double> objmap_t;
-    typedef std::list<boost::shared_ptr<Objective> > admobjlist_t;
+    typedef std::map<std::shared_ptr<Objective>, double> objmap_t;
+    typedef std::list<std::shared_ptr<Objective> > admobjlist_t;
     
-    boost::shared_ptr<const RobotModel> m_robot_model;
+    std::shared_ptr<const RobotModel> m_robot_model;
     objmap_t m_objmap;
     admobjlist_t m_admobjlist;
     bool m_reset_entire_velocity_space;
     
-    boost::scoped_array<double> m_qd; //[dimension];
+    std::unique_ptr<double[]> m_qd; //[dimension];
     array2d<speedstate_t> m_state; //[dimension][dimension];
     array2d<double> m_objective; //[dimension][dimension];
     
@@ -228,7 +228,7 @@ namespace sfl {
 			double grid_width,
 			double grid_height,
 			double grid_resolution,
-			boost::shared_ptr<const RobotModel> robot_model,
+			std::shared_ptr<const RobotModel> robot_model,
 			double alpha_distance,
 			double alpha_heading,
 			double alpha_speed,
@@ -251,22 +251,22 @@ namespace sfl {
     /** Makes the SpeedObjective use backward speeds. Influences GoFast(). */
     void GoBackward();
     
-    boost::shared_ptr<DistanceObjective const> GetDistanceObjective() const
+    std::shared_ptr<DistanceObjective const> GetDistanceObjective() const
     { return m_distance_objective; }
     
-    boost::shared_ptr<HeadingObjective const> GetHeadingObjective() const
+    std::shared_ptr<HeadingObjective const> GetHeadingObjective() const
     { return m_heading_objective; }
     
-    boost::shared_ptr<SpeedObjective const> GetSpeedObjective() const
+    std::shared_ptr<SpeedObjective const> GetSpeedObjective() const
     { return m_speed_objective; }
     
-    boost::shared_ptr<DistanceObjective> GetDistanceObjective()
+    std::shared_ptr<DistanceObjective> GetDistanceObjective()
     { return m_distance_objective; }
     
-    boost::shared_ptr<HeadingObjective> GetHeadingObjective()
+    std::shared_ptr<HeadingObjective> GetHeadingObjective()
     { return m_heading_objective; }
     
-    boost::shared_ptr<SpeedObjective> GetSpeedObjective()
+    std::shared_ptr<SpeedObjective> GetSpeedObjective()
     { return m_speed_objective; }
     
     void DumpObstacles(std::ostream & os, const char * prefix) const;
@@ -278,13 +278,13 @@ namespace sfl {
 		double timestep,
 		double dx,
 		double dy,
-		boost::shared_ptr<const Scan> local_scan,
+		std::shared_ptr<const Scan> local_scan,
 		std::ostream * dbgos = 0);
     
   protected:
-    boost::shared_ptr<DistanceObjective> m_distance_objective;
-    boost::shared_ptr<HeadingObjective> m_heading_objective;
-    boost::shared_ptr<SpeedObjective> m_speed_objective;
+    std::shared_ptr<DistanceObjective> m_distance_objective;
+    std::shared_ptr<HeadingObjective> m_heading_objective;
+    std::shared_ptr<SpeedObjective> m_speed_objective;
   };
   
 }

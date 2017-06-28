@@ -32,7 +32,6 @@
 #include <stdio.h>
 
 
-using namespace boost;
 using namespace std;
 
 
@@ -45,7 +44,7 @@ namespace sfl {
   
   DistanceObjective::
   DistanceObjective(const DynamicWindow & dynamic_window,
-		    boost::shared_ptr<const RobotModel> robot_model,
+		    std::shared_ptr<const RobotModel> robot_model,
 		    double grid_width,
 		    double grid_height,
 		    double grid_resolution)
@@ -527,21 +526,21 @@ namespace sfl {
   }
   
   
-  boost::shared_ptr<const Hull> DistanceObjective::
+  std::shared_ptr<const Hull> DistanceObjective::
   GetHull() const
   {
     return m_hull;
   }
   
   
-  boost::shared_ptr<const Hull> DistanceObjective::
+  std::shared_ptr<const Hull> DistanceObjective::
   GetPaddedHull() const
   {
     return m_padded_hull;
   }
   
   
-  boost::shared_ptr<const Hull> DistanceObjective::
+  std::shared_ptr<const Hull> DistanceObjective::
   GetEvaluationHull() const
   {
     return m_evaluation_hull;

@@ -50,8 +50,8 @@ namespace npm2 {
     
     explicit View (const string & name);
     
-    bool setCamera (const string & name);
-    bool addDrawing (const string & name);
+    bool setCamera (const string & name, ostream & erros);
+    bool addDrawing (const string & name, ostream & erros);
     bool setWindow (double x0, double y0, double x1, double y1);
     bool setBorder (int border);
     bool setSquish (bool squish);

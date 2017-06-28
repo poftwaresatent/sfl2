@@ -28,7 +28,7 @@
 
 #include <sfl/api/Timestamp.hpp>
 #include <sfl/api/LocalizationInterface.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <map>
 
 
@@ -44,9 +44,9 @@ namespace sfl {
   class Odometry
   {
   public:
-    typedef std::map<Timestamp, boost::shared_ptr<Pose> > history_t;
+    typedef std::map<Timestamp, std::shared_ptr<Pose> > history_t;
     
-    explicit Odometry(boost::shared_ptr<sfl::LocalizationInterface> localization);
+    explicit Odometry(std::shared_ptr<sfl::LocalizationInterface> localization);
     
     void Clear() { m_history.clear(); }
     
@@ -68,7 +68,7 @@ namespace sfl {
        (i.e. during initialisation), returns a default constructed
        instance.
     */
-    boost::shared_ptr<const Pose> Get() const;
+    std::shared_ptr<const Pose> Get() const;
     
     /** Access to the pose history in case you want to do fancy stuff. */
     const history_t & GetHistory() const { return m_history; }
@@ -83,7 +83,7 @@ namespace sfl {
     
   private:
     history_t m_history;
-    boost::shared_ptr<LocalizationInterface> m_localization;
+    std::shared_ptr<LocalizationInterface> m_localization;
   };
   
 }

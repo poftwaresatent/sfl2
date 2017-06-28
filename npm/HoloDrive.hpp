@@ -45,7 +45,7 @@ namespace npm {
     double vx, vy, omega;
     
   protected:
-    virtual boost::shared_ptr<sfl::Frame>
+    virtual std::shared_ptr<sfl::Frame>
     ComputeNextPose(const sfl::Frame & current, double timestep) const;
   };
   

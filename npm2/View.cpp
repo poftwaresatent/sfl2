@@ -26,7 +26,6 @@
 #include "Viewport.hpp"
 #include "BBox.hpp"
 #include "Drawing.hpp"
-#include <boost/bind.hpp>
 
 
 namespace npm2 {
@@ -41,24 +40,32 @@ namespace npm2 {
       camera_ (0)
   {
     registry.add (name, this);
-    reflectCallback <string> ("camera", true, boost::bind (&View::setCamera, this, _1));
-    reflectCallback <string> ("drawings", true, boost::bind (&View::addDrawing, this, _1));
+    reflectCallback <string> ("camera", true,
+			      [this] (const string & name, ostream & erros) -> bool
+			      { return setCamera(name, erros); });
+    reflectCallback <string> ("drawings", true,
+			      [this] (const string & name, ostream & erros) -> bool
+			      { return addDrawing(name, erros); });
     ////    reflectCallback <qhwin_s>("window", false, boost::bind(&View::setWindow, this, _1));
-    reflectCallback <int> ("border", false, boost::bind (&View::setBorder, this, _1));
-    reflectCallback <bool> ("squish", false, boost::bind (&View::setSquish, this, _1));
+    reflectCallback <int> ("border", false,
+			   [this] (int border, ostream & erros) -> bool
+			   { return setBorder(border); });
+    reflectCallback <bool> ("squish", false,
+			   [this] (bool squish, ostream & erros) -> bool
+			   { return setSquish(squish); });
   }
   
   
   bool View::
-  setCamera (const string & name)
+  setCamera (const string & name, ostream & erros)
   {
     Camera * cc (Camera::registry.find (name));
     if( !cc) {
-      cerr << "ERROR in npm::View::setCamera: camera " << name << " not found\n"
+      erros << "ERROR in npm::View::setCamera: camera " << name << " not found\n"
 	   << "  available Cameras:\n";
       for (Camera::registry_t::map_t::const_iterator ic (Camera::registry.map_.begin());
 	   ic != Camera::registry.map_.end(); ++ic) {
-	cerr << "    " << ic->first << ": " << ic->second->comment << "\n";
+	erros << "    " << ic->first << ": " << ic->second->comment << "\n";
       }
       return false;
     }
@@ -68,15 +75,15 @@ namespace npm2 {
   
   
   bool View::
-  addDrawing (const string & name)
+  addDrawing (const string & name, ostream & erros)
   {
     Drawing * dd (Drawing::registry.find (name));
     if (0 == dd) {
-      cerr << "ERROR in npm::View::addDrawing: drawing " << name << " not found\n"
+      erros << "ERROR in npm::View::addDrawing: drawing " << name << " not found\n"
 	   << "  available Drawings:\n";
       for (Drawing::registry_t::map_t::const_iterator id (Drawing::registry.map_.begin());
 	   id != Drawing::registry.map_.end(); ++id) {
-	cerr << "    " << id->first << ": " << id->second->comment << "\n";
+	erros << "    " << id->first << ": " << id->second->comment << "\n";
       }
       return false;
     }

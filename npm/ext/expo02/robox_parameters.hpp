@@ -32,7 +32,7 @@ struct robox_parameters
 {
   robox_parameters();
   
-  explicit robox_parameters(boost::shared_ptr<sfl::OptionDictionary> opt);
+  explicit robox_parameters(std::shared_ptr<sfl::OptionDictionary> opt);
   
   int front_nscans;
   double front_mount_x, front_mount_y, front_mount_theta;
@@ -46,6 +46,6 @@ struct robox_parameters
 void robox_default_parameters(struct robox_parameters * params);
 
 void robox_parameters_load(robox_parameters & params,
-			   boost::shared_ptr<sfl::OptionDictionary> opt);
+			   std::shared_ptr<sfl::OptionDictionary> opt);
 
 #endif // ROBOX_PARAMETERS_HPP

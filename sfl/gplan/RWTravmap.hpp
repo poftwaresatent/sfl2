@@ -40,7 +40,7 @@ namespace sfl {
   class RDTravmap
   {
   public:
-		explicit RDTravmap(boost::shared_ptr<TraversabilityMap> travmap)
+		explicit RDTravmap(std::shared_ptr<TraversabilityMap> travmap)
 			: m_travmap(travmap)
 		{}
 		
@@ -105,7 +105,7 @@ namespace sfl {
     
 	protected:
 		/** \note Not const for subclass WRTravmap! */
-		boost::shared_ptr<TraversabilityMap> m_travmap;
+		std::shared_ptr<TraversabilityMap> m_travmap;
   };
 	
   
@@ -120,7 +120,7 @@ namespace sfl {
   public:
 		typedef TraversabilityMap::draw_callback dcb;
 		
-    explicit WRTravmap(boost::shared_ptr<TraversabilityMap> travmap)
+    explicit WRTravmap(std::shared_ptr<TraversabilityMap> travmap)
 			: RDTravmap(travmap)
 		{}
 		

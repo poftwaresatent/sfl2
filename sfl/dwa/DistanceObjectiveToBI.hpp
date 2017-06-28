@@ -46,7 +46,7 @@ namespace sfl {
   {
   public:
     DistanceObjectiveToBI(const DynamicWindow & dynamic_window,
-			  boost::shared_ptr<const RobotModel> robot_model,
+			  std::shared_ptr<const RobotModel> robot_model,
 			  double grid_width,
 			  double grid_height,
 			  double grid_resolution,
@@ -59,7 +59,7 @@ namespace sfl {
     virtual void Calculate(double timestep, size_t qdlMin, size_t qdlMax,
 			   size_t qdrMin, size_t qdrMax,
 			   double carrot_lx, double carrot_ly,
-			   boost::shared_ptr<const Scan> local_scan);
+			   std::shared_ptr<const Scan> local_scan);
     
     ssize_t const blur_radius;    
     

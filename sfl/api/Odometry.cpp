@@ -27,7 +27,6 @@
 #include <iostream>
 
 
-using namespace boost;
 using namespace std;
 
 
@@ -35,7 +34,7 @@ namespace sfl {
   
   
   Odometry::
-  Odometry(boost::shared_ptr<sfl::LocalizationInterface> localization)
+  Odometry(std::shared_ptr<sfl::LocalizationInterface> localization)
     : m_localization(localization)
   {
   }

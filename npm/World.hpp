@@ -26,7 +26,7 @@
 #define NPM_WORLD_HPP
 
 #include <fpplib/configurable.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 
@@ -59,7 +59,7 @@ namespace npm {
     : public fpplib::Configurable
   {
   public:
-    typedef std::vector<boost::shared_ptr<Object> > object_t;
+    typedef std::vector<std::shared_ptr<Object> > object_t;
     typedef std::vector<RobotServer *> robot_t;
     
     explicit World(const std::string & name);
@@ -105,12 +105,12 @@ namespace npm {
     const robot_t & GetRobots() const { return m_robot; }
     
     /** \note Can return 0. */
-    boost::shared_ptr<const BBox> GetBounds() const { return m_bbox; }
+    std::shared_ptr<const BBox> GetBounds() const { return m_bbox; }
     
     /** For dumping the map in a textfile. */
     void DumpLines(std::ostream & os, bool use_windows_eol) const;
     
-    void AddKeyListener(boost::shared_ptr<KeyListener> listener) const;
+    void AddKeyListener(std::shared_ptr<KeyListener> listener) const;
     void DispatchKey(unsigned char key) const;
     
     
@@ -118,12 +118,12 @@ namespace npm {
     friend class CheatSheet;
     
     robot_t m_robot;
-    boost::shared_ptr<WorldDrawing> m_drawing;
-    boost::shared_ptr<WorldCamera> m_camera;
+    std::shared_ptr<WorldDrawing> m_drawing;
+    std::shared_ptr<WorldCamera> m_camera;
     object_t m_object;
-    boost::shared_ptr<BBox> m_bbox;
+    std::shared_ptr<BBox> m_bbox;
     
-    mutable std::vector<boost::shared_ptr<KeyListener> > m_listener;
+    mutable std::vector<std::shared_ptr<KeyListener> > m_listener;
   };
   
 }
